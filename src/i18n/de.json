@@ -1074,5 +1074,6 @@
   "offlineConflictItem": "{item}: {error}",
   "errOfflineOpReused": "Diese vorgemerkte Änderung kollidiert mit einer früheren. Verwirf sie und mache die Änderung neu.",
   "errOfflineConflict": "Dieser Eintrag wurde zwischenzeitlich anderswo geändert. Verwirf deine Änderung und prüfe die Liste.",
-  "errOfflineAddUncertain": "Dieser Eintrag steht womöglich schon auf der Liste. Prüfe die Liste und verwirf dann diesen Eintrag."
+  "errOfflineAddUncertain": "Dieser Eintrag steht womöglich schon auf der Liste. Prüfe die Liste und verwirf dann diesen Eintrag.",
+  "cookSwipeHint": "← wischen →"
 }

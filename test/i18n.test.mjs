@@ -404,3 +404,14 @@ test("shopping sync keys from the contract exist in English and German with real
   }
   assert.match(locales.de.syncBadgeIssues, /prüfen/);
 });
+
+test("stylesheets carry no words: CSS content cannot be translated", () => {
+  const dir = fileURLToPath(new URL("../src/design-system/", import.meta.url));
+  for (const name of readdirSync(dir).filter((file) => file.endsWith(".css"))) {
+    const css = readFileSync(join(dir, name), "utf8");
+    const words = [...css.matchAll(/content:\s*"([^"]*)"/g)]
+      .filter(([, text]) => /\p{L}{2,}/u.test(text))
+      .map(([match]) => match);
+    assert.deepEqual(words, [], `${name} has text in CSS content`);
+  }
+});

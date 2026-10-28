@@ -1074,5 +1074,6 @@
   "offlineConflictItem": "{item}: {error}",
   "errOfflineOpReused": "This queued change clashes with an earlier one. Discard it and make the change again.",
   "errOfflineConflict": "This item was changed elsewhere in the meantime. Discard your change and check the list.",
-  "errOfflineAddUncertain": "This item may already be on the list. Check the list, then discard this entry."
+  "errOfflineAddUncertain": "This item may already be on the list. Check the list, then discard this entry.",
+  "cookSwipeHint": "← swipe →"
 }
