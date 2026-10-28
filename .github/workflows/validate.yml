@@ -1,0 +1,27 @@
+# The only workflow in this organization: the Home Assistant Marketplace catalog
+# (hacs/default) asks for a passing HACS validation run. Public repo, standard
+# runner, so it costs nothing. Tests and linting run locally through .githooks/.
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hacs:
+    name: HACS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: plugin
