@@ -4,6 +4,8 @@
 
 **Developer preview; not a stable public release.** Product code is now organized in the existing public repositories, with their Git histories preserved. Automated local checks and emulated visual evidence do not replace live Home Assistant, Mealie, provider, or physical-device acceptance.
 
+The canonical, prioritized index across both product repositories is [`OPEN_TODOS.md`](OPEN_TODOS.md). This file retains the detailed release acceptance gates and evidence.
+
 ## Repository and package boundaries
 
 - [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards): Home Assistant Cards, standalone Web/PWA under `web/`, and generated bilingual demo under `demo/`.
@@ -61,3 +63,5 @@ Do not publish with the example URL. Demo edits remain browser-local and never c
 - 2026-10-28 — Re-ran local checks: Cards 60, Web 35, Bridge 26; build outputs are byte-identical. Manual HACS/Hassfest and all live/device gates remain outstanding until individually completed and recorded.
 
 - 2026-10-28 — Removed GitHub Actions and Dependabot version-update configuration after the owner asked to keep repository checks and releases manual; disabled Actions across the organization and automatic security-update PRs for the product repositories in GitHub settings.
+
+- 2026-10-28 — Linked the canonical open-work index after consolidating scattered TODOs and resolving stale roadmap checkboxes.

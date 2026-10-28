@@ -19,7 +19,7 @@ The standalone Web app and fictional-data demo live in the Cards repository unde
 - [ ] Test direct installation and the HACS/UI-managed setup in a clean Home Assistant instance.
 - [ ] Keep stable package links out of public setup guides until a real release exists.
 
-Current local readiness and open gates are tracked in [`RELEASE_READINESS_0.9.5.md`](RELEASE_READINESS_0.9.5.md). The planned Mealie-to-To-do shopping sync is not implemented; see [Bridge specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).
+This file is the package submission procedure, not the project task tracker. Current prioritized open work is in [`OPEN_TODOS.md`](OPEN_TODOS.md); detailed local readiness and release gates are in [`RELEASE_READINESS_0.9.5.md`](RELEASE_READINESS_0.9.5.md). The planned Mealie-to-To-do shopping sync is not implemented; see [Bridge specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).
 
 ## Official references
 

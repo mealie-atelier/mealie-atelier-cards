@@ -1,65 +1,38 @@
 # Product roadmap — Mealie Atelier
 
-> Current version: 0.9.5 developer preview. Historical milestone checklists below preserve the earlier plan; current release blockers and final steps are tracked in [RELEASE_READINESS_0.9.5.md](RELEASE_READINESS_0.9.5.md).
+> Current code is a 0.9.5 developer preview. The canonical, prioritized list of open tasks is [OPEN_TODOS.md](OPEN_TODOS.md); detailed manual acceptance procedures are in [RELEASE_READINESS_0.9.5.md](RELEASE_READINESS_0.9.5.md). GitHub Actions and automated dependency-update pull requests are intentionally disabled.
 
-## Vision
+## Product direction
 
-An exceptional, local-first kitchen studio: a polished recipe library, delightful cooking experience, useful daily overview, grocery planning and an easy, visual configuration flow for Home Assistant and standalone screens.
+Build a warm, local-first kitchen studio that makes a large recipe collection easier to discover, plan, shop for, and cook from. The standalone experience must remain useful without Home Assistant; HA Cards and the optional Bridge add capabilities without making HA mandatory.
 
-Product principles: real usability over decoration; excellent phone/tablet UX; no API tokens in the browser; no tracking; clear update paths; accessible components; Mealie stays the system of record.
+Keep Mealie as the recipe system of record. Keep credentials out of browser code. Make privacy, accessibility, responsive behavior, and safe failure states part of the product rather than release-week additions. Use the design system consistently and keep German and English equally usable.
 
-## v0.1 — Original proof of concept
+## Now — prove the developer preview on real systems
 
-- [x] Home Assistant bridge, configuration form, signed image proxy and native Lovelace graphical card editor.
-- [x] Five cards, unified dashboard, responsive dark/light design, recipe search and cook mode.
-- [x] Planner, shopping list, recipe import and standalone Docker/Node companion.
+The next milestone is acceptance, not a feature-count target:
 
-## v0.2 — Current developer preview
+1. Validate HACS/Hassfest and installation manually on a disposable Home Assistant instance.
+2. Test supported Mealie versions and real read/write workflows without touching household data.
+3. Complete provider tests and safety behavior before implementing/advertising the planned shopping sync.
+4. Finish physical-device, embedded-card, accessibility, security, and public-demo checks.
+5. Document supported versions and publish only independently validated packages.
 
-- [x] Sixth **Today** card.
-- [x] Create shopping lists and transfer ingredients from recipes.
-- [x] Recipe editor: title/description, servings, optional replacement of instructions, plus explicitly enabled **experimental** replacement of unlinked ingredient text after backup.
-- [x] Backend-enforced read-only mode in HA integration options and web companion.
-- [x] Mealplan `start_date`/`end_date` fix and HTTP fixture tests.
-- [x] Mobile/desktop visual smoke tests using simulated data.
-- [x] Updated docs, screenshots, versioning and release checklist.
-- [ ] Real Mealie 3.x + Home Assistant 2026.10+ compatibility and acceptance tests.
-- [ ] Full accessibility pass; keyboard/focus handling; Safari and real Fully Kiosk tests.
+The [open-work index](OPEN_TODOS.md) records priority and completion evidence. It supersedes old checkbox plans in milestone notes.
 
-## v0.3 — Next big milestone
+## After release readiness
 
-- **Guided kitchen kiosk:** landscape/tablet presets, no accidental screen sleep (with device consent), clear back/forward, timer integration, large readable step cards.
-- **Real recipe editing:** linked Mealie foods, units, quantities, categories, tags and cover art; explicit previews and undo/backups.
-- **Full library planner:** server-side paginated recipe picker with filters, keyword search and favorites.
-- **Household workflows:** shopping overview by list, multi-list management, ingredient scaling for portions and household profiles.
-- **Advanced design studio:** visual card templates, presets per display, configurable typography and section visibility, reliable per-device export/import.
-- **Realtime and robustness:** refresh policies and optimistic update rollback with accessible error toasts and skeleton loaders.
+Schedule these only when their dependencies and user value are clear:
 
-## v1.0 — Public release target (not achieved)
+- Safe Mealie-to-HA shopping-list copy/move with durable retries, duplicate reconciliation, and explicit failure states.
+- Further cooking-flow improvements driven by live recipe content, including step-photo composition, legibility, and progress controls.
+- Additional household planning and provider integrations where real users and supported APIs justify the maintenance cost.
+- More languages through the established translation workflow, with parity checks for every user-facing string.
 
-- [ ] Real integration and compatibility test matrix including Mealie versions.
-- [ ] HACS action and hassfest passing in public repositories, tagged GitHub releases, issue/PR templates and changelog.
-- [ ] Approved catalog entries and smooth installation in HACS / Home Assistant Marketplace.
-- [ ] Security review, rate limits, log redaction, reauthentication/token rotation and permissions model.
-- [ ] Native German/English translation checks, a11y/touch tests and a 30-second introductory walkthrough.
+## Shipped direction and retained history
 
-## Discoverability — earned, not manipulated
+The current preview includes the photo-led recipe library and cooking mode, responsive cards, a standalone Web/PWA path, bilingual demo generation, neutral Light and Dark themes, recipe search and conversion, shopping and meal planning workflows, and a visual setup path. Historical release notes and feature matrices remain the record of version-by-version changes; do not use them as the current task tracker.
 
-Useful and honest GitHub descriptions, first-run wizard, meaningful demo screenshots clearly marked as demo, regular releases, compatibility notes, good issue support and a responsive feedback loop help adoption. Marketplace visibility/rank is ultimately controlled by the catalog/UI and user adoption, not by keywords alone.
+## Corrections log
 
-## v0.4 – Photo-led redesign & print QA (implemented 28 Oct 2026)
-
-- [x] Premium photography-led gallery / featured hero / editorial recipe modal and cook mode.
-- [x] Mobile recipe carousel and responsive two-panel cook UI.
-- [x] Visual photo crop settings (portrait, square, landscape) and safe default permissions.
-- [x] Offline, self-contained showcase with generated food photography.
-- [x] Actual A4 recipe photo, shopping and weekly PDFs visually verified in Chromium.
-- [ ] Validate *live* on a real Mealie server and a Home Assistant instance.
-
-## v0.5 – Release readiness (next)
-
-- [ ] Real Mealie API schema/compatibility tests for supported Mealie versions; do not mutate personal data during tests.
-- [ ] Real HA/HACS installation on a dedicated test instance; verify config entry, bridge auth, image proxy and cards.
-- [ ] Structured ingredient editor (unit/food refs), serving size conversion, picture upload and correct rollback.
-- [ ] Fully Kiosk tablet tuning and browser/print cross-engine test matrix.
-- [ ] Security/privacy and accessibility review; public CI/HACS/hassfest checks before Marketplace submission.
+- 2026-10-28 — Replaced stale milestone checkboxes (including a public HACS Action that conflicts with the no-Actions policy) with a current roadmap linked to the canonical open-work index.

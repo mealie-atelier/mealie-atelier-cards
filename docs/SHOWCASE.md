@@ -35,3 +35,5 @@ Use one fictional recipe and one goal throughout the comparison: “Get a weekni
 ## Current state
 
 The local interactive before/after demo is implemented in [`demo/showcase.html`](../demo/showcase.html). It uses fictional recipe data and local image assets; it does not contact Mealie or Home Assistant. The public CMS page has not been built or published because its source and deployment access are outside this archive.
+
+The README links two small landscape animated tours composed from the current 0.9.5 emulated UI screenshots in `docs/qa/visual-review-2026-10-28/`. They open only when selected, so the README itself does not autoplay motion. These are sequential still states with restrained fades, not recordings of live pointer/keyboard interaction. Static desktop/mobile screenshots remain visible as an alternative. Replace the tours with current, recorded interactions before marketing them as workflow recordings; see [open work](OPEN_TODOS.md).

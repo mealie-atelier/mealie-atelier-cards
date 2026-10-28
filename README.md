@@ -2,15 +2,25 @@
 
 **A warmer, more useful kitchen companion for Mealie.** Home Assistant cards, an optional standalone Web app, and a bilingual demo live together here; the Bridge integration has its own repository.
 
-<img align="right" width="132" alt="Mealie Atelier Cards app icon with pasta and tomatoes" src="brand/icon-512.png">
+<p align="center"><img width="96" alt="Mealie Atelier Cards app icon with pasta and tomatoes" src="brand/icon-512.png"></p>
 
 ## Home Assistant Cards
 
 An elegant, visual Home Assistant kitchen studio for Mealie: recipes, meal planning, groceries, and a clean step-by-step cooking mode — all with a native UI editor, dark/light mode and colors.
 
-![Desktop dashboard with demo data](assets/showcase-desktop.png)
+<p align="center"><a href="assets/showcase-discover-cook.gif"><img src="assets/showcase-desktop.png" width="800" alt="Select to view an animated tour from the recipe dashboard through recipe discovery and cooking mode"></a></p>
 
-![Mobile dashboard with demo data](assets/showcase-mobile.png)
+<p align="center"><em><a href="assets/showcase-discover-cook.gif">Play the recipe-to-cooking tour</a> · Animation opens on request.</em></p>
+
+<details>
+<summary>Open desktop and mobile screenshots</summary>
+
+<p align="center"><img src="assets/showcase-desktop.png" width="800" alt="Desktop dashboard with fictional demo recipes"></p>
+<p align="center"><img src="assets/showcase-mobile.png" width="300" alt="Mobile dashboard with fictional demo recipes"></p>
+<p align="center"><a href="assets/showcase-plan-shop.gif"><img src="docs/qa/visual-review-2026-10-28/1470px-view-mealplan.jpg" width="640" alt="Select to view an animated tour of meal planning, shopping, and cookbooks"></a></p>
+<p align="center"><a href="assets/showcase-plan-shop.gif">Play the meal-planning and shopping tour</a> · Animation opens on request.</p>
+
+</details>
 
 > Screenshots use fictional sample recipes, not a real Mealie account. Real recipe photos are loaded from Mealie via the Atelier Bridge.
 
@@ -21,6 +31,13 @@ For the easiest Home Assistant path, follow the [guided setup](docs/INSTALLATION
 When published, install **Mealie Atelier Cards** from Home Assistant Marketplace or HACS under **Dashboard**. The UI-managed setup registers the JavaScript module resource for you; reload the browser when prompted. Then open **Edit dashboard → Add card**, search **Mealie Atelier**, and choose **Complete Kitchen** or a focused card. The visual editor detects an existing Mealie connection and walks through the opening view and appearance. No card YAML is needed.
 
 This developer-preview archive is not published in the catalog yet. For temporary testing, copy `dist/mealie-atelier-cards.js` to `<config>/www/mealie-atelier-cards.js`, register `/local/mealie-atelier-cards.js` as a JavaScript **module** in **Settings → Dashboards → ⋮ → Resources**, and refresh the browser. YAML-managed Lovelace resources require the advanced manual path in the [setup guide](docs/INSTALLATION_0.9.5.md).
+
+## Project status and help
+
+- [Open work and release gates](docs/OPEN_TODOS.md)
+- [Frequently asked questions](docs/FAQ.md)
+- [Setup and troubleshooting discussions](https://github.com/orgs/mealie-atelier/discussions)
+- [Repository documentation](docs/REPOSITORY_MAP.md)
 
 ## Ten card types
 
