@@ -29,6 +29,12 @@
   align-items: center;
   gap: var(--ds-space-2);
 }
+.atelier .sync-state {
+  flex-wrap: wrap;
+}
+.atelier .sync-count {
+  white-space: nowrap;
+}
 .atelier .sync-muted {
   color: var(--ds-muted);
 }
