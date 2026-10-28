@@ -1,6 +1,8 @@
-# Mealie Atelier Cards
-
-**Your Mealie recipes, ready for the kitchen.**
+<div align="center">
+  <img src="brand/icon-512.png" alt="Mealie Atelier Cards app icon" width="144">
+  <h1>Mealie Atelier Cards</h1>
+  <p><strong>Your Mealie recipes, ready for the kitchen.</strong></p>
+</div>
 
 Mealie Atelier Cards is planned as a standalone-first recipe experience for browsing, planning and cooking from your Mealie library. Home Assistant cards are an optional way to bring the same kitchen tools into a dashboard.
 

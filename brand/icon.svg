@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Mealie Atelier Cards app icon — a recipe card with handmade pasta</title>
+  <defs>
+    <clipPath id="icon-tile"><rect x="24" y="24" width="976" height="976" rx="224"/></clipPath>
+    <clipPath id="recipe-photo"><rect x="242" y="218" width="540" height="432" rx="34"/></clipPath>
+  </defs>
+  <g clip-path="url(#icon-tile)">
+    <rect width="1024" height="1024" fill="#d99a36"/>
+    <rect x="150" y="164" width="600" height="690" rx="54" fill="#4c3744" transform="rotate(-8 450 509)"/>
+    <rect x="218" y="158" width="600" height="706" rx="54" fill="#fff8e9" stroke="#35262f" stroke-width="18" transform="rotate(3 518 511)"/>
+    <rect x="225" y="186" width="574" height="500" rx="46" fill="#e8ddc9"/>
+    <image href="photographer-davide-ragusa-handmade-pasta.jpg" x="242" y="218" width="540" height="432" preserveAspectRatio="xMidYMid slice" clip-path="url(#recipe-photo)"/>
+    <path d="M278 760h260M278 802h178" fill="none" stroke="#35262f" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="729" cy="777" r="31" fill="#c9503d"/>
+    <path d="M726 756c-9 13-11 23-4 31 7 8 15 15 12 26" fill="none" stroke="#fff4da" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>
