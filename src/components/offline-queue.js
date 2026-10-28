@@ -169,7 +169,7 @@ export const offlineQueueMethods = {
     const line = waiting.length
       ? `<div class="notice is-spaced offline-queue" role="status">${icon("cart", 16)} <strong>${esc(this.tp("offlineQueued", waiting.length))}</strong> <button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
       : conflicts.some((op) => op.state === "failed")
-        ? `<div class="notice is-spaced offline-queue" role="status"><button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
+        ? `<div class="notice is-spaced offline-queue"><button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
         : "";
     const rows = conflicts
       .map(

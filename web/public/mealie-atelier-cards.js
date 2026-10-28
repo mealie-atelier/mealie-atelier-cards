@@ -12004,7 +12004,7 @@ class MealieAtelierCard extends HTMLElement {
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     if (modalChanged && dialog) {
       const target =
-        dialog.querySelector('[data-input="command-search"], [autofocus]') ||
+        dialog.querySelector('[data-input="command-search"], [data-autofocus]') ||
         dialog.querySelector('[data-action="close-modal"]');
       target?.focus({ preventScroll: true });
     } else if (modalChanged && !dialog && this._modalReturn) {
@@ -13490,7 +13490,7 @@ const dialogMethods = {
     }
     if (this._modal === "create")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div><div class="editor-stamp">${icon("plus", 27)}</div></div>
-      <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogRecipeTitle")}</div><form class="editor-form" data-form="create"><label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" autofocus placeholder="${this.t("uieGLemonPastaWithSpinach")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("create"))}</button></div></form></section></div>`;
+      <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogRecipeTitle")}</div><form class="editor-form" data-form="create"><label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" data-autofocus placeholder="${this.t("uieGLemonPastaWithSpinach")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("create"))}</button></div></form></section></div>`;
     if (this._modal === "import")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / IMPORT</div><h2>${esc(this.t("import"))}</h2><p>${this.t("uiPasteARecipeLinkMealieHandlesImportingIt")}</p></div><div class="editor-stamp">${icon("external", 27)}</div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogSource")}</div><form class="editor-form" data-form="import"><label class="field"><span>${esc(this.t("url"))}</span><input type="url" name="url" required maxlength="2000" placeholder="https://…"></label><p class="editor-sub">${esc(this.t("importTip"))}</p><div class="form-actions"><button type="submit" class="btn primary">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></form></section></div>`;
@@ -13522,7 +13522,7 @@ const dialogMethods = {
     }
     if (this._modal === "create-list")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / SHOPPING</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
-      <section class="editor-card"><div class="eyebrow">01 / LISTENNAME</div><form class="editor-form" data-form="create-list"><label class="field"><span>${esc(this.t("listName"))} *</span><input name="name" maxlength="100" required autofocus placeholder="${this.t("uieGWeeklyGroceries")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("createList"))}</button></div></form></section></div>`;
+      <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("listName"))}</div><form class="editor-form" data-form="create-list"><label class="field"><span>${esc(this.t("listName"))} *</span><input name="name" maxlength="100" required data-autofocus placeholder="${this.t("uieGWeeklyGroceries")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("createList"))}</button></div></form></section></div>`;
     if (this._modal === "recipe-to-list" && this._detail) {
       const lists = asArray(this._data.shopping?.lists);
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / SHOPPING</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
@@ -15285,7 +15285,7 @@ const shoppingSyncMethods = {
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("syncSource").toUpperCase())}</div>
         ${
           d.free.length
-            ? `<label class="field"><span>${esc(this.t("syncSource"))}</span><select data-input="sync-source" autofocus>${sourceOptions}</select></label>`
+            ? `<label class="field"><span>${esc(this.t("syncSource"))}</span><select data-input="sync-source" data-autofocus>${sourceOptions}</select></label>`
             : `<p class="notice" role="status">${icon("cart", 16)} ${esc(this.t(lists.length ? "errSyncSourceTaken" : "addListFirst"))}</p>`
         }
         <label class="field"><span>${esc(this.t("syncRuleName"))}</span><input data-input="sync-name" maxlength="60" value="${esc(d.name)}" placeholder="${esc(this._syncDraftRequest(d).name)}"></label></section>
@@ -15650,7 +15650,7 @@ const recipePickerMethods = {
   }) {
     return `<div class="combobox" data-combobox-root="${esc(id)}">
       <label class="field"><span id="${esc(id)}-label">${esc(label)}</span>
-      <input type="text" class="combobox-input" role="combobox" aria-autocomplete="list" aria-expanded="${open}" aria-controls="${esc(id)}-list" ${activeId ? `aria-activedescendant="${esc(activeId)}"` : ""} autocomplete="off" spellcheck="false" maxlength="100" ${autofocus ? "autofocus" : ""} ${action ? `data-action="${esc(action)}"` : ""} data-input="${esc(inputKey)}" data-combobox="${esc(id)}" placeholder="${esc(placeholder)}" value="${esc(value)}"></label>
+      <input type="text" class="combobox-input" role="combobox" aria-autocomplete="list" aria-expanded="${open}" aria-controls="${esc(id)}-list" ${activeId ? `aria-activedescendant="${esc(activeId)}"` : ""} autocomplete="off" spellcheck="false" maxlength="100" ${autofocus ? "data-autofocus" : ""} ${action ? `data-action="${esc(action)}"` : ""} data-input="${esc(inputKey)}" data-combobox="${esc(id)}" placeholder="${esc(placeholder)}" value="${esc(value)}"></label>
       <div class="picker-panel" data-combobox-panel="${esc(id)}" ${open ? "" : "hidden"}>
         <ul class="picker-list" role="listbox" id="${esc(id)}-list" aria-labelledby="${esc(id)}-label" aria-busy="${busy}" data-combobox-list="${esc(id)}">${list}</ul>
         <div class="picker-state" data-combobox-state="${esc(id)}">${status}</div>
@@ -16271,7 +16271,7 @@ const offlineQueueMethods = {
     const line = waiting.length
       ? `<div class="notice is-spaced offline-queue" role="status">${icon("cart", 16)} <strong>${esc(this.tp("offlineQueued", waiting.length))}</strong> <button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
       : conflicts.some((op) => op.state === "failed")
-        ? `<div class="notice is-spaced offline-queue" role="status"><button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
+        ? `<div class="notice is-spaced offline-queue"><button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
         : "";
     const rows = conflicts
       .map(

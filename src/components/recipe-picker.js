@@ -24,7 +24,7 @@ export const recipePickerMethods = {
   }) {
     return `<div class="combobox" data-combobox-root="${esc(id)}">
       <label class="field"><span id="${esc(id)}-label">${esc(label)}</span>
-      <input type="text" class="combobox-input" role="combobox" aria-autocomplete="list" aria-expanded="${open}" aria-controls="${esc(id)}-list" ${activeId ? `aria-activedescendant="${esc(activeId)}"` : ""} autocomplete="off" spellcheck="false" maxlength="100" ${autofocus ? "autofocus" : ""} ${action ? `data-action="${esc(action)}"` : ""} data-input="${esc(inputKey)}" data-combobox="${esc(id)}" placeholder="${esc(placeholder)}" value="${esc(value)}"></label>
+      <input type="text" class="combobox-input" role="combobox" aria-autocomplete="list" aria-expanded="${open}" aria-controls="${esc(id)}-list" ${activeId ? `aria-activedescendant="${esc(activeId)}"` : ""} autocomplete="off" spellcheck="false" maxlength="100" ${autofocus ? "data-autofocus" : ""} ${action ? `data-action="${esc(action)}"` : ""} data-input="${esc(inputKey)}" data-combobox="${esc(id)}" placeholder="${esc(placeholder)}" value="${esc(value)}"></label>
       <div class="picker-panel" data-combobox-panel="${esc(id)}" ${open ? "" : "hidden"}>
         <ul class="picker-list" role="listbox" id="${esc(id)}-list" aria-labelledby="${esc(id)}-label" aria-busy="${busy}" data-combobox-list="${esc(id)}">${list}</ul>
         <div class="picker-state" data-combobox-state="${esc(id)}">${status}</div>

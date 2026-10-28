@@ -40,3 +40,15 @@ test("a failing showPopover never breaks rendering", () => {
   };
   assert.doesNotThrow(() => card._raiseModal(el));
 });
+
+test("dialogs mark their first field without the native autofocus attribute", () => {
+  // showPopover() focuses a native [autofocus] on every render; the card picks focus itself.
+  const card = makeCard(loadCards());
+  for (const modal of ["create", "create-list"]) {
+    card._modal = modal;
+    const html = card._modalHtml();
+    assert.match(html, /data-autofocus/);
+    assert.doesNotMatch(html, /\sautofocus[\s>=]/);
+    if (modal === "create-list") assert.doesNotMatch(html, /LISTENNAME/);
+  }
+});

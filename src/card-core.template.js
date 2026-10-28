@@ -887,7 +887,7 @@ class MealieAtelierCard extends HTMLElement {
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     if (modalChanged && dialog) {
       const target =
-        dialog.querySelector('[data-input="command-search"], [autofocus]') ||
+        dialog.querySelector('[data-input="command-search"], [data-autofocus]') ||
         dialog.querySelector('[data-action="close-modal"]');
       target?.focus({ preventScroll: true });
     } else if (modalChanged && !dialog && this._modalReturn) {
