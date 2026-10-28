@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const cardsRoot = join(scriptDirectory, "..");
 const demoRoot = join(cardsRoot, "demo");
-const siteRoot = join(demoRoot, "public-site");
+const siteRoot = process.env.ATELIER_DEMO_OUT_DIR || join(demoRoot, "public-site");
 const catalog = JSON.parse(await readFile(join(demoRoot, "data/recipes.json"), "utf8"));
 const faviconAsset = "mealie-atelier-icon-192.png";
 const template = await readFile(join(demoRoot, "preview.html"), "utf8");
@@ -286,33 +286,46 @@ function renderIndexPage(locale) {
     __DEMO_HOME__: pageUrl || "../",
     __JSON_LD__: jsonLd,
   };
-  let html = template.replace('<html lang="de">', `<html lang="${locale}">`);
+  let html = replaceRequired(template, /<html lang="de">/, `<html lang="${locale}">`);
   html = html.replaceAll("__FAVICON__", `../assets/${faviconAsset}`);
-  html = html.replace('href="./live-demo.css"', 'href="../assets/live-demo.css"');
-  html = html.replace(
-    'import "../dist/mealie-atelier-cards.js";',
+  html = replaceRequired(html, /href="\.\/live-demo\.css"/, 'href="../assets/live-demo.css"');
+  html = replaceRequired(
+    html,
+    /import "\.\.\/dist\/mealie-atelier-cards\.js";/,
     'import "../assets/mealie-atelier-cards.js";',
   );
-  html = html.replace(
-    'import { searchDemoRecipes } from "./recipe-search.js";',
+  html = replaceRequired(
+    html,
+    /import \{ searchDemoRecipes \} from "\.\/recipe-search\.js";/,
     'import { searchDemoRecipes } from "../assets/recipe-search.js";',
   );
-  html = html.replace('fetch("./data/recipes.json")', `fetch("../data/${locale}.json")`);
-  html = html.replace(
-    'const demoLanguage = new URLSearchParams(window.location.search).get("lang") === "en" ? "en" : "de";',
+  html = replaceRequired(
+    html,
+    /fetch\("\.\/data\/recipes\.json"\)/,
+    `fetch("../data/${locale}.json")`,
+  );
+  // Formatters may wrap this declaration, so whitespace between tokens is flexible.
+  html = replaceRequired(
+    html,
+    /const demoLanguage =\s*new URLSearchParams\(window\.location\.search\)\.get\("lang"\) === "en" \? "en" : "de";/,
     `const demoLanguage = "${locale}";`,
   );
-  html = html.replace('accent: "#75465d"', 'accent: "#75465d"');
   for (const [token, value] of Object.entries(replacements)) {
     if (token === "__SEO_RECIPE_DIRECTORY__" || token === "__JSON_LD__") continue;
     html = html.replaceAll(token, escapeHtml(value));
   }
   html = html.replaceAll("__SEO_RECIPE_DIRECTORY__", replacements.__SEO_RECIPE_DIRECTORY__);
   html = html.replaceAll("__JSON_LD__", jsonLd);
-  if (!pageUrl) html = html.replace(/\s*<link rel="canonical" href="">/, "");
+  if (!pageUrl) html = html.replace(/\s*<link rel="canonical" href=""\s*\/?>/, "");
   html = html.replaceAll('aria-current="page"', "");
   html = html.replace(`data-language="${locale}"`, `data-language="${locale}" aria-current="page"`);
   return html;
+}
+
+// A template anchor that no longer matches would silently ship a broken page.
+function replaceRequired(html, pattern, replacement) {
+  if (!pattern.test(html)) throw new Error(`Demo template anchor not found: ${pattern}`);
+  return html.replace(pattern, () => replacement);
 }
 
 function renderRecipePage(locale, recipe) {
