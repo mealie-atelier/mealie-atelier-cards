@@ -1,6 +1,7 @@
 /** Mealie Atelier companion web: zero-dependency, private-by-default Mealie proxy. Node 22+. */
 import { createServer } from "node:http";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { timingSafeEqual, randomUUID } from "node:crypto";
@@ -19,10 +20,18 @@ import {
   aiSuggest,
 } from "./nutrition.mjs";
 import { load as loadStudio, update as updateStudio } from "./studio-state.mjs";
-import { aiSubstitute, aiAudit } from "./studio-ai.mjs";
+import { aiSubstitute, aiAudit, resolveLocale } from "./studio-ai.mjs";
 import { OfflineLedger } from "./offline-ledger.mjs";
 import { AlarmStore } from "./alarm-store.mjs";
 import { createDelivery } from "./alarm-delivery.mjs";
+import {
+  MIN_PASSWORD_LENGTH,
+  createAuthThrottle,
+  inlineScriptHashes,
+  packageVersion,
+  renderServiceWorker,
+  securityHeaders,
+} from "./security.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
@@ -56,6 +65,10 @@ if (!MEALIE_API_TOKEN || !MEALIE_URL || !PASSWORD) {
   console.error("Configure MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD before starting.");
   process.exit(1);
 }
+if (PASSWORD.length < MIN_PASSWORD_LENGTH) {
+  console.error(`ATELIER_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
+  process.exit(1);
+}
 const parsed = new URL(MEALIE_URL);
 if (
   !["http:", "https:"].includes(parsed.protocol) ||
@@ -68,6 +81,12 @@ if (
   process.exit(1);
 }
 
+const VERSION = packageVersion(readFileSync(join(ROOT, "package.json"), "utf8"));
+const SECURITY_HEADERS = securityHeaders(
+  inlineScriptHashes(readFileSync(join(ROOT, "public", "index.html"), "utf8")),
+);
+const authThrottle = createAuthThrottle();
+
 const safeEqual = (a, b) => {
   const left = Buffer.from(a),
     right = Buffer.from(b);
@@ -76,6 +95,14 @@ const safeEqual = (a, b) => {
 function isAuthorized(req) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Basic ")) return false;
+  // Only attempts that carry credentials count; the browser's first anonymous request does not.
+  const client = req.socket.remoteAddress || "unknown";
+  const ok = checkCredentials(header);
+  if (ok) authThrottle.succeed(client);
+  else authThrottle.fail(client);
+  return ok;
+}
+function checkCredentials(header) {
   try {
     const credentials = Buffer.from(header.substring(6), "base64").toString("utf8");
     const i = credentials.indexOf(":");
@@ -93,8 +120,8 @@ function reply(res, status, body, contentType = "application/json; charset=utf-8
     "Content-Type": contentType,
     "X-Content-Type-Options": "nosniff",
     "Cache-Control": "no-store",
-    "Referrer-Policy": "no-referrer",
     "X-Frame-Options": "DENY",
+    ...SECURITY_HEADERS,
     ...headers,
   });
   res.end(contentType.startsWith("application/json") ? JSON.stringify(body) : body);
@@ -406,6 +433,7 @@ async function bridge(req) {
     throw bad("Invalid JSON");
   }
   if (!msg || typeof msg.type !== "string") throw bad("Missing type");
+  const locale = resolveLocale(req.headers["accept-language"], msg.language ?? msg.locale);
   switch (msg.type) {
     case "mealie_atelier/status":
       return {
@@ -527,9 +555,9 @@ async function bridge(req) {
       return updated;
     }
     case "mealie_atelier/studio_substitute":
-      return aiSubstitute(AI_KEY, msg.ingredient, msg.recipe);
+      return aiSubstitute(AI_KEY, msg.ingredient, msg.recipe, locale);
     case "mealie_atelier/studio_ai_audit":
-      return aiAudit(AI_KEY, await mealie("GET", `/api/recipes/${identifier(msg.slug)}`));
+      return aiAudit(AI_KEY, await mealie("GET", `/api/recipes/${identifier(msg.slug)}`), locale);
     case "mealie_atelier/nutrition_prepare": {
       const recipe = await mealie("GET", `/api/recipes/${identifier(msg.slug)}`);
       return prepareNutrition(recipe, { fdcEnabled: !!USDA_KEY, aiEnabled: !!AI_KEY });
@@ -760,6 +788,13 @@ const FILES = {
   "/offline-client.js": ["offline-client.js", "text/javascript; charset=utf-8"],
 };
 const server = createServer(async (req, res) => {
+  const retryMs = authThrottle.retryAfterMs(req.socket.remoteAddress || "unknown");
+  if (retryMs > 0) {
+    reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
+      "Retry-After": String(Math.ceil(retryMs / 1000)),
+    });
+    return;
+  }
   if (!isAuthorized(req)) {
     reply(res, 401, { error: "Sign in to Mealie Atelier" }, "application/json; charset=utf-8", {
       "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"',
@@ -803,7 +838,8 @@ const server = createServer(async (req, res) => {
     }
     if (req.method === "GET" && FILES[pathname]) {
       const [filename, contentType] = FILES[pathname];
-      const data = await readFile(join(ROOT, "public", filename));
+      let data = await readFile(join(ROOT, "public", filename));
+      if (filename === "sw.js") data = renderServiceWorker(data.toString("utf8"), VERSION);
       reply(res, 200, data, contentType, { "Cache-Control": "private, max-age=3600" });
       return;
     }

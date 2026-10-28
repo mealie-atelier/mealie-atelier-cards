@@ -1,6 +1,6 @@
 /* Only opt-in offline static shell and durable shopping operations; NEVER cache /api/ or recipe photos. */
 importScripts("/offline-core.js");
-const CACHE = "mealie-atelier-shell-v097";
+const CACHE = "mealie-atelier-shell-v__ATELIER_VERSION__";
 const STATIC = new Set([
   "/",
   "/mealie-atelier-cards.js",

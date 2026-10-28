@@ -8,7 +8,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const basic = "Basic " + Buffer.from("atelier:test-pass").toString("base64");
+const basic = "Basic " + Buffer.from("atelier:test-pass-long-enough").toString("base64");
 async function launch(file, env = {}) {
   const child = spawn(process.execPath, [join(ROOT, file)], {
     env: { ...process.env, ...env },
@@ -59,7 +59,7 @@ test("HTTP two devices: sync, idempotency, conflicts, offline app assets and tim
       MEALIE_URL: `http://127.0.0.1:${mock.port}`,
       MEALIE_API_TOKEN: "LOCAL_TEST_TOKEN",
       ATELIER_USERNAME: "atelier",
-      ATELIER_PASSWORD: "test-pass",
+      ATELIER_PASSWORD: "test-pass-long-enough",
       ATELIER_DATA_DIR: dir,
       ATELIER_HA_URL: `http://127.0.0.1:${mock.port}`,
       ATELIER_HA_TOKEN: "test-token",

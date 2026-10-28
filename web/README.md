@@ -8,31 +8,68 @@ Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **wit
 
 ```bash
 cp .env.example .env
-# Edit MEALIE_URL, MEALIE_API_TOKEN and a long ATELIER_PASSWORD in .env
+# Edit MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD (at least 12 characters) in .env
 docker compose up -d --build
 ```
+
+Open `http://127.0.0.1:3008` on the Docker host. Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (`/api/health`, authenticated with your configured credentials), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
 
 Optional **read-only** kiosk mode: add `ATELIER_READ_ONLY=true` to `.env` and restart. The server will reject all mutation commands, not just hide buttons.
 
 Experimental ingredient replacement is disabled by default. Only with a Mealie backup and explicit `ATELIER_EXPERIMENTAL_INGREDIENTS=true` can you enable it; existing food/unit/quantity associations are still protected.
 
-The included `compose.yaml` binds the application to `127.0.0.1:3008` on the host and should not be published on public interfaces. Open `http://127.0.0.1:3008` from the Docker host. To use from a different device, put a HTTPS reverse proxy with modern authentication in front, or use a trusted private network (e.g. Tailscale). **Do not expose the container directly to the Internet. Basic auth over HTTP is insecure on untrusted networks.**
+The included `compose.yaml` binds the application to `127.0.0.1` on the host and should not be published on public interfaces. To use from a different device, put a HTTPS reverse proxy with modern authentication in front, or use a trusted private network (e.g. Tailscale). **Do not expose the container directly to the Internet. Basic auth over HTTP is insecure on untrusted networks.**
 
 ## Node quick start
 
 ```bash
 # Node.js 22 or later
 cp .env.example .env
-# Load MEALIE_URL, MEALIE_API_TOKEN, ATELIER_USERNAME, ATELIER_PASSWORD, PORT into env
-node server.mjs
+# Edit MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD in .env
+npm start
 ```
 
-The server will refuse to start without the required environment variables. `.env` itself is read by Docker Compose; for direct Node use you must source or otherwise export it.
+`npm start` runs `node --env-file=.env server.mjs`, so `.env` is loaded for you (default port 3000). The server refuses to start without the required variables or with a password shorter than 12 characters.
+
+## Configuration
+
+All settings are environment variables (see `.env.example`).
+
+| Variable | Default | Required | Purpose |
+| --- | --- | --- | --- |
+| `MEALIE_URL` | none | yes | Mealie server URL (http or https, no credentials or query). |
+| `MEALIE_API_TOKEN` | none | yes | Mealie API token; use a dedicated least-privilege token. |
+| `ATELIER_PASSWORD` | none | yes | Basic auth password, at least 12 characters. |
+| `ATELIER_USERNAME` | `atelier` | no | Basic auth user name. |
+| `PORT` | `3000` | no | Listen port. Compose forces `3000`; use `ATELIER_HOST_PORT` (default `3008`) for the published port. |
+| `HOST` | `0.0.0.0` | no | Listen address. |
+| `ATELIER_READ_ONLY` | `false` | no | `1`, `true` or `yes` rejects all writes on the server. |
+| `ATELIER_DATA_DIR` | `./data` | no | Persistent state directory. Compose and the image use `/app/data`. |
+| `ATELIER_EXPERIMENTAL_INGREDIENTS` | `false` | no | Experimental ingredient replacement; back up Mealie first. |
+| `ATELIER_STRUCTURED_EDITS` | `false` | no | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x. |
+| `USDA_FDC_API_KEY` | empty | no | Enables USDA matching in the Nutrition Lab. |
+| `OPENAI_API_KEY` | empty | no | Enables opt-in AI suggestions, substitutes and recipe checks. |
+| `ATELIER_ALARM_CHANNEL` | `both` | no | Timer notification channel: `both`, `push` or `ha`. |
+| `ATELIER_VAPID_PUBLIC_KEY`, `ATELIER_VAPID_PRIVATE_KEY`, `ATELIER_VAPID_SUBJECT` | empty | no | Web Push for timers; all three together, subject is `mailto:` or `https://`. |
+| `ATELIER_HA_URL`, `ATELIER_HA_TOKEN`, `ATELIER_HA_NOTIFY_SERVICE` | empty | no | Home Assistant timer notifications; all three together, service like `notify.mobile_app_phone`. |
+
+Generate the Web Push keys with `npm run vapid` and paste the three printed lines into `.env`. Keep the private key stable, secret and backed up.
+
+## Security
+
+- Every response carries a Content-Security-Policy (same-origin only; the single inline module script of `index.html` is allowed by hash, no remote hosts), a Permissions-Policy, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
+- Failed Basic auth attempts are counted per client address in memory. After 5 failures the address is locked out with HTTP 429 and `Retry-After`, doubling from 1 second up to 15 minutes; a correct sign-in clears the counter and a restart resets all counters. Behind a reverse proxy the proxy address is what the server sees, so all users share one counter.
+- The AI disclaimer and the language of AI answers follow the request language (`Accept-Language`), German or English.
+- The service worker cache name is derived from the `version` in `package.json`, so each release invalidates the old offline shell.
+
+## Third-party hosts
+
+The browser only talks to this server. The server contacts, only when configured and triggered: your Mealie instance (`MEALIE_URL`), `api.nal.usda.gov` (USDA lookups, `USDA_FDC_API_KEY`), `api.openai.com` (AI features, `OPENAI_API_KEY`), your Home Assistant (`ATELIER_HA_URL`) and the Web Push endpoint of each subscribed browser. USDA result links point to `fdc.nal.usda.gov`. The web app does not load recipes or photos from Unsplash or any other third-party host.
 
 ## Tests
 
 ```bash
-node --test test/*.test.mjs
+npm test
 ```
 
 These tests boot a mock Mealie API and test authorization, recipe listing and editing, shopping writes, read-only enforcement, image proxy and path hardening. They are not full compatibility tests against a real Mealie installation.
@@ -67,7 +104,7 @@ Opening the Nutrition Lab fetches recipe data, then lets you confirm each USDA m
 
 A standalone server has **one shared user account**; it does not distinguish family members through logins. If you need per-user recipe journals, use Home Assistant with individual accounts. The child helper view is not an authorization barrier. There is no off-device push notification guarantee for countdown timers. AI quality checks and ingredient substitutes are opt-in and require your private `OPENAI_API_KEY`.
 
-Run the automated tests with `node --test test/*.test.mjs`. They cover private-state persistence, server restart, stale-revision rejection, read-only, protected Mealie proxy endpoints and ingredient checks using fake services. USDA/OpenAI live calls remain unverified.
+Run the automated tests with `npm test`. They cover private-state persistence, server restart, stale-revision rejection, read-only, protected Mealie proxy endpoints and ingredient checks using fake services. USDA/OpenAI live calls remain unverified.
 
 ## Support
 

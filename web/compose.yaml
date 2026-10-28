@@ -3,12 +3,28 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      # Fixed container-side values; they win over .env so the port mapping below always matches.
+      PORT: "3000"
+      HOST: 0.0.0.0
+      ATELIER_DATA_DIR: /app/data
     ports:
-      - "127.0.0.1:3008:3000"
+      - "127.0.0.1:${ATELIER_HOST_PORT:-3008}:3000"
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.mjs"]
+      interval: 30s
+      timeout: 6s
+      start_period: 10s
+      retries: 3
     security_opt:
       - no-new-privileges:true
     read_only: true
+    tmpfs:
+      - /tmp
     cap_drop: [ALL]
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 128
     volumes:
       - atelier_data:/app/data
 volumes:
