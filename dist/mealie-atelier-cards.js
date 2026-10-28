@@ -11442,17 +11442,6 @@ class MealieAtelierCard extends HTMLElement {
   tp(key, count, values) {
     return translatePluralLabel(this._language, key, count, values);
   }
-  /* BEGIN error text (feature C contract 0.1) */
-  _errorText(err) {
-    const stem = String(err?.code || "")
-      .split("_")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join("");
-    const key = `err${stem}`;
-    const mapped = stem ? this.t(key) : key;
-    return mapped !== key ? mapped : err?.message || this.t("error");
-  }
-  /* END error text */
   get _design() {
     return { ...this._config, ...this._local };
   }

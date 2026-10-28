@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -596,6 +596,7 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
   for (const [name, pass] of Object.entries(passwords))
     users.push(`${name}:${roles[name]}:${await hashPassword(pass)}`);
   const legacy = "shared-legacy-password";
+  const dataDir = await mkdtemp(join(tmpdir(), "atelier-accounts-"));
   const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
     env: {
       ...process.env,
@@ -604,6 +605,7 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
       ATELIER_PASSWORD: legacy,
       ATELIER_USERNAME: "atelier",
       ATELIER_USERS: users.join(";"),
+      ATELIER_DATA_DIR: dataDir,
       ATELIER_STRUCTURED_EDITS: "true",
       PORT: "0",
       HOST: "127.0.0.1",
@@ -721,10 +723,16 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
       payload: { slug: "lasagna", name: "Lasagna" },
     });
     assert.equal(adminEdit.status, 200);
+    const history = await call("ada", passwords.ada, "mealie_atelier/recipe_backups", {
+      slug: "lasagna",
+    });
+    const [newest] = (await history.json()).backups;
+    assert.equal(newest.user_name, "ada", "the backup names the signed-in person");
     const wrong = await call("ada", "wrong-account-passphrase", "mealie_atelier/status");
     assert.equal(wrong.status, 401);
   } finally {
     child.kill("SIGTERM");
     remote.server.close();
+    await rm(dataDir, { recursive: true, force: true });
   }
 });

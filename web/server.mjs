@@ -14,6 +14,8 @@ import {
 import { sniffImage, limitedBody } from "./photo-upload.mjs";
 // BEGIN feature B: structured recipe editing, backups and uploads
 import { createRecipeEditing } from "./recipe-editing.mjs";
+import { RecipeBackups } from "./recipe-backups.mjs";
+import { UploadSessions } from "./upload-sessions.mjs";
 import { UPLOAD_MAX_BYTES, UPLOAD_CHUNK_BYTES } from "./upload-sessions.mjs";
 // END feature B
 import {
@@ -231,7 +233,7 @@ async function mealieRaw(method, path, { body } = {}) {
   }
 }
 const STRUCTURED_EDITS = process.env.ATELIER_STRUCTURED_EDITS === "true" && !READ_ONLY;
-const editing = createRecipeEditing({
+const editingShared = {
   mealie: (...args) => mealie(...args),
   mealieRaw,
   sign: (recipe) => withImage(recipe),
@@ -239,8 +241,14 @@ const editing = createRecipeEditing({
   dataDir: DATA_DIR,
   readOnly: READ_ONLY,
   structured: STRUCTURED_EDITS,
-  actor: { id: USER, name: USER },
-});
+  sessions: new UploadSessions(),
+  backups: new RecipeBackups({ dir: DATA_DIR }),
+};
+/** The editing service acts as the signed-in person: backups name them, uploads belong to them. */
+function editingFor(req) {
+  const name = req?.atelierUser?.name || USER;
+  return createRecipeEditing({ ...editingShared, actor: { id: name, name } });
+}
 // END feature B
 async function saveIngredientBackup(slug, recipe) {
   const folder = join(DATA_DIR, "ingredient-backups");
@@ -336,7 +344,7 @@ async function addRecipeToShoppingList(listId, recipeId) {
   }
 }
 
-async function mutate(action, payload) {
+async function mutate(action, payload, req) {
   if (READ_ONLY)
     throw Object.assign(new Error("Mealie Atelier is in read-only mode"), { status: 403 });
   if (!payload || typeof payload !== "object" || Array.isArray(payload))
@@ -434,7 +442,7 @@ async function mutate(action, payload) {
           atelierCode: "use_structured_editor",
         });
       if (!Object.keys(changes).length) throw bad("Nothing to save");
-      await editing.snapshotBeforeUpdate(identifier(payload.slug), changes);
+      await editingFor(req).snapshotBeforeUpdate(identifier(payload.slug), changes);
       return mealie("PATCH", `/api/recipes/${identifier(payload.slug)}`, changes);
     }
     case "recipe_import": {
@@ -478,6 +486,7 @@ async function bridge(req) {
   if (refusal) throw denied(refusal);
   const locale = resolveLocale(req.headers["accept-language"], msg.language ?? msg.locale);
   // BEGIN feature B: structured editing, backups and uploads
+  const editing = editingFor(req);
   if (editing.handles(msg.type)) return editing.handle(msg);
   // END feature B
   switch (msg.type) {
@@ -748,7 +757,7 @@ async function bridge(req) {
       return { categories: unwrap(categories), tags: unwrap(tags), cookbooks: unwrap(cookbooks) };
     }
     case "mealie_atelier/mutate":
-      return mutate(msg.action, msg.payload);
+      return mutate(msg.action, msg.payload, req);
     default:
       throw bad("Unknown API command");
   }
