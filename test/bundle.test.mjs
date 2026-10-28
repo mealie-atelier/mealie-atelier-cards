@@ -78,3 +78,14 @@ test("Atelier 0.7 ships motion controls, command palette and reduced-motion supp
   ])
     assert.ok(source.includes(snippet), snippet);
 });
+
+test("the bundle, the web app and the cache-busting query all carry the package version", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const { version } = JSON.parse(await read("../package.json"));
+  assert.match(source, new RegExp(`const VERSION = "${version.replaceAll(".", "\\.")}";`));
+  assert.equal(JSON.parse(await read("../web/package.json")).version, version);
+  const shell = await read("../web/public/index.html");
+  const queries = [...shell.matchAll(/\?v=([0-9.]+)/g)].map((match) => match[1]);
+  assert.ok(queries.length >= 3, "the shell versions its assets");
+  for (const query of queries) assert.equal(query, version);
+});
