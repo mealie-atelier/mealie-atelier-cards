@@ -86,7 +86,7 @@ async function validateCatalog() {
 
 const copy = {
   de: {
-    title: "Mealie Atelier – Das interaktive Küchenatelier",
+    title: "Mealie Atelier: Rezepte-Karten für Mealie und Home Assistant (Demo)",
     description:
       "Entdecke zehn vollständige Rezepte und erlebe, wie Mealie Atelier Suche, Planung, Einkauf und Kochen zu einem ruhigen Küchenflow verbindet.",
     eyebrow: "Zehn Rezepte. Ein kompletter Küchenflow.",
@@ -108,13 +108,35 @@ const copy = {
     photographer: "Foto von",
     unsplash: "Fotos von Unsplash, mit Credits zu den Fotograf:innen.",
     docs: "Dokumentation auf Alles Automatisch",
+    ctaEyebrow: "Gefällt dir die Demo?",
+    ctaTitle: "Hol dir das Mealie Atelier in deine Küche.",
+    ctaCopy:
+      "Die Demo läuft vollständig im Browser und nutzt ausschließlich fiktive Rezepte. Die echten Karten arbeiten mit deinem Mealie und deinem Home Assistant.",
+    ctaInstallTitle: "Installieren",
+    ctaInstallCopy: "Beide Projekte sind Open Source und kostenlos.",
+    ctaCards: "Karten auf GitHub",
+    ctaBridge: "Bridge auf GitHub",
+    ctaDocsTitle: "Dokumentation",
+    ctaDocsCopy: "Schritt für Schritt erklärt, auf Deutsch.",
+    ctaGuide: "Anleitung",
+    ctaSetup: "Einrichtung",
+    ctaSupportTitle: "Unterstützen",
+    ctaSupportCopy: "Mit deiner Unterstützung wächst das Atelier weiter.",
+    ctaMember: "Kanalmitglied werden",
+    ctaKofi: "Ko-fi",
+    footerGithub: "GitHub",
+    footerGuide: "Anleitung",
+    footerYoutube: "YouTube",
+    footerKofi: "Ko-fi",
+    appDescription:
+      "Interaktive Rezept-, Planungs- und Einkaufskarten für Mealie und Home Assistant.",
     backToDemo: "Interaktive Demo öffnen",
     recipeLabel: "Rezept",
     language: "Sprache wählen",
     notFound: "Rezept nicht gefunden",
   },
   en: {
-    title: "Mealie Atelier – The interactive kitchen studio",
+    title: "Mealie Atelier: Recipe cards for Mealie and Home Assistant (demo)",
     description:
       "Explore ten complete recipes and see how Mealie Atelier brings search, planning, shopping and cooking into one calm kitchen flow.",
     eyebrow: "Ten recipes. One complete kitchen flow.",
@@ -136,12 +158,95 @@ const copy = {
     photographer: "Photo by",
     unsplash: "Photography by Unsplash contributors, with credit to each photographer.",
     docs: "Mealie Atelier documentation",
+    ctaEyebrow: "Like the demo?",
+    ctaTitle: "Bring Mealie Atelier into your kitchen.",
+    ctaCopy:
+      "The demo runs entirely in your browser and uses fictional recipes only. The real cards work with your own Mealie and Home Assistant.",
+    ctaInstallTitle: "Install",
+    ctaInstallCopy: "Both projects are open source and free.",
+    ctaCards: "Cards on GitHub",
+    ctaBridge: "Bridge on GitHub",
+    ctaDocsTitle: "Documentation",
+    ctaDocsCopy: "Step by step, currently in German only.",
+    ctaGuide: "Guide (German)",
+    ctaSetup: "Setup guide (German)",
+    ctaSupportTitle: "Support",
+    ctaSupportCopy: "Your support keeps the Atelier growing.",
+    ctaMember: "Become a channel member",
+    ctaKofi: "Ko-fi",
+    footerGithub: "GitHub",
+    footerGuide: "Guide (German)",
+    footerYoutube: "YouTube",
+    footerKofi: "Ko-fi",
+    appDescription:
+      "Interactive recipe, planning and shopping cards for Mealie and Home Assistant.",
     backToDemo: "Open the interactive demo",
     recipeLabel: "Recipe",
     language: "Choose language",
     notFound: "Recipe not found",
   },
 };
+
+const links = {
+  cards: "https://github.com/mealie-atelier/mealie-atelier-cards",
+  bridge: "https://github.com/mealie-atelier/mealie-atelier-bridge",
+  guide: "https://alles-automatisch.de/lernen/mealie-atelier",
+  setup: "https://alles-automatisch.de/lernen/mealie-atelier-einrichten",
+  youtube: "https://www.youtube.com/@alles-automatisch/join",
+  kofi: "https://ko-fi.com/allesautomatisch",
+};
+
+function externalLink(href, label, className = "") {
+  const attribute = className ? ` class="${className}"` : "";
+  return `<a${attribute} href="${escapeHtml(href)}" rel="noopener">${escapeHtml(label)}</a>`;
+}
+
+function renderFooterLinks(locale) {
+  const words = copy[locale];
+  return `<nav class="demo-footer-links" aria-label="Links">${[
+    externalLink(links.cards, words.footerGithub),
+    externalLink(links.guide, words.footerGuide),
+    externalLink(links.youtube, words.footerYoutube),
+    externalLink(links.kofi, words.footerKofi),
+  ].join("")}</nav>`;
+}
+
+function renderCtaSection(locale) {
+  const words = copy[locale];
+  const group = (title, text, buttons) =>
+    `<div class="demo-cta-group"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p><div class="demo-cta-actions">${buttons}</div></div>`;
+  return `<section class="demo-cta" aria-labelledby="demo-cta-title"><div class="demo-cta-intro"><p class="demo-eyebrow">${escapeHtml(words.ctaEyebrow)}</p><h2 id="demo-cta-title">${escapeHtml(words.ctaTitle)}</h2><p>${escapeHtml(words.ctaCopy)}</p></div><div class="demo-cta-groups">${group(
+    words.ctaInstallTitle,
+    words.ctaInstallCopy,
+    externalLink(links.cards, words.ctaCards, "demo-button demo-button-primary") +
+      externalLink(links.bridge, words.ctaBridge, "demo-button"),
+  )}${group(
+    words.ctaDocsTitle,
+    words.ctaDocsCopy,
+    externalLink(links.guide, words.ctaGuide, "demo-button") +
+      externalLink(links.setup, words.ctaSetup, "demo-button"),
+  )}${group(
+    words.ctaSupportTitle,
+    words.ctaSupportCopy,
+    externalLink(links.youtube, words.ctaMember, "demo-button") +
+      externalLink(links.kofi, words.ctaKofi, "demo-button"),
+  )}</div></section>`;
+}
+
+function applicationJsonLd(locale, pageUrl) {
+  return safeJson({
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Mealie Atelier",
+    description: copy[locale].appDescription,
+    applicationCategory: "LifestyleApplication",
+    operatingSystem: "Home Assistant, Web",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+    url: pageUrl || undefined,
+    inLanguage: locale,
+    author: { "@type": "Person", name: "Daniel Boberg", url: "https://alles-automatisch.de" },
+  });
+}
 
 function escapeHtml(value) {
   return String(value).replace(
@@ -294,10 +399,21 @@ function renderIndexPage(locale) {
     __DIRECTORY_COPY__: words.directoryCopy,
     __SEO_RECIPE_DIRECTORY__: renderRecipeDirectory(locale),
     __UNSPLASH_COPY__: words.unsplash,
-    __DOCS_LINK__: words.docs,
     __DEMO_HOME__: pageUrl || "../",
     __JSON_LD__: jsonLd,
+    __APP_JSON_LD__: applicationJsonLd(locale, pageUrl),
+    __OG_URL_META__: pageUrl ? `<meta property="og:url" content="${escapeHtml(pageUrl)}" />` : "",
+    __CTA_SECTION__: renderCtaSection(locale),
+    __FOOTER_LINKS__: renderFooterLinks(locale),
   };
+  const rawTokens = new Set([
+    "__SEO_RECIPE_DIRECTORY__",
+    "__JSON_LD__",
+    "__APP_JSON_LD__",
+    "__OG_URL_META__",
+    "__CTA_SECTION__",
+    "__FOOTER_LINKS__",
+  ]);
   let html = replaceRequired(template, /<html lang="de">/, `<html lang="${locale}">`);
   html = html.replaceAll("__FAVICON__", `../assets/${faviconAsset}`);
   html = replaceRequired(html, /href="\.\/live-demo\.css"/, 'href="../assets/live-demo.css"');
@@ -323,11 +439,8 @@ function renderIndexPage(locale) {
     `const demoLanguage = "${locale}";`,
   );
   for (const [token, value] of Object.entries(replacements)) {
-    if (token === "__SEO_RECIPE_DIRECTORY__" || token === "__JSON_LD__") continue;
-    html = html.replaceAll(token, escapeHtml(value));
+    html = html.replaceAll(token, () => (rawTokens.has(token) ? value : escapeHtml(value)));
   }
-  html = html.replaceAll("__SEO_RECIPE_DIRECTORY__", replacements.__SEO_RECIPE_DIRECTORY__);
-  html = html.replaceAll("__JSON_LD__", jsonLd);
   if (!pageUrl) html = html.replace(/\s*<link rel="canonical" href=""\s*\/?>/, "");
   html = html.replaceAll('aria-current="page"', "");
   html = html.replace(`data-language="${locale}"`, `data-language="${locale}" aria-current="page"`);
@@ -366,7 +479,7 @@ function renderRecipePage(locale, recipe) {
     ...recipeStructuredData(recipe, locale, pageUrl, "../../../"),
   });
   const metricLabel = `${recipe.prepMinutes} ${words.minutes} prep · ${recipe.cookMinutes} ${words.minutes} cooking · ${recipe.servings} ${words.servings}`;
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(recipe.description[locale])}"><meta name="theme-color" content="#f4f1eb"><meta property="og:type" content="article"><meta property="og:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta property="og:description" content="${escapeHtml(recipe.description[locale])}"><meta property="og:image" content="${escapeHtml(photoUrl(recipe, "../../../"))}"><link rel="icon" type="image/png" href="../../../assets/${faviconAsset}">${canonical}<link rel="alternate" hreflang="de" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="en" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("en", recipe)}` : counterpartLocale === "en" ? counterpartUrl : currentDemoUrl)}"><link rel="stylesheet" href="../../../assets/live-demo.css"><title>${escapeHtml(recipe.title[locale])} · Mealie Atelier</title><script type="application/ld+json">${structured}</script></head><body class="seo-recipe-body"><main class="seo-recipe-page"><header class="demo-header"><a class="demo-brand" href="${escapeHtml(currentDemoUrl)}"><span class="demo-brand-mark" aria-hidden="true">M</span><span>Mealie Atelier</span></a><a class="seo-back-link" href="${escapeHtml(currentDemoUrl)}">${words.backToDemo}</a></header><article><p class="demo-eyebrow">${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="seo-recipe-description">${escapeHtml(recipe.description[locale])}</p><p class="seo-recipe-meta">${escapeHtml(metricLabel)}</p>${image}<p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" rel="noopener noreferrer">Unsplash</a></p><section><h2>${words.recipeIngredients}</h2><p>${recipe.servings} ${words.servings}</p><ul class="seo-ingredient-list">${ingredients}</ul></section><section><h2>${words.recipeSteps}</h2><ol class="seo-instruction-list">${steps}</ol></section><p><a class="seo-back-link" href="${escapeHtml(counterpartUrl)}">${counterpartLocale.toUpperCase()}</a></p></article><footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/">Daniel</a></span><a href="https://alles-automatisch.de/">${words.docs}</a></footer></main></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(recipe.description[locale])}"><meta name="theme-color" content="#f4f1eb"><meta property="og:type" content="article"><meta property="og:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta property="og:description" content="${escapeHtml(recipe.description[locale])}"><meta property="og:image" content="${escapeHtml(photoUrl(recipe, "../../../"))}"><link rel="icon" type="image/png" href="../../../assets/${faviconAsset}">${canonical}<link rel="alternate" hreflang="de" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="en" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("en", recipe)}` : counterpartLocale === "en" ? counterpartUrl : currentDemoUrl)}"><link rel="stylesheet" href="../../../assets/live-demo.css"><title>${escapeHtml(recipe.title[locale])} · Mealie Atelier</title><script type="application/ld+json">${structured}</script></head><body class="seo-recipe-body"><main class="seo-recipe-page"><header class="demo-header"><a class="demo-brand" href="${escapeHtml(currentDemoUrl)}"><span class="demo-brand-mark" aria-hidden="true">M</span><span>Mealie Atelier</span></a><a class="seo-back-link" href="${escapeHtml(currentDemoUrl)}">${words.backToDemo}</a></header><article><p class="demo-eyebrow">${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="seo-recipe-description">${escapeHtml(recipe.description[locale])}</p><p class="seo-recipe-meta">${escapeHtml(metricLabel)}</p>${image}<p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" rel="noopener noreferrer">Unsplash</a></p><section><h2>${words.recipeIngredients}</h2><p>${recipe.servings} ${words.servings}</p><ul class="seo-ingredient-list">${ingredients}</ul></section><section><h2>${words.recipeSteps}</h2><ol class="seo-instruction-list">${steps}</ol></section><p><a class="seo-back-link" href="${escapeHtml(counterpartUrl)}">${counterpartLocale.toUpperCase()}</a></p></article><footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/">Daniel</a></span>${renderFooterLinks(locale)}</footer></main></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {
@@ -376,7 +489,7 @@ function localizedRecipePage(locale, slug) {
 }
 
 function rootIndex() {
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><link rel="icon" type="image/png" href="assets/${faviconAsset}"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}"><link rel="icon" type="image/png" href="assets/${faviconAsset}"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
 }
 
 await validateCatalog();

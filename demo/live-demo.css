@@ -315,6 +315,101 @@ mealie-atelier-card {
   font-weight: 700;
 }
 
+.demo-cta {
+  margin: 28px 0 0;
+  padding: clamp(22px, 4vw, 42px);
+  border: 1px solid var(--demo-line);
+  border-radius: 26px;
+  background: var(--demo-panel);
+}
+
+.demo-cta-intro {
+  max-width: 68ch;
+}
+
+.demo-cta-intro h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+}
+
+.demo-cta-intro > p:last-child {
+  margin: 14px 0 0;
+  color: var(--demo-muted);
+  line-height: 1.65;
+}
+
+.demo-cta-groups {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.demo-cta-group {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid var(--demo-line);
+  border-radius: 18px;
+  background: var(--demo-paper);
+}
+
+.demo-cta-group h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.demo-cta-group p {
+  margin: 6px 0 16px;
+  color: var(--demo-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.demo-cta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.demo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--demo-brand);
+  border-radius: 12px;
+  color: var(--demo-brand);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.demo-button:hover {
+  background: rgba(117, 70, 93, 0.08);
+}
+
+.demo-button-primary {
+  background: var(--demo-brand);
+  color: #fffdfa;
+}
+
+.demo-button-primary:hover {
+  background: #5f384c;
+}
+
+.demo-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
 .seo-recipe-body {
   padding: 0 24px 48px;
 }
@@ -426,7 +521,8 @@ mealie-atelier-card {
     max-width: none;
   }
 
-  .demo-recipe-list {
+  .demo-recipe-list,
+  .demo-cta-groups {
     grid-template-columns: 1fr;
   }
 }
