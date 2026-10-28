@@ -12,6 +12,10 @@ import {
   verifyIngredientWrite,
 } from "./recipe-safety.mjs";
 import { sniffImage, limitedBody } from "./photo-upload.mjs";
+// BEGIN feature B: structured recipe editing, backups and uploads
+import { createRecipeEditing } from "./recipe-editing.mjs";
+import { UPLOAD_MAX_BYTES, UPLOAD_CHUNK_BYTES } from "./upload-sessions.mjs";
+// END feature B
 import {
   prepare as prepareNutrition,
   search as searchNutrition,
@@ -59,9 +63,6 @@ const READ_ONLY = ["1", "true", "yes"].includes(
 );
 const USDA_KEY = process.env.USDA_FDC_API_KEY || "";
 const AI_KEY = process.env.OPENAI_API_KEY || "";
-const EXPERIMENTAL_INGREDIENTS = ["1", "true", "yes"].includes(
-  String(process.env.ATELIER_EXPERIMENTAL_INGREDIENTS || "").toLowerCase(),
-);
 const VALID_ID = /^[a-zA-Z0-9_-]{1,150}$/;
 const VALID_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const DATA_DIR = resolve(process.env.ATELIER_DATA_DIR || join(ROOT, "data"));
@@ -207,6 +208,40 @@ async function mealie(method, path, body, query) {
     clearTimeout(timeout);
   }
 }
+// BEGIN feature B: binary and multipart Mealie calls, editing service
+async function mealieRaw(method, path, { body } = {}) {
+  if (!path.startsWith("/api/") || path.includes("..")) throw bad("Unsupported path");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(MEALIE_URL + path, {
+      method,
+      headers: { Authorization: `Bearer ${MEALIE_API_TOKEN}`, Accept: "application/json" },
+      body,
+      redirect: "manual",
+      signal: controller.signal,
+    });
+    return {
+      ok: response.ok,
+      status: response.status,
+      body: Buffer.from(await response.arrayBuffer()),
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+const STRUCTURED_EDITS = process.env.ATELIER_STRUCTURED_EDITS === "true" && !READ_ONLY;
+const editing = createRecipeEditing({
+  mealie: (...args) => mealie(...args),
+  mealieRaw,
+  sign: (recipe) => withImage(recipe),
+  identifier,
+  dataDir: DATA_DIR,
+  readOnly: READ_ONLY,
+  structured: STRUCTURED_EDITS,
+  actor: { id: USER, name: USER },
+});
+// END feature B
 async function saveIngredientBackup(slug, recipe) {
   const folder = join(DATA_DIR, "ingredient-backups");
   await mkdir(folder, { recursive: true, mode: 0o700 });
@@ -393,31 +428,13 @@ async function mutate(action, payload) {
           };
         });
       }
-      if ("ingredients" in payload) {
-        if (!EXPERIMENTAL_INGREDIENTS)
-          throw Object.assign(new Error("Ingredient editing is experimental and disabled"), {
-            status: 403,
-          });
-        if (!Array.isArray(payload.ingredients) || payload.ingredients.length > 100)
-          throw bad("Invalid ingredients");
-        const previous = await mealie("GET", `/api/recipes/${identifier(payload.slug)}`);
-        const linked = (previous.recipeIngredient || []).some(
-          (row) =>
-            row.food ||
-            row.unit ||
-            row.referencedRecipe ||
-            (row.substitutions || []).length ||
-            (row.quantity != null && row.quantity !== 0),
-        );
-        if (linked)
-          throw bad("Structured ingredients are protected. Edit these in Mealie directly");
-        changes.recipeIngredient = payload.ingredients.map((line) => ({
-          originalText: text(line, 1000),
-          display: text(line, 1000),
-          referenceId: randomUUID(),
-        }));
-      }
+      if ("ingredients" in payload)
+        throw Object.assign(new Error("Use the structured ingredient editor"), {
+          status: 400,
+          atelierCode: "use_structured_editor",
+        });
       if (!Object.keys(changes).length) throw bad("Nothing to save");
+      await editing.snapshotBeforeUpdate(identifier(payload.slug), changes);
       return mealie("PATCH", `/api/recipes/${identifier(payload.slug)}`, changes);
     }
     case "recipe_import": {
@@ -441,7 +458,7 @@ async function bridge(req) {
   let size = 0;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > 32000) throw Object.assign(new Error("Payload too large"), { status: 413 });
+    if (size > 400000) throw Object.assign(new Error("Payload too large"), { status: 413 });
     chunks.push(chunk);
   }
   let msg;
@@ -451,12 +468,18 @@ async function bridge(req) {
     throw bad("Invalid JSON");
   }
   if (!msg || typeof msg.type !== "string") throw bad("Missing type");
+  // Only upload chunks may be large; every other command stays within 32,000 bytes.
+  if (size > 32000 && msg.type !== "mealie_atelier/upload_chunk")
+    throw Object.assign(new Error("Payload too large"), { status: 413 });
   const level = commandLevel(msg);
   if (!level)
     throw bad(msg.type === "mealie_atelier/mutate" ? "Unknown operation" : "Unknown API command");
   const refusal = denial(req.atelierUser?.role, level, READ_ONLY);
   if (refusal) throw denied(refusal);
   const locale = resolveLocale(req.headers["accept-language"], msg.language ?? msg.locale);
+  // BEGIN feature B: structured editing, backups and uploads
+  if (editing.handles(msg.type)) return editing.handle(msg);
+  // END feature B
   switch (msg.type) {
     case "mealie_atelier/status": {
       const permissions = rolePermissions(req.atelierUser?.role, READ_ONLY);
@@ -475,7 +498,7 @@ async function bridge(req) {
               uploads: true,
               recipe_filters: true,
             },
-            limits: { upload_max_bytes: 10485760, upload_chunk_bytes: 262144 },
+            limits: { upload_max_bytes: UPLOAD_MAX_BYTES, upload_chunk_bytes: UPLOAD_CHUNK_BYTES },
             can_write: permissions.can_write,
             can_manage: permissions.can_admin,
             can_edit_ingredients: permissions.can_admin && structured,
@@ -880,16 +903,15 @@ const server = createServer(async (req, res) => {
   } catch (err) {
     const code = err.status >= 400 && err.status <= 599 ? err.status : 502;
     console.error("Request failed:", String(err.message || err).slice(0, 160));
+    const ownCode = typeof err.code === "string" && /^[a-z_]{1,40}$/.test(err.code) ? err.code : "";
+    const fallback = code === 400 ? "invalid_request" : code === 502 ? "mealie_error" : "";
+    const errorCode = err.atelierCode || ownCode || fallback;
     reply(res, code, {
       error:
-        code === 502
+        code === 502 && !err.atelierCode
           ? "Could not reach Mealie"
           : String(err.message || "Invalid request").slice(0, 160),
-      ...(typeof err.code === "string" && /^[a-z_]{1,40}$/.test(err.code)
-        ? { code: err.code }
-        : code === 502
-          ? { code: "mealie_error" }
-          : {}),
+      ...(errorCode ? { code: errorCode } : {}),
     });
   }
 });

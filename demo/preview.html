@@ -473,6 +473,41 @@
             return meals.filter((m) => m.date >= req.start && m.date <= req.end);
           if (type === "mealie_atelier/shopping")
             return { lists: shoppingLists, items: shoppingItems };
+          if (type === "mealie_atelier/ingredients_get") {
+            const recipe = details.find((r) => r.slug === req.slug) || details[0];
+            return {
+              slug: recipe.slug,
+              recipe_id: recipe.id,
+              expected_hash: "0".repeat(64),
+              servings: recipe.recipeServings || 2,
+              rows: recipe.recipeIngredient.map((row, index) => ({
+                reference_id: "demo-row-" + index,
+                quantity: null,
+                unit: null,
+                food: null,
+                note: row.display,
+                original_text: row.display,
+                display: row.display,
+                title: "",
+              })),
+            };
+          }
+          if (type === "mealie_atelier/foods" || type === "mealie_atelier/units")
+            return { items: [], page: 1, total: 0 };
+          if (type === "mealie_atelier/recipe_backups") return { backups: [] };
+          if (
+            [
+              "ingredients_save",
+              "recipe_restore",
+              "upload_begin",
+              "recipe_image_delete",
+              "food_create",
+              "unit_create",
+            ].some((name) => type === "mealie_atelier/" + name)
+          )
+            throw Error(
+              "Demo: Dieser Vorgang wird nur mit einer echten Mealie-Installation gespeichert.",
+            );
           if (type === "mealie_atelier/mutate") {
             if (req.action === "shopping_toggle") {
               shoppingItems = shoppingItems.map((i) =>

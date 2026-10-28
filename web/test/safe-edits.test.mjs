@@ -8,6 +8,13 @@ import {
   verifyIngredientWrite,
 } from "../recipe-safety.mjs";
 import { sniffImage, limitedBody } from "../photo-upload.mjs";
+import { UploadSessions, magicMatches } from "../upload-sessions.mjs";
+import { RecipeBackups, BACKUPS_PER_RECIPE, IMAGE_BACKUPS_PER_RECIPE } from "../recipe-backups.mjs";
+import { appendStepImage, stripStepImage } from "../recipe-editing.mjs";
+import { createHash } from "node:crypto";
+import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const ref = randomUUID();
 const existing = {
@@ -117,4 +124,102 @@ test("photo reads reject oversized and tiny bodies", async () => {
     yield Buffer.alloc(110);
   }
   assert.equal((await limitedBody(valid())).length, 110);
+});
+
+const pngBytes = Buffer.concat([
+  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  Buffer.alloc(200),
+]);
+const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+test("magic bytes are checked per declared type", () => {
+  assert.equal(magicMatches(pngBytes, "image/png"), true);
+  assert.equal(magicMatches(pngBytes, "image/jpeg"), false);
+  assert.equal(magicMatches(Buffer.from("%PDF-1.7 and more bytes"), "image/webp"), false);
+  assert.equal(magicMatches(Buffer.from("RIFF\0\0\0\0WEBPVP8 "), "image/webp"), true);
+});
+
+test("upload sessions expire after the TTL and are bound to their user", () => {
+  let now = 1_000;
+  const sessions = new UploadSessions({ now: () => now });
+  const begun = sessions.begin("alice", {
+    purpose: "cover",
+    size: pngBytes.length,
+    mime: "image/png",
+    sha256: digest(pngBytes),
+  });
+  assert.throws(() => sessions.get("bob", begun.upload_id), { atelierCode: "upload_expired" });
+  assert.deepEqual(sessions.chunk("alice", begun.upload_id, 0, pngBytes.toString("base64")), {
+    received: 1,
+    complete: true,
+  });
+  assert.throws(() => sessions.peek("alice", begun.upload_id, "step"), {
+    atelierCode: "upload_invalid",
+  });
+  assert.equal(sessions.peek("alice", begun.upload_id, "cover").ext, "png");
+  now += 601_000;
+  assert.throws(() => sessions.peek("alice", begun.upload_id, "cover"), {
+    atelierCode: "upload_expired",
+  });
+});
+
+test("an oversized chunk and surplus data drop the session", () => {
+  const sessions = new UploadSessions();
+  const begin = () =>
+    sessions.begin("alice", {
+      purpose: "cover",
+      size: 300_000,
+      mime: "image/png",
+      sha256: "a".repeat(64),
+    }).upload_id;
+  const id = begin();
+  assert.throws(() => sessions.chunk("alice", id, 0, Buffer.alloc(262145).toString("base64")), {
+    atelierCode: "upload_invalid",
+  });
+  assert.throws(() => sessions.get("alice", id), { atelierCode: "upload_expired" });
+});
+
+test("recipe backups keep the newest ten snapshots and three cover files, and fail closed", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-backups-"));
+  try {
+    const store = new RecipeBackups({ dir });
+    const actor = { id: "u", name: "Kitchen" };
+    const recipe = { id: "r1", slug: "soup", name: "Soup", recipeIngredient: [] };
+    for (let i = 0; i < BACKUPS_PER_RECIPE + 1; i++)
+      await store.save({
+        recipe,
+        kind: "ingredients",
+        summary: `save ${i}`,
+        actor,
+        image: i < 5 ? Buffer.from("webp") : null,
+      });
+    const listed = await store.list("r1");
+    assert.equal(listed.length, BACKUPS_PER_RECIPE);
+    assert.equal(listed[0].summary, "save 10");
+    const files = await readdir(join(dir, "recipe-backups", "r1"));
+    assert.equal(files.filter((n) => n.endsWith(".webp")).length, IMAGE_BACKUPS_PER_RECIPE);
+    const huge = { ...recipe, description: "x".repeat(600 * 1024) };
+    await assert.rejects(() => store.save({ recipe: huge, kind: "basics", summary: "x", actor }), {
+      atelierCode: "backup_failed",
+    });
+    await assert.rejects(
+      () => store.save({ recipe: { id: "../up" }, kind: "basics", summary: "x", actor }),
+      {
+        atelierCode: "backup_failed",
+      },
+    );
+    await assert.rejects(() => store.get("r1", "not-a-uuid"), { atelierCode: "backup_not_found" });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("step photo tags are appended and stripped without touching other text", () => {
+  const withTag = appendStepImage("Boil\n\nSalt the water", "r1", "pic-1.png");
+  assert.equal(
+    withTag,
+    'Boil\n\nSalt the water\n\n<img src="/api/media/recipes/r1/assets/pic-1.png" alt="" />',
+  );
+  assert.equal(stripStepImage(withTag, "r1", "pic-1.png"), "Boil\n\nSalt the water");
+  assert.equal(stripStepImage(withTag, "r1", "pic-2.png"), withTag);
 });

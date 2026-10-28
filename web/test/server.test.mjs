@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import { mkdtemp } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hashPassword } from "../security.mjs";
@@ -170,7 +172,7 @@ await test("private web companion responds to real-shaped Mealie calls", async (
       MEALIE_API_TOKEN: "DEMO_MOCK_TOKEN",
       ATELIER_PASSWORD: password,
       ATELIER_USERNAME: "atelier",
-      ATELIER_EXPERIMENTAL_INGREDIENTS: "true",
+      ATELIER_DATA_DIR: await mkdtemp(join(tmpdir(), "atelier-server-")),
       PORT: "0",
       HOST: "127.0.0.1",
     },
@@ -286,7 +288,6 @@ await test("private web companion responds to real-shaped Mealie calls", async (
         description: "Fresh",
         servings: 4,
         instructions: [{ id: "step-1", text: "Heat oven" }, "Bake"],
-        ingredients: ["200 g Pasta", "2 tomatoes"],
       },
     });
     assert.equal(recipeUpdated.status, 200);
@@ -300,15 +301,13 @@ await test("private web companion responds to real-shaped Mealie calls", async (
       { text: "Bake" },
     ]);
     assert.equal(remote.patch().recipeServings, 4);
-    assert.deepEqual(
-      remote.patch().recipeIngredient.map(({ referenceId, ...row }) => row),
-      [
-        { originalText: "200 g Pasta", display: "200 g Pasta" },
-        { originalText: "2 tomatoes", display: "2 tomatoes" },
-      ],
-    );
-    for (const ingredient of remote.patch().recipeIngredient)
-      assert.match(ingredient.referenceId, /^[0-9a-f-]{36}$/);
+    assert.equal(remote.patch().recipeIngredient, undefined);
+    const plainText = await bridge("mealie_atelier/mutate", {
+      action: "recipe_update",
+      payload: { slug: "lasagna", ingredients: ["200 g Pasta"] },
+    });
+    assert.equal(plainText.status, 400);
+    assert.equal((await plainText.json()).code, "use_structured_editor");
     const invalid = await bridge("mealie_atelier/recipe", { slug: "../../notallowed" });
     assert.equal(invalid.status, 400);
     const invalidDate = await bridge("mealie_atelier/mealplan", {
@@ -316,11 +315,6 @@ await test("private web companion responds to real-shaped Mealie calls", async (
       end: "2026-03-02",
     });
     assert.equal(invalidDate.status, 400);
-    const invalidIngredients = await bridge("mealie_atelier/mutate", {
-      action: "recipe_update",
-      payload: { slug: "lasagna", ingredients: ["   "] },
-    });
-    assert.equal(invalidIngredients.status, 400);
     const invalidIdentifier = await bridge("mealie_atelier/mutate", {
       action: "shopping_from_recipe",
       payload: { list_id: "../", recipe_id: "recipe-1" },

@@ -16,7 +16,9 @@ Open `http://127.0.0.1:3008` on the Docker host. Compose pins `PORT=3000` inside
 
 Optional **read-only** kiosk mode: add `ATELIER_READ_ONLY=true` to `.env` and restart. The server will reject all mutation commands, not just hide buttons.
 
-Experimental ingredient replacement is disabled by default. Only with a Mealie backup and explicit `ATELIER_EXPERIMENTAL_INGREDIENTS=true` can you enable it; existing food/unit/quantity associations are still protected.
+The structured recipe editor (linked foods and units, quantities, servings preview) is disabled by default. Enable it with `ATELIER_STRUCTURED_EDITS=true`. A backup is saved to `ATELIER_DATA_DIR/recipe-backups/` before every change (newest 10 per recipe, newest 3 cover photos), and the version history in the editor can restore any of them. Cover and step photos are uploaded in chunks (JPEG, PNG or WebP, up to 10 MiB) and checked by file signature on the server.
+
+Deprecated, kept as aliases for 0.10.x: the commands `ingredient_preview`, `ingredient_save`, `ingredient_catalog` and the route `/api/recipe-image/*`. Use the structured editor commands instead. `ATELIER_EXPERIMENTAL_INGREDIENTS` no longer has an effect; plain-text ingredient replacement was removed.
 
 The included `compose.yaml` binds the application to `127.0.0.1` on the host and should not be published on public interfaces. To use from a different device, put a HTTPS reverse proxy with modern authentication in front, or use a trusted private network (e.g. Tailscale). **Do not expose the container directly to the Internet. Basic auth over HTTP is insecure on untrusted networks.**
 
@@ -49,7 +51,6 @@ All settings are environment variables (see `.env.example`).
 | `ATELIER_TRUSTED_PROXIES`                                                        | none      | no       | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`. |
 | `ATELIER_READ_ONLY`                                                              | `false`   | no       | `1`, `true` or `yes` rejects all writes on the server.                                                                                                           |
 | `ATELIER_DATA_DIR`                                                               | `./data`  | no       | Persistent state directory. Compose and the image use `/app/data`.                                                                                               |
-| `ATELIER_EXPERIMENTAL_INGREDIENTS`                                               | `false`   | no       | Experimental ingredient replacement; back up Mealie first.                                                                                                       |
 | `ATELIER_STRUCTURED_EDITS`                                                       | `false`   | no       | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x.                                                                                |
 | `USDA_FDC_API_KEY`                                                               | empty     | no       | Enables USDA matching in the Nutrition Lab.                                                                                                                      |
 | `OPENAI_API_KEY`                                                                 | empty     | no       | Enables opt-in AI suggestions, substitutes and recipe checks.                                                                                                    |

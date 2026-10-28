@@ -194,6 +194,10 @@ class MealieAtelierCard extends HTMLElement {
     this._boundClick = this._handleClick.bind(this);
     this._boundSubmit = this._handleSubmit.bind(this);
     this._boundInput = this._handleInput.bind(this);
+    // BEGIN feature B: recipe editor state and events
+    this._ed = null;
+    this._boundEditorFocus = (event) => this._editorFocusEvent(event);
+    // END feature B
     this._boundImageError = (event) => {
       if (event.target?.tagName === "IMG") event.target.remove();
     };
@@ -263,6 +267,10 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("click", this._boundClick);
     this.shadowRoot.addEventListener("submit", this._boundSubmit);
     this.shadowRoot.addEventListener("input", this._boundInput);
+    // BEGIN feature B: recipe editor events
+    this.shadowRoot.addEventListener("change", this._boundEditorFocus);
+    this.shadowRoot.addEventListener("focusout", this._boundEditorFocus);
+    // END feature B
     this.shadowRoot.addEventListener("keydown", this._boundKeyDown);
     document.addEventListener("keydown", this._boundPageKeyDown);
     document.addEventListener("visibilitychange", this._boundVisibility);
@@ -280,6 +288,11 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("click", this._boundClick);
     this.shadowRoot.removeEventListener("submit", this._boundSubmit);
     this.shadowRoot.removeEventListener("input", this._boundInput);
+    // BEGIN feature B: recipe editor events
+    this.shadowRoot.removeEventListener("change", this._boundEditorFocus);
+    this.shadowRoot.removeEventListener("focusout", this._boundEditorFocus);
+    clearTimeout(this._ed?.comboTimer);
+    // END feature B
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
     document.removeEventListener("visibilitychange", this._boundVisibility);
@@ -340,7 +353,9 @@ class MealieAtelierCard extends HTMLElement {
       can_write: granted ? chosen.permissions.can_write === true : chosen?.can_write === true,
       can_admin,
       can_manage: can_admin,
-      can_edit_ingredients: chosen?.can_edit_ingredients === true,
+      can_edit_ingredients:
+        chosen?.can_edit_ingredients === true ||
+        (can_admin && chosen?.features?.structured_ingredients === true),
       features: chosen?.features && typeof chosen.features === "object" ? chosen.features : {},
       limits: chosen?.limits && typeof chosen.limits === "object" ? chosen.limits : {},
     };
@@ -660,9 +675,12 @@ class MealieAtelierCard extends HTMLElement {
     return AtelierUI.metric({ value: number, label, graphic: ico });
   }
   _stepEditRow(value = "", index = 0, id = "") {
-    return `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
+    const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
       <textarea data-step-text maxlength="2000" rows="2" aria-label="${this.t("uiStep")} ${index + 1}" placeholder="${this.t("uiDescribeThisStep")}">${esc(value)}</textarea>
       <div class="step-buttons"><button type="button" data-action="step-up" aria-label="${this.t("uiMoveUp")}" title="${this.t("uiMoveUp")}">↑</button><button type="button" data-action="step-down" aria-label="${this.t("uiMoveDown")}" title="${this.t("uiMoveDown")}">↓</button><button type="button" data-action="step-remove" aria-label="${this.t("uiRemoveStep")}" title="${this.t("uiRemove")}">×</button></div></div>`;
+    // BEGIN feature B: step photo thumbnails inside the step row
+    return row.replace(/<\/div>$/, `${this._editorStepPhotos(id)}</div>`);
+    // END feature B
   }
   _renumberSteps() {
     this.shadowRoot.querySelectorAll("[data-editor-step]").forEach((element, index) => {
@@ -874,6 +892,9 @@ class MealieAtelierCard extends HTMLElement {
     this._render();
   }
   _handleKeyDown(event) {
+    // BEGIN feature B: recipe editor keyboard
+    if (this._editorKeyDown(event)) return;
+    // END feature B
     const target = event.target;
     const editing = target?.matches?.('input,textarea,select,[contenteditable="true"]');
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -1143,6 +1164,12 @@ class MealieAtelierCard extends HTMLElement {
       v = el.dataset.value || "";
     if (action === "backdrop" && event.target !== el) return;
     this._toast = "";
+    // BEGIN feature B: recipe editor actions
+    if (action.startsWith("ed-")) {
+      await this._editorClick(el);
+      return;
+    }
+    // END feature B
     if (action === "nav" && MODES.includes(v)) {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
@@ -1480,6 +1507,9 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "edit-form") {
       if (this._detail) {
         this._modal = "edit";
+        // BEGIN feature B: load structured ingredients and history
+        this._editorOpen();
+        // END feature B
         this._render();
       }
       return;
@@ -1551,6 +1581,9 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   _handleInput(event) {
+    // BEGIN feature B: recipe editor inputs
+    if (this._editorInput(event)) return;
+    // END feature B
     const el = event.target;
     const type = el?.dataset?.input;
     if (el?.hasAttribute("data-nutri-replace") && this._nutrition) {
@@ -1832,11 +1865,8 @@ class MealieAtelierCard extends HTMLElement {
               id: el.closest("[data-editor-step]")?.dataset.stepId || "",
               text: el.value.trim(),
             })).filter((step) => step.text);
-          if (values.replace_ingredients)
-            payload.ingredients = String(values.ingredients || "")
-              .split(/\r?\n/)
-              .map((x) => x.trim())
-              .filter(Boolean);
+          // BEGIN feature B: plain-text ingredients are no longer sent, the structured editor owns them
+          // END feature B
           ok = await this._mutate("recipe_update", payload, "all");
         }
         break;

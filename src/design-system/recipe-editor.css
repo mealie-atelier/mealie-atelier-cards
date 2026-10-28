@@ -1,0 +1,272 @@
+/* Structured recipe editor (feature B): ingredient rows, comboboxes, history and photo uploads.
+   Time values come from the motion tokens; touch targets are at least 44px. */
+.atelier .ed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-3);
+}
+.atelier .ed-card .btn,
+.atelier .ed-step-photos .btn,
+.atelier .ed-confirm .btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+.atelier .ed-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ds-space-3);
+  margin-bottom: var(--ds-space-4);
+}
+.atelier .ed-servings {
+  display: grid;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-font-sm);
+  font-weight: 650;
+}
+.atelier .ed-servings input {
+  width: 120px;
+}
+.atelier .ed-rows {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+.atelier .ed-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  align-items: start;
+  padding: var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-num {
+  display: grid;
+  place-items: center;
+  min-height: var(--ds-control-height);
+  color: var(--ds-muted);
+  font-weight: 700;
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-fields {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.2fr);
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .ed-cell {
+  position: relative;
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  font-weight: 650;
+}
+.atelier .ed-original,
+.atelier .ed-scaled,
+.atelier .ed-error {
+  grid-column: 2 / -1;
+  margin: 0;
+  font-size: var(--ds-font-xs);
+  line-height: 1.5;
+}
+.atelier .ed-original,
+.atelier .ed-scaled span {
+  color: var(--ds-muted);
+}
+.atelier .ed-error {
+  color: #f6b6a4;
+  font-weight: 650;
+}
+.atelier .ed-error[hidden],
+.atelier .ed-scaled[hidden] {
+  display: none;
+}
+.atelier .ed-row-actions {
+  display: flex;
+  gap: var(--ds-space-1);
+}
+.atelier .ed-icon {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: var(--ds-font-lg);
+}
+.atelier .ed-list {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  margin: var(--ds-space-1) 0 0;
+  padding: var(--ds-space-1);
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-panel);
+}
+.atelier .ed-list[hidden] {
+  display: none;
+}
+.atelier .ed-option {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text);
+  font-size: var(--ds-font-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier .ed-option:hover,
+.atelier .ed-option.is-active {
+  background: var(--ds-surface-raised);
+  box-shadow: inset 3px 0 0 var(--ds-brand);
+}
+.atelier .ed-option:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: -2px;
+}
+.atelier .ed-option-note {
+  padding: var(--ds-space-3);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-confirm {
+  margin-top: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-brand);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-confirm p {
+  margin: 0;
+}
+.atelier .ed-live {
+  min-height: 1.4em;
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-cover-frame {
+  width: min(100%, 360px);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .ed-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-2);
+}
+.atelier .ed-thumb {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: 0;
+}
+.atelier .ed-thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--ds-radius-sm);
+}
+.atelier .editor-step .ed-step-photos {
+  grid-column: 2 / -1;
+}
+.atelier .ed-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-3);
+}
+.atelier .ed-progress-track {
+  flex: 1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-progress-bar {
+  display: block;
+  width: var(--ed-progress, 0%);
+  height: 100%;
+  background: var(--ds-brand);
+  transition: width var(--ds-motion-base) var(--ds-motion-ease);
+}
+.atelier .ed-progress-text {
+  min-width: 3.5ch;
+  font-size: var(--ds-font-sm);
+  font-variant-numeric: tabular-nums;
+}
+.atelier .ed-history {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: var(--ds-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.atelier .ed-history-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding: var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+}
+.atelier .ed-history-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-history-copy span,
+.atelier .ed-history-copy small {
+  color: var(--ds-muted);
+}
+.atelier .ed-history-item .ed-confirm {
+  flex-basis: 100%;
+}
+@container atelier-card (max-width: 760px) {
+  .atelier .ed-row {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+  .atelier .ed-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .atelier .ed-row-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+@container atelier-card (max-width: 460px) {
+  .atelier .ed-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atelier .ed-actions > .btn {
+    flex: 1 1 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .ed-progress-bar,
+  .atelier .ed-option {
+    transition-duration: var(--ds-motion-reduced);
+  }
+}

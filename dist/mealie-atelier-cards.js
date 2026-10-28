@@ -104,7 +104,7 @@ const tidy = (s, len = 250) =>
   String(s || "")
     .trim()
     .slice(0, len);
-const LABELS = {"de":{"dashboard":"Übersicht","today":"Heute","discover":"Kochinspo","pantry":"Vorräte","family":"Gemeinsam kochen","cookbook":"Kochbuch","recipes":"Rezepte","mealplan":"Wochenplan","shopping":"Einkaufsliste","manage":"Verwalten","greeting":"Gutes Essen. Jeden Tag.","greetingSub":"Deine Küche, neu gedacht.","eyebrow":"DEIN PERSÖNLICHES KÜCHENSTUDIO","tonight":"Heute auf dem Teller","viewRecipe":"Rezept öffnen","nothing":"Noch nichts geplant","planNow":"Gericht einplanen","collections":"Deine Rezeptsammlung","all":"Alle Rezepte","search":"Rezept suchen …","noRecipes":"Noch keine Rezepte gefunden.","noPlan":"Noch nichts geplant","week":"Die Woche im Blick","list":"Alles für den Einkauf","add":"Hinzufügen","addItem":"Artikel hinzufügen","noShopping":"Deine Einkaufsliste ist leer.","progress":"Erledigt","items":"Artikel","cooking":"Kochmodus","edit":"Bearbeiten","addToPlan":"Einplanen","servings":"Portionen","ingredients":"Zutaten","instructions":"Zubereitung","next":"Weiter","back":"Zurück","done":"Fertig","cookStart":"Kochen starten","create":"Neues Rezept","import":"Von URL importieren","name":"Rezeptname","description":"Beschreibung","save":"Speichern","url":"Rezept-URL","more":"Mehr anzeigen","settings":"Design Studio","language":"Sprache","languageAuto":"Automatisch","languageName":"Deutsch","studioConnectionFailed":"Verbindung zum Atelier fehlgeschlagen","studioSaveFailed":"Speichern fehlgeschlagen","studioAnalysisFailed":"Rezeptanalyse fehlgeschlagen","studioDetailsLoading":"Rezeptdetails werden für die Planung geladen …","studioCatalogLoading":"Rezeptsammlung wird geladen: {loaded} von {total} Rezepten …","studioCatalogLoadingCount":"Rezeptsammlung wird geladen: {loaded} Rezepte …","studioCatalogDetails":"Rezeptdetails: {loaded} von {total} geladen …","studioCatalogLimit":"Für die Analyse werden maximal 600 Rezepte geladen.","studioCatalogTotal":"Die Sammlung enthält {total}.","studioDialogLabel":"MEALIE ATELIER / KÜCHENSTUDIO","studioDialogPromptLabel":"Zutat eingeben","studioDialogPromptPlaceholder":"z. B. Sahne","studioConfirm":"Bestätigen","studioCancel":"Abbrechen","studioClose":"Schließen","studioDiagnosticsKicker":"ATELIER / SYSTEMCHECK","studioDiagnosticsTitle":"Alles im grünen Bereich?","studioDiagnosticsDescription":"Prüft die tatsächliche Verbindung, Leserechte und Einstellungen. Es werden keine Daten verändert oder Zugangsschlüssel angezeigt.","studioDiagnosticsRunning":"Prüfung läuft …","studioDiagnosticsCheck":"Verbindung prüfen","studioDiagnosticsExport":"Atelier-Daten als JSON sichern","studioDiagnosticsEmpty":"Noch nicht geprüft. Starte den Systemcheck, um Fehlermeldungen frühzeitig zu erkennen.","studioDiagnosticsAdmin":"Admin","studioDiagnosticsEdit":"Bearbeitung erlaubt","studioDiagnosticsReadOnly":"Nur lesen","studioDiagnosticsBackup":"Sicherung enthält private Haushaltsdaten und Rezeptnotizen.","studioDiagnosticsReachable":"Erreichbar","studioBridge":"Atelier Bridge","studioStorage":"Atelier-Speicher","version":"Version","studioDiagnosticsNoData":"Keine Daten","studioDiagnosticsError":"Fehler","studioDiagnosticsPassed":"Alle fünf Verbindungstests bestanden.","studioDiagnosticsFailed":"{count} Verbindungstest(s) fehlgeschlagen.","studioExportNote":"Enthält private Haushaltsdaten. Kein vollständiges Mealie-Backup.","studioExportDownloaded":"Atelier-Profil heruntergeladen. Bitte sicher aufbewahren.","studioExportFailed":"Export fehlgeschlagen: {error}","studioDailyMorning":"Guten Morgen – was steht heute an?","studioDailyEvening":"Guten Abend – Zeit für etwas Gutes.","studioDailyAnytime":"Deine Küche für den Rest des Tages.","studioDailyEyebrow":"DEIN KÜCHENASSISTENT","studioDailyMorningLabel":"MORGENS","studioDailyEveningLabel":"ABENDS","studioDailyOverviewLabel":"TAGESÜBERBLICK","studioDailyExpiring":"{count} Vorräte sollten bald verbraucht werden.","studioDailyDiscover":"Entdecke Rezepte und plane ganz entspannt.","studioDailyPantry":"Vorräte & Einkauf","studioDailyPlan":"Was kochen wir heute?","studioConfirmAvailable":"Home-Assistant-Aktion ausgelöst.","studioConfirmUnavailable":"Nur in Home Assistant verfügbar.","studioNoStep":"Kein Kochschritt zum Vorlesen.","studioDeviceInvalid":"Gerät/Entity ist nicht korrekt eingerichtet.","studioActionFailed":"Home-Assistant-Aktion fehlgeschlagen: {error}","studioReadUnsupported":"Vorlesen wird in diesem Browser nicht unterstützt.","studioVoiceUnsupported":"Sprachkommandos werden von diesem Browser nicht unterstützt.","studioMicrophoneError":"Mikrofon nicht verfügbar oder Berechtigung verweigert.","studioVoiceUnknown":"Kommando nicht erkannt: {command}","studioSpeakNoMatch":"Dazu finde ich keine eindeutige Zutat im Rezept.","studioJournalSaved":"Persönliche Notiz gespeichert.","studioSaved":"Im Atelier gespeichert.","studioChildApproval":"Kinderaufgaben müssen ausdrücklich von Erwachsenen freigegeben werden.","studioSpeechDe":"de-DE","studioSpeechEn":"en-US","studioDiscoverTitle":"Was kochen wir heute?","studioDiscoverLead":"Ein paar Klicks. Dann finden wir etwas Gutes aus euren Rezepten.","studioDiscoverStep0":"Was schmeckt euch?","studioDiscoverStep1":"Aus welchem Kochbuch?","studioDiscoverStep2":"Wer isst mit?","studioDiscoverStep3":"Was ist heute drin?","studioDiscoverQuestion0":"Worauf habt ihr Appetit?","studioDiscoverQuestion1":"Wähle deine Lieblingssammlungen – oder lass alles offen.","studioDiscoverQuestion2":"Für wie viele und mit welchem Zeitfenster?","studioDiscoverQuestion3":"Wir richten uns nach eurem Alltag.","studioDiscoverCompass":"DEIN KÜCHENKOMPASS","studioDiscoverDiet":"Ernährungsstil","studioDiscoverAny":"Alles offen","studioDiscoverVegetarian":"Vegetarisch","studioDiscoverVegan":"Vegan","studioDiscoverMeat":"Fleisch","studioDiscoverFish":"Fisch","studioDiscoverDietHint":"Wir wählen Rezepte nach Tags und erkennbaren Zutaten aus. Bitte Rezeptangaben immer selbst prüfen.","studioDiscoverCookbooks":"Deine Kochbücher","studioDiscoverCookbooksHint":"Mehrere möglich. Ohne Auswahl suchen wir in allen Rezepten.","studioDiscoverCookbooksAria":"Mealie-Kochbücher","studioDiscoverAllRecipes":"Alle Rezepte","studioDiscoverNoCookbooks":"Kochbücher werden eingeblendet, sobald Mealie-Metadaten verfügbar sind.","studioDiscoverPeople":"Personen","studioDiscoverPeopleHint":"Wer sitzt mit am Tisch?","studioDiscoverOneLess":"Eine Person weniger","studioDiscoverOneMore":"Eine Person mehr","studioDiscoverKidFriendly":"Kinderfreundlich","studioDiscoverMild":"Milde Gerichte werden bevorzugt","studioDiscoverAnyPreference":"Egal","studioDiscoverWithKids":"Mit Kindern","studioDiscoverTime":"Verfügbare Zeit","studioDiscoverRelaxed":"Ganz entspannt","studioDiscoverPantry":"Vorräte berücksichtigen","studioDiscoverUsePantry":"Vorräte zuerst","studioDiscoverNoPreference":"Ganz egal","studioDiscoverExclude":"Heute lieber ohne …","studioDiscoverOptional":"Optional auswählen","studioDiscoverIngredientHint":"Vorratsmengen und Zutaten können unvollständig sein. Bitte vor dem Kochen prüfen.","studioDiscoverBack":"Zurück","studioDiscoverNext":"Weiter","studioDiscoverFind":"Ideen finden","studioDiscoverResult":"DEIN KOCHIMPULS","studioDiscoverResultTitle":"Das könnte heute passen.","studioDiscoverEdit":"Auswahl ändern","studioDiscoverTimeOpen":"Zeit offen","studioDiscoverPerson":"Person","studioDiscoverPeoplePlural":"Personen","studioDiscoverFromCookbooks":"AUS DEINEN KOCHBÜCHERN","studioDiscoverFromRecipes":"AUS EUREN REZEPTEN","studioDiscoverRecipeBase":"Rezeptbasis {servings} Portionen","studioDiscoverForPeople":"Für {people} Personen","studioDiscoverGoodIdea":"Eine gute Idee aus eurem Kochbuch.","studioDiscoverOpenRecipe":"Rezept ansehen","studioDiscoverAnother":"Andere Idee","studioDiscoverAlsoGood":"AUCH LECKER","studioDiscoverMoreIdeas":"{count} weitere Ideen","studioDiscoverEmptyTitle":"Heute ist noch alles offen.","studioDiscoverEmpty":"Mit den aktuellen Angaben haben wir keine passende Rezeptidee gefunden. Ändere eine Auswahl oder lade eure Rezepte neu.","studioDiscoverAdjust":"Auswahl anpassen","studioDiscoverReload":"Rezepte neu laden","studioPlanKicker":"03 / INTELLIGENTE WOCHENPLANUNG","studioPlanTitle":"Sieben Tage, weniger Verschwendung","studioPlanDescription":"Die Vorschau bevorzugt ähnliche Zutaten und lässt bestehende Abendessen stehen. Restegerichte werden nur bei genügend Portionen ergänzt.","studioPlanPreview":"Wochenplan vorschlagen","studioPlanCommit":"Vorschlag nach Mealie übertragen","studioLunch":"Mittag","studioDinner":"Abend","studioPlanOnlyMissing":"Es werden nur fehlende Einträge ergänzt. Bei Fehlern bleiben erfolgreiche Einträge bestehen.","studioPlanCreatePreview":"Erst eine Vorschau erstellen. In Mealie wird nichts ohne Bestätigung geändert.","studioPantryTitle":"Vorräte & Einkauf","studioPantryLead":"Ein einfacher, manueller Vorrat reicht. Atelier gleicht ihn mit dem geplanten Essen ab.","studioPantryKicker":"01 / DEIN VORRAT","studioPantryQuestion":"Was ist noch da?","studioIngredient":"Zutat","studioAmount":"Menge","studioUnit":"Einheit","studioGrams":"Gramm","studioMilliliters":"Milliliter","studioPieces":"Stück","studioBestBefore":"Mindestens haltbar bis","studioStaple":"Als regelmäßig vorhandenen Basisvorrat behandeln","studioAdd":"Hinzufügen","studioStapleLabel":"Basisvorrat","studioUntil":"bis {date}","studioRemove":"Entfernen","studioPantryEmpty":"Noch kein Vorrat erfasst – das ist optional.","studioGroceryKicker":"02 / EINKAUFSASSISTENT","studioGroceryTitle":"Was fehlt wirklich?","studioGroceryDescription":"Aus den aktuell geplanten Gerichten. Vorratsmengen werden nur bei eindeutig gleichen Einheiten abgezogen.","studioGroceryCalculate":"Einkauf berechnen","studioGrocerySend":"In Mealie-Liste übernehmen","studioQuantityCheck":"Menge prüfen","studioGroceryPreview":"Eine Einkaufsvorschau wird nach Klick auf „Einkauf berechnen“ angezeigt.","studioUnclearUnits":"Unklare EL-/TL-Mengen und unterschiedliche Einheiten werden nicht automatisch verrechnet.","theme":"Erscheinungsbild","dark":"Dunkel","light":"Hell","density":"Abstände","compact":"Kompakt","comfortable":"Komfortabel","accent":"Akzentfarbe","radius":"Ecken","columns":"Spalten","nutrition":"Nährwerte","nutriTitle":"Atelier Nutrition","nutriAnalyze":"Zutaten abgleichen","nutriAi":"KI-Suchbegriffe vorschlagen","nutriEstimate":"Nährwerte berechnen","nutriSave":"In Mealie speichern","nutriSearch":"In USDA suchen","nutriNoSource":"Lebensmittel auswählen","nutriGrams":"Menge in Gramm","nutriSource":"Datenquelle","nutriResult":"Pro Portion","journal":"Meine Kochnotizen","journalSave":"Notiz speichern","journalNote":"Wie war es beim letzten Mal?","timer":"Küchen-Timer","timerStart":"Timer starten","timerRemove":"Entfernen","apply":"Übernehmen","close":"Schließen","configured":"Dein Design wird auf diesem Gerät gespeichert.","backend":"Verbindung nicht eingerichtet","backendHint":"Bitte zuerst „Mealie Atelier Bridge“ in Home Assistant konfigurieren.","refresh":"Aktualisieren","loading":"Deine Küche wird vorbereitet …","error":"Das hat nicht geklappt.","retry":"Erneut versuchen","selectRecipe":"Rezept auswählen","selectList":"Liste auswählen","saved":"Gespeichert","created":"Rezept wurde angelegt","planned":"Gericht eingeplant","toMealie":"In Mealie öffnen","mealType":"Mahlzeit","dinner":"Abendessen","lunch":"Mittagessen","breakfast":"Frühstück","saveNote":"Basisdaten bearbeiten","admin":"Rezeptverwaltung","recipeTip":"Neue Rezepte anlegen und bestehende bearbeiten.","featured":"AUS DEINER KÜCHE","headline":"Mach es dir lecker.","count":"Rezepte","open":"Offen","todayDate":"Heute","nextMeal":"Geplant","day":"Tag","label":"Liste","change":"Ändern","importTip":"Gib die URL eines Rezeptes ein, das Mealie importieren soll.","expand":"Weiterlesen","adminOnly":"Rezeptänderungen benötigen Home-Assistant-Adminrechte.","emptyTip":"Nutze die Suche oder lege direkt ein neues Rezept an.","markComplete":"Erledigt markieren","addListFirst":"Lege deine erste Einkaufsliste an.","offline":"Die Daten konnten nicht geladen werden.","createList":"Neue Liste","listName":"Name der Einkaufsliste","shoppingFromRecipe":"Zutaten einkaufen","shoppingAddRecipe":"Zutaten übernehmen","shoppingAdded":"Zutaten auf der Liste","editSteps":"Zubereitungsschritte bearbeiten","editIngredients":"Zutaten ersetzen","editStepsHint":"Ein Schritt pro Absatz. Leere Zeile trennt zwei Schritte.","editIngredientsHint":"Eine Zutat pro Zeile. Achtung: Beim Ersetzen gehen strukturierte Lebensmittel- und Einheitenverknüpfungen verloren.","servingsNumber":"Portionen (Anzahl)","applySteps":"Schritte ersetzen","applyIngredients":"Zutaten ersetzen","resetDesign":"Design zurücksetzen","pictures":"Rezeptbilder anzeigen","todayIntro":"Deine Küche heute.","todaySub":"Auf einen Blick: Was gibt es zu essen und was fehlt noch?","toShopping":"Zur Einkaufsliste","plannedForToday":"Heute geplant","noSteps":"Noch keine Zubereitungsschritte vorhanden.","allMeals":"Alle Gerichte","successList":"Liste erstellt","addFromRecipeTip":"Mealie fügt die Rezeptzutaten deiner gewählten Liste hinzu.","ingredientExperimental":"Experimentelle Zutatenbearbeitung ist standardmäßig deaktiviert. Aktiviere sie nur nach einem Mealie-Backup in den Bridge-Einstellungen.","readOnly":"Nur-Lesen-Modus","readOnlyHint":"Bearbeitungen sind für dieses Küchen-Dashboard deaktiviert.","adminOnlyHint":"Die Rezeptverwaltung benötigt Adminrechte.","studioDiscoverStepProgress":"Schritt {step} von 4","ingredientMushrooms":"Pilze","ingredientOlives":"Oliven","ingredientCilantro":"Koriander","ingredientBellPepper":"Paprika","ingredientHeat":"Schärfe","ingredientTomatoes":"Tomaten","familyTitle":"Gemeinsam kochen","familyLead":"Ein gemeinsamer Kochfortschritt mit freiwilligen Helferaufgaben und Freigabe durch Erwachsene.","familyAdultMode":"Erwachsenenansicht","familyHelperMode":"Einfache Helferansicht","familySync":"Live-Status aktualisieren","familyTeam":"01 / TEAM","familyWhoHelps":"Wer hilft mit?","familyName":"Name","familyChild":"Kind – nur freigegebene Aufgaben","familyAddMember":"Person anlegen","familyHelper":"Helfermodus","familyRemoveMember":"Person entfernen","familyNoMembers":"Noch keine Familienmitglieder angelegt.","familySession":"02 / GEMEINSAME KOCHSESSION","familyNoSession":"Noch keine Session aktiv","familyStep":"Gemeinsamer Schritt {step} · gestartet {date}","familyBack":"Zurück","familyNext":"Nächster Schritt","familyEnd":"Beenden","familyOpenCook":"Kochmodus öffnen","familyTimers":"Gemeinsame Timer","familyNoTimers":"Noch kein gemeinsamer Timer","familyTimerName":"Bezeichnung","familyMinutes":"Minuten","familySetTimer":"Timer setzen","familyTasks":"Helferaufgaben","familyMarkOpen":"Als offen markieren: {task}","familyMarkDone":"Als erledigt markieren: {task}","familyNoTasks":"Noch keine Aufgaben verteilt.","familyTask":"Aufgabe","familyTaskPlaceholder":"z. B. Gemüse waschen","familyAssign":"Zuweisen","familyApproval":"Ich habe die Aufgabe geprüft und freigegeben","familyAssignTask":"Aufgabe verteilen","familySafety":"Die Kinderansicht vereinfacht die Oberfläche, sperrt aber keine Funktionen. Erwachsene bleiben für Aufsicht und sichere Gerätenutzung verantwortlich.","familyStartHint":"Öffne ein Rezept und starte den Kochmodus. Eine gemeinsame Session wird angelegt, wenn Bearbeitung erlaubt ist.","familyBrowse":"Rezepte ansehen","cookbookTitle":"Dein eigenes Kochbuch","cookbookLead":"Wähle Lieblingsrezepte. Atelier gestaltet Cover, Inhaltsverzeichnis und A4-Rezeptseiten für eine gemeinsame Druckansicht.","cookbookSelectKicker":"01 / REZEPTE AUSWÄHLEN","cookbookCollection":"Deine Sammlung","cookbookLoad":"Rezeptdetails laden","cookbookSelectAll":"Alle sichtbaren wählen","cookbookClear":"Auswahl löschen","cookbookEmpty":"Noch keine Rezepte geladen","cookbookLoadHint":"Lade die Rezeptdetails, um dein eigenes Kochbuch zusammenzustellen.","cookbookBookKicker":"02 / DEIN BUCH","cookbookSelected":"{count} Rezepte ausgewählt","cookbookTitleLabel":"Buchtitel","cookbookTitleDefault":"Unsere Lieblingsrezepte","cookbookSubtitleLabel":"Untertitel","cookbookSubtitleDefault":"Gute Küche. Jeden Tag.","cookbookPhotos":"Rezeptfotos drucken","cookbookPrint":"Kochbuch als PDF / Druckvorschau","cookbookPrintHint":"Nutze im Browser „Als PDF speichern“. Jedes Rezept beginnt auf einer neuen A4-Seite; sehr lange Rezepte können über mehrere Seiten laufen.","printPreparing":"Dein Kochbuch wird gesetzt …","printDocumentTitle":"Mealie Atelier – Kochbuch","printSavePdf":"Als PDF speichern / Drucken","printCollection":"REZEPTSAMMLUNG","printMadeWithLove":"MIT LIEBE ZUSAMMENGESTELLT","printContents":"INHALTSVERZEICHNIS","printRecipes":"Die Rezepte.","printRecipe":"REZEPT {number} / {total}","printIngredients":"ZUTATEN","printPreparation":"ZUBEREITUNG","printServings":"{count} Portionen","studioMinutesShort":"Min.","studioOven":"Ofen","studioReadStepLabel":"Schritt vorlesen","studioVoiceCommandLabel":"Sprachkommando","studioReplacementLabel":"Alternative Zutat","studioCookingLight":"Kochlicht","studioLowerMusic":"Musik leiser","studioSpeakerLabel":"Auf Lautsprecher","studioSharedFamily":"Mit Familie synchronisiert","studioSharedTimer":"gemeinsam","studioRecipeAuditTitle":"Rezept-Check: {score}/100","studioRecipeAuditNone":"Keine offensichtlichen Strukturprobleme gefunden.","studioRecipeAuditAll":"Alle Hinweise","studioAICheck":"KI prüfen","studioAiSuggestionTitle":"KI-Vorschläge (nur prüfen)","studioLocalAlternativeNone":"Keine geprüfte lokale Alternative gefunden.","studioAiOptional":"KI ist optional und benötigt einen API-Key.","studioReplaceTitle":"Zutat ersetzen","studioReplaceBody":"Welche Zutat möchtest du austauschen? Die Vorschläge sind keine geprüften 1:1-Ersatzprodukte.","studioShowAlternatives":"Alternativen zeigen","studioAiAuditTitle":"KI-Rezeptprüfung starten?","studioAiAuditBody":"Die Zutaten, Mengen und Kochschritte dieses Rezepts werden an den von dir konfigurierten KI-Anbieter übertragen. Es erfolgt keine automatische Änderung.","studioAiConsent":"Daten senden & prüfen","studioAiStarting":"KI-Rezeptprüfung wird gestartet …","studioAiUnavailable":"KI-Prüfung nicht verfügbar: {error}","studioAuditTitle":"Rezept-Qualitätscheck · {score}/100","studioAuditNone":"Keine offensichtlichen Strukturprobleme.","studioAuditDisclaimer":"Die Prüfung erkennt grundlegende Strukturprobleme, keine fachlichen Kochfehler.","studioSessionReplaceTitle":"Gemeinsame Kochsession ersetzen?","studioSessionReplaceBody":"Aktuell läuft „{name}“. Beim Ersetzen gehen die gemeinsamen Timer und Aufgaben verloren. Abbrechen startet das neue Rezept nur lokal.","studioSessionReplaceConfirm":"Session ersetzen","studioOnlyHomeAssistant":"Nur in Home Assistant verfügbar.","studioSpeechStartFailed":"Spracherkennung konnte nicht gestartet werden.","studioIngredientNoMatch":"Dazu finde ich keine eindeutige Zutat im Rezept.","studioSubstituteError":"Keine geprüfte lokale Alternative gefunden. KI ist optional und benötigt einen API-Key. {error}","studioRecipeAuditDisclaimer":"Grundlegende Strukturprüfung · keine fachliche Kochprüfung","studioDeletePantryTitle":"Vorrat entfernen?","studioDeletePantryBody":"Der Eintrag wird aus deinem Atelier-Vorrat gelöscht.","familyRemoveConfirmTitle":"Person entfernen?","familyRemoveConfirmBody":"Die Person wird aus dem Familienmodus entfernt. Bestehende Helferaufgaben müssen zuvor erledigt oder gelöscht werden.","familyEndConfirmTitle":"Gemeinsames Kochen beenden?","familyEndConfirmBody":"Timer und Helferaufgaben dieser Session werden beendet. Persönliche Rezeptnotizen bleiben erhalten.","studioWeekConfirmTitle":"Wochenplan übernehmen?","studioWeekConfirmBody":"{count} Mahlzeiten werden hinzugefügt. Bestehende Termine bleiben erhalten.","studioWeekConfirmAction":"In Mealie übertragen","studioWeekSuccess":"{count} Mahlzeiten übernommen.","studioWeekFailure":"Fehler: {errors}","studioShoppingTransferTitle":"Einkäufe übertragen?","studioShoppingTransferBody":"{count} Einträge werden in deine Mealie-Einkaufsliste übernommen.","studioShoppingTransferConfirm":"Einkaufsliste ergänzen","studioShoppingUncertain":"Menge prüfen","studioShoppingSuccess":"{count} Einträge übernommen.","studioShoppingFailure":"Fehlgeschlagen: {items}","studioPopupBlocked":"Erlaube Popups für die Druckvorschau.","studioAdultApprovalRequired":"Kinderaufgaben müssen ausdrücklich von Erwachsenen freigegeben werden.","cookbookTitleDefaultPrint":"Unsere Rezepte","studioJournalSavedToast":"Persönliche Notiz gespeichert.","providerTitle":"Rezeptstudio ohne Zusatz-Integration","providerDescription":"Die Home-Assistant-Mealie-Verbindung unterstützt hier Rezeptsuche und Kochansicht. Für Wochenplan, Einkauf, Kochbücher, Bilder und Bearbeitung kannst du jederzeit die optionale Mealie Atelier Bridge ergänzen.","providerBrowse":"Rezepte durchsuchen","studioJournalLocal":"Nur auf diesem Gerät gespeichert – nicht mit Mealie synchronisiert.","studioJournalShared":"Im Atelier-Profil gespeichert und auf verbundenen Geräten verfügbar.","editorConnectKitchen":"Küche verbinden","editorChooseYourStart":"Startansicht wählen","editorSetTheMood":"Erscheinungsbild","editorSetupProgress":"Einrichtungsfortschritt","editorCheckingHomeAssistantConnections":"Home-Assistant-Verbindungen werden geprüft …","editorCouldNotCheckYourConnections":"Verbindungen konnten nicht geprüft werden","editorCheckThatMealieAtelierBridgeIsInstalledAndHomeAssistantIsOnline":"Prüfe, ob die Mealie Atelier Bridge installiert und Home Assistant erreichbar ist.","editorTryAgain":"Erneut prüfen","editorOpenHomeAssistantIntegrations":"Home-Assistant-Integrationen öffnen","editorHomeAssistantMealieFound":"Home-Assistant-Mealie gefunden","editorDirectConnectionReadOnlyRecipes":"Direkte Verbindung · Rezepte nur lesen","editorREADY":"BEREIT","editorRecipeSearchAndCookingWorkWithoutAtelierBridgeProtectedPhotosEditingShoppingAndPlanningStayOptionalBridgeFeatures":"Rezeptsuche und Kochansicht funktionieren ohne Atelier Bridge. Geschützte Bilder, Bearbeitung, Einkauf und Planung sind optionale Bridge-Funktionen.","editorMealieInstance":"Mealie-Instanz","editorYourMealieConnection":"Deine Mealie-Verbindung","editorChooseAConnectedKitchen":"Verbundene Küche auswählen …","editorYourAPITokenStaysSafelyInsideTheHomeAssistantIntegration":"Dein API-Token bleibt sicher in der Home-Assistant-Integration.","editorConnectMealieOnceInHomeAssistant":"Verbinde Mealie einmal in Home Assistant","editorAddMealieAtelierBridgeForTheFullStudioOrUseHomeAssistantSBuiltInMealieIntegrationForAReadOnlyRecipeCardCredentialsAreEnteredSecurelyInHomeAssistantNeverInThisCard":"Füge die Mealie Atelier Bridge für das volle Studio hinzu oder nutze Home Assistants Mealie-Integration für eine reine Rezeptkarte. Zugangsdaten bleiben in Home Assistant und gehören niemals in die Karte.","editorIConnectedMealieCheckAgain":"Mealie ist verbunden – erneut prüfen","editorConnectedSecurely":"Sicher verbunden","editorNoCredentialsInDashboardCards":"Keine Zugangsdaten in Dashboard-Karten","editorYourCredentialsBelongInTheSecureIntegrationNeverInThisCard":"Deine Zugangsdaten gehören in die sichere Integration, niemals in diese Karte.","editorACompleteKitchenOverview":"Der komplette Küchenüberblick","editorTodaySMealsAndKitchenTasks":"Heutige Gerichte und Küchenaufgaben","editorPersonalRecipeInspiration":"Persönliche Rezeptideen","editorYourCompleteRecipeCollection":"Deine gesamte Rezeptsammlung","editorTheWeeklyMealPlan":"Der Wochenplan","editorIngredientsYouAlreadyHave":"Deine vorhandenen Vorräte","editorYourShoppingList":"Deine Einkaufsliste","editorCookingTogetherAsAFamily":"Gemeinsam mit der Familie kochen","editorYourSavedCookbooks":"Deine gespeicherten Kochbücher","editorRecipeAndKitchenTools":"Rezept- und Küchenwerkzeuge","editorSTEP1CONNECTION":"SCHRITT 1 · VERBINDUNG","editorBringYourKitchenTogether":"Verbinde deine Küche.","editorAtelierReadsRecipesFromTheMealieConnectionAlreadyConfiguredInHomeAssistant":"Atelier nutzt die Mealie-Verbindung, die du bereits in Home Assistant eingerichtet hast.","editorSTEP2YOURKITCHEN":"SCHRITT 2 · DEINE KÜCHE","editorWhatShouldOpenFirst":"Was möchtest du zuerst sehen?","editorPickAStartingPointEveryOtherViewStaysOneTapAway":"Wähle deinen Startpunkt. Alle anderen Bereiche bleiben mit einem Klick erreichbar.","editorStartIn":"Starten mit","editorYOURATELIEROPENSTO":"DEIN ATELIER STARTET MIT","editorSTEP3THEFEEL":"SCHRITT 3 · DIE STIMMUNG","editorMakeItFeelLikeYourKitchen":"Lass es sich nach deiner Küche anfühlen.","editorChooseALookNowYouCanFineTuneEveryDetailLater":"Wähle jetzt eine Stimmung. Jedes Detail kannst du später anpassen.","editorChooseAnAppearance":"Erscheinungsbild auswählen","editorEveningStudio":"Abendstudio","editorDeepGreenWarmLightEditorial":"Tiefgrün · Stein hell · großzügig","editorDaylightKitchen":"Tageslichtküche","editorFreshSurfacesOpenAndBright":"Helle Flächen · offen und freundlich","editorYourRecipesAndMealieDataAreNeverChangedByTheseChoices":"Deine Rezepte und Mealie-Daten werden durch diese Auswahl nicht verändert.","editorAKitchenThatFeelsLikeYours":"Dein Küchenstudio. Ganz deins.","editorThreeSmallChoicesYourKitchenReady":"Drei kleine Entscheidungen – und deine Küche ist startklar.","editorSetUpLater":"Später einrichten","editorSetupNavigation":"Einrichtung navigieren","editorBack":"Zurück","editorContinue":"Weiter","editorCreateMyKitchen":"Küche einrichten","editorACalmStartTheAdvancedSettingsAreHereWheneverYouNeedThem":"Ein guter Anfang. Alle erweiterten Einstellungen findest du jederzeit hier.","editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard":"Gestalte deine Karten ohne YAML. Die Einstellungen speichert dein Home-Assistant-Dashboard.","editorRunSetupWizard":"Einrichtungs-Wizard starten","editorYourKitchenIsReady":"Deine Küche ist startklar.","editorBasics":"Grundlagen","editorChooseContentAndTheConnectedMealieInstance":"Ansicht, Konto und Sprache festlegen.","editorMode":"Ansicht","editorMealieAccount":"Mealie-Verbindung","editorFirstConnectedAccount":"Erste verbundene Instanz","editorDataConnection":"Datenverbindung","editorAutomaticAtelierFirst":"Automatisch · Atelier zuerst","editorAtelierBridgeFullFeatures":"Atelier Bridge · voller Umfang","editorHomeAssistantMealieReadOnly":"Home-Assistant-Mealie · nur Lesen","editorTheBuiltInOptionNeedsNoAtelierServerOrCardTokenRecipeSearchAndCookingAreReadOnlyTheBridgeAddsImagesAndKitchenTools":"Die eingebaute Option braucht keinen Atelier-Server und kein Kartentoken. Suche und Kochen sind schreibgeschützt; die Bridge ergänzt Bilder und Küchenfunktionen.","editorBuiltInMealieInstance":"Eingebaute Mealie-Instanz","editorLanguage":"Sprache","editorAutomatic":"Automatisch","editorLookFeel":"Erscheinungsbild","editorTypographyMotionAndTheVisualRhythmOfYourCards":"Farben, Animationen und Layout der Karten.","editorTheme":"Darstellung","editorDark":"Dunkel","editorLight":"Hell","editorDensity":"Abstände","editorComfortable":"Großzügig","editorCompact":"Kompakt","editorMotionTransitions":"Animation & Übergänge","editorExpressive":"Lebendig","editorSubtle":"Dezent","editorOff":"Aus","editorYourReducedMotionSystemPreferenceAlwaysTakesPriority":"Die Systemeinstellung „Bewegung reduzieren“ hat immer Vorrang.","editorColumns":"Spalten","editorAccent":"Akzentfarbe","editorCornerStyle":"Ecken","editorRounded":"Rund","editorSoft":"Sanft","editorSquareEckig":"Eckig","editorFoodPhotographyCrop":"Rezeptbild-Format","editorPortraitEditorial":"Hochformat","editorSquareQuadrat":"Quadrat","editorWide":"Querformat","editorShowRecipeImages":"Rezeptbilder anzeigen","editorOptionalPrintAndKitchenSettings":"Optionale Druck- und Kücheneinstellungen","editorPrintStudio":"Druckstudio","editorPremiumA4LayoutsForRecipesAndLists":"Hochwertige A4-Vorlagen für Rezepte und Listen.","editorPrintTemplate":"Druckvorlage","editorInkSaver":"Tintensparend","editorPrintRecipePhotosWhenAvailable":"Rezeptbilder mitdrucken","editorPrintCheckboxes":"Abhakfelder drucken","editorPrintCompletedItems":"Erledigte Einträge mitdrucken","editorPrintStoredNutritionValues":"Nährwerte mitdrucken","editorPrintHandwritingSpace":"Platz für Notizen drucken","editorKitchenTablet":"Küche & Tablet","editorOptionalHomeAssistantActionsNothingTriggersAutomatically":"Optionale Home-Assistant-Aktionen, niemals ungefragt.","editorUseEnlargedTabletLayout":"Großes Tablet-Layout verwenden","editorOptionalKitchenSceneHA":"Optionale Lichtszene (HA)","editorOnlyTriggeredWhenYouTapTheCookingCockpitButton":"Wird nur durch einen bewussten Klick im Kochmodus ausgelöst.","editorOptionalMediaPlayerHA":"Optionaler Mediaplayer (HA)","editorCookingVolume":"Koch-Lautstärke","editorOptionalTTSEngineHA":"Optionale Sprachausgabe (HA)","editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault":"Verwende eine Home-Assistant-Entität. Alle Geräteaktionen sind standardmäßig deaktiviert.","editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio":"Die Ansicht „Übersicht“ enthält die komplette Küche. Gerätespezifische Anpassungen findest du hier im Design Studio.","uiFindYourNextFavorite":"Finde dein nächstes Lieblingsgericht","uiSearchRecipesIngredientsOrViews":"Rezepte, Zutaten oder Ansichten suchen …","uiSearchRecipesIngredientsAndQuickActions":"Rezepte, Zutaten und Schnellzugriffe durchsuchen","uiSearchYourRecipesIncludingByIngredient":"Durchsuche eure Rezepte – auch nach Zutaten.","uiYOURKITCHEN":"DEINE KÜCHE","uiNavigation":"Navigation","uiNoMatchingViewsOrActions":"Keine passenden Ansichten oder Aktionen.","uiSelect":"Auswählen","uiOpen":"Öffnen","uiClose":"Schließen","uiPrintPDF":"Drucken / PDF","uiProtein":"Eiweiß","uiCarbs":"Kohlenhydrate","uiFat":"Fett","uiStep":"Schritt","uiKitchenTimers":"Küchentimer","uiATELIERKITCHENTIMER":"ATELIER · KÜCHENTIMER","uiKeepEverythingInRhythm":"Alles im richtigen Takt","uiactive":"aktiv","uitimeRemaining":"verbleibende Zeit","uiminutes":"Minuten","uiActiveTimer":"Aktiver Timer","uiREADY":"FERTIG","uiRUNNING":"LÄUFT","uiNoTimerRunningYetSetOneToKeepEverythingInRhythm":"Noch kein Timer läuft. Richte dir einen ein, dann bleibt alles im Takt.","uiQuickTimerPresets":"Schnelle Timer","uimin":"Min.","uiMinutes":"Minuten","uiTimerDurationInMinutes":"Timerdauer in Minuten","uiLabelOptional":"Bezeichnung · optional","uieGOven":"z. B. Ofen","uiStartTimer":"Timer starten","uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe":"Ganz in Ruhe – ein Schritt nach dem anderen. Du kannst jederzeit zum Rezept zurückkehren.","uiPlanMealsQuicklyWithoutClutter":"Plane deine Mahlzeit mit wenigen Handgriffen. Klar und ohne unnötigen Ballast.","uiStartWithARecipeTitleAddDetailsAfterCreating":"Ein guter Rezepttitel ist der Anfang. Nach dem Anlegen ergänzt du Beschreibung, Portionen, Kochschritte und Zutaten.","uieGLemonPastaWithSpinach":"Zum Beispiel: Zitronenpasta mit Spinat","uiPasteARecipeLinkMealieHandlesImportingIt":"Rezept-Link einfügen. Mealie übernimmt den Import, und du kannst das Ergebnis anschließend im Atelier verfeinern.","uiEditRecipe":"Rezept bearbeiten","uiDetailsIngredientsAndInstructionsInOneClearWorkflow":"Details, Zutaten und Zubereitung übersichtlich an einem Ort.","uiYourRecipeTitleSummaryAndServingSize":"So erscheint dein Rezept in der Sammlung und auf dem Ausdruck.","uiWhatMakesThisSpecial":"Was macht dieses Gericht besonders?","uiShownInRecipesAndPrint":"Wird im Rezept und Druck angezeigt.","uiLinkedFoodsAndUnitsStayProtectedTheIngredientsCanBePrinted":"Strukturierte Lebensmittel und Mengen bleiben geschützt. Die Zutaten sind hier sichtbar und lassen sich sauber ausdrucken.","uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled":"Kochschritte separat bearbeiten, ergänzen und sortieren. Nur aktivierte Änderungen werden gespeichert.","uiReplaceCookingInstructions":"Bearbeitete Kochschritte übernehmen","uiAddAStep":"Kochschritt hinzufügen","uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected":"Die Schrittfolge wird beim Speichern vollständig übernommen, wenn du das Kontrollkästchen aktivierst.","uiChangesAreSentToMealieOnlyWhenYouSave":"Deine Änderungen werden erst beim Speichern an Mealie übertragen.","uiGiveYourShoppingListAName":"Ob Wochenmarkt oder Wocheneinkauf – gib deiner Liste einen Namen.","uieGWeeklyGroceries":"Zum Beispiel: Wocheneinkauf","uiMotionTransitions":"Bewegung & Übergänge","uiThoughtfulMotionThatHelpsNavigationYourReducedMotionDeviceSettingAlwaysTakesPriority":"Feine Animationen, die beim Navigieren Orientierung geben. Die Systemeinstellung „Bewegung reduzieren“ hat immer Vorrang.","uiExpressive":"Lebendig","uiSubtle":"Dezent","uiOff":"Aus","uiPhotoCrop":"Bildformat","uiTall":"Hoch","uiSquare":"Quadrat","uiWide":"Breit","uiCornerStyle":"Ecken","uiRound":"Rund","uiSoft":"Sanft","uiSquareEckig":"Eckig","uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan":"Rezept, Einkauf und Wochenplan bekommen eigene A4-Drucklayouts.","uiOpenPrintSettings":"Druckoptionen öffnen","uiEnjoyingTheAtelier":"Gefällt dir das Atelier?","uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi":"Wenn es deinen Küchenalltag schöner macht, kannst du die Weiterentwicklung freiwillig auf Ko-fi unterstützen.","uiSayThanksOnKoFi":"Auf Ko-fi Danke sagen","uiQuickActions":"Schnellzugriff","uiPrintStudioSettings":"Print Studio · Druckeinstellungen","uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity":"Bis zu 500 Treffer über Home Assistant. Bilder und Atelier-Schreibfunktionen bleiben aus Sicherheitsgründen deaktiviert.","uiMarkComplete":"Als erledigt markieren: ","uiPrint":"Drucken","uiSwipeToBrowseAllSevenDays":"Seitlich wischen, um alle sieben Tage anzusehen.","uiAllowPopupsToOpenThePrintPreview":"Pop-up blockiert. Erlaube ein Druckfenster für diese Seite.","uiCalories":"Kalorien","uiCarbohydrates":"Kohlenhydrate","uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches":"Zutaten von echten Lebensmitteldaten trennen wir bewusst von KI-Vorschlägen. Du entscheidest über Mengen und Zuordnungen.","uiFoodsMatched":"Lebensmittel geprüft","uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv":"USDA API-Key fehlt. Bitte in den Integrationseinstellungen bzw. der .env hinterlegen.","uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt":"Dieses Rezept besitzt bereits Nährwerte. Wir überschreiben sie nur mit deiner ausdrücklichen Zustimmung.","uiSendsIngredientTextToOpenAINoInventedMacros":"Sendet Zutatennamen an OpenAI; keine Nährwertschätzungen.","uiOptionalConfigureOpenAIAPIKey":"Optional: OpenAI API-Key hinterlegen","uiREVIEWINGREDIENTS":"ZUTATEN PRÜFEN","uiNotMatched":"Zuordnung offen","uiFoodSearchQuery":"Lebensmittelname / Suche","uiFindFood":"Lebensmittel suchen","uiNoCompleteNutritionEntriesFoundTryAnotherQuery":"Keine vollständigen Daten gefunden. Anderen Begriff versuchen.","uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates":"Grundlage: ausgewählte USDA-Datensätze je 100 g. Garverluste, Abtropfgewicht, Roh-/Gargewicht und nicht erfasste Zutaten können das Ergebnis verändern. Fehlende Werte werden nicht erfunden.","uiSourcesCoverage":"Quellen & Abdeckung","uiExplicitlyReplaceExistingNutritionValues":"Vorhandene Nährwerte ausdrücklich ersetzen","uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie":"Deine persönlichen Koch-Erfahrungen. Nur auf diesem Gerät gespeichert – nicht mit Mealie synchronisiert.","uiHowDidItTurnOut":"Wie gut hat es geschmeckt?","uiNotRated":"Nicht bewertet","uiNextTimeReduceTheSalt":"Nächstes Mal etwas weniger Salz …","editorPreviewDashboard":"Deine Küche für den Tag","editorPreviewToday":"Heute auf dem Teller","editorPreviewDiscover":"Kochinspo für euch","editorPreviewRecipes":"Lieblingsrezepte","editorPreviewMealplan":"Was diese Woche auf den Tisch kommt","editorPreviewPantry":"Das ist schon da","editorPreviewShopping":"Auf dem Einkaufszettel","editorPreviewFamily":"Gemeinsam schmeckt’s","editorPreviewCookbook":"Deine Kochbücher","editorPreviewManage":"Dein Küchenstudio","uiRememberAsFavoriteRecipe":"Als Lieblingsrezept merken","uiScaleServingsNote":"Mengen für {target} Portionen angepasst. Rezeptbasis: {base} Portionen. Eindeutige Mengen sind skaliert; Freitext bitte prüfen.","uiRecipeStepImageAlt":"Bild zu Schritt {step}","uiMarkShoppingOpen":"Als offen markieren: {item}","uiMarkShoppingComplete":"Als erledigt markieren: {item}","uiServing.one":"Portion","uiServing.other":"Portionen","uiThisFeatureRequiresMealieAtelierBridge":"Diese Funktion benötigt die Mealie Atelier Bridge.","uiHomeAssistantSMealieIntegrationWithRecipeSearchIsUnavailable":"Die Home-Assistant-Mealie-Integration mit Rezeptsuche ist nicht verfügbar.","uiChooseAValidMealieInstance":"Bitte wähle eine gültige Mealie-Instanz.","uiHomeAssistantReturnedNoRecipe":"Home Assistant hat kein Rezept zurückgegeben.","uiEveryDay":"Jeden Tag","uiDescribeThisStep":"Beschreibe diesen Kochschritt …","uiMoveUp":"Nach oben","uiMoveDown":"Nach unten","uiRemoveStep":"Schritt entfernen","uiRemove":"Entfernen","uiMealieReadOnly":"Mealie · nur Lesen","uiRecipesCookingPhotosAndEditsNeedAtelierBridge":"Rezepte & Kochen · Bilder und Änderungen mit Atelier Bridge","uiKitchenTimer":"Küchentimer","uiAISuggestedSearchTermsReviewEveryDatabaseMatchYourself":"KI-Suchbegriffe vorgeschlagen. Bitte jeden Datenbanktreffer selbst prüfen.","uiNutritionSavedToMealie":"Nährwerte in Mealie gespeichert","uiCalculatedReviewBeforeSaving":"Berechnung abgeschlossen. Prüfe die Daten vor dem Speichern.","uiBonAppetitEnjoyYourMeal":"Guten Appetit! Schön, dass du mit Atelier gekocht hast.","uiTypeAtLeastOneMoreCharacter":"Gib noch mindestens einen Buchstaben ein.","uiSearchingYourRecipes":"Ich durchsuche eure Rezepte …","uiNoRecipeFoundYet":"Noch kein Rezept dazu","uiTryAnotherRecipeNameOrIngredient":"Versuch es mit einem anderen Rezeptnamen oder einer Zutat.","uiSearchIsUnavailableRightNow":"Suche gerade nicht erreichbar","uiIngredient":"Zutat","uiRecipeName":"Rezeptname","uiNameIngredient":"Name & Zutat","uiRecipeMatch":"Rezepttreffer","uiMATCHINGRECIPES":"PASSENDE REZEPTE","uiresults":"Treffer","uiRecipeResults":"Rezepttreffer","uiNoteSavedOnThisDevice":"Kochnotiz auf diesem Gerät gespeichert","uiOpenQuickActions":"Schnellzugriff öffnen ({shortcut})","uiSeeAllResults":"Alle {count} Treffer ansehen","uiConversion":"Küchen-Umrechnung","uiConversionNeedsDensity":"Masse und Volumen brauchen eine zutatenbezogene Dichte. Atelier rät hier nicht.","uiConversionExactFactors":"Mit Standard-Umrechnungsfaktoren berechnet. Rezeptmengen bleiben unverändert.","uiSearchConversionExample":"Zum Beispiel: 250 g in oz","uiPrintHeroTitle":"Auch auf Papier. Richtig schön.","uiPrintHeroDescription":"Ein eigenes, sorgfältig gesetztes Drucklayout. Dein Browser kann es direkt als PDF speichern.","uiPrintStyle":"LAYOUT WÄHLEN","uiPrintEditorial":"Editorial","uiPrintEditorialDescription":"Elegant, großzügig und hochwertig","uiPrintCompact":"Kompakt","uiPrintCompactDescription":"Mehr Inhalt auf weniger Seiten","uiPrintInkSaver":"Tintensparend","uiPrintInkSaverDescription":"Ohne Fotos und mit wenig Farbeinsatz","uiPrintDetails":"DETAILS ANPASSEN","uiPrintIncludePhoto":"Rezeptfoto verwenden (falls vorhanden)","uiPrintIncludeNutrition":"Nährwerte aus Mealie mitdrucken (falls vorhanden)","uiPrintIncludeCompleted":"Bereits erledigte Artikel mitdrucken","uiPrintIncludeCheckboxes":"Abhakfelder anzeigen","uiPrintIncludeNotes":"Platz für handschriftliche Notizen","uiPrintOpenPreview":"Druck- / PDF-Vorschau öffnen","uiPrintGuide":"Im Druckdialog A4 und 100 % wählen. Der Wochenplan wird automatisch im Querformat vorbereitet. Die tatsächliche Vorschau öffnet sich in einem neuen Fenster.","uiPrintPaperPreview":"PAPIERVORSCHAU","uiYourRecipe":"Dein Rezept","uiPrintPreviewDescription":"Klar gesetzt. Gut lesbar. Schön zum Abheften.","uiPrintIngredientsItems":"ZUTATEN / EINTRÄGE","uiPrintPreparationNotes":"ZUBEREITUNG / NOTIZEN","uiPrintDesignedForPaper":"FÜR PAPIER GESTALTET","offlinePanelLabel":"Offline-Synchronisierung und Küchenalarme","offlineSyncTimers":"Synchronisierung & Küchentimer","offlineLoading":"Status wird geladen","offlineShopping":"Offline-Einkauf","offlineStorageNote":"Änderungen bleiben auf diesem Gerät, bis sie sicher mit Mealie abgeglichen wurden.","offlineEnable":"Offline aktivieren","offlineSyncNow":"Jetzt abgleichen","offlineReviewConflicts":"Konflikte prüfen","offlineBackgroundTimers":"Hintergrund-Timer","offlineCheckingDelivery":"Zustellkanal wird geprüft","offlineAllowPush":"Push erlauben","offlineRefreshTimers":"Timer aktualisieren","offlineConflictToggle":"Abhak-Konflikt","offlineConflictList":"Einkaufslisten-Konflikt","offlineReviewCurrentList":"Bitte die aktuelle Mealie-Liste prüfen.","offlineDiscardChange":"Änderung verwerfen","offlinePlanned":"Geplant: {time}","offlineStopTimer":"Timer stoppen","offlineDisabled":"Offline-Einkauf ist ausgeschaltet","offlineStatus":"{connection} · {pending} ausstehend{conflicts}{syncing}","offlineConflictCount":" · {count} Konflikt(e)","offlineSyncing":" · Synchronisiere","offlineClearLocal":"Lokale Daten löschen","offlineHomeAssistantActive":"Home Assistant aktiv","offlinePushConfigured":"Web Push konfiguriert (Berechtigung erforderlich)","offlineNoAlarmChannel":"Kein Alarmkanal konfiguriert","offlinePushReady":"Push eingerichtet","offlineEnableConfirmTitle":"Offline-Einkauf aktivieren?","offlineEnableConfirmBody":"Einkaufslisten und ausstehende Änderungen werden auf diesem Gerät gespeichert. Nicht auf öffentlichen Geräten aktivieren.","offlineDeleteConfirmTitle":"Offline-Daten löschen?","offlineDeleteConfirmBody":"Lokale Einkaufslisten und noch nicht synchronisierte Änderungen werden unwiderruflich gelöscht.","offlineDeleteConfirmAction":"Daten löschen","offlineEnableConfirmAction":"Offline aktivieren","offlinePushSetup":"Push-Benachrichtigungen einrichten","offlineEnableHelp":"Offline-Einkauf aktivieren","offlineAlarmError":"Fehler bei der Küchen-Timer-Benachrichtigung","uiBackgroundTimerEnabled":"Hintergrundtimer aktiviert","uiLocalTimerEnabled":"Nur lokaler Timer aktiviert","uiBackgroundTimerError":"Hintergrundtimer nicht aktiviert: {error}","uiTimerStopError":"Timer konnte nicht gestoppt werden: {error}","dialogWeeklyMenu":"WOCHENPLAN","dialogYourMenu":"DEIN MENÜ","dialogPlanned":"GEPLANT","dialogNewRecipe":"NEUES REZEPT","dialogRecipeTitle":"REZEPTTITEL","dialogSource":"QUELLE","dialogRecipeStudio":"REZEPTSTUDIO","dialogBasics":"GRUNDLAGEN","dialogStepByStep":"SCHRITT FÜR SCHRITT","offlineNoSnapshot":"Noch keine Offline-Kopie. Öffne die Einkaufsliste einmal online.","offlineNotEnabled":"Aktiviere zuerst den Offline-Einkauf über die Statusleiste.","offlineListNeedsRefresh":"Lade die Einkaufsliste zuerst bei bestehender Verbindung.","offlineRequiresConnection":"Für diese Aktion ist eine Internetverbindung erforderlich.","offlineItemNotEditable":"Dieser Eintrag kann offline nicht bearbeitet werden.","offlineInvalidItem":"Der Eintrag oder die Einkaufsliste ist ungültig.","offlinePushKeysMissing":"Für Web Push fehlen die Server-Schlüssel.","offlinePushRequiresHttps":"Web Push benötigt HTTPS und einen unterstützten Browser.","offlinePushPermissionDenied":"Benachrichtigungen wurden nicht erlaubt.","offlineAlarmRequiresServer":"Ohne Serververbindung kann kein Hintergrundalarm aktiviert werden.","offlineUnexpectedError":"Die Offline-Aktion konnte nicht abgeschlossen werden. Bitte erneut versuchen.","printDocRecipe":"REZEPT","printDocShoppingList":"EINKAUFSLISTE","printDocWeeklyPlan":"WOCHENPLAN","printDocTotalTime":"Gesamtzeit","printDocMinAbbr":"Min.","printDocCloseWindow":"Fenster schließen","printDocFromYourKitchen":"Für deine Küche","printDocNoItems":"Keine Einträge vorhanden","printDocYourWeeklyPlan":"Dein Wochenplan","printDocMeals":"Gerichte","printDocListed":"Eingekauft","printDocNutritionCaution":"Angaben pro Portion nur, wenn so hinterlegt; Portionsgröße prüfen","printDocYield":"Ergibt","printDocSide":"Beilage","printDocDessert":"Dessert","printDocDrink":"Getränk","printDocSnack":"Snack","printDocCalories":"Kalorien","printDocProtein":"Eiweiß","printDocCarbs":"Kohlenhydrate","printDocFat":"Fett","printDocFiber":"Ballaststoffe","printDocSugar":"Zucker","studioReasonPantryCovered":"{covered}/{total} Zutaten mengenmäßig gedeckt","studioReasonPantryUnchecked":"Vorrat noch nicht geprüft","studioReasonAmountsUnclear":"{count} Mengen unklar","studioReasonFamilyFriendly":"Familienfreundlich markiert","studioReasonServingsBase":"Rezeptbasis: {servings} Portionen","studioReasonServingsOpen":"Portionen offen","studioReasonWithinBudget":"{minutes} Min. im Zeitbudget","studioReasonOverBudget":"{minutes} Min. · etwas über dem Zeitbudget","studioReasonSharedIngredients":"gemeinsame Zutaten","studioReasonTwoMeals":"Portionen für zwei Mahlzeiten","studioLeftoversName":"Reste: {name}","studioAisleChilled":"Kühlregal","studioAislePantry":"Vorrat & Getreide","studioAisleSpices":"Gewürze & Öle","studioAisleProtein":"Proteine","studioAisleProduce":"Obst & Gemüse / Sonstiges","studioAuditNoIngredients":"Keine Zutaten hinterlegt","studioAuditNoSteps":"Keine Zubereitungsschritte hinterlegt","studioAuditAmountUnclear":"Menge unklar: {item}","studioAuditAmountLarge":"Ungewöhnlich große Menge: {item}","studioAuditServingsInvalid":"Portionen fehlen oder sind ungültig","studioAuditTimeMissing":"Gesamtzeit fehlt","studioAuditDuplicate":"Möglicher doppelter Eintrag: {item}","studioSwapCream":"Hafercuisine / Kochcreme","studioSwapButter":"Pflanzenmargarine oder Olivenöl","studioSwapEgg":"Leinsamen-Ei (bei einigen Teigen)","studioSwapMilk":"Haferdrink","studioSwapMushroom":"Zucchini oder Aubergine","studioSwapQuark":"pflanzliche Quarkalternative","studioSwapParmesan":"Hefeflocken oder vegane Hartkäsealternative","studioSwapFlour":"anderes geeignetes Mehl, Konsistenz prüfen","studioSwapSugar":"Ahornsirup (Flüssigkeit anpassen)","studioSwapWarning":"Textvorschlag, kein geprüfter 1:1-Ersatz. Allergene und Konsistenz selbst prüfen.","studioNoPlannedIngredients":"Keine geplanten Gerichte mit abrufbaren Zutaten vorhanden.","studioCreateShoppingListFirst":"Bitte erst in Mealie eine Einkaufsliste anlegen.","uiMealieRecipeFallback":"Mealie-Rezept","itemFallback":"Eintrag","recipeFallback":"Rezept","navKitchenLabel":"Küchennavigation","uiHomeAssistantNotReady":"Die Verbindung zu Home Assistant ist noch nicht bereit","uiAiSuggestionCountMismatch":"Unerwartete Anzahl an KI-Vorschlägen","uiExperimentalBadge":"EXPERIMENTELL","nutriGramsPlaceholder":"z. B. 200","studioRecipeFetchFailed":"{count} Rezepte konnten nicht geladen werden und wurden übersprungen: {names}","uiProviderResultsTruncated":"Es werden die ersten {limit} Treffer angezeigt. Die Ergebnisse sind möglicherweise unvollständig. Mit der Mealie-Atelier-Bridge durchsuchst du deine gesamte Bibliothek.","uiKeepScreenAwake":"Bildschirm beim Kochen anlassen","uiMutationFailed":"Speichern fehlgeschlagen: {error} Deine Änderung wurde rückgängig gemacht.","uiSaving":"Wird gespeichert…","uiNoWriteGrant":"Dein Home-Assistant-Konto darf diese Küche ansehen, aber nicht ändern. Ein Administrator kann den Zugriff in den Mealie-Atelier-Optionen freigeben.","errNotConfigured":"Mealie Atelier ist noch nicht eingerichtet.","errInvalidRequest":"Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.","errMealieAuth":"Mealie hat den Zugriffstoken abgelehnt. Prüfe den Token in den Einstellungen.","errMealieError":"Mealie ist nicht erreichbar oder hat unerwartet geantwortet. Versuche es gleich noch einmal.","errReadOnly":"Diese Küche ist schreibgeschützt, daher lässt sich nichts ändern.","errUnauthorized":"Diese Aktion erfordert Administratorrechte.","errWriteNotPermitted":"Du darfst in dieser Küche keine Daten ändern.","errConflict":"Jemand hat das inzwischen geändert. Lade neu und versuche es erneut.","errRecipeChanged":"Das Rezept wurde anderswo geändert. Lade es vor dem Speichern neu.","errDisabled":"Diese Funktion ist in den Einstellungen abgeschaltet.","errUseStructuredEditor":"Bearbeite Zutaten mit dem strukturierten Zutaten-Editor.","errWriteUnverified":"Mealie hat die Änderung angenommen, aber das gespeicherte Rezept sieht anders aus. Prüfe das Rezept, bevor du es erneut versuchst.","errBackupFailed":"Die Sicherung konnte nicht geschrieben werden, daher wurde nichts geändert.","errBackupNotFound":"Diese Sicherung gibt es nicht mehr.","errUploadInvalid":"Das Foto wurde abgelehnt. Nutze ein JPEG-, PNG- oder WebP-Bild innerhalb der Größenbeschränkung.","errUploadExpired":"Der Upload ist abgelaufen. Starte ihn erneut.","errUploadBusy":"Es sind zu viele Uploads offen. Warte einen Moment und versuche es erneut.","errStepNotFound":"Dieser Schritt existiert nicht mehr. Lade das Rezept neu.","errSyncRuleNotFound":"Diese Sync-Regel gibt es nicht mehr.","errSyncDestinationUnsupported":"Diese Liste kann keine Einträge aufnehmen. Wähle eine andere To-do-Liste.","errSyncSourceTaken":"Eine andere Regel nutzt diese Einkaufsliste bereits.","errSyncTooManyRules":"Du kannst höchstens 5 Sync-Regeln anlegen.","errSyncNotActivated":"Bestätige zuerst den ersten Stapel, bevor diese Regel automatisch laufen kann.","errSyncNotSupported":"Der Einkaufs-Sync ist nur mit Home Assistant verfügbar."},"en":{"dashboard":"Overview","today":"Today","discover":"Cook ideas","pantry":"Pantry","family":"Family cooking","cookbook":"Cookbook","recipes":"Recipes","mealplan":"Meal planner","shopping":"Shopping","manage":"Manage","greeting":"Good food. Every day.","greetingSub":"Your kitchen, reimagined.","eyebrow":"YOUR PERSONAL KITCHEN STUDIO","tonight":"Tonight on the table","viewRecipe":"Open recipe","nothing":"Nothing planned yet","planNow":"Plan a dish","collections":"Your recipe collection","all":"All recipes","search":"Search recipes …","noRecipes":"No recipes found.","noPlan":"Nothing planned","week":"Your week at a glance","list":"Everything for the market","add":"Add","addItem":"Add an item","noShopping":"Your shopping list is empty.","progress":"Completed","items":"items","cooking":"Cooking mode","edit":"Edit","addToPlan":"Plan meal","servings":"Servings","ingredients":"Ingredients","instructions":"Instructions","next":"Next","back":"Back","done":"Done","cookStart":"Start cooking","create":"New recipe","import":"Import from URL","name":"Recipe name","description":"Description","save":"Save","url":"Recipe URL","more":"Show more","settings":"Design Studio","language":"Language","languageAuto":"Automatic","languageName":"English","studioConnectionFailed":"Atelier connection failed","studioSaveFailed":"Could not save","studioAnalysisFailed":"Recipe analysis failed","studioDetailsLoading":"Loading recipe details for planning …","studioCatalogLoading":"Loading recipe collection: {loaded} of {total} recipes …","studioCatalogLoadingCount":"Loading recipe collection: {loaded} recipes …","studioCatalogDetails":"Recipe details: {loaded} of {total} loaded …","studioCatalogLimit":"The analysis loads up to 600 recipes.","studioCatalogTotal":"The collection contains {total}.","studioDialogLabel":"MEALIE ATELIER / KITCHEN STUDIO","studioDialogPromptLabel":"Enter an ingredient","studioDialogPromptPlaceholder":"e.g. cream","studioConfirm":"Confirm","studioCancel":"Cancel","studioClose":"Close","studioDiagnosticsKicker":"ATELIER / SYSTEM CHECK","studioDiagnosticsTitle":"Is everything working?","studioDiagnosticsDescription":"Checks the actual connection, read access, and settings. No data is changed and no access keys are shown.","studioDiagnosticsRunning":"Checking …","studioDiagnosticsCheck":"Check connection","studioDiagnosticsExport":"Export Atelier data as JSON","studioDiagnosticsEmpty":"Not checked yet. Run the system check to catch connection issues early.","studioDiagnosticsAdmin":"Admin","studioDiagnosticsEdit":"Editing allowed","studioDiagnosticsReadOnly":"Read-only","studioDiagnosticsBackup":"The backup contains private household data and recipe notes.","studioDiagnosticsReachable":"Reachable","studioBridge":"Atelier Bridge","studioStorage":"Atelier storage","version":"Version","studioDiagnosticsNoData":"No data","studioDiagnosticsError":"Error","studioDiagnosticsPassed":"All five connection checks passed.","studioDiagnosticsFailed":"{count} connection check(s) failed.","studioExportNote":"Contains private household data. Not a full Mealie backup.","studioExportDownloaded":"Atelier profile downloaded. Store it securely.","studioExportFailed":"Export failed: {error}","studioDailyMorning":"Good morning. What is on the menu today?","studioDailyEvening":"Good evening. Time for something good.","studioDailyAnytime":"Your kitchen for the rest of the day.","studioDailyEyebrow":"YOUR KITCHEN ASSISTANT","studioDailyMorningLabel":"MORNING","studioDailyEveningLabel":"EVENING","studioDailyOverviewLabel":"TODAY AT A GLANCE","studioDailyExpiring":"{count} pantry items should be used soon.","studioDailyDiscover":"Explore recipes and plan at your own pace.","studioDailyPantry":"Pantry & shopping","studioDailyPlan":"What should we cook today?","studioConfirmAvailable":"Home Assistant action triggered.","studioConfirmUnavailable":"Available in Home Assistant only.","studioNoStep":"There is no cooking step to read aloud.","studioDeviceInvalid":"The device or entity is not configured correctly.","studioActionFailed":"Home Assistant action failed: {error}","studioReadUnsupported":"Text-to-speech is not supported in this browser.","studioVoiceUnsupported":"Voice commands are not supported in this browser.","studioMicrophoneError":"Microphone unavailable or permission denied.","studioVoiceUnknown":"Command not recognized: {command}","studioSpeakNoMatch":"No clear matching ingredient was found in the recipe.","studioJournalSaved":"Personal note saved.","studioSaved":"Saved in Atelier.","studioChildApproval":"An adult must explicitly approve tasks assigned to children.","studioSpeechDe":"de-DE","studioSpeechEn":"en-US","studioDiscoverTitle":"What should we cook today?","studioDiscoverLead":"A few quick choices, then we’ll find something good in your recipes.","studioDiscoverStep0":"What sounds good?","studioDiscoverStep1":"Which cookbook?","studioDiscoverStep2":"Who is joining?","studioDiscoverStep3":"What is on hand today?","studioDiscoverQuestion0":"What are you in the mood for?","studioDiscoverQuestion1":"Choose your favorite collections, or leave them all open.","studioDiscoverQuestion2":"How many people, and how much time do you have?","studioDiscoverQuestion3":"We’ll work around your day.","studioDiscoverCompass":"YOUR KITCHEN COMPASS","studioDiscoverDiet":"Eating style","studioDiscoverAny":"Anything goes","studioDiscoverVegetarian":"Vegetarian","studioDiscoverVegan":"Vegan","studioDiscoverMeat":"Meat","studioDiscoverFish":"Fish","studioDiscoverDietHint":"We match recipes by tags and recognizable ingredients. Always check recipe details yourself.","studioDiscoverCookbooks":"Your cookbooks","studioDiscoverCookbooksHint":"Choose one or more. Leave all unselected to search every recipe.","studioDiscoverCookbooksAria":"Mealie cookbooks","studioDiscoverAllRecipes":"All recipes","studioDiscoverNoCookbooks":"Cookbooks appear here when Mealie metadata is available.","studioDiscoverPeople":"People","studioDiscoverPeopleHint":"Who is joining you at the table?","studioDiscoverOneLess":"One fewer person","studioDiscoverOneMore":"One more person","studioDiscoverKidFriendly":"Kid-friendly","studioDiscoverMild":"Prefer milder dishes","studioDiscoverAnyPreference":"No preference","studioDiscoverWithKids":"With kids","studioDiscoverTime":"Time available","studioDiscoverRelaxed":"No rush","studioDiscoverPantry":"Use pantry items","studioDiscoverUsePantry":"Pantry first","studioDiscoverNoPreference":"No preference","studioDiscoverExclude":"Leave out today …","studioDiscoverOptional":"Choose anything to avoid","studioDiscoverIngredientHint":"Pantry quantities and ingredient data may be incomplete. Check them before cooking.","studioDiscoverBack":"Back","studioDiscoverNext":"Next","studioDiscoverFind":"Find ideas","studioDiscoverResult":"TONIGHT’S INSPIRATION","studioDiscoverResultTitle":"This could be just right today.","studioDiscoverEdit":"Change choices","studioDiscoverTimeOpen":"Time flexible","studioDiscoverPerson":"person","studioDiscoverPeoplePlural":"people","studioDiscoverFromCookbooks":"FROM YOUR COOKBOOKS","studioDiscoverFromRecipes":"FROM YOUR RECIPES","studioDiscoverRecipeBase":"Recipe base: {servings} servings","studioDiscoverForPeople":"For {people} people","studioDiscoverGoodIdea":"A great idea from your cookbook.","studioDiscoverOpenRecipe":"View recipe","studioDiscoverAnother":"Another idea","studioDiscoverAlsoGood":"ALSO DELICIOUS","studioDiscoverMoreIdeas":"{count} more ideas","studioDiscoverEmptyTitle":"The day is still wide open.","studioDiscoverEmpty":"We couldn’t find a recipe that fits these choices. Change a preference or reload your recipes.","studioDiscoverAdjust":"Adjust choices","studioDiscoverReload":"Reload recipes","studioPlanKicker":"03 / SMART WEEKLY PLANNING","studioPlanTitle":"Seven days, less waste","studioPlanDescription":"The preview favors overlapping ingredients and keeps existing dinners. Leftover meals are added only when there are enough servings.","studioPlanPreview":"Suggest a weekly plan","studioPlanCommit":"Add suggestion to Mealie","studioLunch":"Lunch","studioDinner":"Dinner","studioPlanOnlyMissing":"Only missing meals are added. Successful entries remain if another one fails.","studioPlanCreatePreview":"Create a preview first. Nothing changes in Mealie without confirmation.","studioPantryTitle":"Pantry & shopping","studioPantryLead":"A simple, manual pantry is enough. Atelier compares it with your planned meals.","studioPantryKicker":"01 / YOUR PANTRY","studioPantryQuestion":"What do you have?","studioIngredient":"Ingredient","studioAmount":"Amount","studioUnit":"Unit","studioGrams":"Grams","studioMilliliters":"Milliliters","studioPieces":"Pieces","studioBestBefore":"Best before","studioStaple":"Keep as a regular pantry staple","studioAdd":"Add","studioStapleLabel":"Pantry staple","studioUntil":"until {date}","studioRemove":"Remove","studioPantryEmpty":"No pantry items yet. Adding them is optional.","studioGroceryKicker":"02 / SHOPPING ASSISTANT","studioGroceryTitle":"What do you really need?","studioGroceryDescription":"Based on your planned meals. Pantry quantities are deducted only when the units clearly match.","studioGroceryCalculate":"Calculate shopping list","studioGrocerySend":"Add to Mealie list","studioQuantityCheck":"Check amount","studioGroceryPreview":"Click “Calculate shopping list” to see a preview.","studioUnclearUnits":"Unclear tablespoon/teaspoon quantities and different units are never converted automatically.","theme":"Appearance","dark":"Dark","light":"Light","density":"Spacing","compact":"Compact","comfortable":"Comfortable","accent":"Accent color","radius":"Corners","columns":"Columns","nutrition":"Nutrition","nutriTitle":"Atelier Nutrition","nutriAnalyze":"Match ingredients","nutriAi":"Suggest food search terms with AI","nutriEstimate":"Calculate nutrients","nutriSave":"Save to Mealie","nutriSearch":"Search USDA","nutriNoSource":"Select a food","nutriGrams":"Quantity in grams","nutriSource":"Data source","nutriResult":"Per serving","journal":"My cooking notes","journalSave":"Save note","journalNote":"How was it last time?","timer":"Kitchen timer","timerStart":"Start timer","timerRemove":"Remove","apply":"Apply","close":"Close","configured":"Your design is saved on this device.","backend":"Connection not configured","backendHint":"Set up Mealie Atelier Bridge in Home Assistant first.","refresh":"Refresh","loading":"Preparing your kitchen …","error":"Something went wrong.","retry":"Try again","selectRecipe":"Choose a recipe","selectList":"Choose list","saved":"Saved","created":"Recipe created","planned":"Meal planned","toMealie":"Open in Mealie","mealType":"Meal","dinner":"Dinner","lunch":"Lunch","breakfast":"Breakfast","saveNote":"Edit basic details","admin":"Manage recipes","recipeTip":"Create recipes and edit existing ones.","featured":"FROM YOUR KITCHEN","headline":"Make something delicious.","count":"Recipes","open":"Open","todayDate":"Today","nextMeal":"Planned","day":"Day","label":"List","change":"Change","importTip":"Paste the URL of a recipe for Mealie to import.","expand":"Read more","adminOnly":"Changing recipes requires a Home Assistant admin account.","emptyTip":"Use search or create a new recipe.","markComplete":"Mark completed","addListFirst":"Create your first shopping list.","offline":"Could not load data.","createList":"New list","listName":"Shopping list name","shoppingFromRecipe":"Get ingredients","shoppingAddRecipe":"Add ingredients","shoppingAdded":"Ingredients added to list","editSteps":"Edit cooking instructions","editIngredients":"Replace ingredients","editStepsHint":"One step per paragraph, separated by a blank line.","editIngredientsHint":"One ingredient per line. Warning: replacing ingredients removes linked foods and units.","servingsNumber":"Servings (number)","applySteps":"Replace steps","applyIngredients":"Replace ingredients","resetDesign":"Reset design","pictures":"Show recipe images","todayIntro":"Your kitchen today.","todaySub":"Today’s meals and everything you still need.","toShopping":"View shopping list","plannedForToday":"Planned today","noSteps":"No cooking instructions added yet.","allMeals":"All dishes","successList":"List created","addFromRecipeTip":"Mealie adds all recipe ingredients to your chosen shopping list.","ingredientExperimental":"Ingredient replacement is disabled by default. Enable it in Bridge settings only after backing up Mealie.","readOnly":"Read-only mode","readOnlyHint":"Editing is disabled for this kitchen dashboard.","adminOnlyHint":"Recipe management requires administrator access.","studioDiscoverStepProgress":"Step {step} of 4","ingredientMushrooms":"Mushrooms","ingredientOlives":"Olives","ingredientCilantro":"Cilantro","ingredientBellPepper":"Bell pepper","ingredientHeat":"Spicy food","ingredientTomatoes":"Tomatoes","familyTitle":"Cook together","familyLead":"Shared cooking progress with optional helper tasks and approval from an adult.","familyAdultMode":"Adult view","familyHelperMode":"Simple helper view","familySync":"Refresh live status","familyTeam":"01 / THE TEAM","familyWhoHelps":"Who is helping?","familyName":"Name","familyChild":"Child – approved tasks only","familyAddMember":"Add person","familyHelper":"Helper mode","familyRemoveMember":"Remove person","familyNoMembers":"No family members yet.","familySession":"02 / SHARED COOKING SESSION","familyNoSession":"No active session","familyStep":"Shared step {step} · started {date}","familyBack":"Back","familyNext":"Next step","familyEnd":"End session","familyOpenCook":"Open cooking mode","familyTimers":"Shared timers","familyNoTimers":"No shared timers yet","familyTimerName":"Label","familyMinutes":"Minutes","familySetTimer":"Set timer","familyTasks":"Helper tasks","familyMarkOpen":"Mark as open: {task}","familyMarkDone":"Mark as done: {task}","familyNoTasks":"No tasks assigned yet.","familyTask":"Task","familyTaskPlaceholder":"e.g. wash the vegetables","familyAssign":"Assign to","familyApproval":"I reviewed and approved this task","familyAssignTask":"Assign task","familySafety":"The child view simplifies the interface but does not restrict access. Adults remain responsible for supervision and safe device use.","familyStartHint":"Open a recipe and start cooking mode. A shared session starts when editing is allowed.","familyBrowse":"Browse recipes","cookbookTitle":"Your own cookbook","cookbookLead":"Choose favorite recipes. Atelier lays out a cover, contents, and A4 recipe pages in one print-ready view.","cookbookSelectKicker":"01 / CHOOSE RECIPES","cookbookCollection":"Your collection","cookbookLoad":"Load recipe details","cookbookSelectAll":"Select all visible","cookbookClear":"Clear selection","cookbookEmpty":"No recipes loaded yet","cookbookLoadHint":"Load recipe details to build your own cookbook.","cookbookBookKicker":"02 / YOUR BOOK","cookbookSelected":"{count} recipes selected","cookbookTitleLabel":"Book title","cookbookTitleDefault":"Our favorite recipes","cookbookSubtitleLabel":"Subtitle","cookbookSubtitleDefault":"Good food. Every day.","cookbookPhotos":"Print recipe photos","cookbookPrint":"Cookbook PDF / print preview","cookbookPrintHint":"Use “Save as PDF” in your browser. Each recipe starts on a new A4 page; very long recipes may flow onto extra pages.","printPreparing":"Laying out your cookbook …","printDocumentTitle":"Mealie Atelier – Cookbook","printSavePdf":"Save as PDF / Print","printCollection":"RECIPE COLLECTION","printMadeWithLove":"MADE WITH LOVE","printContents":"CONTENTS","printRecipes":"The recipes.","printRecipe":"RECIPE {number} / {total}","printIngredients":"INGREDIENTS","printPreparation":"METHOD","printServings":"{count} servings","studioMinutesShort":"min","studioOven":"Oven","studioReadStepLabel":"Read step aloud","studioVoiceCommandLabel":"Voice command","studioReplacementLabel":"Ingredient alternatives","studioCookingLight":"Cooking light","studioLowerMusic":"Lower music","studioSpeakerLabel":"Play on speaker","studioSharedFamily":"Synced with family","studioSharedTimer":"shared","studioRecipeAuditTitle":"Recipe check: {score}/100","studioRecipeAuditNone":"No obvious structure issues found.","studioRecipeAuditAll":"All notes","studioAICheck":"Review with AI","studioAiSuggestionTitle":"AI suggestions (review only)","studioLocalAlternativeNone":"No verified local alternative found.","studioAiOptional":"AI is optional and requires an API key.","studioReplaceTitle":"Replace an ingredient","studioReplaceBody":"Which ingredient would you like to replace? Suggestions are not verified one-to-one substitutes.","studioShowAlternatives":"Show alternatives","studioAiAuditTitle":"Start AI recipe review?","studioAiAuditBody":"This recipe’s ingredients, amounts, and steps will be sent to your configured AI provider. Nothing will be changed automatically.","studioAiConsent":"Send data and review","studioAiStarting":"Starting AI recipe review …","studioAiUnavailable":"AI review unavailable: {error}","studioAuditTitle":"Recipe quality check · {score}/100","studioAuditNone":"No obvious structure issues.","studioAuditDisclaimer":"This check flags basic structure issues, not culinary mistakes.","studioSessionReplaceTitle":"Replace the shared cooking session?","studioSessionReplaceBody":"“{name}” is currently active. Replacing it will end its shared timers and tasks. Cancel to start the new recipe locally only.","studioSessionReplaceConfirm":"Replace session","studioOnlyHomeAssistant":"Available in Home Assistant only.","studioSpeechStartFailed":"Speech recognition could not start.","studioIngredientNoMatch":"I could not find a clear matching ingredient in this recipe.","studioSubstituteError":"No verified local alternative found. AI is optional and requires an API key. {error}","studioRecipeAuditDisclaimer":"Basic structure check · not a culinary review","studioDeletePantryTitle":"Remove pantry item?","studioDeletePantryBody":"This item will be removed from your Atelier pantry.","familyRemoveConfirmTitle":"Remove person?","familyRemoveConfirmBody":"This person will be removed from family cooking. Complete or remove their existing helper tasks first.","familyEndConfirmTitle":"End shared cooking?","familyEndConfirmBody":"This ends the session timers and helper tasks. Personal recipe notes remain.","studioWeekConfirmTitle":"Add weekly plan?","studioWeekConfirmBody":"{count} meals will be added. Existing entries will stay unchanged.","studioWeekConfirmAction":"Add to Mealie","studioWeekSuccess":"{count} meals added.","studioWeekFailure":"Errors: {errors}","studioShoppingTransferTitle":"Transfer shopping items?","studioShoppingTransferBody":"{count} items will be added to your Mealie shopping list.","studioShoppingTransferConfirm":"Add to shopping list","studioShoppingUncertain":"Check amount","studioShoppingSuccess":"{count} items added.","studioShoppingFailure":"Failed: {items}","studioPopupBlocked":"Allow pop-ups to open the print preview.","studioAdultApprovalRequired":"An adult must explicitly approve tasks assigned to children.","cookbookTitleDefaultPrint":"Our recipes","studioJournalSavedToast":"Personal note saved.","providerTitle":"Recipe studio without the Atelier Bridge","providerDescription":"Home Assistant’s built-in Mealie integration supports recipe search and cooking here. Add the optional Atelier Bridge for planning, shopping, cookbooks, photos, and editing.","providerBrowse":"Browse recipes","studioJournalLocal":"Stored only on this device, not synced to Mealie.","studioJournalShared":"Saved in your Atelier profile for your connected devices.","editorConnectKitchen":"Connect kitchen","editorChooseYourStart":"Choose your start","editorSetTheMood":"Set the mood","editorSetupProgress":"Setup progress","editorCheckingHomeAssistantConnections":"Checking Home Assistant connections…","editorCouldNotCheckYourConnections":"Could not check your connections","editorCheckThatMealieAtelierBridgeIsInstalledAndHomeAssistantIsOnline":"Check that Mealie Atelier Bridge is installed and Home Assistant is online.","editorTryAgain":"Try again","editorOpenHomeAssistantIntegrations":"Open Home Assistant integrations","editorHomeAssistantMealieFound":"Home Assistant Mealie found","editorDirectConnectionReadOnlyRecipes":"Direct connection · read-only recipes","editorREADY":"READY","editorRecipeSearchAndCookingWorkWithoutAtelierBridgeProtectedPhotosEditingShoppingAndPlanningStayOptionalBridgeFeatures":"Recipe search and cooking work without Atelier Bridge. Protected photos, editing, shopping and planning stay optional Bridge features.","editorMealieInstance":"Mealie instance","editorYourMealieConnection":"Your Mealie connection","editorChooseAConnectedKitchen":"Choose a connected kitchen…","editorYourAPITokenStaysSafelyInsideTheHomeAssistantIntegration":"Your API token stays safely inside the Home Assistant integration.","editorConnectMealieOnceInHomeAssistant":"Connect Mealie once in Home Assistant","editorAddMealieAtelierBridgeForTheFullStudioOrUseHomeAssistantSBuiltInMealieIntegrationForAReadOnlyRecipeCardCredentialsAreEnteredSecurelyInHomeAssistantNeverInThisCard":"Add Mealie Atelier Bridge for the full studio, or use Home Assistant’s built-in Mealie integration for a read-only recipe card. Credentials are entered securely in Home Assistant, never in this card.","editorIConnectedMealieCheckAgain":"I connected Mealie — check again","editorConnectedSecurely":"Connected securely","editorNoCredentialsInDashboardCards":"No credentials in dashboard cards","editorYourCredentialsBelongInTheSecureIntegrationNeverInThisCard":"Your credentials belong in the secure integration, never in this card.","editorACompleteKitchenOverview":"A complete kitchen overview","editorTodaySMealsAndKitchenTasks":"Today’s meals and kitchen tasks","editorPersonalRecipeInspiration":"Personal recipe inspiration","editorYourCompleteRecipeCollection":"Your complete recipe collection","editorTheWeeklyMealPlan":"The weekly meal plan","editorIngredientsYouAlreadyHave":"Ingredients you already have","editorYourShoppingList":"Your shopping list","editorCookingTogetherAsAFamily":"Cooking together as a family","editorYourSavedCookbooks":"Your saved cookbooks","editorRecipeAndKitchenTools":"Recipe and kitchen tools","editorSTEP1CONNECTION":"STEP 1 · CONNECTION","editorBringYourKitchenTogether":"Bring your kitchen together.","editorAtelierReadsRecipesFromTheMealieConnectionAlreadyConfiguredInHomeAssistant":"Atelier reads recipes from the Mealie connection already configured in Home Assistant.","editorSTEP2YOURKITCHEN":"STEP 2 · YOUR KITCHEN","editorWhatShouldOpenFirst":"What should open first?","editorPickAStartingPointEveryOtherViewStaysOneTapAway":"Pick a starting point. Every other view stays one tap away.","editorStartIn":"Start in","editorYOURATELIEROPENSTO":"YOUR ATELIER OPENS TO","editorSTEP3THEFEEL":"STEP 3 · THE FEEL","editorMakeItFeelLikeYourKitchen":"Make it feel like your kitchen.","editorChooseALookNowYouCanFineTuneEveryDetailLater":"Choose a look now. You can fine-tune every detail later.","editorChooseAnAppearance":"Choose an appearance","editorEveningStudio":"Evening studio","editorDeepGreenWarmLightEditorial":"Deep green · stone light · editorial","editorDaylightKitchen":"Daylight kitchen","editorFreshSurfacesOpenAndBright":"Fresh surfaces · open and bright","editorYourRecipesAndMealieDataAreNeverChangedByTheseChoices":"Your recipes and Mealie data are never changed by these choices.","editorAKitchenThatFeelsLikeYours":"A kitchen that feels like yours.","editorThreeSmallChoicesYourKitchenReady":"Three small choices. Your kitchen, ready.","editorSetUpLater":"Set up later","editorSetupNavigation":"Setup navigation","editorBack":"Back","editorContinue":"Continue","editorCreateMyKitchen":"Create my kitchen","editorACalmStartTheAdvancedSettingsAreHereWheneverYouNeedThem":"A calm start. The advanced settings are here whenever you need them.","editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard":"Configure your card visually. Settings are saved with your Home Assistant dashboard.","editorRunSetupWizard":"Run setup wizard","editorYourKitchenIsReady":"Your kitchen is ready.","editorBasics":"Basics","editorChooseContentAndTheConnectedMealieInstance":"Choose content and the connected Mealie instance.","editorMode":"Mode","editorMealieAccount":"Mealie account","editorFirstConnectedAccount":"First connected account","editorDataConnection":"Data connection","editorAutomaticAtelierFirst":"Automatic · Atelier first","editorAtelierBridgeFullFeatures":"Atelier Bridge · full features","editorHomeAssistantMealieReadOnly":"Home Assistant Mealie · read-only","editorTheBuiltInOptionNeedsNoAtelierServerOrCardTokenRecipeSearchAndCookingAreReadOnlyTheBridgeAddsImagesAndKitchenTools":"The built-in option needs no Atelier server or card token. Recipe search and cooking are read-only; the Bridge adds images and kitchen tools.","editorBuiltInMealieInstance":"Built-in Mealie instance","editorLanguage":"Language","editorAutomatic":"Automatic","editorLookFeel":"Look & feel","editorTypographyMotionAndTheVisualRhythmOfYourCards":"Typography, motion and the visual rhythm of your cards.","editorTheme":"Theme","editorDark":"Dark","editorLight":"Light","editorDensity":"Density","editorComfortable":"Comfortable","editorCompact":"Compact","editorMotionTransitions":"Motion & transitions","editorExpressive":"Expressive","editorSubtle":"Subtle","editorOff":"Off","editorYourReducedMotionSystemPreferenceAlwaysTakesPriority":"Your reduced-motion system preference always takes priority.","editorColumns":"Columns","editorAccent":"Accent","editorCornerStyle":"Corner style","editorRounded":"Rounded","editorSoft":"Soft","editorSquareEckig":"Square","editorFoodPhotographyCrop":"Food photography crop","editorPortraitEditorial":"Portrait · editorial","editorSquareQuadrat":"Square","editorWide":"Wide","editorShowRecipeImages":"Show recipe images","editorOptionalPrintAndKitchenSettings":"Optional print and kitchen settings","editorPrintStudio":"Print studio","editorPremiumA4LayoutsForRecipesAndLists":"Premium A4 layouts for recipes and lists.","editorPrintTemplate":"Print template","editorInkSaver":"Ink saver","editorPrintRecipePhotosWhenAvailable":"Print recipe photos when available","editorPrintCheckboxes":"Print checkboxes","editorPrintCompletedItems":"Print completed items","editorPrintStoredNutritionValues":"Print stored nutrition values","editorPrintHandwritingSpace":"Print handwriting space","editorKitchenTablet":"Kitchen & tablet","editorOptionalHomeAssistantActionsNothingTriggersAutomatically":"Optional Home Assistant actions. Nothing triggers automatically.","editorUseEnlargedTabletLayout":"Use enlarged tablet layout","editorOptionalKitchenSceneHA":"Optional kitchen scene (HA)","editorOnlyTriggeredWhenYouTapTheCookingCockpitButton":"Only triggered when you tap the Cooking Cockpit button.","editorOptionalMediaPlayerHA":"Optional media player (HA)","editorCookingVolume":"Cooking volume","editorOptionalTTSEngineHA":"Optional TTS engine (HA)","editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault":"Use a Home Assistant entity. All optional device actions are disabled by default.","editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio":"Dashboard mode contains the complete kitchen. Device-specific changes are available here in the Design Studio.","uiFindYourNextFavorite":"Find your next favorite","uiSearchRecipesIngredientsOrViews":"Search recipes, ingredients, or views …","uiSearchRecipesIngredientsAndQuickActions":"Search recipes, ingredients and quick actions","uiSearchYourRecipesIncludingByIngredient":"Search your recipes, including by ingredient.","uiYOURKITCHEN":"YOUR KITCHEN","uiNavigation":"Navigation","uiNoMatchingViewsOrActions":"No matching views or actions.","uiSelect":"Select","uiOpen":"Open","uiClose":"Close","uiPrintPDF":"Print / PDF","uiProtein":"Protein","uiCarbs":"Carbs","uiFat":"Fat","uiStep":"Step","uiKitchenTimers":"Kitchen timers","uiATELIERKITCHENTIMER":"ATELIER · KITCHEN TIMER","uiKeepEverythingInRhythm":"Keep everything in rhythm","uiactive":"active","uitimeRemaining":"time remaining","uiminutes":"minutes","uiActiveTimer":"Active timer","uiREADY":"READY","uiRUNNING":"RUNNING","uiNoTimerRunningYetSetOneToKeepEverythingInRhythm":"No timer running yet. Set one to keep everything in rhythm.","uiQuickTimerPresets":"Quick timer presets","uimin":"min","uiMinutes":"Minutes","uiTimerDurationInMinutes":"Timer duration in minutes","uiLabelOptional":"Label · optional","uieGOven":"e.g. Oven","uiStartTimer":"Start timer","uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe":"One step at a time. You can always return to the full recipe.","uiPlanMealsQuicklyWithoutClutter":"Plan meals quickly, without clutter.","uiStartWithARecipeTitleAddDetailsAfterCreating":"Start with a recipe title. Add details after creating.","uieGLemonPastaWithSpinach":"e.g. Lemon pasta with spinach","uiPasteARecipeLinkMealieHandlesImportingIt":"Paste a recipe link. Mealie handles importing it.","uiEditRecipe":"Edit recipe","uiDetailsIngredientsAndInstructionsInOneClearWorkflow":"Details, ingredients and instructions in one clear workflow.","uiYourRecipeTitleSummaryAndServingSize":"Your recipe title, summary and serving size.","uiWhatMakesThisSpecial":"What makes this special?","uiShownInRecipesAndPrint":"Shown in recipes and print.","uiLinkedFoodsAndUnitsStayProtectedTheIngredientsCanBePrinted":"Linked foods and units stay protected; the ingredients can be printed.","uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled":"Edit, add and reorder steps. Replacement must be explicitly enabled.","uiReplaceCookingInstructions":"Replace cooking instructions","uiAddAStep":"Add a step","uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected":"Steps are replaced on save if the checkbox is selected.","uiChangesAreSentToMealieOnlyWhenYouSave":"Changes are sent to Mealie only when you save.","uiGiveYourShoppingListAName":"Give your shopping list a name.","uieGWeeklyGroceries":"e.g. Weekly groceries","uiMotionTransitions":"Motion & transitions","uiThoughtfulMotionThatHelpsNavigationYourReducedMotionDeviceSettingAlwaysTakesPriority":"Thoughtful motion that helps navigation. Your reduced-motion device setting always takes priority.","uiExpressive":"Expressive","uiSubtle":"Subtle","uiOff":"Off","uiPhotoCrop":"Photo crop","uiTall":"Tall","uiSquare":"Square","uiWide":"Wide","uiCornerStyle":"Corner style","uiRound":"Round","uiSoft":"Soft","uiSquareEckig":"Square","uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan":"Separate A4 layouts for recipes, shopping and your weekly plan.","uiOpenPrintSettings":"Open print settings","uiEnjoyingTheAtelier":"Enjoying the Atelier?","uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi":"If it makes your kitchen routine better, you can optionally support its development on Ko-fi.","uiSayThanksOnKoFi":"Say thanks on Ko-fi","uiQuickActions":"Quick actions","uiPrintStudioSettings":"Print Studio · Settings","uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity":"Up to 500 matches through Home Assistant. Photos and Atelier write features stay disabled for security.","uiMarkComplete":"Mark complete: ","uiPrint":"Print","uiSwipeToBrowseAllSevenDays":"Swipe to browse all seven days.","uiAllowPopupsToOpenThePrintPreview":"Allow popups to open the print preview.","uiCalories":"Calories","uiCarbohydrates":"Carbohydrates","uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches":"Nutrient values come from food data, not AI guesses. Review all weights and matches.","uiFoodsMatched":"Foods matched","uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv":"USDA API key not configured. Add it in integration settings or .env.","uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt":"This recipe already has nutrition data. Explicit approval is required to replace it.","uiSendsIngredientTextToOpenAINoInventedMacros":"Sends ingredient text to OpenAI; no invented macros.","uiOptionalConfigureOpenAIAPIKey":"Optional: configure OpenAI API key","uiREVIEWINGREDIENTS":"REVIEW INGREDIENTS","uiNotMatched":"Not matched","uiFoodSearchQuery":"Food search query","uiFindFood":"Find food","uiNoCompleteNutritionEntriesFoundTryAnotherQuery":"No complete nutrition entries found. Try another query.","uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates":"Based on selected USDA entries per 100g; cooking yields and missing nutrients affect accuracy. Values are estimates.","uiSourcesCoverage":"Sources & coverage","uiExplicitlyReplaceExistingNutritionValues":"Explicitly replace existing nutrition values","uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie":"Your personal cooking notes. Stored only on this device, not synced to Mealie.","uiHowDidItTurnOut":"How did it turn out?","uiNotRated":"Not rated","uiNextTimeReduceTheSalt":"Next time, reduce the salt …","editorPreviewDashboard":"Your kitchen at a glance","editorPreviewToday":"Tonight on the table","editorPreviewDiscover":"Fresh ideas for dinner","editorPreviewRecipes":"Recipes you love","editorPreviewMealplan":"This week’s menu","editorPreviewPantry":"What is already in","editorPreviewShopping":"On your shopping list","editorPreviewFamily":"Better together","editorPreviewCookbook":"Your cookbooks","editorPreviewManage":"Your kitchen studio","uiRememberAsFavoriteRecipe":"Remember as a favorite recipe","uiScaleServingsNote":"Amounts adjusted for {target} servings. Recipe base: {base} servings. Clear quantities are scaled; please check free-text amounts.","uiRecipeStepImageAlt":"Image for step {step}","uiMarkShoppingOpen":"Mark as open: {item}","uiMarkShoppingComplete":"Mark complete: {item}","uiServing.one":"serving","uiServing.other":"servings","uiThisFeatureRequiresMealieAtelierBridge":"This feature requires Mealie Atelier Bridge.","uiHomeAssistantSMealieIntegrationWithRecipeSearchIsUnavailable":"Home Assistant’s Mealie integration with recipe search is unavailable.","uiChooseAValidMealieInstance":"Choose a valid Mealie instance.","uiHomeAssistantReturnedNoRecipe":"Home Assistant returned no recipe.","uiEveryDay":"Every day","uiDescribeThisStep":"Describe this step …","uiMoveUp":"Move up","uiMoveDown":"Move down","uiRemoveStep":"Remove step","uiRemove":"Remove","uiMealieReadOnly":"Mealie · read-only","uiRecipesCookingPhotosAndEditsNeedAtelierBridge":"Recipes & cooking · Photos and edits need Atelier Bridge","uiKitchenTimer":"Kitchen timer","uiAISuggestedSearchTermsReviewEveryDatabaseMatchYourself":"AI suggested search terms. Review every database match yourself.","uiNutritionSavedToMealie":"Nutrition saved to Mealie","uiCalculatedReviewBeforeSaving":"Calculated. Review before saving.","uiBonAppetitEnjoyYourMeal":"Bon appétit! Enjoy your meal.","uiTypeAtLeastOneMoreCharacter":"Type at least one more character.","uiSearchingYourRecipes":"Searching your recipes …","uiNoRecipeFoundYet":"No recipe found yet","uiTryAnotherRecipeNameOrIngredient":"Try another recipe name or ingredient.","uiSearchIsUnavailableRightNow":"Search is unavailable right now","uiIngredient":"Ingredient","uiRecipeName":"Recipe name","uiNameIngredient":"Name & ingredient","uiRecipeMatch":"Recipe match","uiMATCHINGRECIPES":"MATCHING RECIPES","uiresults":"results","uiRecipeResults":"Recipe results","uiNoteSavedOnThisDevice":"Note saved on this device","uiOpenQuickActions":"Open quick actions ({shortcut})","uiSeeAllResults":"See all {count} results","uiConversion":"Kitchen conversion","uiConversionNeedsDensity":"Mass and volume need an ingredient-specific density. Atelier will not guess it.","uiConversionExactFactors":"Converted with standard unit factors. Recipe amounts are not changed.","uiSearchConversionExample":"Try: 250 g to oz","uiPrintHeroTitle":"Make it beautiful on paper.","uiPrintHeroDescription":"A dedicated, carefully typeset print layout. Your browser can save it as a PDF.","uiPrintStyle":"STYLE","uiPrintEditorial":"Editorial","uiPrintEditorialDescription":"Elegant, spacious typography","uiPrintCompact":"Compact","uiPrintCompactDescription":"Save room without sacrificing legibility","uiPrintInkSaver":"Ink saver","uiPrintInkSaverDescription":"Black ink and no photos","uiPrintDetails":"CUSTOMIZE DETAILS","uiPrintIncludePhoto":"Include recipe photo (if available)","uiPrintIncludeNutrition":"Include nutrition from Mealie (if present)","uiPrintIncludeCompleted":"Also print completed items","uiPrintIncludeCheckboxes":"Include checkboxes","uiPrintIncludeNotes":"Include room for notes","uiPrintOpenPreview":"Open print / PDF preview","uiPrintGuide":"Choose A4 and 100% scale in the browser. For the weekly plan, A4 landscape is selected automatically.","uiPrintPaperPreview":"PAPER PREVIEW","uiYourRecipe":"Your recipe","uiPrintPreviewDescription":"Thoughtfully laid out. Ready to print.","uiPrintIngredientsItems":"INGREDIENTS / ITEMS","uiPrintPreparationNotes":"PREPARATION / NOTES","uiPrintDesignedForPaper":"DESIGNED FOR PAPER","offlinePanelLabel":"Offline sync and kitchen timers","offlineSyncTimers":"Sync & kitchen timers","offlineLoading":"Loading status","offlineShopping":"Offline shopping","offlineStorageNote":"Changes stay on this device until they are safely synced with Mealie.","offlineEnable":"Enable offline mode","offlineSyncNow":"Sync now","offlineReviewConflicts":"Review conflicts","offlineBackgroundTimers":"Background timers","offlineCheckingDelivery":"Checking delivery channel","offlineAllowPush":"Allow push","offlineRefreshTimers":"Refresh timers","offlineConflictToggle":"Checklist conflict","offlineConflictList":"Shopping-list conflict","offlineReviewCurrentList":"Check the current Mealie list.","offlineDiscardChange":"Discard change","offlinePlanned":"Scheduled: {time}","offlineStopTimer":"Stop timer","offlineDisabled":"Offline shopping is off","offlineStatus":"{connection} · {pending} pending{conflicts}{syncing}","offlineConflictCount":" · {count} conflict(s)","offlineSyncing":" · Syncing","offlineClearLocal":"Clear local data","offlineHomeAssistantActive":"Home Assistant active","offlinePushConfigured":"Web Push configured (permission required)","offlineNoAlarmChannel":"No alarm channel configured","offlinePushReady":"Push enabled","offlineEnableConfirmTitle":"Enable offline shopping?","offlineEnableConfirmBody":"Shopping lists and pending changes will be stored on this device. Avoid enabling this on public devices.","offlineDeleteConfirmTitle":"Delete offline data?","offlineDeleteConfirmBody":"Local shopping lists and unsynced changes will be permanently deleted.","offlineDeleteConfirmAction":"Delete data","offlineEnableConfirmAction":"Enable offline mode","offlinePushSetup":"Set up push notifications","offlineEnableHelp":"Enable offline shopping","offlineAlarmError":"Kitchen timer notification error","uiBackgroundTimerEnabled":"Background timer enabled","uiLocalTimerEnabled":"Local timer enabled only","uiBackgroundTimerError":"Background timer was not enabled: {error}","uiTimerStopError":"Could not stop the timer: {error}","dialogWeeklyMenu":"WEEKLY MENU","dialogYourMenu":"YOUR MENU","dialogPlanned":"PLANNED","dialogNewRecipe":"NEW RECIPE","dialogRecipeTitle":"RECIPE TITLE","dialogSource":"SOURCE","dialogRecipeStudio":"RECIPE STUDIO","dialogBasics":"BASICS","dialogStepByStep":"STEP BY STEP","offlineNoSnapshot":"No offline copy yet. Open the shopping list once while online.","offlineNotEnabled":"Enable offline shopping from the status bar first.","offlineListNeedsRefresh":"Load the shopping list while connected first.","offlineRequiresConnection":"This action requires an internet connection.","offlineItemNotEditable":"This item cannot be edited offline.","offlineInvalidItem":"The item or shopping list is invalid.","offlinePushKeysMissing":"Web Push server keys are missing.","offlinePushRequiresHttps":"Web Push requires HTTPS and a supported browser.","offlinePushPermissionDenied":"Notifications were not allowed.","offlineAlarmRequiresServer":"A background alarm cannot be enabled without a server connection.","offlineUnexpectedError":"The offline action could not be completed. Please try again.","printDocRecipe":"RECIPE","printDocShoppingList":"SHOPPING LIST","printDocWeeklyPlan":"WEEKLY PLAN","printDocTotalTime":"Total time","printDocMinAbbr":"min","printDocCloseWindow":"Close window","printDocFromYourKitchen":"From your kitchen","printDocNoItems":"No entries yet","printDocYourWeeklyPlan":"Your weekly menu","printDocMeals":"Meals","printDocListed":"Completed","printDocNutritionCaution":"Per serving only when recorded that way; verify portion size","printDocYield":"Yield","printDocSide":"Side","printDocDessert":"Dessert","printDocDrink":"Drink","printDocSnack":"Snack","printDocCalories":"Calories","printDocProtein":"Protein","printDocCarbs":"Carbs","printDocFat":"Fat","printDocFiber":"Fiber","printDocSugar":"Sugar","studioReasonPantryCovered":"{covered}/{total} ingredients covered by quantity","studioReasonPantryUnchecked":"Pantry not checked yet","studioReasonAmountsUnclear":"{count} amounts unclear","studioReasonFamilyFriendly":"Marked family friendly","studioReasonServingsBase":"Recipe base: {servings} servings","studioReasonServingsOpen":"Servings not set","studioReasonWithinBudget":"{minutes} min within the time budget","studioReasonOverBudget":"{minutes} min, slightly over the time budget","studioReasonSharedIngredients":"shared ingredients","studioReasonTwoMeals":"Servings for two meals","studioLeftoversName":"Leftovers: {name}","studioAisleChilled":"Chilled","studioAislePantry":"Pantry and grains","studioAisleSpices":"Spices and oils","studioAisleProtein":"Protein","studioAisleProduce":"Produce and other","studioAuditNoIngredients":"No ingredients on file","studioAuditNoSteps":"No preparation steps on file","studioAuditAmountUnclear":"Amount unclear: {item}","studioAuditAmountLarge":"Unusually large amount: {item}","studioAuditServingsInvalid":"Servings missing or invalid","studioAuditTimeMissing":"Total time missing","studioAuditDuplicate":"Possible duplicate entry: {item}","studioSwapCream":"Oat cooking cream","studioSwapButter":"Plant margarine or olive oil","studioSwapEgg":"Flax egg (works in some doughs)","studioSwapMilk":"Oat drink","studioSwapMushroom":"Zucchini or eggplant","studioSwapQuark":"Plant-based quark alternative","studioSwapParmesan":"Nutritional yeast or a vegan hard cheese alternative","studioSwapFlour":"Another suitable flour, check the texture","studioSwapSugar":"Maple syrup (adjust the liquid)","studioSwapWarning":"Text suggestion, not a tested 1:1 replacement. Check allergens and texture yourself.","studioNoPlannedIngredients":"No planned dishes with retrievable ingredients.","studioCreateShoppingListFirst":"Please create a shopping list in Mealie first.","uiMealieRecipeFallback":"Mealie recipe","itemFallback":"Item","recipeFallback":"Recipe","navKitchenLabel":"Kitchen navigation","uiHomeAssistantNotReady":"Home Assistant connection is not ready","uiAiSuggestionCountMismatch":"Unexpected AI suggestion count","uiExperimentalBadge":"EXPERIMENTAL","nutriGramsPlaceholder":"e.g. 200","studioRecipeFetchFailed":"{count} recipes could not be loaded and were skipped: {names}","uiProviderResultsTruncated":"Showing the first {limit} matches. Results may be incomplete. Use the Mealie Atelier Bridge to browse your full library.","uiKeepScreenAwake":"Keep screen awake while cooking","uiMutationFailed":"Could not save: {error} Your change was undone.","uiSaving":"Saving…","uiNoWriteGrant":"Your Home Assistant user may view this kitchen but not change it. An administrator can grant access in the Mealie Atelier options.","errNotConfigured":"Mealie Atelier is not set up yet.","errInvalidRequest":"That request was not valid. Check your input and try again.","errMealieAuth":"Mealie refused the access token. Check the token in the settings.","errMealieError":"Mealie is unreachable or answered unexpectedly. Try again in a moment.","errReadOnly":"This kitchen is in read-only mode, so nothing can be changed.","errUnauthorized":"This action needs administrator access.","errWriteNotPermitted":"You do not have permission to change data in this kitchen.","errConflict":"Someone else changed this meanwhile. Reload and try again.","errRecipeChanged":"The recipe changed elsewhere. Reload it before saving.","errDisabled":"This feature is switched off in the settings.","errUseStructuredEditor":"Edit ingredients with the structured ingredient editor.","errWriteUnverified":"Mealie accepted the change but the saved recipe looks different. Check the recipe before retrying.","errBackupFailed":"The backup could not be written, so nothing was changed.","errBackupNotFound":"That backup no longer exists.","errUploadInvalid":"The photo was rejected. Use a JPEG, PNG or WebP image within the size limit.","errUploadExpired":"The upload expired. Start it again.","errUploadBusy":"Too many uploads are open. Wait a moment and try again.","errStepNotFound":"That step no longer exists. Reload the recipe.","errSyncRuleNotFound":"That sync rule no longer exists.","errSyncDestinationUnsupported":"That list cannot receive items. Pick another to-do list.","errSyncSourceTaken":"Another rule already uses this shopping list.","errSyncTooManyRules":"You can have at most 5 sync rules.","errSyncNotActivated":"Confirm the first batch before this rule can run automatically.","errSyncNotSupported":"Shopping sync is only available with Home Assistant."}};
+const LABELS = {"de":{"dashboard":"Übersicht","today":"Heute","discover":"Kochinspo","pantry":"Vorräte","family":"Gemeinsam kochen","cookbook":"Kochbuch","recipes":"Rezepte","mealplan":"Wochenplan","shopping":"Einkaufsliste","manage":"Verwalten","greeting":"Gutes Essen. Jeden Tag.","greetingSub":"Deine Küche, neu gedacht.","eyebrow":"DEIN PERSÖNLICHES KÜCHENSTUDIO","tonight":"Heute auf dem Teller","viewRecipe":"Rezept öffnen","nothing":"Noch nichts geplant","planNow":"Gericht einplanen","collections":"Deine Rezeptsammlung","all":"Alle Rezepte","search":"Rezept suchen …","noRecipes":"Noch keine Rezepte gefunden.","noPlan":"Noch nichts geplant","week":"Die Woche im Blick","list":"Alles für den Einkauf","add":"Hinzufügen","addItem":"Artikel hinzufügen","noShopping":"Deine Einkaufsliste ist leer.","progress":"Erledigt","items":"Artikel","cooking":"Kochmodus","edit":"Bearbeiten","addToPlan":"Einplanen","servings":"Portionen","ingredients":"Zutaten","instructions":"Zubereitung","next":"Weiter","back":"Zurück","done":"Fertig","cookStart":"Kochen starten","create":"Neues Rezept","import":"Von URL importieren","name":"Rezeptname","description":"Beschreibung","save":"Speichern","url":"Rezept-URL","more":"Mehr anzeigen","settings":"Design Studio","language":"Sprache","languageAuto":"Automatisch","languageName":"Deutsch","studioConnectionFailed":"Verbindung zum Atelier fehlgeschlagen","studioSaveFailed":"Speichern fehlgeschlagen","studioAnalysisFailed":"Rezeptanalyse fehlgeschlagen","studioDetailsLoading":"Rezeptdetails werden für die Planung geladen …","studioCatalogLoading":"Rezeptsammlung wird geladen: {loaded} von {total} Rezepten …","studioCatalogLoadingCount":"Rezeptsammlung wird geladen: {loaded} Rezepte …","studioCatalogDetails":"Rezeptdetails: {loaded} von {total} geladen …","studioCatalogLimit":"Für die Analyse werden maximal 600 Rezepte geladen.","studioCatalogTotal":"Die Sammlung enthält {total}.","studioDialogLabel":"MEALIE ATELIER / KÜCHENSTUDIO","studioDialogPromptLabel":"Zutat eingeben","studioDialogPromptPlaceholder":"z. B. Sahne","studioConfirm":"Bestätigen","studioCancel":"Abbrechen","studioClose":"Schließen","studioDiagnosticsKicker":"ATELIER / SYSTEMCHECK","studioDiagnosticsTitle":"Alles im grünen Bereich?","studioDiagnosticsDescription":"Prüft die tatsächliche Verbindung, Leserechte und Einstellungen. Es werden keine Daten verändert oder Zugangsschlüssel angezeigt.","studioDiagnosticsRunning":"Prüfung läuft …","studioDiagnosticsCheck":"Verbindung prüfen","studioDiagnosticsExport":"Atelier-Daten als JSON sichern","studioDiagnosticsEmpty":"Noch nicht geprüft. Starte den Systemcheck, um Fehlermeldungen frühzeitig zu erkennen.","studioDiagnosticsAdmin":"Admin","studioDiagnosticsEdit":"Bearbeitung erlaubt","studioDiagnosticsReadOnly":"Nur lesen","studioDiagnosticsBackup":"Sicherung enthält private Haushaltsdaten und Rezeptnotizen.","studioDiagnosticsReachable":"Erreichbar","studioBridge":"Atelier Bridge","studioStorage":"Atelier-Speicher","version":"Version","studioDiagnosticsNoData":"Keine Daten","studioDiagnosticsError":"Fehler","studioDiagnosticsPassed":"Alle fünf Verbindungstests bestanden.","studioDiagnosticsFailed":"{count} Verbindungstest(s) fehlgeschlagen.","studioExportNote":"Enthält private Haushaltsdaten. Kein vollständiges Mealie-Backup.","studioExportDownloaded":"Atelier-Profil heruntergeladen. Bitte sicher aufbewahren.","studioExportFailed":"Export fehlgeschlagen: {error}","studioDailyMorning":"Guten Morgen – was steht heute an?","studioDailyEvening":"Guten Abend – Zeit für etwas Gutes.","studioDailyAnytime":"Deine Küche für den Rest des Tages.","studioDailyEyebrow":"DEIN KÜCHENASSISTENT","studioDailyMorningLabel":"MORGENS","studioDailyEveningLabel":"ABENDS","studioDailyOverviewLabel":"TAGESÜBERBLICK","studioDailyExpiring":"{count} Vorräte sollten bald verbraucht werden.","studioDailyDiscover":"Entdecke Rezepte und plane ganz entspannt.","studioDailyPantry":"Vorräte & Einkauf","studioDailyPlan":"Was kochen wir heute?","studioConfirmAvailable":"Home-Assistant-Aktion ausgelöst.","studioConfirmUnavailable":"Nur in Home Assistant verfügbar.","studioNoStep":"Kein Kochschritt zum Vorlesen.","studioDeviceInvalid":"Gerät/Entity ist nicht korrekt eingerichtet.","studioActionFailed":"Home-Assistant-Aktion fehlgeschlagen: {error}","studioReadUnsupported":"Vorlesen wird in diesem Browser nicht unterstützt.","studioVoiceUnsupported":"Sprachkommandos werden von diesem Browser nicht unterstützt.","studioMicrophoneError":"Mikrofon nicht verfügbar oder Berechtigung verweigert.","studioVoiceUnknown":"Kommando nicht erkannt: {command}","studioSpeakNoMatch":"Dazu finde ich keine eindeutige Zutat im Rezept.","studioJournalSaved":"Persönliche Notiz gespeichert.","studioSaved":"Im Atelier gespeichert.","studioChildApproval":"Kinderaufgaben müssen ausdrücklich von Erwachsenen freigegeben werden.","studioSpeechDe":"de-DE","studioSpeechEn":"en-US","studioDiscoverTitle":"Was kochen wir heute?","studioDiscoverLead":"Ein paar Klicks. Dann finden wir etwas Gutes aus euren Rezepten.","studioDiscoverStep0":"Was schmeckt euch?","studioDiscoverStep1":"Aus welchem Kochbuch?","studioDiscoverStep2":"Wer isst mit?","studioDiscoverStep3":"Was ist heute drin?","studioDiscoverQuestion0":"Worauf habt ihr Appetit?","studioDiscoverQuestion1":"Wähle deine Lieblingssammlungen – oder lass alles offen.","studioDiscoverQuestion2":"Für wie viele und mit welchem Zeitfenster?","studioDiscoverQuestion3":"Wir richten uns nach eurem Alltag.","studioDiscoverCompass":"DEIN KÜCHENKOMPASS","studioDiscoverDiet":"Ernährungsstil","studioDiscoverAny":"Alles offen","studioDiscoverVegetarian":"Vegetarisch","studioDiscoverVegan":"Vegan","studioDiscoverMeat":"Fleisch","studioDiscoverFish":"Fisch","studioDiscoverDietHint":"Wir wählen Rezepte nach Tags und erkennbaren Zutaten aus. Bitte Rezeptangaben immer selbst prüfen.","studioDiscoverCookbooks":"Deine Kochbücher","studioDiscoverCookbooksHint":"Mehrere möglich. Ohne Auswahl suchen wir in allen Rezepten.","studioDiscoverCookbooksAria":"Mealie-Kochbücher","studioDiscoverAllRecipes":"Alle Rezepte","studioDiscoverNoCookbooks":"Kochbücher werden eingeblendet, sobald Mealie-Metadaten verfügbar sind.","studioDiscoverPeople":"Personen","studioDiscoverPeopleHint":"Wer sitzt mit am Tisch?","studioDiscoverOneLess":"Eine Person weniger","studioDiscoverOneMore":"Eine Person mehr","studioDiscoverKidFriendly":"Kinderfreundlich","studioDiscoverMild":"Milde Gerichte werden bevorzugt","studioDiscoverAnyPreference":"Egal","studioDiscoverWithKids":"Mit Kindern","studioDiscoverTime":"Verfügbare Zeit","studioDiscoverRelaxed":"Ganz entspannt","studioDiscoverPantry":"Vorräte berücksichtigen","studioDiscoverUsePantry":"Vorräte zuerst","studioDiscoverNoPreference":"Ganz egal","studioDiscoverExclude":"Heute lieber ohne …","studioDiscoverOptional":"Optional auswählen","studioDiscoverIngredientHint":"Vorratsmengen und Zutaten können unvollständig sein. Bitte vor dem Kochen prüfen.","studioDiscoverBack":"Zurück","studioDiscoverNext":"Weiter","studioDiscoverFind":"Ideen finden","studioDiscoverResult":"DEIN KOCHIMPULS","studioDiscoverResultTitle":"Das könnte heute passen.","studioDiscoverEdit":"Auswahl ändern","studioDiscoverTimeOpen":"Zeit offen","studioDiscoverPerson":"Person","studioDiscoverPeoplePlural":"Personen","studioDiscoverFromCookbooks":"AUS DEINEN KOCHBÜCHERN","studioDiscoverFromRecipes":"AUS EUREN REZEPTEN","studioDiscoverRecipeBase":"Rezeptbasis {servings} Portionen","studioDiscoverForPeople":"Für {people} Personen","studioDiscoverGoodIdea":"Eine gute Idee aus eurem Kochbuch.","studioDiscoverOpenRecipe":"Rezept ansehen","studioDiscoverAnother":"Andere Idee","studioDiscoverAlsoGood":"AUCH LECKER","studioDiscoverMoreIdeas":"{count} weitere Ideen","studioDiscoverEmptyTitle":"Heute ist noch alles offen.","studioDiscoverEmpty":"Mit den aktuellen Angaben haben wir keine passende Rezeptidee gefunden. Ändere eine Auswahl oder lade eure Rezepte neu.","studioDiscoverAdjust":"Auswahl anpassen","studioDiscoverReload":"Rezepte neu laden","studioPlanKicker":"03 / INTELLIGENTE WOCHENPLANUNG","studioPlanTitle":"Sieben Tage, weniger Verschwendung","studioPlanDescription":"Die Vorschau bevorzugt ähnliche Zutaten und lässt bestehende Abendessen stehen. Restegerichte werden nur bei genügend Portionen ergänzt.","studioPlanPreview":"Wochenplan vorschlagen","studioPlanCommit":"Vorschlag nach Mealie übertragen","studioLunch":"Mittag","studioDinner":"Abend","studioPlanOnlyMissing":"Es werden nur fehlende Einträge ergänzt. Bei Fehlern bleiben erfolgreiche Einträge bestehen.","studioPlanCreatePreview":"Erst eine Vorschau erstellen. In Mealie wird nichts ohne Bestätigung geändert.","studioPantryTitle":"Vorräte & Einkauf","studioPantryLead":"Ein einfacher, manueller Vorrat reicht. Atelier gleicht ihn mit dem geplanten Essen ab.","studioPantryKicker":"01 / DEIN VORRAT","studioPantryQuestion":"Was ist noch da?","studioIngredient":"Zutat","studioAmount":"Menge","studioUnit":"Einheit","studioGrams":"Gramm","studioMilliliters":"Milliliter","studioPieces":"Stück","studioBestBefore":"Mindestens haltbar bis","studioStaple":"Als regelmäßig vorhandenen Basisvorrat behandeln","studioAdd":"Hinzufügen","studioStapleLabel":"Basisvorrat","studioUntil":"bis {date}","studioRemove":"Entfernen","studioPantryEmpty":"Noch kein Vorrat erfasst – das ist optional.","studioGroceryKicker":"02 / EINKAUFSASSISTENT","studioGroceryTitle":"Was fehlt wirklich?","studioGroceryDescription":"Aus den aktuell geplanten Gerichten. Vorratsmengen werden nur bei eindeutig gleichen Einheiten abgezogen.","studioGroceryCalculate":"Einkauf berechnen","studioGrocerySend":"In Mealie-Liste übernehmen","studioQuantityCheck":"Menge prüfen","studioGroceryPreview":"Eine Einkaufsvorschau wird nach Klick auf „Einkauf berechnen“ angezeigt.","studioUnclearUnits":"Unklare EL-/TL-Mengen und unterschiedliche Einheiten werden nicht automatisch verrechnet.","theme":"Erscheinungsbild","dark":"Dunkel","light":"Hell","density":"Abstände","compact":"Kompakt","comfortable":"Komfortabel","accent":"Akzentfarbe","radius":"Ecken","columns":"Spalten","nutrition":"Nährwerte","nutriTitle":"Atelier Nutrition","nutriAnalyze":"Zutaten abgleichen","nutriAi":"KI-Suchbegriffe vorschlagen","nutriEstimate":"Nährwerte berechnen","nutriSave":"In Mealie speichern","nutriSearch":"In USDA suchen","nutriNoSource":"Lebensmittel auswählen","nutriGrams":"Menge in Gramm","nutriSource":"Datenquelle","nutriResult":"Pro Portion","journal":"Meine Kochnotizen","journalSave":"Notiz speichern","journalNote":"Wie war es beim letzten Mal?","timer":"Küchen-Timer","timerStart":"Timer starten","timerRemove":"Entfernen","apply":"Übernehmen","close":"Schließen","configured":"Dein Design wird auf diesem Gerät gespeichert.","backend":"Verbindung nicht eingerichtet","backendHint":"Bitte zuerst „Mealie Atelier Bridge“ in Home Assistant konfigurieren.","refresh":"Aktualisieren","loading":"Deine Küche wird vorbereitet …","error":"Das hat nicht geklappt.","retry":"Erneut versuchen","selectRecipe":"Rezept auswählen","selectList":"Liste auswählen","saved":"Gespeichert","created":"Rezept wurde angelegt","planned":"Gericht eingeplant","toMealie":"In Mealie öffnen","mealType":"Mahlzeit","dinner":"Abendessen","lunch":"Mittagessen","breakfast":"Frühstück","saveNote":"Basisdaten bearbeiten","admin":"Rezeptverwaltung","recipeTip":"Neue Rezepte anlegen und bestehende bearbeiten.","featured":"AUS DEINER KÜCHE","headline":"Mach es dir lecker.","count":"Rezepte","open":"Offen","todayDate":"Heute","nextMeal":"Geplant","day":"Tag","label":"Liste","change":"Ändern","importTip":"Gib die URL eines Rezeptes ein, das Mealie importieren soll.","expand":"Weiterlesen","adminOnly":"Rezeptänderungen benötigen Home-Assistant-Adminrechte.","emptyTip":"Nutze die Suche oder lege direkt ein neues Rezept an.","markComplete":"Erledigt markieren","addListFirst":"Lege deine erste Einkaufsliste an.","offline":"Die Daten konnten nicht geladen werden.","createList":"Neue Liste","listName":"Name der Einkaufsliste","shoppingFromRecipe":"Zutaten einkaufen","shoppingAddRecipe":"Zutaten übernehmen","shoppingAdded":"Zutaten auf der Liste","editSteps":"Zubereitungsschritte bearbeiten","editIngredients":"Zutaten ersetzen","editStepsHint":"Ein Schritt pro Absatz. Leere Zeile trennt zwei Schritte.","editIngredientsHint":"Eine Zutat pro Zeile. Achtung: Beim Ersetzen gehen strukturierte Lebensmittel- und Einheitenverknüpfungen verloren.","servingsNumber":"Portionen (Anzahl)","applySteps":"Schritte ersetzen","applyIngredients":"Zutaten ersetzen","resetDesign":"Design zurücksetzen","pictures":"Rezeptbilder anzeigen","todayIntro":"Deine Küche heute.","todaySub":"Auf einen Blick: Was gibt es zu essen und was fehlt noch?","toShopping":"Zur Einkaufsliste","plannedForToday":"Heute geplant","noSteps":"Noch keine Zubereitungsschritte vorhanden.","allMeals":"Alle Gerichte","successList":"Liste erstellt","addFromRecipeTip":"Mealie fügt die Rezeptzutaten deiner gewählten Liste hinzu.","ingredientExperimental":"Experimentelle Zutatenbearbeitung ist standardmäßig deaktiviert. Aktiviere sie nur nach einem Mealie-Backup in den Bridge-Einstellungen.","readOnly":"Nur-Lesen-Modus","readOnlyHint":"Bearbeitungen sind für dieses Küchen-Dashboard deaktiviert.","adminOnlyHint":"Die Rezeptverwaltung benötigt Adminrechte.","studioDiscoverStepProgress":"Schritt {step} von 4","ingredientMushrooms":"Pilze","ingredientOlives":"Oliven","ingredientCilantro":"Koriander","ingredientBellPepper":"Paprika","ingredientHeat":"Schärfe","ingredientTomatoes":"Tomaten","familyTitle":"Gemeinsam kochen","familyLead":"Ein gemeinsamer Kochfortschritt mit freiwilligen Helferaufgaben und Freigabe durch Erwachsene.","familyAdultMode":"Erwachsenenansicht","familyHelperMode":"Einfache Helferansicht","familySync":"Live-Status aktualisieren","familyTeam":"01 / TEAM","familyWhoHelps":"Wer hilft mit?","familyName":"Name","familyChild":"Kind – nur freigegebene Aufgaben","familyAddMember":"Person anlegen","familyHelper":"Helfermodus","familyRemoveMember":"Person entfernen","familyNoMembers":"Noch keine Familienmitglieder angelegt.","familySession":"02 / GEMEINSAME KOCHSESSION","familyNoSession":"Noch keine Session aktiv","familyStep":"Gemeinsamer Schritt {step} · gestartet {date}","familyBack":"Zurück","familyNext":"Nächster Schritt","familyEnd":"Beenden","familyOpenCook":"Kochmodus öffnen","familyTimers":"Gemeinsame Timer","familyNoTimers":"Noch kein gemeinsamer Timer","familyTimerName":"Bezeichnung","familyMinutes":"Minuten","familySetTimer":"Timer setzen","familyTasks":"Helferaufgaben","familyMarkOpen":"Als offen markieren: {task}","familyMarkDone":"Als erledigt markieren: {task}","familyNoTasks":"Noch keine Aufgaben verteilt.","familyTask":"Aufgabe","familyTaskPlaceholder":"z. B. Gemüse waschen","familyAssign":"Zuweisen","familyApproval":"Ich habe die Aufgabe geprüft und freigegeben","familyAssignTask":"Aufgabe verteilen","familySafety":"Die Kinderansicht vereinfacht die Oberfläche, sperrt aber keine Funktionen. Erwachsene bleiben für Aufsicht und sichere Gerätenutzung verantwortlich.","familyStartHint":"Öffne ein Rezept und starte den Kochmodus. Eine gemeinsame Session wird angelegt, wenn Bearbeitung erlaubt ist.","familyBrowse":"Rezepte ansehen","cookbookTitle":"Dein eigenes Kochbuch","cookbookLead":"Wähle Lieblingsrezepte. Atelier gestaltet Cover, Inhaltsverzeichnis und A4-Rezeptseiten für eine gemeinsame Druckansicht.","cookbookSelectKicker":"01 / REZEPTE AUSWÄHLEN","cookbookCollection":"Deine Sammlung","cookbookLoad":"Rezeptdetails laden","cookbookSelectAll":"Alle sichtbaren wählen","cookbookClear":"Auswahl löschen","cookbookEmpty":"Noch keine Rezepte geladen","cookbookLoadHint":"Lade die Rezeptdetails, um dein eigenes Kochbuch zusammenzustellen.","cookbookBookKicker":"02 / DEIN BUCH","cookbookSelected":"{count} Rezepte ausgewählt","cookbookTitleLabel":"Buchtitel","cookbookTitleDefault":"Unsere Lieblingsrezepte","cookbookSubtitleLabel":"Untertitel","cookbookSubtitleDefault":"Gute Küche. Jeden Tag.","cookbookPhotos":"Rezeptfotos drucken","cookbookPrint":"Kochbuch als PDF / Druckvorschau","cookbookPrintHint":"Nutze im Browser „Als PDF speichern“. Jedes Rezept beginnt auf einer neuen A4-Seite; sehr lange Rezepte können über mehrere Seiten laufen.","printPreparing":"Dein Kochbuch wird gesetzt …","printDocumentTitle":"Mealie Atelier – Kochbuch","printSavePdf":"Als PDF speichern / Drucken","printCollection":"REZEPTSAMMLUNG","printMadeWithLove":"MIT LIEBE ZUSAMMENGESTELLT","printContents":"INHALTSVERZEICHNIS","printRecipes":"Die Rezepte.","printRecipe":"REZEPT {number} / {total}","printIngredients":"ZUTATEN","printPreparation":"ZUBEREITUNG","printServings":"{count} Portionen","studioMinutesShort":"Min.","studioOven":"Ofen","studioReadStepLabel":"Schritt vorlesen","studioVoiceCommandLabel":"Sprachkommando","studioReplacementLabel":"Alternative Zutat","studioCookingLight":"Kochlicht","studioLowerMusic":"Musik leiser","studioSpeakerLabel":"Auf Lautsprecher","studioSharedFamily":"Mit Familie synchronisiert","studioSharedTimer":"gemeinsam","studioRecipeAuditTitle":"Rezept-Check: {score}/100","studioRecipeAuditNone":"Keine offensichtlichen Strukturprobleme gefunden.","studioRecipeAuditAll":"Alle Hinweise","studioAICheck":"KI prüfen","studioAiSuggestionTitle":"KI-Vorschläge (nur prüfen)","studioLocalAlternativeNone":"Keine geprüfte lokale Alternative gefunden.","studioAiOptional":"KI ist optional und benötigt einen API-Key.","studioReplaceTitle":"Zutat ersetzen","studioReplaceBody":"Welche Zutat möchtest du austauschen? Die Vorschläge sind keine geprüften 1:1-Ersatzprodukte.","studioShowAlternatives":"Alternativen zeigen","studioAiAuditTitle":"KI-Rezeptprüfung starten?","studioAiAuditBody":"Die Zutaten, Mengen und Kochschritte dieses Rezepts werden an den von dir konfigurierten KI-Anbieter übertragen. Es erfolgt keine automatische Änderung.","studioAiConsent":"Daten senden & prüfen","studioAiStarting":"KI-Rezeptprüfung wird gestartet …","studioAiUnavailable":"KI-Prüfung nicht verfügbar: {error}","studioAuditTitle":"Rezept-Qualitätscheck · {score}/100","studioAuditNone":"Keine offensichtlichen Strukturprobleme.","studioAuditDisclaimer":"Die Prüfung erkennt grundlegende Strukturprobleme, keine fachlichen Kochfehler.","studioSessionReplaceTitle":"Gemeinsame Kochsession ersetzen?","studioSessionReplaceBody":"Aktuell läuft „{name}“. Beim Ersetzen gehen die gemeinsamen Timer und Aufgaben verloren. Abbrechen startet das neue Rezept nur lokal.","studioSessionReplaceConfirm":"Session ersetzen","studioOnlyHomeAssistant":"Nur in Home Assistant verfügbar.","studioSpeechStartFailed":"Spracherkennung konnte nicht gestartet werden.","studioIngredientNoMatch":"Dazu finde ich keine eindeutige Zutat im Rezept.","studioSubstituteError":"Keine geprüfte lokale Alternative gefunden. KI ist optional und benötigt einen API-Key. {error}","studioRecipeAuditDisclaimer":"Grundlegende Strukturprüfung · keine fachliche Kochprüfung","studioDeletePantryTitle":"Vorrat entfernen?","studioDeletePantryBody":"Der Eintrag wird aus deinem Atelier-Vorrat gelöscht.","familyRemoveConfirmTitle":"Person entfernen?","familyRemoveConfirmBody":"Die Person wird aus dem Familienmodus entfernt. Bestehende Helferaufgaben müssen zuvor erledigt oder gelöscht werden.","familyEndConfirmTitle":"Gemeinsames Kochen beenden?","familyEndConfirmBody":"Timer und Helferaufgaben dieser Session werden beendet. Persönliche Rezeptnotizen bleiben erhalten.","studioWeekConfirmTitle":"Wochenplan übernehmen?","studioWeekConfirmBody":"{count} Mahlzeiten werden hinzugefügt. Bestehende Termine bleiben erhalten.","studioWeekConfirmAction":"In Mealie übertragen","studioWeekSuccess":"{count} Mahlzeiten übernommen.","studioWeekFailure":"Fehler: {errors}","studioShoppingTransferTitle":"Einkäufe übertragen?","studioShoppingTransferBody":"{count} Einträge werden in deine Mealie-Einkaufsliste übernommen.","studioShoppingTransferConfirm":"Einkaufsliste ergänzen","studioShoppingUncertain":"Menge prüfen","studioShoppingSuccess":"{count} Einträge übernommen.","studioShoppingFailure":"Fehlgeschlagen: {items}","studioPopupBlocked":"Erlaube Popups für die Druckvorschau.","studioAdultApprovalRequired":"Kinderaufgaben müssen ausdrücklich von Erwachsenen freigegeben werden.","cookbookTitleDefaultPrint":"Unsere Rezepte","studioJournalSavedToast":"Persönliche Notiz gespeichert.","providerTitle":"Rezeptstudio ohne Zusatz-Integration","providerDescription":"Die Home-Assistant-Mealie-Verbindung unterstützt hier Rezeptsuche und Kochansicht. Für Wochenplan, Einkauf, Kochbücher, Bilder und Bearbeitung kannst du jederzeit die optionale Mealie Atelier Bridge ergänzen.","providerBrowse":"Rezepte durchsuchen","studioJournalLocal":"Nur auf diesem Gerät gespeichert – nicht mit Mealie synchronisiert.","studioJournalShared":"Im Atelier-Profil gespeichert und auf verbundenen Geräten verfügbar.","editorConnectKitchen":"Küche verbinden","editorChooseYourStart":"Startansicht wählen","editorSetTheMood":"Erscheinungsbild","editorSetupProgress":"Einrichtungsfortschritt","editorCheckingHomeAssistantConnections":"Home-Assistant-Verbindungen werden geprüft …","editorCouldNotCheckYourConnections":"Verbindungen konnten nicht geprüft werden","editorCheckThatMealieAtelierBridgeIsInstalledAndHomeAssistantIsOnline":"Prüfe, ob die Mealie Atelier Bridge installiert und Home Assistant erreichbar ist.","editorTryAgain":"Erneut prüfen","editorOpenHomeAssistantIntegrations":"Home-Assistant-Integrationen öffnen","editorHomeAssistantMealieFound":"Home-Assistant-Mealie gefunden","editorDirectConnectionReadOnlyRecipes":"Direkte Verbindung · Rezepte nur lesen","editorREADY":"BEREIT","editorRecipeSearchAndCookingWorkWithoutAtelierBridgeProtectedPhotosEditingShoppingAndPlanningStayOptionalBridgeFeatures":"Rezeptsuche und Kochansicht funktionieren ohne Atelier Bridge. Geschützte Bilder, Bearbeitung, Einkauf und Planung sind optionale Bridge-Funktionen.","editorMealieInstance":"Mealie-Instanz","editorYourMealieConnection":"Deine Mealie-Verbindung","editorChooseAConnectedKitchen":"Verbundene Küche auswählen …","editorYourAPITokenStaysSafelyInsideTheHomeAssistantIntegration":"Dein API-Token bleibt sicher in der Home-Assistant-Integration.","editorConnectMealieOnceInHomeAssistant":"Verbinde Mealie einmal in Home Assistant","editorAddMealieAtelierBridgeForTheFullStudioOrUseHomeAssistantSBuiltInMealieIntegrationForAReadOnlyRecipeCardCredentialsAreEnteredSecurelyInHomeAssistantNeverInThisCard":"Füge die Mealie Atelier Bridge für das volle Studio hinzu oder nutze Home Assistants Mealie-Integration für eine reine Rezeptkarte. Zugangsdaten bleiben in Home Assistant und gehören niemals in die Karte.","editorIConnectedMealieCheckAgain":"Mealie ist verbunden – erneut prüfen","editorConnectedSecurely":"Sicher verbunden","editorNoCredentialsInDashboardCards":"Keine Zugangsdaten in Dashboard-Karten","editorYourCredentialsBelongInTheSecureIntegrationNeverInThisCard":"Deine Zugangsdaten gehören in die sichere Integration, niemals in diese Karte.","editorACompleteKitchenOverview":"Der komplette Küchenüberblick","editorTodaySMealsAndKitchenTasks":"Heutige Gerichte und Küchenaufgaben","editorPersonalRecipeInspiration":"Persönliche Rezeptideen","editorYourCompleteRecipeCollection":"Deine gesamte Rezeptsammlung","editorTheWeeklyMealPlan":"Der Wochenplan","editorIngredientsYouAlreadyHave":"Deine vorhandenen Vorräte","editorYourShoppingList":"Deine Einkaufsliste","editorCookingTogetherAsAFamily":"Gemeinsam mit der Familie kochen","editorYourSavedCookbooks":"Deine gespeicherten Kochbücher","editorRecipeAndKitchenTools":"Rezept- und Küchenwerkzeuge","editorSTEP1CONNECTION":"SCHRITT 1 · VERBINDUNG","editorBringYourKitchenTogether":"Verbinde deine Küche.","editorAtelierReadsRecipesFromTheMealieConnectionAlreadyConfiguredInHomeAssistant":"Atelier nutzt die Mealie-Verbindung, die du bereits in Home Assistant eingerichtet hast.","editorSTEP2YOURKITCHEN":"SCHRITT 2 · DEINE KÜCHE","editorWhatShouldOpenFirst":"Was möchtest du zuerst sehen?","editorPickAStartingPointEveryOtherViewStaysOneTapAway":"Wähle deinen Startpunkt. Alle anderen Bereiche bleiben mit einem Klick erreichbar.","editorStartIn":"Starten mit","editorYOURATELIEROPENSTO":"DEIN ATELIER STARTET MIT","editorSTEP3THEFEEL":"SCHRITT 3 · DIE STIMMUNG","editorMakeItFeelLikeYourKitchen":"Lass es sich nach deiner Küche anfühlen.","editorChooseALookNowYouCanFineTuneEveryDetailLater":"Wähle jetzt eine Stimmung. Jedes Detail kannst du später anpassen.","editorChooseAnAppearance":"Erscheinungsbild auswählen","editorEveningStudio":"Abendstudio","editorDeepGreenWarmLightEditorial":"Tiefgrün · Stein hell · großzügig","editorDaylightKitchen":"Tageslichtküche","editorFreshSurfacesOpenAndBright":"Helle Flächen · offen und freundlich","editorYourRecipesAndMealieDataAreNeverChangedByTheseChoices":"Deine Rezepte und Mealie-Daten werden durch diese Auswahl nicht verändert.","editorAKitchenThatFeelsLikeYours":"Dein Küchenstudio. Ganz deins.","editorThreeSmallChoicesYourKitchenReady":"Drei kleine Entscheidungen – und deine Küche ist startklar.","editorSetUpLater":"Später einrichten","editorSetupNavigation":"Einrichtung navigieren","editorBack":"Zurück","editorContinue":"Weiter","editorCreateMyKitchen":"Küche einrichten","editorACalmStartTheAdvancedSettingsAreHereWheneverYouNeedThem":"Ein guter Anfang. Alle erweiterten Einstellungen findest du jederzeit hier.","editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard":"Gestalte deine Karten ohne YAML. Die Einstellungen speichert dein Home-Assistant-Dashboard.","editorRunSetupWizard":"Einrichtungs-Wizard starten","editorYourKitchenIsReady":"Deine Küche ist startklar.","editorBasics":"Grundlagen","editorChooseContentAndTheConnectedMealieInstance":"Ansicht, Konto und Sprache festlegen.","editorMode":"Ansicht","editorMealieAccount":"Mealie-Verbindung","editorFirstConnectedAccount":"Erste verbundene Instanz","editorDataConnection":"Datenverbindung","editorAutomaticAtelierFirst":"Automatisch · Atelier zuerst","editorAtelierBridgeFullFeatures":"Atelier Bridge · voller Umfang","editorHomeAssistantMealieReadOnly":"Home-Assistant-Mealie · nur Lesen","editorTheBuiltInOptionNeedsNoAtelierServerOrCardTokenRecipeSearchAndCookingAreReadOnlyTheBridgeAddsImagesAndKitchenTools":"Die eingebaute Option braucht keinen Atelier-Server und kein Kartentoken. Suche und Kochen sind schreibgeschützt; die Bridge ergänzt Bilder und Küchenfunktionen.","editorBuiltInMealieInstance":"Eingebaute Mealie-Instanz","editorLanguage":"Sprache","editorAutomatic":"Automatisch","editorLookFeel":"Erscheinungsbild","editorTypographyMotionAndTheVisualRhythmOfYourCards":"Farben, Animationen und Layout der Karten.","editorTheme":"Darstellung","editorDark":"Dunkel","editorLight":"Hell","editorDensity":"Abstände","editorComfortable":"Großzügig","editorCompact":"Kompakt","editorMotionTransitions":"Animation & Übergänge","editorExpressive":"Lebendig","editorSubtle":"Dezent","editorOff":"Aus","editorYourReducedMotionSystemPreferenceAlwaysTakesPriority":"Die Systemeinstellung „Bewegung reduzieren“ hat immer Vorrang.","editorColumns":"Spalten","editorAccent":"Akzentfarbe","editorCornerStyle":"Ecken","editorRounded":"Rund","editorSoft":"Sanft","editorSquareEckig":"Eckig","editorFoodPhotographyCrop":"Rezeptbild-Format","editorPortraitEditorial":"Hochformat","editorSquareQuadrat":"Quadrat","editorWide":"Querformat","editorShowRecipeImages":"Rezeptbilder anzeigen","editorOptionalPrintAndKitchenSettings":"Optionale Druck- und Kücheneinstellungen","editorPrintStudio":"Druckstudio","editorPremiumA4LayoutsForRecipesAndLists":"Hochwertige A4-Vorlagen für Rezepte und Listen.","editorPrintTemplate":"Druckvorlage","editorInkSaver":"Tintensparend","editorPrintRecipePhotosWhenAvailable":"Rezeptbilder mitdrucken","editorPrintCheckboxes":"Abhakfelder drucken","editorPrintCompletedItems":"Erledigte Einträge mitdrucken","editorPrintStoredNutritionValues":"Nährwerte mitdrucken","editorPrintHandwritingSpace":"Platz für Notizen drucken","editorKitchenTablet":"Küche & Tablet","editorOptionalHomeAssistantActionsNothingTriggersAutomatically":"Optionale Home-Assistant-Aktionen, niemals ungefragt.","editorUseEnlargedTabletLayout":"Großes Tablet-Layout verwenden","editorOptionalKitchenSceneHA":"Optionale Lichtszene (HA)","editorOnlyTriggeredWhenYouTapTheCookingCockpitButton":"Wird nur durch einen bewussten Klick im Kochmodus ausgelöst.","editorOptionalMediaPlayerHA":"Optionaler Mediaplayer (HA)","editorCookingVolume":"Koch-Lautstärke","editorOptionalTTSEngineHA":"Optionale Sprachausgabe (HA)","editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault":"Verwende eine Home-Assistant-Entität. Alle Geräteaktionen sind standardmäßig deaktiviert.","editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio":"Die Ansicht „Übersicht“ enthält die komplette Küche. Gerätespezifische Anpassungen findest du hier im Design Studio.","uiFindYourNextFavorite":"Finde dein nächstes Lieblingsgericht","uiSearchRecipesIngredientsOrViews":"Rezepte, Zutaten oder Ansichten suchen …","uiSearchRecipesIngredientsAndQuickActions":"Rezepte, Zutaten und Schnellzugriffe durchsuchen","uiSearchYourRecipesIncludingByIngredient":"Durchsuche eure Rezepte – auch nach Zutaten.","uiYOURKITCHEN":"DEINE KÜCHE","uiNavigation":"Navigation","uiNoMatchingViewsOrActions":"Keine passenden Ansichten oder Aktionen.","uiSelect":"Auswählen","uiOpen":"Öffnen","uiClose":"Schließen","uiPrintPDF":"Drucken / PDF","uiProtein":"Eiweiß","uiCarbs":"Kohlenhydrate","uiFat":"Fett","uiStep":"Schritt","uiKitchenTimers":"Küchentimer","uiATELIERKITCHENTIMER":"ATELIER · KÜCHENTIMER","uiKeepEverythingInRhythm":"Alles im richtigen Takt","uiactive":"aktiv","uitimeRemaining":"verbleibende Zeit","uiminutes":"Minuten","uiActiveTimer":"Aktiver Timer","uiREADY":"FERTIG","uiRUNNING":"LÄUFT","uiNoTimerRunningYetSetOneToKeepEverythingInRhythm":"Noch kein Timer läuft. Richte dir einen ein, dann bleibt alles im Takt.","uiQuickTimerPresets":"Schnelle Timer","uimin":"Min.","uiMinutes":"Minuten","uiTimerDurationInMinutes":"Timerdauer in Minuten","uiLabelOptional":"Bezeichnung · optional","uieGOven":"z. B. Ofen","uiStartTimer":"Timer starten","uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe":"Ganz in Ruhe – ein Schritt nach dem anderen. Du kannst jederzeit zum Rezept zurückkehren.","uiPlanMealsQuicklyWithoutClutter":"Plane deine Mahlzeit mit wenigen Handgriffen. Klar und ohne unnötigen Ballast.","uiStartWithARecipeTitleAddDetailsAfterCreating":"Ein guter Rezepttitel ist der Anfang. Nach dem Anlegen ergänzt du Beschreibung, Portionen, Kochschritte und Zutaten.","uieGLemonPastaWithSpinach":"Zum Beispiel: Zitronenpasta mit Spinat","uiPasteARecipeLinkMealieHandlesImportingIt":"Rezept-Link einfügen. Mealie übernimmt den Import, und du kannst das Ergebnis anschließend im Atelier verfeinern.","uiEditRecipe":"Rezept bearbeiten","uiDetailsIngredientsAndInstructionsInOneClearWorkflow":"Details, Zutaten und Zubereitung übersichtlich an einem Ort.","uiYourRecipeTitleSummaryAndServingSize":"So erscheint dein Rezept in der Sammlung und auf dem Ausdruck.","uiWhatMakesThisSpecial":"Was macht dieses Gericht besonders?","uiShownInRecipesAndPrint":"Wird im Rezept und Druck angezeigt.","uiLinkedFoodsAndUnitsStayProtectedTheIngredientsCanBePrinted":"Strukturierte Lebensmittel und Mengen bleiben geschützt. Die Zutaten sind hier sichtbar und lassen sich sauber ausdrucken.","uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled":"Kochschritte separat bearbeiten, ergänzen und sortieren. Nur aktivierte Änderungen werden gespeichert.","uiReplaceCookingInstructions":"Bearbeitete Kochschritte übernehmen","uiAddAStep":"Kochschritt hinzufügen","uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected":"Die Schrittfolge wird beim Speichern vollständig übernommen, wenn du das Kontrollkästchen aktivierst.","uiChangesAreSentToMealieOnlyWhenYouSave":"Deine Änderungen werden erst beim Speichern an Mealie übertragen.","uiGiveYourShoppingListAName":"Ob Wochenmarkt oder Wocheneinkauf – gib deiner Liste einen Namen.","uieGWeeklyGroceries":"Zum Beispiel: Wocheneinkauf","uiMotionTransitions":"Bewegung & Übergänge","uiThoughtfulMotionThatHelpsNavigationYourReducedMotionDeviceSettingAlwaysTakesPriority":"Feine Animationen, die beim Navigieren Orientierung geben. Die Systemeinstellung „Bewegung reduzieren“ hat immer Vorrang.","uiExpressive":"Lebendig","uiSubtle":"Dezent","uiOff":"Aus","uiPhotoCrop":"Bildformat","uiTall":"Hoch","uiSquare":"Quadrat","uiWide":"Breit","uiCornerStyle":"Ecken","uiRound":"Rund","uiSoft":"Sanft","uiSquareEckig":"Eckig","uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan":"Rezept, Einkauf und Wochenplan bekommen eigene A4-Drucklayouts.","uiOpenPrintSettings":"Druckoptionen öffnen","uiEnjoyingTheAtelier":"Gefällt dir das Atelier?","uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi":"Wenn es deinen Küchenalltag schöner macht, kannst du die Weiterentwicklung freiwillig auf Ko-fi unterstützen.","uiSayThanksOnKoFi":"Auf Ko-fi Danke sagen","uiQuickActions":"Schnellzugriff","uiPrintStudioSettings":"Print Studio · Druckeinstellungen","uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity":"Bis zu 500 Treffer über Home Assistant. Bilder und Atelier-Schreibfunktionen bleiben aus Sicherheitsgründen deaktiviert.","uiMarkComplete":"Als erledigt markieren: ","uiPrint":"Drucken","uiSwipeToBrowseAllSevenDays":"Seitlich wischen, um alle sieben Tage anzusehen.","uiAllowPopupsToOpenThePrintPreview":"Pop-up blockiert. Erlaube ein Druckfenster für diese Seite.","uiCalories":"Kalorien","uiCarbohydrates":"Kohlenhydrate","uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches":"Zutaten von echten Lebensmitteldaten trennen wir bewusst von KI-Vorschlägen. Du entscheidest über Mengen und Zuordnungen.","uiFoodsMatched":"Lebensmittel geprüft","uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv":"USDA API-Key fehlt. Bitte in den Integrationseinstellungen bzw. der .env hinterlegen.","uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt":"Dieses Rezept besitzt bereits Nährwerte. Wir überschreiben sie nur mit deiner ausdrücklichen Zustimmung.","uiSendsIngredientTextToOpenAINoInventedMacros":"Sendet Zutatennamen an OpenAI; keine Nährwertschätzungen.","uiOptionalConfigureOpenAIAPIKey":"Optional: OpenAI API-Key hinterlegen","uiREVIEWINGREDIENTS":"ZUTATEN PRÜFEN","uiNotMatched":"Zuordnung offen","uiFoodSearchQuery":"Lebensmittelname / Suche","uiFindFood":"Lebensmittel suchen","uiNoCompleteNutritionEntriesFoundTryAnotherQuery":"Keine vollständigen Daten gefunden. Anderen Begriff versuchen.","uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates":"Grundlage: ausgewählte USDA-Datensätze je 100 g. Garverluste, Abtropfgewicht, Roh-/Gargewicht und nicht erfasste Zutaten können das Ergebnis verändern. Fehlende Werte werden nicht erfunden.","uiSourcesCoverage":"Quellen & Abdeckung","uiExplicitlyReplaceExistingNutritionValues":"Vorhandene Nährwerte ausdrücklich ersetzen","uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie":"Deine persönlichen Koch-Erfahrungen. Nur auf diesem Gerät gespeichert – nicht mit Mealie synchronisiert.","uiHowDidItTurnOut":"Wie gut hat es geschmeckt?","uiNotRated":"Nicht bewertet","uiNextTimeReduceTheSalt":"Nächstes Mal etwas weniger Salz …","editorPreviewDashboard":"Deine Küche für den Tag","editorPreviewToday":"Heute auf dem Teller","editorPreviewDiscover":"Kochinspo für euch","editorPreviewRecipes":"Lieblingsrezepte","editorPreviewMealplan":"Was diese Woche auf den Tisch kommt","editorPreviewPantry":"Das ist schon da","editorPreviewShopping":"Auf dem Einkaufszettel","editorPreviewFamily":"Gemeinsam schmeckt’s","editorPreviewCookbook":"Deine Kochbücher","editorPreviewManage":"Dein Küchenstudio","uiRememberAsFavoriteRecipe":"Als Lieblingsrezept merken","uiScaleServingsNote":"Mengen für {target} Portionen angepasst. Rezeptbasis: {base} Portionen. Eindeutige Mengen sind skaliert; Freitext bitte prüfen.","uiRecipeStepImageAlt":"Bild zu Schritt {step}","uiMarkShoppingOpen":"Als offen markieren: {item}","uiMarkShoppingComplete":"Als erledigt markieren: {item}","uiServing.one":"Portion","uiServing.other":"Portionen","uiThisFeatureRequiresMealieAtelierBridge":"Diese Funktion benötigt die Mealie Atelier Bridge.","uiHomeAssistantSMealieIntegrationWithRecipeSearchIsUnavailable":"Die Home-Assistant-Mealie-Integration mit Rezeptsuche ist nicht verfügbar.","uiChooseAValidMealieInstance":"Bitte wähle eine gültige Mealie-Instanz.","uiHomeAssistantReturnedNoRecipe":"Home Assistant hat kein Rezept zurückgegeben.","uiEveryDay":"Jeden Tag","uiDescribeThisStep":"Beschreibe diesen Kochschritt …","uiMoveUp":"Nach oben","uiMoveDown":"Nach unten","uiRemoveStep":"Schritt entfernen","uiRemove":"Entfernen","uiMealieReadOnly":"Mealie · nur Lesen","uiRecipesCookingPhotosAndEditsNeedAtelierBridge":"Rezepte & Kochen · Bilder und Änderungen mit Atelier Bridge","uiKitchenTimer":"Küchentimer","uiAISuggestedSearchTermsReviewEveryDatabaseMatchYourself":"KI-Suchbegriffe vorgeschlagen. Bitte jeden Datenbanktreffer selbst prüfen.","uiNutritionSavedToMealie":"Nährwerte in Mealie gespeichert","uiCalculatedReviewBeforeSaving":"Berechnung abgeschlossen. Prüfe die Daten vor dem Speichern.","uiBonAppetitEnjoyYourMeal":"Guten Appetit! Schön, dass du mit Atelier gekocht hast.","uiTypeAtLeastOneMoreCharacter":"Gib noch mindestens einen Buchstaben ein.","uiSearchingYourRecipes":"Ich durchsuche eure Rezepte …","uiNoRecipeFoundYet":"Noch kein Rezept dazu","uiTryAnotherRecipeNameOrIngredient":"Versuch es mit einem anderen Rezeptnamen oder einer Zutat.","uiSearchIsUnavailableRightNow":"Suche gerade nicht erreichbar","uiIngredient":"Zutat","uiRecipeName":"Rezeptname","uiNameIngredient":"Name & Zutat","uiRecipeMatch":"Rezepttreffer","uiMATCHINGRECIPES":"PASSENDE REZEPTE","uiresults":"Treffer","uiRecipeResults":"Rezepttreffer","uiNoteSavedOnThisDevice":"Kochnotiz auf diesem Gerät gespeichert","uiOpenQuickActions":"Schnellzugriff öffnen ({shortcut})","uiSeeAllResults":"Alle {count} Treffer ansehen","uiConversion":"Küchen-Umrechnung","uiConversionNeedsDensity":"Masse und Volumen brauchen eine zutatenbezogene Dichte. Atelier rät hier nicht.","uiConversionExactFactors":"Mit Standard-Umrechnungsfaktoren berechnet. Rezeptmengen bleiben unverändert.","uiSearchConversionExample":"Zum Beispiel: 250 g in oz","uiPrintHeroTitle":"Auch auf Papier. Richtig schön.","uiPrintHeroDescription":"Ein eigenes, sorgfältig gesetztes Drucklayout. Dein Browser kann es direkt als PDF speichern.","uiPrintStyle":"LAYOUT WÄHLEN","uiPrintEditorial":"Editorial","uiPrintEditorialDescription":"Elegant, großzügig und hochwertig","uiPrintCompact":"Kompakt","uiPrintCompactDescription":"Mehr Inhalt auf weniger Seiten","uiPrintInkSaver":"Tintensparend","uiPrintInkSaverDescription":"Ohne Fotos und mit wenig Farbeinsatz","uiPrintDetails":"DETAILS ANPASSEN","uiPrintIncludePhoto":"Rezeptfoto verwenden (falls vorhanden)","uiPrintIncludeNutrition":"Nährwerte aus Mealie mitdrucken (falls vorhanden)","uiPrintIncludeCompleted":"Bereits erledigte Artikel mitdrucken","uiPrintIncludeCheckboxes":"Abhakfelder anzeigen","uiPrintIncludeNotes":"Platz für handschriftliche Notizen","uiPrintOpenPreview":"Druck- / PDF-Vorschau öffnen","uiPrintGuide":"Im Druckdialog A4 und 100 % wählen. Der Wochenplan wird automatisch im Querformat vorbereitet. Die tatsächliche Vorschau öffnet sich in einem neuen Fenster.","uiPrintPaperPreview":"PAPIERVORSCHAU","uiYourRecipe":"Dein Rezept","uiPrintPreviewDescription":"Klar gesetzt. Gut lesbar. Schön zum Abheften.","uiPrintIngredientsItems":"ZUTATEN / EINTRÄGE","uiPrintPreparationNotes":"ZUBEREITUNG / NOTIZEN","uiPrintDesignedForPaper":"FÜR PAPIER GESTALTET","offlinePanelLabel":"Offline-Synchronisierung und Küchenalarme","offlineSyncTimers":"Synchronisierung & Küchentimer","offlineLoading":"Status wird geladen","offlineShopping":"Offline-Einkauf","offlineStorageNote":"Änderungen bleiben auf diesem Gerät, bis sie sicher mit Mealie abgeglichen wurden.","offlineEnable":"Offline aktivieren","offlineSyncNow":"Jetzt abgleichen","offlineReviewConflicts":"Konflikte prüfen","offlineBackgroundTimers":"Hintergrund-Timer","offlineCheckingDelivery":"Zustellkanal wird geprüft","offlineAllowPush":"Push erlauben","offlineRefreshTimers":"Timer aktualisieren","offlineConflictToggle":"Abhak-Konflikt","offlineConflictList":"Einkaufslisten-Konflikt","offlineReviewCurrentList":"Bitte die aktuelle Mealie-Liste prüfen.","offlineDiscardChange":"Änderung verwerfen","offlinePlanned":"Geplant: {time}","offlineStopTimer":"Timer stoppen","offlineDisabled":"Offline-Einkauf ist ausgeschaltet","offlineStatus":"{connection} · {pending} ausstehend{conflicts}{syncing}","offlineConflictCount":" · {count} Konflikt(e)","offlineSyncing":" · Synchronisiere","offlineClearLocal":"Lokale Daten löschen","offlineHomeAssistantActive":"Home Assistant aktiv","offlinePushConfigured":"Web Push konfiguriert (Berechtigung erforderlich)","offlineNoAlarmChannel":"Kein Alarmkanal konfiguriert","offlinePushReady":"Push eingerichtet","offlineEnableConfirmTitle":"Offline-Einkauf aktivieren?","offlineEnableConfirmBody":"Einkaufslisten und ausstehende Änderungen werden auf diesem Gerät gespeichert. Nicht auf öffentlichen Geräten aktivieren.","offlineDeleteConfirmTitle":"Offline-Daten löschen?","offlineDeleteConfirmBody":"Lokale Einkaufslisten und noch nicht synchronisierte Änderungen werden unwiderruflich gelöscht.","offlineDeleteConfirmAction":"Daten löschen","offlineEnableConfirmAction":"Offline aktivieren","offlinePushSetup":"Push-Benachrichtigungen einrichten","offlineEnableHelp":"Offline-Einkauf aktivieren","offlineAlarmError":"Fehler bei der Küchen-Timer-Benachrichtigung","uiBackgroundTimerEnabled":"Hintergrundtimer aktiviert","uiLocalTimerEnabled":"Nur lokaler Timer aktiviert","uiBackgroundTimerError":"Hintergrundtimer nicht aktiviert: {error}","uiTimerStopError":"Timer konnte nicht gestoppt werden: {error}","dialogWeeklyMenu":"WOCHENPLAN","dialogYourMenu":"DEIN MENÜ","dialogPlanned":"GEPLANT","dialogNewRecipe":"NEUES REZEPT","dialogRecipeTitle":"REZEPTTITEL","dialogSource":"QUELLE","dialogRecipeStudio":"REZEPTSTUDIO","dialogBasics":"GRUNDLAGEN","dialogStepByStep":"SCHRITT FÜR SCHRITT","offlineNoSnapshot":"Noch keine Offline-Kopie. Öffne die Einkaufsliste einmal online.","offlineNotEnabled":"Aktiviere zuerst den Offline-Einkauf über die Statusleiste.","offlineListNeedsRefresh":"Lade die Einkaufsliste zuerst bei bestehender Verbindung.","offlineRequiresConnection":"Für diese Aktion ist eine Internetverbindung erforderlich.","offlineItemNotEditable":"Dieser Eintrag kann offline nicht bearbeitet werden.","offlineInvalidItem":"Der Eintrag oder die Einkaufsliste ist ungültig.","offlinePushKeysMissing":"Für Web Push fehlen die Server-Schlüssel.","offlinePushRequiresHttps":"Web Push benötigt HTTPS und einen unterstützten Browser.","offlinePushPermissionDenied":"Benachrichtigungen wurden nicht erlaubt.","offlineAlarmRequiresServer":"Ohne Serververbindung kann kein Hintergrundalarm aktiviert werden.","offlineUnexpectedError":"Die Offline-Aktion konnte nicht abgeschlossen werden. Bitte erneut versuchen.","printDocRecipe":"REZEPT","printDocShoppingList":"EINKAUFSLISTE","printDocWeeklyPlan":"WOCHENPLAN","printDocTotalTime":"Gesamtzeit","printDocMinAbbr":"Min.","printDocCloseWindow":"Fenster schließen","printDocFromYourKitchen":"Für deine Küche","printDocNoItems":"Keine Einträge vorhanden","printDocYourWeeklyPlan":"Dein Wochenplan","printDocMeals":"Gerichte","printDocListed":"Eingekauft","printDocNutritionCaution":"Angaben pro Portion nur, wenn so hinterlegt; Portionsgröße prüfen","printDocYield":"Ergibt","printDocSide":"Beilage","printDocDessert":"Dessert","printDocDrink":"Getränk","printDocSnack":"Snack","printDocCalories":"Kalorien","printDocProtein":"Eiweiß","printDocCarbs":"Kohlenhydrate","printDocFat":"Fett","printDocFiber":"Ballaststoffe","printDocSugar":"Zucker","studioReasonPantryCovered":"{covered}/{total} Zutaten mengenmäßig gedeckt","studioReasonPantryUnchecked":"Vorrat noch nicht geprüft","studioReasonAmountsUnclear":"{count} Mengen unklar","studioReasonFamilyFriendly":"Familienfreundlich markiert","studioReasonServingsBase":"Rezeptbasis: {servings} Portionen","studioReasonServingsOpen":"Portionen offen","studioReasonWithinBudget":"{minutes} Min. im Zeitbudget","studioReasonOverBudget":"{minutes} Min. · etwas über dem Zeitbudget","studioReasonSharedIngredients":"gemeinsame Zutaten","studioReasonTwoMeals":"Portionen für zwei Mahlzeiten","studioLeftoversName":"Reste: {name}","studioAisleChilled":"Kühlregal","studioAislePantry":"Vorrat & Getreide","studioAisleSpices":"Gewürze & Öle","studioAisleProtein":"Proteine","studioAisleProduce":"Obst & Gemüse / Sonstiges","studioAuditNoIngredients":"Keine Zutaten hinterlegt","studioAuditNoSteps":"Keine Zubereitungsschritte hinterlegt","studioAuditAmountUnclear":"Menge unklar: {item}","studioAuditAmountLarge":"Ungewöhnlich große Menge: {item}","studioAuditServingsInvalid":"Portionen fehlen oder sind ungültig","studioAuditTimeMissing":"Gesamtzeit fehlt","studioAuditDuplicate":"Möglicher doppelter Eintrag: {item}","studioSwapCream":"Hafercuisine / Kochcreme","studioSwapButter":"Pflanzenmargarine oder Olivenöl","studioSwapEgg":"Leinsamen-Ei (bei einigen Teigen)","studioSwapMilk":"Haferdrink","studioSwapMushroom":"Zucchini oder Aubergine","studioSwapQuark":"pflanzliche Quarkalternative","studioSwapParmesan":"Hefeflocken oder vegane Hartkäsealternative","studioSwapFlour":"anderes geeignetes Mehl, Konsistenz prüfen","studioSwapSugar":"Ahornsirup (Flüssigkeit anpassen)","studioSwapWarning":"Textvorschlag, kein geprüfter 1:1-Ersatz. Allergene und Konsistenz selbst prüfen.","studioNoPlannedIngredients":"Keine geplanten Gerichte mit abrufbaren Zutaten vorhanden.","studioCreateShoppingListFirst":"Bitte erst in Mealie eine Einkaufsliste anlegen.","uiMealieRecipeFallback":"Mealie-Rezept","itemFallback":"Eintrag","recipeFallback":"Rezept","navKitchenLabel":"Küchennavigation","uiHomeAssistantNotReady":"Die Verbindung zu Home Assistant ist noch nicht bereit","uiAiSuggestionCountMismatch":"Unerwartete Anzahl an KI-Vorschlägen","uiExperimentalBadge":"EXPERIMENTELL","nutriGramsPlaceholder":"z. B. 200","studioRecipeFetchFailed":"{count} Rezepte konnten nicht geladen werden und wurden übersprungen: {names}","uiProviderResultsTruncated":"Es werden die ersten {limit} Treffer angezeigt. Die Ergebnisse sind möglicherweise unvollständig. Mit der Mealie-Atelier-Bridge durchsuchst du deine gesamte Bibliothek.","uiKeepScreenAwake":"Bildschirm beim Kochen anlassen","uiMutationFailed":"Speichern fehlgeschlagen: {error} Deine Änderung wurde rückgängig gemacht.","uiSaving":"Wird gespeichert…","uiNoWriteGrant":"Dein Home-Assistant-Konto darf diese Küche ansehen, aber nicht ändern. Ein Administrator kann den Zugriff in den Mealie-Atelier-Optionen freigeben.","errNotConfigured":"Mealie Atelier ist noch nicht eingerichtet.","errInvalidRequest":"Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.","errMealieAuth":"Mealie hat den Zugriffstoken abgelehnt. Prüfe den Token in den Einstellungen.","errMealieError":"Mealie ist nicht erreichbar oder hat unerwartet geantwortet. Versuche es gleich noch einmal.","errReadOnly":"Diese Küche ist schreibgeschützt, daher lässt sich nichts ändern.","errUnauthorized":"Diese Aktion erfordert Administratorrechte.","errWriteNotPermitted":"Du darfst in dieser Küche keine Daten ändern.","errConflict":"Jemand hat das inzwischen geändert. Lade neu und versuche es erneut.","errRecipeChanged":"Das Rezept wurde anderswo geändert. Lade es vor dem Speichern neu.","errDisabled":"Diese Funktion ist in den Einstellungen abgeschaltet.","errUseStructuredEditor":"Bearbeite Zutaten mit dem strukturierten Zutaten-Editor.","errWriteUnverified":"Mealie hat die Änderung angenommen, aber das gespeicherte Rezept sieht anders aus. Prüfe das Rezept, bevor du es erneut versuchst.","errBackupFailed":"Die Sicherung konnte nicht geschrieben werden, daher wurde nichts geändert.","errBackupNotFound":"Diese Sicherung gibt es nicht mehr.","errUploadInvalid":"Das Foto wurde abgelehnt. Nutze ein JPEG-, PNG- oder WebP-Bild innerhalb der Größenbeschränkung.","errUploadExpired":"Der Upload ist abgelaufen. Starte ihn erneut.","errUploadBusy":"Es sind zu viele Uploads offen. Warte einen Moment und versuche es erneut.","errStepNotFound":"Dieser Schritt existiert nicht mehr. Lade das Rezept neu.","errSyncRuleNotFound":"Diese Sync-Regel gibt es nicht mehr.","errSyncDestinationUnsupported":"Diese Liste kann keine Einträge aufnehmen. Wähle eine andere To-do-Liste.","errSyncSourceTaken":"Eine andere Regel nutzt diese Einkaufsliste bereits.","errSyncTooManyRules":"Du kannst höchstens 5 Sync-Regeln anlegen.","errSyncNotActivated":"Bestätige zuerst den ersten Stapel, bevor diese Regel automatisch laufen kann.","errSyncNotSupported":"Der Einkaufs-Sync ist nur mit Home Assistant verfügbar.","editorIngredientsLocked":"Die strukturierte Zutatenbearbeitung ist ausgeschaltet. Bitte eine Administratorin oder einen Administrator, sie zu aktivieren.","editorQuantity":"Menge","editorUnit":"Einheit","editorFood":"Lebensmittel","editorNote":"Notiz","editorOriginal":"Originaltext","editorAddIngredient":"Zutat hinzufügen","editorMoveUp":"Zutat {row} nach oben","editorMoveDown":"Zutat {row} nach unten","editorRemoveRow":"Zutat {row} entfernen","editorCreateOption":"„{text}“ anlegen","editorCreatedExisting":"Gab es schon, verknüpft","editorQuantityInvalid":"Gib eine Zahl wie 1,5, 1 1/2 oder ½ ein.","editorServingsPreview":"Vorschau für {count} Portionen","editorServingsReset":"Vorschau zurücksetzen","editorServingsNote":"Nur eine Vorschau. Es wird nichts gespeichert.","editorScaled":"Umgerechnet","editorSaveSummary":"{changed} geändert, {added} neu, {removed} entfernt","editorSaveIngredients":"Zutaten prüfen und speichern","editorConfirmSave":"Zutaten speichern","editorNoChanges":"Noch nichts geändert.","editorCancel":"Abbrechen","editorLoading":"Zutaten werden geladen…","editorRow":"Zutat {row}","editorComboSearching":"Suche läuft…","editorComboEmpty":"Keine Treffer","editorReloadChanged":"Dieses Rezept wurde woanders geändert. Lade es neu und trage deine Änderungen erneut ein. Beim Neuladen geht dein Entwurf verloren.","editorReload":"Entwurf verwerfen und neu laden","editorSavedWithBackup":"Gespeichert. Sicherung von {time} verfügbar","editorRestoredWithBackup":"Version wiederhergestellt. Sicherung von {time} verfügbar","editorHistory":"Versionsverlauf","editorHistoryHide":"Versionsverlauf ausblenden","editorHistoryLoading":"Versionen werden geladen…","editorHistoryEmpty":"Noch keine Sicherungen. Vor jeder Änderung wird eine angelegt.","editorRestore":"Wiederherstellen","editorRestoreConfirm":"Die Version von {time} wiederherstellen? Der aktuelle Stand wird vorher gesichert. Ungespeicherte Änderungen in diesem Dialog gehen verloren.","editorRestoreNow":"Diese Version wiederherstellen","editorUndo":"Letzte Änderung rückgängig machen","editorKindIngredients":"Zutaten","editorKindBasics":"Grunddaten","editorKindInstructions":"Schritte","editorKindImage":"Titelfoto","editorKindStepImage":"Schrittfoto","editorKindRestore":"Wiederherstellung","editorPhoto":"Foto","editorPhotoNone":"Dieses Rezept hat noch kein Foto.","editorPhotoHint":"JPEG, PNG oder WebP, bis zu {size} MB.","editorPhotoReplace":"Foto ersetzen","editorPhotoRemove":"Foto entfernen","editorPhotoRemoveConfirm":"Das Titelfoto entfernen? Vorher wird eine Sicherungskopie angelegt.","editorPhotoRemoveNow":"Foto jetzt entfernen","editorStepPhotoAdd":"Foto hinzufügen","editorStepPhotoReplace":"Ersetzen","editorStepPhotoRemove":"Entfernen","editorStepPhotoAlt":"Foto zu Schritt {step}","editorStepPhotoKeptInMealie":"Das Foto wird von diesem Schritt entfernt. Mealie behält die Datei auf seinem Speicher.","editorStepPhotoSaveFirst":"Speichere den Schritt zuerst, um ein Foto hinzuzufügen.","editorUploadTooLarge":"Diese Datei ist größer als {size} MB.","editorUploadWrongType":"Nur JPEG-, PNG- und WebP-Bilder funktionieren.","editorUploadProgress":"Hochladen {percent} %","editorUploadCancel":"Hochladen abbrechen","editorUploadCancelled":"Hochladen abgebrochen.","editorRowNeedsText":"Gib für diese Zutat ein Lebensmittel oder eine Notiz an.","editorUploadNeedsSecure":"Das Hochladen von Fotos braucht eine sichere Verbindung (HTTPS)."},"en":{"dashboard":"Overview","today":"Today","discover":"Cook ideas","pantry":"Pantry","family":"Family cooking","cookbook":"Cookbook","recipes":"Recipes","mealplan":"Meal planner","shopping":"Shopping","manage":"Manage","greeting":"Good food. Every day.","greetingSub":"Your kitchen, reimagined.","eyebrow":"YOUR PERSONAL KITCHEN STUDIO","tonight":"Tonight on the table","viewRecipe":"Open recipe","nothing":"Nothing planned yet","planNow":"Plan a dish","collections":"Your recipe collection","all":"All recipes","search":"Search recipes …","noRecipes":"No recipes found.","noPlan":"Nothing planned","week":"Your week at a glance","list":"Everything for the market","add":"Add","addItem":"Add an item","noShopping":"Your shopping list is empty.","progress":"Completed","items":"items","cooking":"Cooking mode","edit":"Edit","addToPlan":"Plan meal","servings":"Servings","ingredients":"Ingredients","instructions":"Instructions","next":"Next","back":"Back","done":"Done","cookStart":"Start cooking","create":"New recipe","import":"Import from URL","name":"Recipe name","description":"Description","save":"Save","url":"Recipe URL","more":"Show more","settings":"Design Studio","language":"Language","languageAuto":"Automatic","languageName":"English","studioConnectionFailed":"Atelier connection failed","studioSaveFailed":"Could not save","studioAnalysisFailed":"Recipe analysis failed","studioDetailsLoading":"Loading recipe details for planning …","studioCatalogLoading":"Loading recipe collection: {loaded} of {total} recipes …","studioCatalogLoadingCount":"Loading recipe collection: {loaded} recipes …","studioCatalogDetails":"Recipe details: {loaded} of {total} loaded …","studioCatalogLimit":"The analysis loads up to 600 recipes.","studioCatalogTotal":"The collection contains {total}.","studioDialogLabel":"MEALIE ATELIER / KITCHEN STUDIO","studioDialogPromptLabel":"Enter an ingredient","studioDialogPromptPlaceholder":"e.g. cream","studioConfirm":"Confirm","studioCancel":"Cancel","studioClose":"Close","studioDiagnosticsKicker":"ATELIER / SYSTEM CHECK","studioDiagnosticsTitle":"Is everything working?","studioDiagnosticsDescription":"Checks the actual connection, read access, and settings. No data is changed and no access keys are shown.","studioDiagnosticsRunning":"Checking …","studioDiagnosticsCheck":"Check connection","studioDiagnosticsExport":"Export Atelier data as JSON","studioDiagnosticsEmpty":"Not checked yet. Run the system check to catch connection issues early.","studioDiagnosticsAdmin":"Admin","studioDiagnosticsEdit":"Editing allowed","studioDiagnosticsReadOnly":"Read-only","studioDiagnosticsBackup":"The backup contains private household data and recipe notes.","studioDiagnosticsReachable":"Reachable","studioBridge":"Atelier Bridge","studioStorage":"Atelier storage","version":"Version","studioDiagnosticsNoData":"No data","studioDiagnosticsError":"Error","studioDiagnosticsPassed":"All five connection checks passed.","studioDiagnosticsFailed":"{count} connection check(s) failed.","studioExportNote":"Contains private household data. Not a full Mealie backup.","studioExportDownloaded":"Atelier profile downloaded. Store it securely.","studioExportFailed":"Export failed: {error}","studioDailyMorning":"Good morning. What is on the menu today?","studioDailyEvening":"Good evening. Time for something good.","studioDailyAnytime":"Your kitchen for the rest of the day.","studioDailyEyebrow":"YOUR KITCHEN ASSISTANT","studioDailyMorningLabel":"MORNING","studioDailyEveningLabel":"EVENING","studioDailyOverviewLabel":"TODAY AT A GLANCE","studioDailyExpiring":"{count} pantry items should be used soon.","studioDailyDiscover":"Explore recipes and plan at your own pace.","studioDailyPantry":"Pantry & shopping","studioDailyPlan":"What should we cook today?","studioConfirmAvailable":"Home Assistant action triggered.","studioConfirmUnavailable":"Available in Home Assistant only.","studioNoStep":"There is no cooking step to read aloud.","studioDeviceInvalid":"The device or entity is not configured correctly.","studioActionFailed":"Home Assistant action failed: {error}","studioReadUnsupported":"Text-to-speech is not supported in this browser.","studioVoiceUnsupported":"Voice commands are not supported in this browser.","studioMicrophoneError":"Microphone unavailable or permission denied.","studioVoiceUnknown":"Command not recognized: {command}","studioSpeakNoMatch":"No clear matching ingredient was found in the recipe.","studioJournalSaved":"Personal note saved.","studioSaved":"Saved in Atelier.","studioChildApproval":"An adult must explicitly approve tasks assigned to children.","studioSpeechDe":"de-DE","studioSpeechEn":"en-US","studioDiscoverTitle":"What should we cook today?","studioDiscoverLead":"A few quick choices, then we’ll find something good in your recipes.","studioDiscoverStep0":"What sounds good?","studioDiscoverStep1":"Which cookbook?","studioDiscoverStep2":"Who is joining?","studioDiscoverStep3":"What is on hand today?","studioDiscoverQuestion0":"What are you in the mood for?","studioDiscoverQuestion1":"Choose your favorite collections, or leave them all open.","studioDiscoverQuestion2":"How many people, and how much time do you have?","studioDiscoverQuestion3":"We’ll work around your day.","studioDiscoverCompass":"YOUR KITCHEN COMPASS","studioDiscoverDiet":"Eating style","studioDiscoverAny":"Anything goes","studioDiscoverVegetarian":"Vegetarian","studioDiscoverVegan":"Vegan","studioDiscoverMeat":"Meat","studioDiscoverFish":"Fish","studioDiscoverDietHint":"We match recipes by tags and recognizable ingredients. Always check recipe details yourself.","studioDiscoverCookbooks":"Your cookbooks","studioDiscoverCookbooksHint":"Choose one or more. Leave all unselected to search every recipe.","studioDiscoverCookbooksAria":"Mealie cookbooks","studioDiscoverAllRecipes":"All recipes","studioDiscoverNoCookbooks":"Cookbooks appear here when Mealie metadata is available.","studioDiscoverPeople":"People","studioDiscoverPeopleHint":"Who is joining you at the table?","studioDiscoverOneLess":"One fewer person","studioDiscoverOneMore":"One more person","studioDiscoverKidFriendly":"Kid-friendly","studioDiscoverMild":"Prefer milder dishes","studioDiscoverAnyPreference":"No preference","studioDiscoverWithKids":"With kids","studioDiscoverTime":"Time available","studioDiscoverRelaxed":"No rush","studioDiscoverPantry":"Use pantry items","studioDiscoverUsePantry":"Pantry first","studioDiscoverNoPreference":"No preference","studioDiscoverExclude":"Leave out today …","studioDiscoverOptional":"Choose anything to avoid","studioDiscoverIngredientHint":"Pantry quantities and ingredient data may be incomplete. Check them before cooking.","studioDiscoverBack":"Back","studioDiscoverNext":"Next","studioDiscoverFind":"Find ideas","studioDiscoverResult":"TONIGHT’S INSPIRATION","studioDiscoverResultTitle":"This could be just right today.","studioDiscoverEdit":"Change choices","studioDiscoverTimeOpen":"Time flexible","studioDiscoverPerson":"person","studioDiscoverPeoplePlural":"people","studioDiscoverFromCookbooks":"FROM YOUR COOKBOOKS","studioDiscoverFromRecipes":"FROM YOUR RECIPES","studioDiscoverRecipeBase":"Recipe base: {servings} servings","studioDiscoverForPeople":"For {people} people","studioDiscoverGoodIdea":"A great idea from your cookbook.","studioDiscoverOpenRecipe":"View recipe","studioDiscoverAnother":"Another idea","studioDiscoverAlsoGood":"ALSO DELICIOUS","studioDiscoverMoreIdeas":"{count} more ideas","studioDiscoverEmptyTitle":"The day is still wide open.","studioDiscoverEmpty":"We couldn’t find a recipe that fits these choices. Change a preference or reload your recipes.","studioDiscoverAdjust":"Adjust choices","studioDiscoverReload":"Reload recipes","studioPlanKicker":"03 / SMART WEEKLY PLANNING","studioPlanTitle":"Seven days, less waste","studioPlanDescription":"The preview favors overlapping ingredients and keeps existing dinners. Leftover meals are added only when there are enough servings.","studioPlanPreview":"Suggest a weekly plan","studioPlanCommit":"Add suggestion to Mealie","studioLunch":"Lunch","studioDinner":"Dinner","studioPlanOnlyMissing":"Only missing meals are added. Successful entries remain if another one fails.","studioPlanCreatePreview":"Create a preview first. Nothing changes in Mealie without confirmation.","studioPantryTitle":"Pantry & shopping","studioPantryLead":"A simple, manual pantry is enough. Atelier compares it with your planned meals.","studioPantryKicker":"01 / YOUR PANTRY","studioPantryQuestion":"What do you have?","studioIngredient":"Ingredient","studioAmount":"Amount","studioUnit":"Unit","studioGrams":"Grams","studioMilliliters":"Milliliters","studioPieces":"Pieces","studioBestBefore":"Best before","studioStaple":"Keep as a regular pantry staple","studioAdd":"Add","studioStapleLabel":"Pantry staple","studioUntil":"until {date}","studioRemove":"Remove","studioPantryEmpty":"No pantry items yet. Adding them is optional.","studioGroceryKicker":"02 / SHOPPING ASSISTANT","studioGroceryTitle":"What do you really need?","studioGroceryDescription":"Based on your planned meals. Pantry quantities are deducted only when the units clearly match.","studioGroceryCalculate":"Calculate shopping list","studioGrocerySend":"Add to Mealie list","studioQuantityCheck":"Check amount","studioGroceryPreview":"Click “Calculate shopping list” to see a preview.","studioUnclearUnits":"Unclear tablespoon/teaspoon quantities and different units are never converted automatically.","theme":"Appearance","dark":"Dark","light":"Light","density":"Spacing","compact":"Compact","comfortable":"Comfortable","accent":"Accent color","radius":"Corners","columns":"Columns","nutrition":"Nutrition","nutriTitle":"Atelier Nutrition","nutriAnalyze":"Match ingredients","nutriAi":"Suggest food search terms with AI","nutriEstimate":"Calculate nutrients","nutriSave":"Save to Mealie","nutriSearch":"Search USDA","nutriNoSource":"Select a food","nutriGrams":"Quantity in grams","nutriSource":"Data source","nutriResult":"Per serving","journal":"My cooking notes","journalSave":"Save note","journalNote":"How was it last time?","timer":"Kitchen timer","timerStart":"Start timer","timerRemove":"Remove","apply":"Apply","close":"Close","configured":"Your design is saved on this device.","backend":"Connection not configured","backendHint":"Set up Mealie Atelier Bridge in Home Assistant first.","refresh":"Refresh","loading":"Preparing your kitchen …","error":"Something went wrong.","retry":"Try again","selectRecipe":"Choose a recipe","selectList":"Choose list","saved":"Saved","created":"Recipe created","planned":"Meal planned","toMealie":"Open in Mealie","mealType":"Meal","dinner":"Dinner","lunch":"Lunch","breakfast":"Breakfast","saveNote":"Edit basic details","admin":"Manage recipes","recipeTip":"Create recipes and edit existing ones.","featured":"FROM YOUR KITCHEN","headline":"Make something delicious.","count":"Recipes","open":"Open","todayDate":"Today","nextMeal":"Planned","day":"Day","label":"List","change":"Change","importTip":"Paste the URL of a recipe for Mealie to import.","expand":"Read more","adminOnly":"Changing recipes requires a Home Assistant admin account.","emptyTip":"Use search or create a new recipe.","markComplete":"Mark completed","addListFirst":"Create your first shopping list.","offline":"Could not load data.","createList":"New list","listName":"Shopping list name","shoppingFromRecipe":"Get ingredients","shoppingAddRecipe":"Add ingredients","shoppingAdded":"Ingredients added to list","editSteps":"Edit cooking instructions","editIngredients":"Replace ingredients","editStepsHint":"One step per paragraph, separated by a blank line.","editIngredientsHint":"One ingredient per line. Warning: replacing ingredients removes linked foods and units.","servingsNumber":"Servings (number)","applySteps":"Replace steps","applyIngredients":"Replace ingredients","resetDesign":"Reset design","pictures":"Show recipe images","todayIntro":"Your kitchen today.","todaySub":"Today’s meals and everything you still need.","toShopping":"View shopping list","plannedForToday":"Planned today","noSteps":"No cooking instructions added yet.","allMeals":"All dishes","successList":"List created","addFromRecipeTip":"Mealie adds all recipe ingredients to your chosen shopping list.","ingredientExperimental":"Ingredient replacement is disabled by default. Enable it in Bridge settings only after backing up Mealie.","readOnly":"Read-only mode","readOnlyHint":"Editing is disabled for this kitchen dashboard.","adminOnlyHint":"Recipe management requires administrator access.","studioDiscoverStepProgress":"Step {step} of 4","ingredientMushrooms":"Mushrooms","ingredientOlives":"Olives","ingredientCilantro":"Cilantro","ingredientBellPepper":"Bell pepper","ingredientHeat":"Spicy food","ingredientTomatoes":"Tomatoes","familyTitle":"Cook together","familyLead":"Shared cooking progress with optional helper tasks and approval from an adult.","familyAdultMode":"Adult view","familyHelperMode":"Simple helper view","familySync":"Refresh live status","familyTeam":"01 / THE TEAM","familyWhoHelps":"Who is helping?","familyName":"Name","familyChild":"Child – approved tasks only","familyAddMember":"Add person","familyHelper":"Helper mode","familyRemoveMember":"Remove person","familyNoMembers":"No family members yet.","familySession":"02 / SHARED COOKING SESSION","familyNoSession":"No active session","familyStep":"Shared step {step} · started {date}","familyBack":"Back","familyNext":"Next step","familyEnd":"End session","familyOpenCook":"Open cooking mode","familyTimers":"Shared timers","familyNoTimers":"No shared timers yet","familyTimerName":"Label","familyMinutes":"Minutes","familySetTimer":"Set timer","familyTasks":"Helper tasks","familyMarkOpen":"Mark as open: {task}","familyMarkDone":"Mark as done: {task}","familyNoTasks":"No tasks assigned yet.","familyTask":"Task","familyTaskPlaceholder":"e.g. wash the vegetables","familyAssign":"Assign to","familyApproval":"I reviewed and approved this task","familyAssignTask":"Assign task","familySafety":"The child view simplifies the interface but does not restrict access. Adults remain responsible for supervision and safe device use.","familyStartHint":"Open a recipe and start cooking mode. A shared session starts when editing is allowed.","familyBrowse":"Browse recipes","cookbookTitle":"Your own cookbook","cookbookLead":"Choose favorite recipes. Atelier lays out a cover, contents, and A4 recipe pages in one print-ready view.","cookbookSelectKicker":"01 / CHOOSE RECIPES","cookbookCollection":"Your collection","cookbookLoad":"Load recipe details","cookbookSelectAll":"Select all visible","cookbookClear":"Clear selection","cookbookEmpty":"No recipes loaded yet","cookbookLoadHint":"Load recipe details to build your own cookbook.","cookbookBookKicker":"02 / YOUR BOOK","cookbookSelected":"{count} recipes selected","cookbookTitleLabel":"Book title","cookbookTitleDefault":"Our favorite recipes","cookbookSubtitleLabel":"Subtitle","cookbookSubtitleDefault":"Good food. Every day.","cookbookPhotos":"Print recipe photos","cookbookPrint":"Cookbook PDF / print preview","cookbookPrintHint":"Use “Save as PDF” in your browser. Each recipe starts on a new A4 page; very long recipes may flow onto extra pages.","printPreparing":"Laying out your cookbook …","printDocumentTitle":"Mealie Atelier – Cookbook","printSavePdf":"Save as PDF / Print","printCollection":"RECIPE COLLECTION","printMadeWithLove":"MADE WITH LOVE","printContents":"CONTENTS","printRecipes":"The recipes.","printRecipe":"RECIPE {number} / {total}","printIngredients":"INGREDIENTS","printPreparation":"METHOD","printServings":"{count} servings","studioMinutesShort":"min","studioOven":"Oven","studioReadStepLabel":"Read step aloud","studioVoiceCommandLabel":"Voice command","studioReplacementLabel":"Ingredient alternatives","studioCookingLight":"Cooking light","studioLowerMusic":"Lower music","studioSpeakerLabel":"Play on speaker","studioSharedFamily":"Synced with family","studioSharedTimer":"shared","studioRecipeAuditTitle":"Recipe check: {score}/100","studioRecipeAuditNone":"No obvious structure issues found.","studioRecipeAuditAll":"All notes","studioAICheck":"Review with AI","studioAiSuggestionTitle":"AI suggestions (review only)","studioLocalAlternativeNone":"No verified local alternative found.","studioAiOptional":"AI is optional and requires an API key.","studioReplaceTitle":"Replace an ingredient","studioReplaceBody":"Which ingredient would you like to replace? Suggestions are not verified one-to-one substitutes.","studioShowAlternatives":"Show alternatives","studioAiAuditTitle":"Start AI recipe review?","studioAiAuditBody":"This recipe’s ingredients, amounts, and steps will be sent to your configured AI provider. Nothing will be changed automatically.","studioAiConsent":"Send data and review","studioAiStarting":"Starting AI recipe review …","studioAiUnavailable":"AI review unavailable: {error}","studioAuditTitle":"Recipe quality check · {score}/100","studioAuditNone":"No obvious structure issues.","studioAuditDisclaimer":"This check flags basic structure issues, not culinary mistakes.","studioSessionReplaceTitle":"Replace the shared cooking session?","studioSessionReplaceBody":"“{name}” is currently active. Replacing it will end its shared timers and tasks. Cancel to start the new recipe locally only.","studioSessionReplaceConfirm":"Replace session","studioOnlyHomeAssistant":"Available in Home Assistant only.","studioSpeechStartFailed":"Speech recognition could not start.","studioIngredientNoMatch":"I could not find a clear matching ingredient in this recipe.","studioSubstituteError":"No verified local alternative found. AI is optional and requires an API key. {error}","studioRecipeAuditDisclaimer":"Basic structure check · not a culinary review","studioDeletePantryTitle":"Remove pantry item?","studioDeletePantryBody":"This item will be removed from your Atelier pantry.","familyRemoveConfirmTitle":"Remove person?","familyRemoveConfirmBody":"This person will be removed from family cooking. Complete or remove their existing helper tasks first.","familyEndConfirmTitle":"End shared cooking?","familyEndConfirmBody":"This ends the session timers and helper tasks. Personal recipe notes remain.","studioWeekConfirmTitle":"Add weekly plan?","studioWeekConfirmBody":"{count} meals will be added. Existing entries will stay unchanged.","studioWeekConfirmAction":"Add to Mealie","studioWeekSuccess":"{count} meals added.","studioWeekFailure":"Errors: {errors}","studioShoppingTransferTitle":"Transfer shopping items?","studioShoppingTransferBody":"{count} items will be added to your Mealie shopping list.","studioShoppingTransferConfirm":"Add to shopping list","studioShoppingUncertain":"Check amount","studioShoppingSuccess":"{count} items added.","studioShoppingFailure":"Failed: {items}","studioPopupBlocked":"Allow pop-ups to open the print preview.","studioAdultApprovalRequired":"An adult must explicitly approve tasks assigned to children.","cookbookTitleDefaultPrint":"Our recipes","studioJournalSavedToast":"Personal note saved.","providerTitle":"Recipe studio without the Atelier Bridge","providerDescription":"Home Assistant’s built-in Mealie integration supports recipe search and cooking here. Add the optional Atelier Bridge for planning, shopping, cookbooks, photos, and editing.","providerBrowse":"Browse recipes","studioJournalLocal":"Stored only on this device, not synced to Mealie.","studioJournalShared":"Saved in your Atelier profile for your connected devices.","editorConnectKitchen":"Connect kitchen","editorChooseYourStart":"Choose your start","editorSetTheMood":"Set the mood","editorSetupProgress":"Setup progress","editorCheckingHomeAssistantConnections":"Checking Home Assistant connections…","editorCouldNotCheckYourConnections":"Could not check your connections","editorCheckThatMealieAtelierBridgeIsInstalledAndHomeAssistantIsOnline":"Check that Mealie Atelier Bridge is installed and Home Assistant is online.","editorTryAgain":"Try again","editorOpenHomeAssistantIntegrations":"Open Home Assistant integrations","editorHomeAssistantMealieFound":"Home Assistant Mealie found","editorDirectConnectionReadOnlyRecipes":"Direct connection · read-only recipes","editorREADY":"READY","editorRecipeSearchAndCookingWorkWithoutAtelierBridgeProtectedPhotosEditingShoppingAndPlanningStayOptionalBridgeFeatures":"Recipe search and cooking work without Atelier Bridge. Protected photos, editing, shopping and planning stay optional Bridge features.","editorMealieInstance":"Mealie instance","editorYourMealieConnection":"Your Mealie connection","editorChooseAConnectedKitchen":"Choose a connected kitchen…","editorYourAPITokenStaysSafelyInsideTheHomeAssistantIntegration":"Your API token stays safely inside the Home Assistant integration.","editorConnectMealieOnceInHomeAssistant":"Connect Mealie once in Home Assistant","editorAddMealieAtelierBridgeForTheFullStudioOrUseHomeAssistantSBuiltInMealieIntegrationForAReadOnlyRecipeCardCredentialsAreEnteredSecurelyInHomeAssistantNeverInThisCard":"Add Mealie Atelier Bridge for the full studio, or use Home Assistant’s built-in Mealie integration for a read-only recipe card. Credentials are entered securely in Home Assistant, never in this card.","editorIConnectedMealieCheckAgain":"I connected Mealie — check again","editorConnectedSecurely":"Connected securely","editorNoCredentialsInDashboardCards":"No credentials in dashboard cards","editorYourCredentialsBelongInTheSecureIntegrationNeverInThisCard":"Your credentials belong in the secure integration, never in this card.","editorACompleteKitchenOverview":"A complete kitchen overview","editorTodaySMealsAndKitchenTasks":"Today’s meals and kitchen tasks","editorPersonalRecipeInspiration":"Personal recipe inspiration","editorYourCompleteRecipeCollection":"Your complete recipe collection","editorTheWeeklyMealPlan":"The weekly meal plan","editorIngredientsYouAlreadyHave":"Ingredients you already have","editorYourShoppingList":"Your shopping list","editorCookingTogetherAsAFamily":"Cooking together as a family","editorYourSavedCookbooks":"Your saved cookbooks","editorRecipeAndKitchenTools":"Recipe and kitchen tools","editorSTEP1CONNECTION":"STEP 1 · CONNECTION","editorBringYourKitchenTogether":"Bring your kitchen together.","editorAtelierReadsRecipesFromTheMealieConnectionAlreadyConfiguredInHomeAssistant":"Atelier reads recipes from the Mealie connection already configured in Home Assistant.","editorSTEP2YOURKITCHEN":"STEP 2 · YOUR KITCHEN","editorWhatShouldOpenFirst":"What should open first?","editorPickAStartingPointEveryOtherViewStaysOneTapAway":"Pick a starting point. Every other view stays one tap away.","editorStartIn":"Start in","editorYOURATELIEROPENSTO":"YOUR ATELIER OPENS TO","editorSTEP3THEFEEL":"STEP 3 · THE FEEL","editorMakeItFeelLikeYourKitchen":"Make it feel like your kitchen.","editorChooseALookNowYouCanFineTuneEveryDetailLater":"Choose a look now. You can fine-tune every detail later.","editorChooseAnAppearance":"Choose an appearance","editorEveningStudio":"Evening studio","editorDeepGreenWarmLightEditorial":"Deep green · stone light · editorial","editorDaylightKitchen":"Daylight kitchen","editorFreshSurfacesOpenAndBright":"Fresh surfaces · open and bright","editorYourRecipesAndMealieDataAreNeverChangedByTheseChoices":"Your recipes and Mealie data are never changed by these choices.","editorAKitchenThatFeelsLikeYours":"A kitchen that feels like yours.","editorThreeSmallChoicesYourKitchenReady":"Three small choices. Your kitchen, ready.","editorSetUpLater":"Set up later","editorSetupNavigation":"Setup navigation","editorBack":"Back","editorContinue":"Continue","editorCreateMyKitchen":"Create my kitchen","editorACalmStartTheAdvancedSettingsAreHereWheneverYouNeedThem":"A calm start. The advanced settings are here whenever you need them.","editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard":"Configure your card visually. Settings are saved with your Home Assistant dashboard.","editorRunSetupWizard":"Run setup wizard","editorYourKitchenIsReady":"Your kitchen is ready.","editorBasics":"Basics","editorChooseContentAndTheConnectedMealieInstance":"Choose content and the connected Mealie instance.","editorMode":"Mode","editorMealieAccount":"Mealie account","editorFirstConnectedAccount":"First connected account","editorDataConnection":"Data connection","editorAutomaticAtelierFirst":"Automatic · Atelier first","editorAtelierBridgeFullFeatures":"Atelier Bridge · full features","editorHomeAssistantMealieReadOnly":"Home Assistant Mealie · read-only","editorTheBuiltInOptionNeedsNoAtelierServerOrCardTokenRecipeSearchAndCookingAreReadOnlyTheBridgeAddsImagesAndKitchenTools":"The built-in option needs no Atelier server or card token. Recipe search and cooking are read-only; the Bridge adds images and kitchen tools.","editorBuiltInMealieInstance":"Built-in Mealie instance","editorLanguage":"Language","editorAutomatic":"Automatic","editorLookFeel":"Look & feel","editorTypographyMotionAndTheVisualRhythmOfYourCards":"Typography, motion and the visual rhythm of your cards.","editorTheme":"Theme","editorDark":"Dark","editorLight":"Light","editorDensity":"Density","editorComfortable":"Comfortable","editorCompact":"Compact","editorMotionTransitions":"Motion & transitions","editorExpressive":"Expressive","editorSubtle":"Subtle","editorOff":"Off","editorYourReducedMotionSystemPreferenceAlwaysTakesPriority":"Your reduced-motion system preference always takes priority.","editorColumns":"Columns","editorAccent":"Accent","editorCornerStyle":"Corner style","editorRounded":"Rounded","editorSoft":"Soft","editorSquareEckig":"Square","editorFoodPhotographyCrop":"Food photography crop","editorPortraitEditorial":"Portrait · editorial","editorSquareQuadrat":"Square","editorWide":"Wide","editorShowRecipeImages":"Show recipe images","editorOptionalPrintAndKitchenSettings":"Optional print and kitchen settings","editorPrintStudio":"Print studio","editorPremiumA4LayoutsForRecipesAndLists":"Premium A4 layouts for recipes and lists.","editorPrintTemplate":"Print template","editorInkSaver":"Ink saver","editorPrintRecipePhotosWhenAvailable":"Print recipe photos when available","editorPrintCheckboxes":"Print checkboxes","editorPrintCompletedItems":"Print completed items","editorPrintStoredNutritionValues":"Print stored nutrition values","editorPrintHandwritingSpace":"Print handwriting space","editorKitchenTablet":"Kitchen & tablet","editorOptionalHomeAssistantActionsNothingTriggersAutomatically":"Optional Home Assistant actions. Nothing triggers automatically.","editorUseEnlargedTabletLayout":"Use enlarged tablet layout","editorOptionalKitchenSceneHA":"Optional kitchen scene (HA)","editorOnlyTriggeredWhenYouTapTheCookingCockpitButton":"Only triggered when you tap the Cooking Cockpit button.","editorOptionalMediaPlayerHA":"Optional media player (HA)","editorCookingVolume":"Cooking volume","editorOptionalTTSEngineHA":"Optional TTS engine (HA)","editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault":"Use a Home Assistant entity. All optional device actions are disabled by default.","editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio":"Dashboard mode contains the complete kitchen. Device-specific changes are available here in the Design Studio.","uiFindYourNextFavorite":"Find your next favorite","uiSearchRecipesIngredientsOrViews":"Search recipes, ingredients, or views …","uiSearchRecipesIngredientsAndQuickActions":"Search recipes, ingredients and quick actions","uiSearchYourRecipesIncludingByIngredient":"Search your recipes, including by ingredient.","uiYOURKITCHEN":"YOUR KITCHEN","uiNavigation":"Navigation","uiNoMatchingViewsOrActions":"No matching views or actions.","uiSelect":"Select","uiOpen":"Open","uiClose":"Close","uiPrintPDF":"Print / PDF","uiProtein":"Protein","uiCarbs":"Carbs","uiFat":"Fat","uiStep":"Step","uiKitchenTimers":"Kitchen timers","uiATELIERKITCHENTIMER":"ATELIER · KITCHEN TIMER","uiKeepEverythingInRhythm":"Keep everything in rhythm","uiactive":"active","uitimeRemaining":"time remaining","uiminutes":"minutes","uiActiveTimer":"Active timer","uiREADY":"READY","uiRUNNING":"RUNNING","uiNoTimerRunningYetSetOneToKeepEverythingInRhythm":"No timer running yet. Set one to keep everything in rhythm.","uiQuickTimerPresets":"Quick timer presets","uimin":"min","uiMinutes":"Minutes","uiTimerDurationInMinutes":"Timer duration in minutes","uiLabelOptional":"Label · optional","uieGOven":"e.g. Oven","uiStartTimer":"Start timer","uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe":"One step at a time. You can always return to the full recipe.","uiPlanMealsQuicklyWithoutClutter":"Plan meals quickly, without clutter.","uiStartWithARecipeTitleAddDetailsAfterCreating":"Start with a recipe title. Add details after creating.","uieGLemonPastaWithSpinach":"e.g. Lemon pasta with spinach","uiPasteARecipeLinkMealieHandlesImportingIt":"Paste a recipe link. Mealie handles importing it.","uiEditRecipe":"Edit recipe","uiDetailsIngredientsAndInstructionsInOneClearWorkflow":"Details, ingredients and instructions in one clear workflow.","uiYourRecipeTitleSummaryAndServingSize":"Your recipe title, summary and serving size.","uiWhatMakesThisSpecial":"What makes this special?","uiShownInRecipesAndPrint":"Shown in recipes and print.","uiLinkedFoodsAndUnitsStayProtectedTheIngredientsCanBePrinted":"Linked foods and units stay protected; the ingredients can be printed.","uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled":"Edit, add and reorder steps. Replacement must be explicitly enabled.","uiReplaceCookingInstructions":"Replace cooking instructions","uiAddAStep":"Add a step","uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected":"Steps are replaced on save if the checkbox is selected.","uiChangesAreSentToMealieOnlyWhenYouSave":"Changes are sent to Mealie only when you save.","uiGiveYourShoppingListAName":"Give your shopping list a name.","uieGWeeklyGroceries":"e.g. Weekly groceries","uiMotionTransitions":"Motion & transitions","uiThoughtfulMotionThatHelpsNavigationYourReducedMotionDeviceSettingAlwaysTakesPriority":"Thoughtful motion that helps navigation. Your reduced-motion device setting always takes priority.","uiExpressive":"Expressive","uiSubtle":"Subtle","uiOff":"Off","uiPhotoCrop":"Photo crop","uiTall":"Tall","uiSquare":"Square","uiWide":"Wide","uiCornerStyle":"Corner style","uiRound":"Round","uiSoft":"Soft","uiSquareEckig":"Square","uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan":"Separate A4 layouts for recipes, shopping and your weekly plan.","uiOpenPrintSettings":"Open print settings","uiEnjoyingTheAtelier":"Enjoying the Atelier?","uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi":"If it makes your kitchen routine better, you can optionally support its development on Ko-fi.","uiSayThanksOnKoFi":"Say thanks on Ko-fi","uiQuickActions":"Quick actions","uiPrintStudioSettings":"Print Studio · Settings","uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity":"Up to 500 matches through Home Assistant. Photos and Atelier write features stay disabled for security.","uiMarkComplete":"Mark complete: ","uiPrint":"Print","uiSwipeToBrowseAllSevenDays":"Swipe to browse all seven days.","uiAllowPopupsToOpenThePrintPreview":"Allow popups to open the print preview.","uiCalories":"Calories","uiCarbohydrates":"Carbohydrates","uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches":"Nutrient values come from food data, not AI guesses. Review all weights and matches.","uiFoodsMatched":"Foods matched","uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv":"USDA API key not configured. Add it in integration settings or .env.","uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt":"This recipe already has nutrition data. Explicit approval is required to replace it.","uiSendsIngredientTextToOpenAINoInventedMacros":"Sends ingredient text to OpenAI; no invented macros.","uiOptionalConfigureOpenAIAPIKey":"Optional: configure OpenAI API key","uiREVIEWINGREDIENTS":"REVIEW INGREDIENTS","uiNotMatched":"Not matched","uiFoodSearchQuery":"Food search query","uiFindFood":"Find food","uiNoCompleteNutritionEntriesFoundTryAnotherQuery":"No complete nutrition entries found. Try another query.","uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates":"Based on selected USDA entries per 100g; cooking yields and missing nutrients affect accuracy. Values are estimates.","uiSourcesCoverage":"Sources & coverage","uiExplicitlyReplaceExistingNutritionValues":"Explicitly replace existing nutrition values","uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie":"Your personal cooking notes. Stored only on this device, not synced to Mealie.","uiHowDidItTurnOut":"How did it turn out?","uiNotRated":"Not rated","uiNextTimeReduceTheSalt":"Next time, reduce the salt …","editorPreviewDashboard":"Your kitchen at a glance","editorPreviewToday":"Tonight on the table","editorPreviewDiscover":"Fresh ideas for dinner","editorPreviewRecipes":"Recipes you love","editorPreviewMealplan":"This week’s menu","editorPreviewPantry":"What is already in","editorPreviewShopping":"On your shopping list","editorPreviewFamily":"Better together","editorPreviewCookbook":"Your cookbooks","editorPreviewManage":"Your kitchen studio","uiRememberAsFavoriteRecipe":"Remember as a favorite recipe","uiScaleServingsNote":"Amounts adjusted for {target} servings. Recipe base: {base} servings. Clear quantities are scaled; please check free-text amounts.","uiRecipeStepImageAlt":"Image for step {step}","uiMarkShoppingOpen":"Mark as open: {item}","uiMarkShoppingComplete":"Mark complete: {item}","uiServing.one":"serving","uiServing.other":"servings","uiThisFeatureRequiresMealieAtelierBridge":"This feature requires Mealie Atelier Bridge.","uiHomeAssistantSMealieIntegrationWithRecipeSearchIsUnavailable":"Home Assistant’s Mealie integration with recipe search is unavailable.","uiChooseAValidMealieInstance":"Choose a valid Mealie instance.","uiHomeAssistantReturnedNoRecipe":"Home Assistant returned no recipe.","uiEveryDay":"Every day","uiDescribeThisStep":"Describe this step …","uiMoveUp":"Move up","uiMoveDown":"Move down","uiRemoveStep":"Remove step","uiRemove":"Remove","uiMealieReadOnly":"Mealie · read-only","uiRecipesCookingPhotosAndEditsNeedAtelierBridge":"Recipes & cooking · Photos and edits need Atelier Bridge","uiKitchenTimer":"Kitchen timer","uiAISuggestedSearchTermsReviewEveryDatabaseMatchYourself":"AI suggested search terms. Review every database match yourself.","uiNutritionSavedToMealie":"Nutrition saved to Mealie","uiCalculatedReviewBeforeSaving":"Calculated. Review before saving.","uiBonAppetitEnjoyYourMeal":"Bon appétit! Enjoy your meal.","uiTypeAtLeastOneMoreCharacter":"Type at least one more character.","uiSearchingYourRecipes":"Searching your recipes …","uiNoRecipeFoundYet":"No recipe found yet","uiTryAnotherRecipeNameOrIngredient":"Try another recipe name or ingredient.","uiSearchIsUnavailableRightNow":"Search is unavailable right now","uiIngredient":"Ingredient","uiRecipeName":"Recipe name","uiNameIngredient":"Name & ingredient","uiRecipeMatch":"Recipe match","uiMATCHINGRECIPES":"MATCHING RECIPES","uiresults":"results","uiRecipeResults":"Recipe results","uiNoteSavedOnThisDevice":"Note saved on this device","uiOpenQuickActions":"Open quick actions ({shortcut})","uiSeeAllResults":"See all {count} results","uiConversion":"Kitchen conversion","uiConversionNeedsDensity":"Mass and volume need an ingredient-specific density. Atelier will not guess it.","uiConversionExactFactors":"Converted with standard unit factors. Recipe amounts are not changed.","uiSearchConversionExample":"Try: 250 g to oz","uiPrintHeroTitle":"Make it beautiful on paper.","uiPrintHeroDescription":"A dedicated, carefully typeset print layout. Your browser can save it as a PDF.","uiPrintStyle":"STYLE","uiPrintEditorial":"Editorial","uiPrintEditorialDescription":"Elegant, spacious typography","uiPrintCompact":"Compact","uiPrintCompactDescription":"Save room without sacrificing legibility","uiPrintInkSaver":"Ink saver","uiPrintInkSaverDescription":"Black ink and no photos","uiPrintDetails":"CUSTOMIZE DETAILS","uiPrintIncludePhoto":"Include recipe photo (if available)","uiPrintIncludeNutrition":"Include nutrition from Mealie (if present)","uiPrintIncludeCompleted":"Also print completed items","uiPrintIncludeCheckboxes":"Include checkboxes","uiPrintIncludeNotes":"Include room for notes","uiPrintOpenPreview":"Open print / PDF preview","uiPrintGuide":"Choose A4 and 100% scale in the browser. For the weekly plan, A4 landscape is selected automatically.","uiPrintPaperPreview":"PAPER PREVIEW","uiYourRecipe":"Your recipe","uiPrintPreviewDescription":"Thoughtfully laid out. Ready to print.","uiPrintIngredientsItems":"INGREDIENTS / ITEMS","uiPrintPreparationNotes":"PREPARATION / NOTES","uiPrintDesignedForPaper":"DESIGNED FOR PAPER","offlinePanelLabel":"Offline sync and kitchen timers","offlineSyncTimers":"Sync & kitchen timers","offlineLoading":"Loading status","offlineShopping":"Offline shopping","offlineStorageNote":"Changes stay on this device until they are safely synced with Mealie.","offlineEnable":"Enable offline mode","offlineSyncNow":"Sync now","offlineReviewConflicts":"Review conflicts","offlineBackgroundTimers":"Background timers","offlineCheckingDelivery":"Checking delivery channel","offlineAllowPush":"Allow push","offlineRefreshTimers":"Refresh timers","offlineConflictToggle":"Checklist conflict","offlineConflictList":"Shopping-list conflict","offlineReviewCurrentList":"Check the current Mealie list.","offlineDiscardChange":"Discard change","offlinePlanned":"Scheduled: {time}","offlineStopTimer":"Stop timer","offlineDisabled":"Offline shopping is off","offlineStatus":"{connection} · {pending} pending{conflicts}{syncing}","offlineConflictCount":" · {count} conflict(s)","offlineSyncing":" · Syncing","offlineClearLocal":"Clear local data","offlineHomeAssistantActive":"Home Assistant active","offlinePushConfigured":"Web Push configured (permission required)","offlineNoAlarmChannel":"No alarm channel configured","offlinePushReady":"Push enabled","offlineEnableConfirmTitle":"Enable offline shopping?","offlineEnableConfirmBody":"Shopping lists and pending changes will be stored on this device. Avoid enabling this on public devices.","offlineDeleteConfirmTitle":"Delete offline data?","offlineDeleteConfirmBody":"Local shopping lists and unsynced changes will be permanently deleted.","offlineDeleteConfirmAction":"Delete data","offlineEnableConfirmAction":"Enable offline mode","offlinePushSetup":"Set up push notifications","offlineEnableHelp":"Enable offline shopping","offlineAlarmError":"Kitchen timer notification error","uiBackgroundTimerEnabled":"Background timer enabled","uiLocalTimerEnabled":"Local timer enabled only","uiBackgroundTimerError":"Background timer was not enabled: {error}","uiTimerStopError":"Could not stop the timer: {error}","dialogWeeklyMenu":"WEEKLY MENU","dialogYourMenu":"YOUR MENU","dialogPlanned":"PLANNED","dialogNewRecipe":"NEW RECIPE","dialogRecipeTitle":"RECIPE TITLE","dialogSource":"SOURCE","dialogRecipeStudio":"RECIPE STUDIO","dialogBasics":"BASICS","dialogStepByStep":"STEP BY STEP","offlineNoSnapshot":"No offline copy yet. Open the shopping list once while online.","offlineNotEnabled":"Enable offline shopping from the status bar first.","offlineListNeedsRefresh":"Load the shopping list while connected first.","offlineRequiresConnection":"This action requires an internet connection.","offlineItemNotEditable":"This item cannot be edited offline.","offlineInvalidItem":"The item or shopping list is invalid.","offlinePushKeysMissing":"Web Push server keys are missing.","offlinePushRequiresHttps":"Web Push requires HTTPS and a supported browser.","offlinePushPermissionDenied":"Notifications were not allowed.","offlineAlarmRequiresServer":"A background alarm cannot be enabled without a server connection.","offlineUnexpectedError":"The offline action could not be completed. Please try again.","printDocRecipe":"RECIPE","printDocShoppingList":"SHOPPING LIST","printDocWeeklyPlan":"WEEKLY PLAN","printDocTotalTime":"Total time","printDocMinAbbr":"min","printDocCloseWindow":"Close window","printDocFromYourKitchen":"From your kitchen","printDocNoItems":"No entries yet","printDocYourWeeklyPlan":"Your weekly menu","printDocMeals":"Meals","printDocListed":"Completed","printDocNutritionCaution":"Per serving only when recorded that way; verify portion size","printDocYield":"Yield","printDocSide":"Side","printDocDessert":"Dessert","printDocDrink":"Drink","printDocSnack":"Snack","printDocCalories":"Calories","printDocProtein":"Protein","printDocCarbs":"Carbs","printDocFat":"Fat","printDocFiber":"Fiber","printDocSugar":"Sugar","studioReasonPantryCovered":"{covered}/{total} ingredients covered by quantity","studioReasonPantryUnchecked":"Pantry not checked yet","studioReasonAmountsUnclear":"{count} amounts unclear","studioReasonFamilyFriendly":"Marked family friendly","studioReasonServingsBase":"Recipe base: {servings} servings","studioReasonServingsOpen":"Servings not set","studioReasonWithinBudget":"{minutes} min within the time budget","studioReasonOverBudget":"{minutes} min, slightly over the time budget","studioReasonSharedIngredients":"shared ingredients","studioReasonTwoMeals":"Servings for two meals","studioLeftoversName":"Leftovers: {name}","studioAisleChilled":"Chilled","studioAislePantry":"Pantry and grains","studioAisleSpices":"Spices and oils","studioAisleProtein":"Protein","studioAisleProduce":"Produce and other","studioAuditNoIngredients":"No ingredients on file","studioAuditNoSteps":"No preparation steps on file","studioAuditAmountUnclear":"Amount unclear: {item}","studioAuditAmountLarge":"Unusually large amount: {item}","studioAuditServingsInvalid":"Servings missing or invalid","studioAuditTimeMissing":"Total time missing","studioAuditDuplicate":"Possible duplicate entry: {item}","studioSwapCream":"Oat cooking cream","studioSwapButter":"Plant margarine or olive oil","studioSwapEgg":"Flax egg (works in some doughs)","studioSwapMilk":"Oat drink","studioSwapMushroom":"Zucchini or eggplant","studioSwapQuark":"Plant-based quark alternative","studioSwapParmesan":"Nutritional yeast or a vegan hard cheese alternative","studioSwapFlour":"Another suitable flour, check the texture","studioSwapSugar":"Maple syrup (adjust the liquid)","studioSwapWarning":"Text suggestion, not a tested 1:1 replacement. Check allergens and texture yourself.","studioNoPlannedIngredients":"No planned dishes with retrievable ingredients.","studioCreateShoppingListFirst":"Please create a shopping list in Mealie first.","uiMealieRecipeFallback":"Mealie recipe","itemFallback":"Item","recipeFallback":"Recipe","navKitchenLabel":"Kitchen navigation","uiHomeAssistantNotReady":"Home Assistant connection is not ready","uiAiSuggestionCountMismatch":"Unexpected AI suggestion count","uiExperimentalBadge":"EXPERIMENTAL","nutriGramsPlaceholder":"e.g. 200","studioRecipeFetchFailed":"{count} recipes could not be loaded and were skipped: {names}","uiProviderResultsTruncated":"Showing the first {limit} matches. Results may be incomplete. Use the Mealie Atelier Bridge to browse your full library.","uiKeepScreenAwake":"Keep screen awake while cooking","uiMutationFailed":"Could not save: {error} Your change was undone.","uiSaving":"Saving…","uiNoWriteGrant":"Your Home Assistant user may view this kitchen but not change it. An administrator can grant access in the Mealie Atelier options.","errNotConfigured":"Mealie Atelier is not set up yet.","errInvalidRequest":"That request was not valid. Check your input and try again.","errMealieAuth":"Mealie refused the access token. Check the token in the settings.","errMealieError":"Mealie is unreachable or answered unexpectedly. Try again in a moment.","errReadOnly":"This kitchen is in read-only mode, so nothing can be changed.","errUnauthorized":"This action needs administrator access.","errWriteNotPermitted":"You do not have permission to change data in this kitchen.","errConflict":"Someone else changed this meanwhile. Reload and try again.","errRecipeChanged":"The recipe changed elsewhere. Reload it before saving.","errDisabled":"This feature is switched off in the settings.","errUseStructuredEditor":"Edit ingredients with the structured ingredient editor.","errWriteUnverified":"Mealie accepted the change but the saved recipe looks different. Check the recipe before retrying.","errBackupFailed":"The backup could not be written, so nothing was changed.","errBackupNotFound":"That backup no longer exists.","errUploadInvalid":"The photo was rejected. Use a JPEG, PNG or WebP image within the size limit.","errUploadExpired":"The upload expired. Start it again.","errUploadBusy":"Too many uploads are open. Wait a moment and try again.","errStepNotFound":"That step no longer exists. Reload the recipe.","errSyncRuleNotFound":"That sync rule no longer exists.","errSyncDestinationUnsupported":"That list cannot receive items. Pick another to-do list.","errSyncSourceTaken":"Another rule already uses this shopping list.","errSyncTooManyRules":"You can have at most 5 sync rules.","errSyncNotActivated":"Confirm the first batch before this rule can run automatically.","errSyncNotSupported":"Shopping sync is only available with Home Assistant.","editorIngredientsLocked":"Structured ingredient editing is switched off. Ask an administrator to enable it.","editorQuantity":"Quantity","editorUnit":"Unit","editorFood":"Food","editorNote":"Note","editorOriginal":"Original text","editorAddIngredient":"Add ingredient","editorMoveUp":"Move ingredient {row} up","editorMoveDown":"Move ingredient {row} down","editorRemoveRow":"Remove ingredient {row}","editorCreateOption":"Create “{text}”","editorCreatedExisting":"Already existed, linked","editorQuantityInvalid":"Use a number such as 1,5, 1 1/2 or ½.","editorServingsPreview":"Preview for {count} servings","editorServingsReset":"Reset preview","editorServingsNote":"Preview only. Nothing is saved.","editorScaled":"Scaled","editorSaveSummary":"{changed} changed, {added} added, {removed} removed","editorSaveIngredients":"Review and save ingredients","editorConfirmSave":"Save ingredients","editorNoChanges":"Nothing has changed yet.","editorCancel":"Cancel","editorLoading":"Loading ingredients…","editorRow":"Ingredient {row}","editorComboSearching":"Searching…","editorComboEmpty":"No matches","editorReloadChanged":"This recipe changed elsewhere. Reload and reapply your changes. Reloading discards your draft.","editorReload":"Discard draft and reload","editorSavedWithBackup":"Saved. Backup from {time} available","editorRestoredWithBackup":"Version restored. Backup from {time} available","editorHistory":"Version history","editorHistoryHide":"Hide version history","editorHistoryLoading":"Loading versions…","editorHistoryEmpty":"No backups yet. One is saved before every change.","editorRestore":"Restore","editorRestoreConfirm":"Restore the version from {time}? Your current state is saved as a backup first. Unsaved edits in this dialog are discarded.","editorRestoreNow":"Restore this version","editorUndo":"Undo last change","editorKindIngredients":"Ingredients","editorKindBasics":"Basics","editorKindInstructions":"Steps","editorKindImage":"Cover photo","editorKindStepImage":"Step photo","editorKindRestore":"Restore","editorPhoto":"Photo","editorPhotoNone":"This recipe has no photo yet.","editorPhotoHint":"JPEG, PNG or WebP, up to {size} MB.","editorPhotoReplace":"Replace photo","editorPhotoRemove":"Remove photo","editorPhotoRemoveConfirm":"Remove the cover photo? A backup copy is saved first.","editorPhotoRemoveNow":"Remove photo","editorStepPhotoAdd":"Add photo","editorStepPhotoReplace":"Replace","editorStepPhotoRemove":"Remove","editorStepPhotoAlt":"Photo of step {step}","editorStepPhotoKeptInMealie":"The photo is removed from this step. Mealie keeps the file on its disk.","editorStepPhotoSaveFirst":"Save this step first to add a photo.","editorUploadTooLarge":"This file is larger than {size} MB.","editorUploadWrongType":"Only JPEG, PNG and WebP images work.","editorUploadProgress":"Uploading {percent}%","editorUploadCancel":"Cancel upload","editorUploadCancelled":"Upload cancelled.","editorRowNeedsText":"Add a food or a note for this ingredient.","editorUploadNeedsSecure":"Photo upload needs a secure (HTTPS) connection."}};
 function matchLocaleTag(value) {
   const tag = String(value || "")
     .trim()
@@ -10441,6 +10441,279 @@ ha-card {
     row-gap: 10px;
   }
 }
+
+/* Structured recipe editor (feature B): ingredient rows, comboboxes, history and photo uploads.
+   Time values come from the motion tokens; touch targets are at least 44px. */
+.atelier .ed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-3);
+}
+.atelier .ed-card .btn,
+.atelier .ed-step-photos .btn,
+.atelier .ed-confirm .btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+.atelier .ed-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ds-space-3);
+  margin-bottom: var(--ds-space-4);
+}
+.atelier .ed-servings {
+  display: grid;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-font-sm);
+  font-weight: 650;
+}
+.atelier .ed-servings input {
+  width: 120px;
+}
+.atelier .ed-rows {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+.atelier .ed-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  align-items: start;
+  padding: var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-num {
+  display: grid;
+  place-items: center;
+  min-height: var(--ds-control-height);
+  color: var(--ds-muted);
+  font-weight: 700;
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-fields {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1.2fr);
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .ed-cell {
+  position: relative;
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  font-weight: 650;
+}
+.atelier .ed-original,
+.atelier .ed-scaled,
+.atelier .ed-error {
+  grid-column: 2 / -1;
+  margin: 0;
+  font-size: var(--ds-font-xs);
+  line-height: 1.5;
+}
+.atelier .ed-original,
+.atelier .ed-scaled span {
+  color: var(--ds-muted);
+}
+.atelier .ed-error {
+  color: #f6b6a4;
+  font-weight: 650;
+}
+.atelier .ed-error[hidden],
+.atelier .ed-scaled[hidden] {
+  display: none;
+}
+.atelier .ed-row-actions {
+  display: flex;
+  gap: var(--ds-space-1);
+}
+.atelier .ed-icon {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: var(--ds-font-lg);
+}
+.atelier .ed-list {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  margin: var(--ds-space-1) 0 0;
+  padding: var(--ds-space-1);
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-panel);
+}
+.atelier .ed-list[hidden] {
+  display: none;
+}
+.atelier .ed-option {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  color: var(--ds-text);
+  font-size: var(--ds-font-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier .ed-option:hover,
+.atelier .ed-option.is-active {
+  background: var(--ds-surface-raised);
+  box-shadow: inset 3px 0 0 var(--ds-brand);
+}
+.atelier .ed-option:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: -2px;
+}
+.atelier .ed-option-note {
+  padding: var(--ds-space-3);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-confirm {
+  margin-top: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-brand);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-confirm p {
+  margin: 0;
+}
+.atelier .ed-live {
+  min-height: 1.4em;
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-cover-frame {
+  width: min(100%, 360px);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .ed-thumbs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-2);
+}
+.atelier .ed-thumb {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: 0;
+}
+.atelier .ed-thumb img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--ds-radius-sm);
+}
+.atelier .editor-step .ed-step-photos {
+  grid-column: 2 / -1;
+}
+.atelier .ed-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-3);
+}
+.atelier .ed-progress-track {
+  flex: 1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-surface-raised);
+}
+.atelier .ed-progress-bar {
+  display: block;
+  width: var(--ed-progress, 0%);
+  height: 100%;
+  background: var(--ds-brand);
+  transition: width var(--ds-motion-base) var(--ds-motion-ease);
+}
+.atelier .ed-progress-text {
+  min-width: 3.5ch;
+  font-size: var(--ds-font-sm);
+  font-variant-numeric: tabular-nums;
+}
+.atelier .ed-history {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: var(--ds-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.atelier .ed-history-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2) var(--ds-space-3);
+  padding: var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+}
+.atelier .ed-history-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--ds-font-sm);
+}
+.atelier .ed-history-copy span,
+.atelier .ed-history-copy small {
+  color: var(--ds-muted);
+}
+.atelier .ed-history-item .ed-confirm {
+  flex-basis: 100%;
+}
+@container atelier-card (max-width: 760px) {
+  .atelier .ed-row {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+  .atelier .ed-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .atelier .ed-row-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+@container atelier-card (max-width: 460px) {
+  .atelier .ed-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atelier .ed-actions > .btn {
+    flex: 1 1 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .ed-progress-bar,
+  .atelier .ed-option {
+    transition-duration: var(--ds-motion-reduced);
+  }
+}
 </style>`;
 function recipeImage(recipe, cls = "") {
   const src = imageOk(recipe?.imageUrl);
@@ -10751,6 +11024,10 @@ class MealieAtelierCard extends HTMLElement {
     this._boundClick = this._handleClick.bind(this);
     this._boundSubmit = this._handleSubmit.bind(this);
     this._boundInput = this._handleInput.bind(this);
+    // BEGIN feature B: recipe editor state and events
+    this._ed = null;
+    this._boundEditorFocus = (event) => this._editorFocusEvent(event);
+    // END feature B
     this._boundImageError = (event) => {
       if (event.target?.tagName === "IMG") event.target.remove();
     };
@@ -10820,6 +11097,10 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("click", this._boundClick);
     this.shadowRoot.addEventListener("submit", this._boundSubmit);
     this.shadowRoot.addEventListener("input", this._boundInput);
+    // BEGIN feature B: recipe editor events
+    this.shadowRoot.addEventListener("change", this._boundEditorFocus);
+    this.shadowRoot.addEventListener("focusout", this._boundEditorFocus);
+    // END feature B
     this.shadowRoot.addEventListener("keydown", this._boundKeyDown);
     document.addEventListener("keydown", this._boundPageKeyDown);
     document.addEventListener("visibilitychange", this._boundVisibility);
@@ -10837,6 +11118,11 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("click", this._boundClick);
     this.shadowRoot.removeEventListener("submit", this._boundSubmit);
     this.shadowRoot.removeEventListener("input", this._boundInput);
+    // BEGIN feature B: recipe editor events
+    this.shadowRoot.removeEventListener("change", this._boundEditorFocus);
+    this.shadowRoot.removeEventListener("focusout", this._boundEditorFocus);
+    clearTimeout(this._ed?.comboTimer);
+    // END feature B
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
     document.removeEventListener("visibilitychange", this._boundVisibility);
@@ -10897,7 +11183,9 @@ class MealieAtelierCard extends HTMLElement {
       can_write: granted ? chosen.permissions.can_write === true : chosen?.can_write === true,
       can_admin,
       can_manage: can_admin,
-      can_edit_ingredients: chosen?.can_edit_ingredients === true,
+      can_edit_ingredients:
+        chosen?.can_edit_ingredients === true ||
+        (can_admin && chosen?.features?.structured_ingredients === true),
       features: chosen?.features && typeof chosen.features === "object" ? chosen.features : {},
       limits: chosen?.limits && typeof chosen.limits === "object" ? chosen.limits : {},
     };
@@ -11217,9 +11505,12 @@ class MealieAtelierCard extends HTMLElement {
     return AtelierUI.metric({ value: number, label, graphic: ico });
   }
   _stepEditRow(value = "", index = 0, id = "") {
-    return `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
+    const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
       <textarea data-step-text maxlength="2000" rows="2" aria-label="${this.t("uiStep")} ${index + 1}" placeholder="${this.t("uiDescribeThisStep")}">${esc(value)}</textarea>
       <div class="step-buttons"><button type="button" data-action="step-up" aria-label="${this.t("uiMoveUp")}" title="${this.t("uiMoveUp")}">↑</button><button type="button" data-action="step-down" aria-label="${this.t("uiMoveDown")}" title="${this.t("uiMoveDown")}">↓</button><button type="button" data-action="step-remove" aria-label="${this.t("uiRemoveStep")}" title="${this.t("uiRemove")}">×</button></div></div>`;
+    // BEGIN feature B: step photo thumbnails inside the step row
+    return row.replace(/<\/div>$/, `${this._editorStepPhotos(id)}</div>`);
+    // END feature B
   }
   _renumberSteps() {
     this.shadowRoot.querySelectorAll("[data-editor-step]").forEach((element, index) => {
@@ -11431,6 +11722,9 @@ class MealieAtelierCard extends HTMLElement {
     this._render();
   }
   _handleKeyDown(event) {
+    // BEGIN feature B: recipe editor keyboard
+    if (this._editorKeyDown(event)) return;
+    // END feature B
     const target = event.target;
     const editing = target?.matches?.('input,textarea,select,[contenteditable="true"]');
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -11700,6 +11994,12 @@ class MealieAtelierCard extends HTMLElement {
       v = el.dataset.value || "";
     if (action === "backdrop" && event.target !== el) return;
     this._toast = "";
+    // BEGIN feature B: recipe editor actions
+    if (action.startsWith("ed-")) {
+      await this._editorClick(el);
+      return;
+    }
+    // END feature B
     if (action === "nav" && MODES.includes(v)) {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
@@ -12037,6 +12337,9 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "edit-form") {
       if (this._detail) {
         this._modal = "edit";
+        // BEGIN feature B: load structured ingredients and history
+        this._editorOpen();
+        // END feature B
         this._render();
       }
       return;
@@ -12108,6 +12411,9 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   _handleInput(event) {
+    // BEGIN feature B: recipe editor inputs
+    if (this._editorInput(event)) return;
+    // END feature B
     const el = event.target;
     const type = el?.dataset?.input;
     if (el?.hasAttribute("data-nutri-replace") && this._nutrition) {
@@ -12389,11 +12695,8 @@ class MealieAtelierCard extends HTMLElement {
               id: el.closest("[data-editor-step]")?.dataset.stepId || "",
               text: el.value.trim(),
             })).filter((step) => step.text);
-          if (values.replace_ingredients)
-            payload.ingredients = String(values.ingredients || "")
-              .split(/\r?\n/)
-              .map((x) => x.trim())
-              .filter(Boolean);
+          // BEGIN feature B: plain-text ingredients are no longer sent, the structured editor owns them
+          // END feature B
           ok = await this._mutate("recipe_update", payload, "all");
         }
         break;
@@ -12841,7 +13144,6 @@ const dialogMethods = {
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogSource")}</div><form class="editor-form" data-form="import"><label class="field"><span>${esc(this.t("url"))}</span><input type="url" name="url" required maxlength="2000" placeholder="https://…"></label><p class="editor-sub">${esc(this.t("importTip"))}</p><div class="form-actions"><button type="submit" class="btn primary">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></form></section></div>`;
     if (this._modal === "edit" && this._detail) {
       const rec = this._detail;
-      const ingredients = asArray(rec.recipeIngredient).map(ingredientName);
       const instructions = asArray(rec.recipeInstructions);
       size = "large";
       content = `<div class="modal-content atelier-editor">
@@ -12849,24 +13151,19 @@ const dialogMethods = {
         <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div>
         <div class="editor-stamp">${icon("edit", 28)}</div></div>
         <form data-form="edit" class="editor-form">
+        ${this._editorPhotoSection()}
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("name"))} & ${esc(this.t("description"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
           <label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" value="${esc(rec.name)}" placeholder="${esc(this.t("name"))}"></label>
           <div class="editor-columns"><label class="field"><span>${esc(this.t("description"))}</span><textarea name="description" rows="3" maxlength="2000" placeholder="${this.t("uiWhatMakesThisSpecial")}">${esc(rec.description)}</textarea></label>
           <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="1" max="100" step="1" name="servings" value="${Math.max(1, Number(rec.recipeServings) || 2)}" required><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
-        <section class="editor-card"><div class="eyebrow">02 / ${this.t("ingredients")}</div><h3>${esc(this.t("ingredients"))}</h3>
-          <p class="editor-sub">${this.t("uiLinkedFoodsAndUnitsStayProtectedTheIngredientsCanBePrinted")}</p>
-          <div class="editor-readonly">${ingredients.length ? ingredients.map((x) => `<span>• ${esc(x)}</span>`).join("") : "<span>—</span>"}</div>
-          ${
-            this._permissions.can_edit_ingredients
-              ? `<label class="editor-check"><input type="checkbox" name="replace_ingredients"> ${esc(this.t("applyIngredients"))} · ${esc(this.t("uiExperimentalBadge"))}</label><textarea name="ingredients" rows="4" maxlength="15000" aria-label="${esc(this.t("editIngredients"))}">${esc(ingredients.join("\n"))}</textarea>`
-              : `<p class="editing-hint">${esc(this.t("ingredientExperimental"))}</p>`
-          }</section>
+        ${this._editorIngredientsSection()}
         <section class="editor-card"><div class="eyebrow">03 / ${this.t("dialogStepByStep")}</div><h3>${esc(this.t("instructions"))}</h3>
           <p class="editor-sub">${this.t("uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled")}</p>
           <label class="editor-check"><input type="checkbox" name="replace_instructions"> ${this.t("uiReplaceCookingInstructions")}</label>
           <div class="editor-steps" data-steps-editor>${(instructions.length ? instructions : [{ text: "" }]).map((step, i) => this._stepEditRow(instructionText(step), i, step?.id || "")).join("")}</div>
           <button type="button" class="editor-add-step" data-action="step-add">+ ${this.t("uiAddAStep")}</button>
           <p class="editing-hint">${this.t("uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected")}</p></section>
+        ${this._editorHistorySection()}
         <section class="editor-card editor-card--steps"><div class="editor-footer"><small>${this.t("uiChangesAreSentToMealieOnlyWhenYouSave")}</small>
           <button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></section>
         </form></div>`;
@@ -13019,7 +13316,1199 @@ const dialogMethods = {
   },
 }
 
-Object.assign(MealieAtelierCard.prototype, viewMethods, printActionMethods, nutritionJournalMethods, dialogMethods);
+/**
+ * Structured recipe editor: ingredient rows with food and unit search, servings preview, version history
+ * with restore, and cover and step photo uploads. Every section repaints only its own container so
+ * unsaved edits in the rest of the dialog (name, description, steps) survive.
+ */
+const EDITOR_FRACTIONS = {
+  "¼": "1/4",
+  "½": "1/2",
+  "¾": "3/4",
+  "⅓": "1/3",
+  "⅔": "2/3",
+  "⅕": "1/5",
+  "⅖": "2/5",
+  "⅗": "3/5",
+  "⅘": "4/5",
+  "⅙": "1/6",
+  "⅚": "5/6",
+  "⅛": "1/8",
+  "⅜": "3/8",
+  "⅝": "5/8",
+  "⅞": "7/8",
+};
+const EDITOR_FILE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/;
+const EDITOR_KIND_KEYS = {
+  ingredients: "editorKindIngredients",
+  basics: "editorKindBasics",
+  instructions: "editorKindInstructions",
+  image: "editorKindImage",
+  step_image: "editorKindStepImage",
+  restore: "editorKindRestore",
+};
+const EDITOR_UPLOAD_MAX = 10 * 1024 * 1024;
+const EDITOR_UPLOAD_CHUNK = 256 * 1024;
+
+const recipeEditorMethods = {
+  /* ---------- pure helpers ---------- */
+  /** Parse "1,5", "1.5", "1 1/2", "½", "1½". Empty input is a valid "no quantity". */
+  _editorParseQuantity(input) {
+    let text = String(input ?? "")
+      .trim()
+      .replace(/\s+/g, " ");
+    if (!text) return { ok: true, value: null };
+    text = text.replace(
+      /(\d)?\s?([¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])/g,
+      (match, digit, glyph) => `${digit ? `${digit} ` : ""}${EDITOR_FRACTIONS[glyph]}`,
+    );
+    let value = NaN;
+    let m;
+    if (/^\d+(?:[.,]\d+)?$/.test(text)) value = Number(text.replace(",", "."));
+    else if ((m = text.match(/^(\d+) (\d+)\/(\d+)$/)) && Number(m[3]) > 0)
+      value = Number(m[1]) + Number(m[2]) / Number(m[3]);
+    else if ((m = text.match(/^(\d+)\/(\d+)$/)) && Number(m[2]) > 0)
+      value = Number(m[1]) / Number(m[2]);
+    if (!Number.isFinite(value) || value < 0 || value > 1000000) return { ok: false, value: null };
+    return { ok: true, value: Math.round(value * 1000000) / 1000000 };
+  },
+  _editorFormatQuantity(value) {
+    if (value === null || value === undefined) return "";
+    const text = String(Math.round(Number(value) * 10000) / 10000);
+    return this._language === "de" ? text.replace(".", ",") : text;
+  },
+  _editorSniff(head) {
+    if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "image/jpeg";
+    if ([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((byte, i) => head[i] === byte))
+      return "image/png";
+    const tag = (from, to) => String.fromCharCode(...Array.from(head.slice(from, to)));
+    if (head.length >= 12 && tag(0, 4) === "RIFF" && tag(8, 12) === "WEBP") return "image/webp";
+    return "";
+  },
+  _editorBase64(bytes) {
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000)
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(binary);
+  },
+  _editorFileName(url) {
+    const last = String(url || "")
+      .split("?")[0]
+      .split("/")
+      .pop();
+    try {
+      const name = decodeURIComponent(last);
+      return EDITOR_FILE_NAME.test(name) ? name : "";
+    } catch {
+      return "";
+    }
+  },
+  _editorTime(iso, short = false) {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat(
+      this._locale,
+      short ? { hour: "2-digit", minute: "2-digit" } : { dateStyle: "medium", timeStyle: "short" },
+    ).format(date);
+  },
+  _editorCoded(code, message = "") {
+    return Object.assign(new Error(message || code), { code });
+  },
+
+  /* ---------- state ---------- */
+  _editorBlank(slug) {
+    return {
+      slug,
+      loading: false,
+      loadError: "",
+      error: "",
+      notice: "",
+      recipeId: "",
+      hash: "",
+      servings: 1,
+      preview: 1,
+      rows: [],
+      base: [],
+      counter: 0,
+      summaryOpen: false,
+      saving: false,
+      conflict: false,
+      combo: null,
+      comboSeq: 0,
+      comboTimer: null,
+      history: { open: false, loading: false, items: null, error: "", confirm: "" },
+      lastBackup: null,
+      photoConfirm: false,
+      stepConfirm: null,
+      upload: null,
+      pick: null,
+    };
+  },
+  _editorOpen() {
+    clearTimeout(this._ed?.comboTimer);
+    this._ed = this._editorBlank(this._detail?.slug || "");
+    if (this._permissions.can_edit_ingredients) this._editorLoad();
+  },
+  _editorRowFromServer(row) {
+    return {
+      key: this._ed.counter++,
+      reference_id: row.reference_id || null,
+      quantityText: this._editorFormatQuantity(row.quantity),
+      quantityError: false,
+      textError: false,
+      unit: row.unit || null,
+      unitText: row.unit?.name || "",
+      food: row.food || null,
+      foodText: row.food?.name || "",
+      note: row.note || "",
+      original_text: row.original_text || "",
+      title: row.title || "",
+    };
+  },
+  _editorSignature(row) {
+    return JSON.stringify([
+      this._editorParseQuantity(row.quantityText).value,
+      row.unit?.id || null,
+      row.food?.id || null,
+      row.note,
+    ]);
+  },
+  async _editorLoad() {
+    const state = this._ed;
+    if (!state) return;
+    state.loading = true;
+    state.loadError = "";
+    this._editorPaintIngredients();
+    try {
+      const preview = await this._ws("ingredients_get", { slug: state.slug });
+      if (this._ed !== state) return;
+      state.recipeId = preview.recipe_id || "";
+      state.hash = preview.expected_hash;
+      state.servings = Number(preview.servings) >= 1 ? Number(preview.servings) : 1;
+      state.preview = state.servings;
+      state.rows = asArray(preview.rows).map((row) => this._editorRowFromServer(row));
+      state.base = state.rows.map((row) => ({
+        id: row.reference_id,
+        signature: this._editorSignature(row),
+      }));
+      state.summaryOpen = false;
+      state.conflict = false;
+      state.combo = null;
+    } catch (error) {
+      if (this._ed !== state) return;
+      state.loadError = this._errorText(error);
+    }
+    state.loading = false;
+    this._editorPaintIngredients();
+  },
+  /** Rows in the shape of the `ingredients_save` request, or the index of the first invalid row. */
+  _editorRequestRows() {
+    const rows = [];
+    let invalid = -1;
+    this._ed.rows.forEach((row, index) => {
+      const quantity = this._editorParseQuantity(row.quantityText);
+      row.quantityError = !quantity.ok;
+      row.textError = !row.food && !row.note.trim() && !row.original_text.trim();
+      if ((row.quantityError || row.textError) && invalid < 0) invalid = index;
+      rows.push({
+        reference_id: row.reference_id || null,
+        quantity: quantity.value,
+        unit_id: row.unit?.id || null,
+        food_id: row.food?.id || null,
+        note: row.note,
+        original_text: row.original_text,
+        ...(row.title ? { title: row.title } : {}),
+      });
+    });
+    return { rows, invalid };
+  },
+  /** Counts of changed, added and removed rows against what the server sent. */
+  _editorDiff() {
+    const state = this._ed;
+    const known = new Map(state.base.map((entry, rank) => [entry.id, { ...entry, rank }]));
+    let changed = 0;
+    let added = 0;
+    let kept = 0;
+    const seen = new Set();
+    for (const row of state.rows) {
+      const old = row.reference_id ? known.get(row.reference_id) : null;
+      if (!old) {
+        added++;
+        continue;
+      }
+      seen.add(row.reference_id);
+      if (old.signature !== this._editorSignature(row)) changed++;
+      kept++;
+    }
+    const order = state.rows.filter((row) => seen.has(row.reference_id));
+    const ranks = order.map((row) => known.get(row.reference_id).rank);
+    const moved = ranks.some((rank, i) => i > 0 && rank < ranks[i - 1]);
+    if (moved && changed === 0) changed = kept ? 1 : 0;
+    return { changed, added, removed: state.base.length - seen.size };
+  },
+  /** Scaled quantity text for the read-only servings preview; never part of the request. */
+  _editorScaled(row) {
+    const state = this._ed;
+    const value = this._editorParseQuantity(row.quantityText).value;
+    if (value === null || !(state.servings >= 1) || state.preview === state.servings) return "";
+    return AtelierStudio.scaleIngredient(`${value} x`, state.preview, state.servings).replace(
+      /\s+x$/,
+      "",
+    );
+  },
+
+  /* ---------- markup ---------- */
+  _editorPhotoSection() {
+    return `<section class="editor-card ed-card"><div class="eyebrow">00 / ${esc(this.t("editorPhoto"))}</div><h3>${esc(this.t("editorPhoto"))}</h3>
+      <div data-editor-photo>${this._editorPhotoHtml()}</div>
+      <input type="file" hidden tabindex="-1" data-ed-file accept="image/jpeg,image/png,image/webp"></section>`;
+  },
+  _editorPhotoHtml() {
+    const state = this._ed;
+    const image = recipeImage(this._detail, "ed-cover");
+    const busy = Boolean(state?.upload);
+    const limit = Math.round(
+      (this._permissions.limits.upload_max_bytes || EDITOR_UPLOAD_MAX) / 1048576,
+    );
+    return `<div class="ed-photo">${image ? `<div class="ed-cover-frame">${image}</div>` : `<p class="editing-hint">${esc(this.t("editorPhotoNone"))}</p>`}
+      <div class="ed-actions"><button type="button" class="btn" data-action="ed-photo-pick" ${busy ? "disabled" : ""}>${icon("edit", 15)} ${esc(this.t("editorPhotoReplace"))}</button>${
+        image
+          ? `<button type="button" class="btn" data-action="ed-photo-remove-ask" ${busy ? "disabled" : ""}>${icon("close", 15)} ${esc(this.t("editorPhotoRemove"))}</button>`
+          : ""
+      }</div>
+      <p class="editor-sub">${esc(this.t("editorPhotoHint", { size: limit }))}</p>
+      ${
+        state?.photoConfirm
+          ? `<div class="ed-confirm" role="alertdialog" aria-label="${esc(this.t("editorPhotoRemove"))}"><p>${esc(this.t("editorPhotoRemoveConfirm"))}</p><div class="ed-actions"><button type="button" class="btn primary" data-action="ed-photo-remove-do">${esc(this.t("editorPhotoRemoveNow"))}</button><button type="button" class="btn" data-action="ed-photo-remove-cancel">${esc(this.t("editorCancel"))}</button></div></div>`
+          : ""
+      }
+      ${state?.upload?.target === "cover" ? this._editorProgressHtml() : ""}</div>`;
+  },
+  _editorProgressHtml() {
+    const percent = this._ed?.upload?.percent || 0;
+    return `<div class="ed-progress" data-ed-progress><div class="ed-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" aria-label="${esc(this.t("editorUploadProgress", { percent }))}"><span class="ed-progress-bar"></span></div><span class="ed-progress-text" aria-hidden="true">${percent}%</span><button type="button" class="btn tiny" data-action="ed-upload-cancel">${esc(this.t("editorUploadCancel"))}</button></div>`;
+  },
+  _editorIngredientsSection() {
+    const readonly = asArray(this._detail?.recipeIngredient).map(ingredientName);
+    return `<section class="editor-card ed-card"><div class="eyebrow">02 / ${esc(this.t("ingredients"))}</div><h3>${esc(this.t("ingredients"))}</h3>
+      <div data-editor-ingredients>${
+        this._permissions.can_edit_ingredients
+          ? this._editorIngredientsHtml()
+          : `<div class="editor-readonly">${readonly.length ? readonly.map((x) => `<span>• ${esc(x)}</span>`).join("") : "<span>—</span>"}</div><p class="editing-hint">${esc(this.t("editorIngredientsLocked"))}</p>`
+      }</div></section>`;
+  },
+  _editorIngredientsHtml() {
+    const state = this._ed;
+    if (!state || state.loading)
+      return `<p class="editor-sub" role="status">${esc(this.t("editorLoading"))}</p>`;
+    if (state.loadError)
+      return `<div class="notice error" role="alert"><span>${esc(state.loadError)}</span><button type="button" class="btn tiny" data-action="ed-retry">${esc(this.t("retry"))}</button></div>`;
+    const diff = this._editorDiff();
+    return `<div class="ed-toolbar"><label class="ed-servings"><span data-ed-servings-label>${esc(this.t("editorServingsPreview", { count: state.preview }))}</span>
+        <input type="number" inputmode="numeric" min="1" max="100" step="1" value="${state.preview}" data-ed-input="servings" aria-label="${esc(this.t("editorServingsPreview", { count: state.preview }))}"></label>
+        <button type="button" class="btn tiny" data-action="ed-servings-reset">${esc(this.t("editorServingsReset"))}</button>
+        <span class="editor-sub" data-ed-servings-note ${state.preview === state.servings ? "hidden" : ""}>${esc(this.t("editorServingsNote"))}</span></div>
+      <div class="ed-rows" role="list">${state.rows.map((row, i) => this._editorRowHtml(row, i)).join("")}</div>
+      <button type="button" class="editor-add-step" data-action="ed-add">+ ${esc(this.t("editorAddIngredient"))}</button>
+      <p class="ed-live" role="status" aria-live="polite" data-ed-live>${esc(state.notice)}</p>
+      ${state.error ? `<div class="notice error" role="alert"><span>${esc(state.error)}</span></div>` : ""}
+      ${
+        state.conflict
+          ? `<div class="ed-confirm" role="alertdialog" aria-label="${esc(this.t("editorReload"))}"><p>${esc(this.t("editorReloadChanged"))}</p><div class="ed-actions"><button type="button" class="btn primary" data-action="ed-reload">${esc(this.t("editorReload"))}</button></div></div>`
+          : ""
+      }
+      ${
+        state.summaryOpen
+          ? `<div class="ed-confirm" role="group" aria-label="${esc(this.t("editorConfirmSave"))}"><p>${esc(this.t("editorSaveSummary", diff))}</p><div class="ed-actions"><button type="button" class="btn primary" data-action="ed-save" ${state.saving ? "disabled" : ""}>${icon("check", 14)} ${esc(this.t("editorConfirmSave"))}</button><button type="button" class="btn" data-action="ed-review-cancel">${esc(this.t("editorCancel"))}</button></div></div>`
+          : `<div class="ed-actions"><button type="button" class="btn primary" data-action="ed-review">${icon("check", 14)} ${esc(this.t("editorSaveIngredients"))}</button></div>`
+      }`;
+  },
+  _editorRowHtml(row, i) {
+    const n = i + 1;
+    const label = (key) => esc(`${this.t(key)} · ${this.t("editorRow", { row: n })}`);
+    const last = this._ed.rows.length - 1;
+    const scaled = this._editorScaled(row);
+    const invalid = row.quantityError || row.textError;
+    return `<div class="ed-row" role="listitem" data-ed-row="${i}">
+      <span class="ed-num" aria-hidden="true">${n}</span>
+      <div class="ed-fields">
+        <label class="ed-cell ed-qty"><span>${esc(this.t("editorQuantity"))}</span>
+          <input data-ed-input="quantity" data-ed-row="${i}" inputmode="decimal" autocomplete="off" maxlength="14" value="${esc(row.quantityText)}" aria-label="${label("editorQuantity")}" aria-invalid="${row.quantityError}" aria-describedby="ed-error-${i}"></label>
+        ${this._editorComboHtml("unit", row, i, label("editorUnit"))}
+        ${this._editorComboHtml("food", row, i, label("editorFood"))}
+        <label class="ed-cell ed-note"><span>${esc(this.t("editorNote"))}</span>
+          <input data-ed-input="note" data-ed-row="${i}" maxlength="300" autocomplete="off" value="${esc(row.note)}" aria-label="${label("editorNote")}"></label>
+      </div>
+      ${row.original_text ? `<p class="ed-original"><span>${esc(this.t("editorOriginal"))}:</span> ${esc(row.original_text)}</p>` : ""}
+      <p class="ed-scaled" data-ed-scaled="${i}" ${scaled ? "" : "hidden"}><span>${esc(this.t("editorScaled"))}:</span> <strong>${esc(scaled)}</strong></p>
+      <div class="ed-row-actions">
+        <button type="button" class="btn tiny ed-icon" data-action="ed-up" data-ed-row="${i}" aria-label="${esc(this.t("editorMoveUp", { row: n }))}" title="${esc(this.t("editorMoveUp", { row: n }))}" ${i === 0 ? "disabled" : ""}>↑</button>
+        <button type="button" class="btn tiny ed-icon" data-action="ed-down" data-ed-row="${i}" aria-label="${esc(this.t("editorMoveDown", { row: n }))}" title="${esc(this.t("editorMoveDown", { row: n }))}" ${i === last ? "disabled" : ""}>↓</button>
+        <button type="button" class="btn tiny ed-icon" data-action="ed-remove" data-ed-row="${i}" aria-label="${esc(this.t("editorRemoveRow", { row: n }))}" title="${esc(this.t("editorRemoveRow", { row: n }))}" ${this._ed.rows.length <= 1 ? "disabled" : ""}>×</button>
+      </div>
+      <p class="ed-error" id="ed-error-${i}" data-ed-error="${i}" role="alert" ${invalid ? "" : "hidden"}>${esc(row.quantityError ? this.t("editorQuantityInvalid") : row.textError ? this.t("editorRowNeedsText") : "")}</p>
+    </div>`;
+  },
+  _editorComboHtml(field, row, i, label) {
+    return `<div class="ed-cell ed-combo" data-ed-combo="${field}" data-ed-row="${i}"><span>${esc(this.t(field === "unit" ? "editorUnit" : "editorFood"))}</span>
+      ${this._comboboxMarkup({
+        id: `ed-${field}-${i}`,
+        label,
+        value: row[`${field}Text`],
+        attrs: `data-ed-input="${field}" data-ed-row="${i}"`,
+        listClass: "ed-list",
+        listId: `ed-list-${field}-${i}`,
+      })}</div>`;
+  },
+  _editorComboOptions() {
+    const combo = this._ed?.combo;
+    if (!combo) return [];
+    const options = combo.items.map((item) => ({ type: "item", item }));
+    if (combo.canCreate) options.push({ type: "create" });
+    return options;
+  },
+  _editorOptionsHtml() {
+    const combo = this._ed.combo;
+    const options = this._editorComboOptions();
+    const rows = options.map((option, j) => {
+      const active = j === combo.active;
+      const text =
+        option.type === "create"
+          ? this.t("editorCreateOption", { text: combo.text })
+          : `${option.item.name}${combo.field === "unit" && option.item.abbreviation ? ` (${option.item.abbreviation})` : ""}`;
+      return `<li role="option" tabindex="-1" class="ed-option${active ? " is-active" : ""}" id="ed-opt-${combo.field}-${combo.row}-${j}" aria-selected="${active}" data-action="ed-pick" data-value="${j}">${esc(text)}</li>`;
+    });
+    if (combo.loading)
+      rows.push(
+        `<li role="presentation" class="ed-option-note">${esc(this.t("editorComboSearching"))}</li>`,
+      );
+    else if (!options.length)
+      rows.push(
+        `<li role="presentation" class="ed-option-note">${esc(this.t("editorComboEmpty"))}</li>`,
+      );
+    return rows.join("");
+  },
+  _editorHistorySection() {
+    return `<section class="editor-card ed-card"><div class="eyebrow">04 / ${esc(this.t("editorHistory"))}</div><h3>${esc(this.t("editorHistory"))}</h3>
+      <div data-editor-history>${this._editorHistoryHtml()}</div></section>`;
+  },
+  _editorHistoryHtml() {
+    const history = this._ed?.history;
+    if (!history) return "";
+    const undo = this._ed.lastBackup
+      ? `<button type="button" class="btn" data-action="ed-undo">${icon("refresh", 15)} ${esc(this.t("editorUndo"))}</button>`
+      : "";
+    const toggle = `<button type="button" class="btn" data-action="ed-history" aria-expanded="${history.open}">${icon("book", 15)} ${esc(this.t(history.open ? "editorHistoryHide" : "editorHistory"))}</button>`;
+    let list = "";
+    if (history.open) {
+      if (history.loading)
+        list = `<p class="editor-sub" role="status">${esc(this.t("editorHistoryLoading"))}</p>`;
+      else if (history.error)
+        list = `<div class="notice error" role="alert"><span>${esc(history.error)}</span></div>`;
+      else if (!asArray(history.items).length)
+        list = `<p class="editor-sub">${esc(this.t("editorHistoryEmpty"))}</p>`;
+      else
+        list = `<ul class="ed-history">${history.items
+          .map((item) => {
+            const time = this._editorTime(item.created_at);
+            const confirm =
+              history.confirm === item.backup_id
+                ? `<div class="ed-confirm" role="alertdialog" aria-label="${esc(this.t("editorRestoreNow"))}"><p>${esc(this.t("editorRestoreConfirm", { time }))}</p><div class="ed-actions"><button type="button" class="btn primary" data-action="ed-restore-do" data-value="${esc(item.backup_id)}">${esc(this.t("editorRestoreNow"))}</button><button type="button" class="btn" data-action="ed-restore-cancel">${esc(this.t("editorCancel"))}</button></div></div>`
+                : "";
+            return `<li class="ed-history-item"><div class="ed-history-copy"><strong>${esc(time)}</strong><span>${esc(item.user_name || "")} · ${esc(this.t(EDITOR_KIND_KEYS[item.kind] || "editorKindBasics"))}</span><small>${esc(item.summary || "")}</small></div><button type="button" class="btn tiny" data-action="ed-restore-ask" data-value="${esc(item.backup_id)}" aria-label="${esc(`${this.t("editorRestore")} · ${time}`)}">${esc(this.t("editorRestore"))}</button>${confirm}</li>`;
+          })
+          .join("")}</ul>`;
+    }
+    return `<div class="ed-actions">${toggle}${undo}</div>${list}`;
+  },
+  /** Photo controls inside one step row of the steps editor. */
+  _editorStepPhotos(id) {
+    if (!this._permissions.can_admin) return "";
+    return `<div class="ed-step-photos" data-ed-step-photos="${esc(id)}">${this._editorStepPhotosInner(id)}</div>`;
+  },
+  _editorStepPhotosInner(id) {
+    if (!id) return `<p class="editor-sub">${esc(this.t("editorStepPhotoSaveFirst"))}</p>`;
+    const steps = asArray(this._detail?.recipeInstructions);
+    const index = steps.findIndex((step) => step?.id === id);
+    const n = index + 1;
+    const state = this._ed;
+    const busy = Boolean(state?.upload);
+    const photos = instructionImages(steps[index])
+      .map((src) => ({ src, file: this._editorFileName(src) }))
+      .filter((photo) => photo.file);
+    const thumbs = photos
+      .map((photo) => {
+        const asking = state?.stepConfirm?.id === id && state.stepConfirm.file === photo.file;
+        const actions = asking
+          ? `<div class="ed-confirm" role="alertdialog" aria-label="${esc(this.t("editorStepPhotoRemove"))}"><p>${esc(this.t("editorStepPhotoKeptInMealie"))}</p><div class="ed-actions"><button type="button" class="btn tiny primary" data-action="ed-step-remove-do" data-value="${esc(id)}" data-ed-file-name="${esc(photo.file)}">${esc(this.t("editorStepPhotoRemove"))}</button><button type="button" class="btn tiny" data-action="ed-step-remove-cancel">${esc(this.t("editorCancel"))}</button></div></div>`
+          : `<div class="ed-actions"><button type="button" class="btn tiny" data-action="ed-step-pick" data-value="${esc(id)}" data-ed-file-name="${esc(photo.file)}" aria-label="${esc(`${this.t("editorStepPhotoReplace")} · ${this.t("editorStepPhotoAlt", { step: n })}`)}" ${busy ? "disabled" : ""}>${esc(this.t("editorStepPhotoReplace"))}</button><button type="button" class="btn tiny" data-action="ed-step-remove-ask" data-value="${esc(id)}" data-ed-file-name="${esc(photo.file)}" aria-label="${esc(`${this.t("editorStepPhotoRemove")} · ${this.t("editorStepPhotoAlt", { step: n })}`)}" ${busy ? "disabled" : ""}>${esc(this.t("editorStepPhotoRemove"))}</button></div>`;
+        return `<figure class="ed-thumb"><img src="${esc(photo.src)}" alt="${esc(this.t("editorStepPhotoAlt", { step: n }))}" loading="lazy" decoding="async"><figcaption>${actions}</figcaption></figure>`;
+      })
+      .join("");
+    return `${thumbs ? `<div class="ed-thumbs">${thumbs}</div>` : ""}<div class="ed-actions"><button type="button" class="btn tiny" data-action="ed-step-pick" data-value="${esc(id)}" aria-label="${esc(`${this.t("editorStepPhotoAdd")} · ${this.t("editorStepPhotoAlt", { step: n })}`)}" ${busy ? "disabled" : ""}>+ ${esc(this.t("editorStepPhotoAdd"))}</button></div>${state?.upload?.target === id ? this._editorProgressHtml() : ""}`;
+  },
+
+  /* ---------- painting ---------- */
+  _editorPaint(selector, html, focusSelector = "") {
+    const target = this.shadowRoot.querySelector(selector);
+    if (!target) return false;
+    target.innerHTML = html;
+    if (focusSelector) this.shadowRoot.querySelector(focusSelector)?.focus?.();
+    return true;
+  },
+  _editorPaintIngredients(focusSelector = "") {
+    if (this._modal !== "edit") return;
+    this._editorPaint("[data-editor-ingredients]", this._editorIngredientsHtml(), focusSelector);
+  },
+  _editorPaintPhoto() {
+    this._editorPaint("[data-editor-photo]", this._editorPhotoHtml());
+  },
+  _editorPaintHistory(focusSelector = "") {
+    this._editorPaint("[data-editor-history]", this._editorHistoryHtml(), focusSelector);
+  },
+  _editorPaintSteps() {
+    for (const box of this.shadowRoot.querySelectorAll("[data-ed-step-photos]")) {
+      const id = box.dataset.edStepPhotos;
+      if (id) box.innerHTML = this._editorStepPhotosInner(id);
+    }
+  },
+  _editorPaintCombo() {
+    const combo = this._ed?.combo;
+    for (const box of this.shadowRoot.querySelectorAll("[data-ed-combo]")) {
+      const open = Boolean(
+        combo && combo.field === box.dataset.edCombo && String(combo.row) === box.dataset.edRow,
+      );
+      this._comboboxPaint({
+        root: box,
+        open,
+        html: open ? this._editorOptionsHtml() : "",
+        active: open ? combo.active : -1,
+        optionPrefix: open ? `ed-opt-${combo.field}-${combo.row}-` : "",
+      });
+    }
+  },
+  _editorPaintProgress() {
+    const upload = this._ed?.upload;
+    const bar = this.shadowRoot.querySelector("[data-ed-progress]");
+    if (!upload) return;
+    if (!bar) {
+      if (upload.target === "cover") this._editorPaintPhoto();
+      else this._editorPaintSteps();
+    }
+    const fresh = this.shadowRoot.querySelector("[data-ed-progress]");
+    if (!fresh) return;
+    const track = fresh.querySelector("[role=progressbar]");
+    track.setAttribute("aria-valuenow", String(upload.percent));
+    track.setAttribute("aria-label", this.t("editorUploadProgress", { percent: upload.percent }));
+    track
+      .querySelector(".ed-progress-bar")
+      .style.setProperty("--ed-progress", `${upload.percent}%`);
+    fresh.querySelector(".ed-progress-text").textContent = `${upload.percent}%`;
+  },
+  _editorAnnounce(text) {
+    if (this._ed) this._ed.notice = text;
+    const live = this.shadowRoot.querySelector("[data-ed-live]");
+    if (live) live.textContent = text;
+  },
+  /** Toast without a full render, so unsaved edits in the dialog stay untouched. */
+  _editorToast(text, kind = "status") {
+    this._toast = String(text || "").slice(0, 500);
+    this._toastKind = kind;
+    const root = this.shadowRoot.querySelector(".atelier");
+    if (root) {
+      root.querySelector(".toast")?.remove();
+      const template = document.createElement("template");
+      template.innerHTML = `<div class="toast${kind === "error" ? " toast-error" : ""}" role="${kind === "error" ? "alert" : "status"}" aria-live="${kind === "error" ? "assertive" : "polite"}">${icon(kind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>`;
+      root.appendChild(template.content.firstElementChild);
+    }
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(
+      () => {
+        this._toast = "";
+        this.shadowRoot.querySelector(".toast")?.remove();
+      },
+      kind === "error" ? 6500 : 3800,
+    );
+  },
+
+  /* ---------- events ---------- */
+  /** Returns true when the key press belonged to the editor. */
+  _editorKeyDown(event) {
+    const field = event.target?.dataset?.edInput;
+    if (!field || !this._ed) return false;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (this._ed.combo && this._ed.combo.active >= 0) this._editorChoose(this._ed.combo.active);
+      return true;
+    }
+    if (field !== "unit" && field !== "food") return false;
+    const combo = this._ed.combo;
+    const row = Number(event.target.dataset.edRow);
+    const mine = Boolean(combo && combo.field === field && combo.row === row);
+    const nav = {
+      open: mine,
+      count: mine ? this._editorComboOptions().length : 0,
+      active: mine ? combo.active : -1,
+    };
+    const action = this._comboboxKeydown(event, nav);
+    if (action === "open") this._editorComboOpen(field, row, event.target.value);
+    else if (action === "move") {
+      combo.active = nav.active;
+      this._editorPaintCombo();
+    } else if (action === "close") {
+      this._ed.combo = null;
+      this._editorPaintCombo();
+    }
+    return action === "open" || action === "move" || (action === "close" && event.key === "Escape");
+  },
+  _editorInput(event) {
+    const el = event.target;
+    const field = el?.dataset?.edInput;
+    const state = this._ed;
+    if (!field || !state) return false;
+    const i = Number(el.dataset.edRow);
+    const row = state.rows[i];
+    if (field === "servings") {
+      state.preview = Math.max(1, Math.min(100, Math.round(Number(el.value)) || state.servings));
+      this._editorUpdateScaled();
+      return true;
+    }
+    if (!row) return true;
+    if (field === "quantity") {
+      row.quantityText = el.value;
+      row.quantityError = !this._editorParseQuantity(el.value).ok;
+      const error = this.shadowRoot.querySelector(`[data-ed-error="${i}"]`);
+      el.setAttribute("aria-invalid", String(row.quantityError));
+      if (error) {
+        error.hidden = !row.quantityError && !row.textError;
+        error.textContent = row.quantityError ? this.t("editorQuantityInvalid") : "";
+      }
+      this._editorUpdateScaled();
+    } else if (field === "note") {
+      row.note = el.value;
+    } else if (field === "unit" || field === "food") {
+      row[`${field}Text`] = el.value;
+      if (!el.value.trim()) row[field] = null;
+      clearTimeout(state.comboTimer);
+      state.comboTimer = setTimeout(() => this._editorComboOpen(field, i, el.value), 250);
+    }
+    return true;
+  },
+  _editorUpdateScaled() {
+    const state = this._ed;
+    state.rows.forEach((row, i) => {
+      const box = this.shadowRoot.querySelector(`[data-ed-scaled="${i}"]`);
+      if (!box) return;
+      const scaled = this._editorScaled(row);
+      box.hidden = !scaled;
+      const strong = box.querySelector("strong");
+      if (strong) strong.textContent = scaled;
+    });
+    const note = this.shadowRoot.querySelector("[data-ed-servings-note]");
+    if (note) note.hidden = state.preview === state.servings;
+    const label = this.t("editorServingsPreview", { count: state.preview });
+    const text = this.shadowRoot.querySelector("[data-ed-servings-label]");
+    if (text) text.textContent = label;
+    this.shadowRoot.querySelector('[data-ed-input="servings"]')?.setAttribute("aria-label", label);
+  },
+  /** Fired for `change` and `focusout`: reconcile combobox text and close lists that lost focus. */
+  _editorFocusEvent(event) {
+    const state = this._ed;
+    const el = event.target;
+    if (!state || this._modal !== "edit") return;
+    if (event.type === "change" && el?.matches?.("[data-ed-file]")) {
+      const file = el.files?.[0];
+      el.value = "";
+      if (file) this._editorUploadFlow(file);
+      return;
+    }
+    if (
+      event.type === "change" &&
+      el?.dataset?.edInput &&
+      ["unit", "food"].includes(el.dataset.edInput)
+    ) {
+      const field = el.dataset.edInput;
+      const row = state.rows[Number(el.dataset.edRow)];
+      if (row && el.value !== (row[field]?.name || "")) {
+        row[`${field}Text`] = row[field]?.name || "";
+        el.value = row[`${field}Text`];
+      }
+      return;
+    }
+    if (event.type === "focusout" && state.combo) {
+      const box = el?.closest?.("[data-ed-combo]");
+      const next = event.relatedTarget;
+      if (box && !box.contains?.(next)) {
+        clearTimeout(state.comboTimer);
+        state.combo = null;
+        this._editorPaintCombo();
+      }
+    }
+  },
+  async _editorClick(el) {
+    const action = el.dataset.action;
+    const state = this._ed;
+    if (!state) return;
+    const i = Number(el.dataset.edRow);
+    const rows = state.rows;
+    const focusRow = (selector) => this._editorPaintIngredients(selector);
+    if (action !== "ed-pick" && state.combo) {
+      state.combo = null;
+      this._editorPaintCombo();
+    }
+    switch (action) {
+      case "ed-retry":
+        await this._editorLoad();
+        break;
+      case "ed-add":
+        if (rows.length >= 100) break;
+        rows.push(
+          this._editorRowFromServer({ reference_id: null, quantity: null, unit: null, food: null }),
+        );
+        state.summaryOpen = false;
+        focusRow(`[data-ed-input="quantity"][data-ed-row="${rows.length - 1}"]`);
+        break;
+      case "ed-up":
+      case "ed-down": {
+        const to = action === "ed-up" ? i - 1 : i + 1;
+        if (!rows[i] || !rows[to]) break;
+        [rows[i], rows[to]] = [rows[to], rows[i]];
+        state.summaryOpen = false;
+        // Keep the focus on the same direction unless that button is now disabled at the edge.
+        const edge = action === "ed-up" ? to === 0 : to === rows.length - 1;
+        const keep = edge ? (action === "ed-up" ? "ed-down" : "ed-up") : action;
+        focusRow(`[data-action="${keep}"][data-ed-row="${to}"]`);
+        break;
+      }
+      case "ed-remove":
+        if (rows.length <= 1 || !rows[i]) break;
+        rows.splice(i, 1);
+        state.summaryOpen = false;
+        focusRow(`[data-action="ed-remove"][data-ed-row="${Math.min(i, rows.length - 1)}"]`);
+        break;
+      case "ed-pick":
+        await this._editorChoose(Number(el.dataset.value));
+        break;
+      case "ed-servings-reset":
+        state.preview = state.servings;
+        focusRow('[data-ed-input="servings"]');
+        break;
+      case "ed-review": {
+        const { invalid } = this._editorRequestRows();
+        state.error = "";
+        if (invalid >= 0) {
+          focusRow(
+            `[data-ed-input="${rows[invalid].quantityError ? "quantity" : "note"}"][data-ed-row="${invalid}"]`,
+          );
+          break;
+        }
+        const diff = this._editorDiff();
+        if (!diff.changed && !diff.added && !diff.removed) {
+          this._editorAnnounce(this.t("editorNoChanges"));
+          break;
+        }
+        state.summaryOpen = true;
+        focusRow('[data-action="ed-save"]');
+        break;
+      }
+      case "ed-review-cancel":
+        state.summaryOpen = false;
+        focusRow('[data-action="ed-review"]');
+        break;
+      case "ed-save":
+        await this._editorSave();
+        break;
+      case "ed-reload":
+        await this._editorReloadFresh();
+        break;
+      case "ed-history":
+        await this._editorToggleHistory();
+        break;
+      case "ed-undo":
+        await this._editorUndoAsk();
+        break;
+      case "ed-restore-ask":
+        state.history.confirm = el.dataset.value || "";
+        this._editorPaintHistory('[data-action="ed-restore-do"]');
+        break;
+      case "ed-restore-cancel":
+        state.history.confirm = "";
+        this._editorPaintHistory('[data-action="ed-history"]');
+        break;
+      case "ed-restore-do":
+        await this._editorRestore(el.dataset.value || "");
+        break;
+      case "ed-photo-pick":
+      case "ed-step-pick":
+        this._editorPick(
+          action === "ed-photo-pick"
+            ? { target: "cover" }
+            : { target: el.dataset.value, replace: el.dataset.edFileName || "" },
+        );
+        break;
+      case "ed-photo-remove-ask":
+        state.photoConfirm = true;
+        this._editorPaint(
+          "[data-editor-photo]",
+          this._editorPhotoHtml(),
+          '[data-action="ed-photo-remove-do"]',
+        );
+        break;
+      case "ed-photo-remove-cancel":
+        state.photoConfirm = false;
+        this._editorPaint(
+          "[data-editor-photo]",
+          this._editorPhotoHtml(),
+          '[data-action="ed-photo-remove-ask"]',
+        );
+        break;
+      case "ed-photo-remove-do":
+        await this._editorCoverRemove();
+        break;
+      case "ed-step-remove-ask":
+        state.stepConfirm = { id: el.dataset.value || "", file: el.dataset.edFileName || "" };
+        this._editorPaintSteps();
+        this.shadowRoot.querySelector('[data-action="ed-step-remove-do"]')?.focus?.();
+        break;
+      case "ed-step-remove-cancel":
+        state.stepConfirm = null;
+        this._editorPaintSteps();
+        break;
+      case "ed-step-remove-do":
+        await this._editorStepRemove(el.dataset.value || "", el.dataset.edFileName || "");
+        break;
+      case "ed-upload-cancel":
+        if (state.upload) state.upload.cancelled = true;
+        break;
+    }
+  },
+
+  /* ---------- comboboxes ---------- */
+  _editorComboOpen(field, row, text) {
+    const state = this._ed;
+    if (!state || this._modal !== "edit") return;
+    const query = String(text || "").trim();
+    state.combo = {
+      field,
+      row,
+      text: query,
+      items: [],
+      active: -1,
+      loading: true,
+      canCreate: false,
+    };
+    const seq = ++state.comboSeq;
+    this._editorPaintCombo();
+    this._ws(field === "unit" ? "units" : "foods", { search: query, per_page: 8 })
+      .then((result) => {
+        const combo = state.combo;
+        if (this._ed !== state || seq !== state.comboSeq || !combo) return;
+        combo.items = asArray(result?.items);
+        combo.loading = false;
+        const exact = combo.items.some(
+          (item) => String(item.name).toLowerCase() === query.toLowerCase(),
+        );
+        combo.canCreate = Boolean(query) && !exact && this._permissions.can_admin;
+        this._editorPaintCombo();
+      })
+      .catch((error) => {
+        if (this._ed !== state || seq !== state.comboSeq) return;
+        state.combo = null;
+        state.error = this._errorText(error);
+        this._editorPaintCombo();
+        this._editorPaintIngredients();
+      });
+  },
+  async _editorChoose(index) {
+    const state = this._ed;
+    const combo = state?.combo;
+    const option = this._editorComboOptions()[index];
+    const row = combo ? state.rows[combo.row] : null;
+    if (!option || !row) return;
+    const { field } = combo;
+    let item = option.item;
+    let existing = false;
+    if (option.type === "create") {
+      try {
+        const made = await this._ws(field === "unit" ? "unit_create" : "food_create", {
+          name: combo.text,
+        });
+        item = { id: made.id, name: made.name, abbreviation: made.abbreviation || "" };
+        existing = made.existing === true;
+      } catch (error) {
+        state.combo = null;
+        state.error = this._errorText(error);
+        this._editorPaintCombo();
+        this._editorPaintIngredients();
+        return;
+      }
+    }
+    row[field] =
+      field === "unit"
+        ? { id: item.id, name: item.name, abbreviation: item.abbreviation || "" }
+        : { id: item.id, name: item.name };
+    row[`${field}Text`] = item.name;
+    row.textError = false;
+    state.combo = null;
+    state.error = "";
+    const input = this.shadowRoot.querySelector(
+      `[data-ed-input="${field}"][data-ed-row="${state.rows.indexOf(row)}"]`,
+    );
+    if (input) {
+      input.value = item.name;
+      input.focus?.();
+    }
+    this._editorPaintCombo();
+    if (existing) this._editorAnnounce(this.t("editorCreatedExisting"));
+  },
+
+  /* ---------- ingredient save ---------- */
+  async _editorSave() {
+    const state = this._ed;
+    if (!state || state.saving) return;
+    const { rows, invalid } = this._editorRequestRows();
+    if (invalid >= 0) {
+      state.summaryOpen = false;
+      this._editorPaintIngredients();
+      return;
+    }
+    state.saving = true;
+    state.error = "";
+    this._editorPaintIngredients();
+    try {
+      const result = await this._ws("ingredients_save", {
+        slug: state.slug,
+        expected_hash: state.hash,
+        rows,
+      });
+      if (result?.recipe) this._detail = result.recipe;
+      this._data.recipes = null;
+      state.lastBackup = { id: result?.backup_id || "" };
+      state.saving = false;
+      await this._editorLoad();
+      this._editorRefreshHistory();
+      this._editorToast(
+        this.t("editorSavedWithBackup", { time: this._editorTime(new Date().toISOString(), true) }),
+      );
+    } catch (error) {
+      state.saving = false;
+      state.summaryOpen = false;
+      if (error?.code === "recipe_changed") state.conflict = true;
+      else state.error = this._errorText(error);
+      this._editorPaintIngredients();
+    }
+  },
+  async _editorReloadFresh() {
+    const state = this._ed;
+    try {
+      this._detail = await this._ws("recipe", { slug: state.slug });
+    } catch {}
+    await this._editorLoad();
+    this._editorPaintPhoto();
+    this._editorPaintSteps();
+  },
+
+  /* ---------- history and restore ---------- */
+  async _editorToggleHistory() {
+    const history = this._ed.history;
+    history.open = !history.open;
+    history.confirm = "";
+    if (history.open) await this._editorLoadHistory();
+    else this._editorPaintHistory('[data-action="ed-history"]');
+  },
+  async _editorLoadHistory() {
+    const state = this._ed;
+    const history = state.history;
+    history.loading = true;
+    history.error = "";
+    this._editorPaintHistory();
+    try {
+      history.items = asArray((await this._ws("recipe_backups", { slug: state.slug }))?.backups);
+    } catch (error) {
+      history.error = this._errorText(error);
+    }
+    history.loading = false;
+    this._editorPaintHistory();
+  },
+  /** A change just created a backup: reload the list when it is open, otherwise drop the stale copy. */
+  _editorRefreshHistory() {
+    const history = this._ed.history;
+    history.confirm = "";
+    if (history.open) this._editorLoadHistory();
+    else {
+      history.items = null;
+      this._editorPaintHistory();
+    }
+  },
+  async _editorUndoAsk() {
+    const state = this._ed;
+    const history = state.history;
+    history.open = true;
+    await this._editorLoadHistory();
+    const id = state.lastBackup?.id;
+    if (id && asArray(history.items).some((item) => item.backup_id === id)) {
+      history.confirm = id;
+      this._editorPaintHistory('[data-action="ed-restore-do"]');
+    }
+  },
+  async _editorRestore(backupId) {
+    const state = this._ed;
+    if (!backupId || state.history.busy) return;
+    state.history.busy = true;
+    try {
+      const result = await this._ws("recipe_restore", { slug: state.slug, backup_id: backupId });
+      const slug = state.slug;
+      if (result?.recipe) this._detail = result.recipe;
+      this._data.recipes = null;
+      this._editorOpen();
+      this._ed.slug = slug;
+      this._ed.lastBackup = { id: result?.backup_id || "" };
+      this._render();
+      this._editorToast(
+        this.t("editorRestoredWithBackup", {
+          time: this._editorTime(new Date().toISOString(), true),
+        }),
+      );
+    } catch (error) {
+      state.history.busy = false;
+      state.history.confirm = "";
+      state.history.error = this._errorText(error);
+      this._editorPaintHistory();
+    }
+  },
+
+  /* ---------- photos ---------- */
+  _editorPick(target) {
+    const state = this._ed;
+    if (!state || state.upload) return;
+    state.pick = target;
+    const input = this.shadowRoot.querySelector("[data-ed-file]");
+    input?.click?.();
+  },
+  _editorUploadMessage(error) {
+    const limits = this._permissions.limits;
+    const size = Math.round((limits.upload_max_bytes || EDITOR_UPLOAD_MAX) / 1048576);
+    switch (error?.code) {
+      case "client_too_large":
+        return this.t("editorUploadTooLarge", { size });
+      case "client_wrong_type":
+        return this.t("editorUploadWrongType");
+      case "client_cancelled":
+        return this.t("editorUploadCancelled");
+      case "client_insecure":
+        return this.t("editorUploadNeedsSecure");
+      default:
+        return this._errorText(error);
+    }
+  },
+  /** Check the file, hash it and send it in sequential chunks. Resolves with the upload id. */
+  async _editorSendFile(file, purpose) {
+    const state = this._ed;
+    const limits = this._permissions.limits;
+    const max = Number(limits.upload_max_bytes) || EDITOR_UPLOAD_MAX;
+    if (!(file.size <= max)) throw this._editorCoded("client_too_large");
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    const mime = this._editorSniff(head);
+    if (!mime || file.size < 100) throw this._editorCoded("client_wrong_type");
+    if (!globalThis.crypto?.subtle) throw this._editorCoded("client_insecure");
+    const data = await file.arrayBuffer();
+    const digest = new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", data));
+    const sha256 = Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const begun = await this._ws("upload_begin", {
+      slug: state.slug,
+      purpose,
+      size: file.size,
+      mime,
+      sha256,
+    });
+    const step = Math.max(
+      1,
+      Math.min(
+        Number(begun.chunk_bytes) || EDITOR_UPLOAD_CHUNK,
+        Number(limits.upload_chunk_bytes) || EDITOR_UPLOAD_CHUNK,
+      ),
+    );
+    const count = Math.ceil(file.size / step);
+    for (let index = 0; index < count; index++) {
+      if (state.upload?.cancelled) throw this._editorCoded("client_cancelled");
+      const payload = {
+        upload_id: begun.upload_id,
+        index,
+        data: this._editorBase64(new Uint8Array(data.slice(index * step, (index + 1) * step))),
+      };
+      try {
+        await this._ws("upload_chunk", payload);
+      } catch (error) {
+        if (error?.code === "upload_expired" || state.upload?.cancelled) throw error;
+        await this._ws("upload_chunk", payload); // one retry per chunk
+      }
+      if (state.upload) {
+        state.upload.percent = Math.round(((index + 1) / count) * 100);
+        this._editorPaintProgress();
+      }
+    }
+    // A cancel that arrives while the last chunk is in flight must stop before the target command.
+    if (state.upload?.cancelled) throw this._editorCoded("client_cancelled");
+    return begun.upload_id;
+  },
+  /** Upload, then run `command(uploadId)`. An expired session restarts from the beginning once. */
+  async _editorWithUpload(file, purpose, command) {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await command(await this._editorSendFile(file, purpose));
+      } catch (error) {
+        if (error?.code !== "upload_expired" || attempt > 0 || this._ed?.upload?.cancelled)
+          throw error;
+        if (this._ed.upload) this._ed.upload.percent = 0;
+      }
+    }
+  },
+  async _editorUploadFlow(file) {
+    const state = this._ed;
+    const pick = state?.pick;
+    if (!state || !pick || state.upload) return;
+    state.pick = null;
+    const cover = pick.target === "cover";
+    const steps = asArray(this._detail?.recipeInstructions);
+    const index = cover ? -1 : steps.findIndex((step) => step?.id === pick.target);
+    if (!cover && index < 0) return;
+    state.upload = { target: cover ? "cover" : pick.target, percent: 0, cancelled: false };
+    if (cover) this._editorPaintPhoto();
+    else this._editorPaintSteps();
+    this._editorPaintProgress();
+    try {
+      const result = await this._editorWithUpload(file, cover ? "cover" : "step", (uploadId) =>
+        cover
+          ? this._ws("recipe_image_set", {
+              slug: state.slug,
+              upload_id: uploadId,
+              expected_image: String(this._detail?.image ?? ""),
+            })
+          : this._ws("step_image_add", {
+              slug: state.slug,
+              step_index: index,
+              step_id: steps[index].id,
+              upload_id: uploadId,
+              ...(pick.replace ? { replace_file_name: pick.replace } : {}),
+            }),
+      );
+      this._editorAfterPhoto(result, state);
+    } catch (error) {
+      state.upload = null;
+      this._editorPaintPhoto();
+      this._editorPaintSteps();
+      this._editorToast(
+        this._editorUploadMessage(error),
+        error?.code === "client_cancelled" ? "status" : "error",
+      );
+      if (error?.code === "recipe_changed") await this._editorReloadFresh();
+    }
+  },
+  _editorAfterPhoto(result, state) {
+    if (result?.recipe) this._detail = result.recipe;
+    this._data.recipes = null;
+    state.upload = null;
+    state.photoConfirm = false;
+    state.stepConfirm = null;
+    state.lastBackup = { id: result?.backup_id || "" };
+    this._editorPaintPhoto();
+    this._editorPaintSteps();
+    this._editorRefreshHistory();
+    this._editorToast(
+      this.t("editorSavedWithBackup", { time: this._editorTime(new Date().toISOString(), true) }),
+    );
+  },
+  async _editorCoverRemove() {
+    const state = this._ed;
+    try {
+      const result = await this._ws("recipe_image_delete", {
+        slug: state.slug,
+        expected_image: String(this._detail?.image ?? ""),
+      });
+      this._editorAfterPhoto(result, state);
+    } catch (error) {
+      state.photoConfirm = false;
+      this._editorPaintPhoto();
+      this._editorToast(this._errorText(error), "error");
+      if (error?.code === "recipe_changed") await this._editorReloadFresh();
+    }
+  },
+  async _editorStepRemove(id, file) {
+    const state = this._ed;
+    const steps = asArray(this._detail?.recipeInstructions);
+    const index = steps.findIndex((step) => step?.id === id);
+    if (index < 0 || !file) return;
+    try {
+      const result = await this._ws("step_image_remove", {
+        slug: state.slug,
+        step_index: index,
+        step_id: id,
+        file_name: file,
+      });
+      this._editorAfterPhoto(result, state);
+    } catch (error) {
+      state.stepConfirm = null;
+      this._editorPaintSteps();
+      this._editorToast(this._errorText(error), "error");
+      if (error?.code === "step_not_found") await this._editorReloadFresh();
+    }
+  },
+
+  // BEGIN feature D: shared combobox helpers (provided by B until D merges; D's version replaces this block)
+  /** Combobox input plus its listbox. `attrs` is appended to the input, ids derive from `id`. */
+  _comboboxMarkup({ id, label, value = "", placeholder = "", attrs = "", listClass = "", listId }) {
+    const list = listId || `${id}-list`;
+    return `<input role="combobox" id="${esc(id)}" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" aria-controls="${esc(list)}" ${attrs} autocomplete="off" maxlength="120" value="${esc(value)}" ${placeholder ? `placeholder="${esc(placeholder)}"` : ""} aria-label="${esc(label)}">
+      <ul${listClass ? ` class="${esc(listClass)}"` : ""} role="listbox" id="${esc(list)}" hidden aria-label="${esc(label)}"></ul>`;
+  },
+  /**
+   * Keyboard model on `state = {open, count, active}`; moves `state.active` and returns what the caller
+   * must do: "open", "move", "select", "close" or "" (not handled).
+   */
+  _comboboxKeydown(event, state) {
+    const { key } = event;
+    if (key === "Enter") {
+      event.preventDefault();
+      return state.open && state.active >= 0 ? "select" : "";
+    }
+    if (key === "Tab") return state.open ? "close" : "";
+    if (key === "Escape") {
+      if (!state.open) return "";
+      event.preventDefault();
+      return "close";
+    }
+    if (key === "ArrowDown" || key === "ArrowUp") {
+      event.preventDefault();
+      if (!state.open) return "open";
+    } else if (!state.open || !["Home", "End", "PageDown", "PageUp"].includes(key)) return "";
+    else event.preventDefault();
+    const { count } = state;
+    if (!count) return "move";
+    const last = count - 1;
+    if (key === "ArrowDown") state.active = (state.active + 1) % count;
+    else if (key === "ArrowUp") state.active = (state.active - 1 + count) % count;
+    else if (key === "Home") state.active = 0;
+    else if (key === "End") state.active = last;
+    else if (key === "PageDown") state.active = Math.min(last, Math.max(0, state.active) + 10);
+    else state.active = Math.max(0, state.active - 10);
+    return "move";
+  },
+  /** Paints one combobox: `state = {root, open, html, active, optionPrefix}`. */
+  _comboboxPaint(state) {
+    const input = state.root.querySelector("input");
+    const list = state.root.querySelector("ul");
+    list.hidden = !state.open;
+    list.innerHTML = state.open ? state.html : "";
+    input.setAttribute("aria-expanded", String(state.open));
+    if (state.open && state.active >= 0) {
+      input.setAttribute("aria-activedescendant", `${state.optionPrefix}${state.active}`);
+      list.querySelector(".is-active")?.scrollIntoView?.({ block: "nearest" });
+    } else input.removeAttribute("aria-activedescendant");
+  },
+  // END feature D
+}
+
+Object.assign(MealieAtelierCard.prototype, viewMethods, printActionMethods, nutritionJournalMethods, dialogMethods, recipeEditorMethods);
 
 /* ATELIER STUDIO EXTENSION START */
 /* Shared semantic UI constructors. User content is escaped at this boundary.

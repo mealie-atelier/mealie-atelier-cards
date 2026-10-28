@@ -8,6 +8,7 @@ export function loadCards({
   navigator: nav = { language: "en-US" },
   document: doc,
   window = {},
+  globals = {},
 } = {}) {
   const listeners = new Map();
   const document = doc || {
@@ -82,6 +83,7 @@ export function loadCards({
     requestAnimationFrame: (fn) => setTimeout(fn, 0),
     matchMedia: () => ({ matches: false, addEventListener() {} }),
     CustomEvent: class {},
+    ...globals,
   };
   context.globalThis = context;
   runInNewContext(

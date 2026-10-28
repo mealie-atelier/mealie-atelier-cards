@@ -188,7 +188,6 @@ export const dialogMethods = {
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogSource")}</div><form class="editor-form" data-form="import"><label class="field"><span>${esc(this.t("url"))}</span><input type="url" name="url" required maxlength="2000" placeholder="https://…"></label><p class="editor-sub">${esc(this.t("importTip"))}</p><div class="form-actions"><button type="submit" class="btn primary">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></form></section></div>`;
     if (this._modal === "edit" && this._detail) {
       const rec = this._detail;
-      const ingredients = asArray(rec.recipeIngredient).map(ingredientName);
       const instructions = asArray(rec.recipeInstructions);
       size = "large";
       content = `<div class="modal-content atelier-editor">
@@ -196,24 +195,19 @@ export const dialogMethods = {
         <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div>
         <div class="editor-stamp">${icon("edit", 28)}</div></div>
         <form data-form="edit" class="editor-form">
+        ${this._editorPhotoSection()}
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("name"))} & ${esc(this.t("description"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
           <label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" value="${esc(rec.name)}" placeholder="${esc(this.t("name"))}"></label>
           <div class="editor-columns"><label class="field"><span>${esc(this.t("description"))}</span><textarea name="description" rows="3" maxlength="2000" placeholder="${this.t("uiWhatMakesThisSpecial")}">${esc(rec.description)}</textarea></label>
           <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="1" max="100" step="1" name="servings" value="${Math.max(1, Number(rec.recipeServings) || 2)}" required><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
-        <section class="editor-card"><div class="eyebrow">02 / ${this.t("ingredients")}</div><h3>${esc(this.t("ingredients"))}</h3>
-          <p class="editor-sub">${this.t("uiLinkedFoodsAndUnitsStayProtectedTheIngredientsCanBePrinted")}</p>
-          <div class="editor-readonly">${ingredients.length ? ingredients.map((x) => `<span>• ${esc(x)}</span>`).join("") : "<span>—</span>"}</div>
-          ${
-            this._permissions.can_edit_ingredients
-              ? `<label class="editor-check"><input type="checkbox" name="replace_ingredients"> ${esc(this.t("applyIngredients"))} · ${esc(this.t("uiExperimentalBadge"))}</label><textarea name="ingredients" rows="4" maxlength="15000" aria-label="${esc(this.t("editIngredients"))}">${esc(ingredients.join("\n"))}</textarea>`
-              : `<p class="editing-hint">${esc(this.t("ingredientExperimental"))}</p>`
-          }</section>
+        ${this._editorIngredientsSection()}
         <section class="editor-card"><div class="eyebrow">03 / ${this.t("dialogStepByStep")}</div><h3>${esc(this.t("instructions"))}</h3>
           <p class="editor-sub">${this.t("uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled")}</p>
           <label class="editor-check"><input type="checkbox" name="replace_instructions"> ${this.t("uiReplaceCookingInstructions")}</label>
           <div class="editor-steps" data-steps-editor>${(instructions.length ? instructions : [{ text: "" }]).map((step, i) => this._stepEditRow(instructionText(step), i, step?.id || "")).join("")}</div>
           <button type="button" class="editor-add-step" data-action="step-add">+ ${this.t("uiAddAStep")}</button>
           <p class="editing-hint">${this.t("uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected")}</p></section>
+        ${this._editorHistorySection()}
         <section class="editor-card editor-card--steps"><div class="editor-footer"><small>${this.t("uiChangesAreSentToMealieOnlyWhenYouSave")}</small>
           <button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></section>
         </form></div>`;
