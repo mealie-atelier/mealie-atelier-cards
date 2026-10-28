@@ -66,3 +66,59 @@ const AtelierUI = Object.freeze({
       ${hint ? `<small class="ds-field-hint">${esc(hint)}</small>` : ""}</label>`;
   },
 });
+
+/* Keeps the screen awake with the Screen Wake Lock API. Every call is a no-op where the API is
+   missing or refuses (battery saver, insecure context), so callers never need to guard. */
+const AtelierWakeLock = Object.freeze({
+  supported(nav = typeof navigator === "undefined" ? undefined : navigator) {
+    return typeof nav?.wakeLock?.request === "function";
+  },
+  create(nav = typeof navigator === "undefined" ? undefined : navigator) {
+    let sentinel = null,
+      wanted = false,
+      pending = false;
+    const drop = () => {
+      const held = sentinel;
+      sentinel = null;
+      try {
+        Promise.resolve(held?.release?.()).catch(() => {});
+      } catch {}
+    };
+    const acquire = async () => {
+      if (!wanted || sentinel || pending || !AtelierWakeLock.supported(nav)) return;
+      pending = true;
+      try {
+        const lock = await nav.wakeLock.request("screen");
+        if (!wanted) {
+          sentinel = lock;
+          drop();
+          return;
+        }
+        sentinel = lock;
+        // The browser releases the lock on its own when the tab is hidden.
+        lock.addEventListener?.("release", () => {
+          if (sentinel === lock) sentinel = null;
+        });
+      } catch {
+        sentinel = null;
+      } finally {
+        pending = false;
+      }
+    };
+    return {
+      /** Request (true) or release (false) the lock; safe to call on every render. */
+      async set(want) {
+        wanted = Boolean(want);
+        if (wanted) await acquire();
+        else drop();
+      },
+      /** Re-acquire after the page becomes visible again, if the lock is still wanted. */
+      async resume() {
+        await acquire();
+      },
+      get active() {
+        return Boolean(sentinel);
+      },
+    };
+  },
+});

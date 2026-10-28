@@ -140,7 +140,7 @@ test("Kochinspo filters by meal style, child-friendly heat, and ranks portions/p
   );
   const pantryRanked = Studio.suggest([vegan, meat], { people: 4, usePantry: false }, [], {});
   assert.equal(pantryRanked[0].servings, 4);
-  assert.ok(pantryRanked.every((x) => !x.reasons.some((reason) => reason.includes("Vorrat"))));
+  assert.ok(pantryRanked.every((x) => !x.reasons.some((reason) => reason.key === "studioReasonPantryUnchecked")));
 });
 test("Kochinspo filters against exact Mealie cookbook tag and category IDs", () => {
   const tagBook = {
@@ -336,5 +336,7 @@ test("explicit people yield provides a serving basis while piece yield never doe
   assert.equal(Studio.shoppingNeeds([cake], [], { people: 4 })[0].quantity, 400);
   const ranked = Studio.recommendation(people, { people: 2 }, [], {});
   assert.equal(ranked.servings, 2);
-  assert.ok(ranked.reasons.includes("Rezeptbasis: 2 Portionen"));
+  assert.ok(
+    ranked.reasons.some((r) => r.key === "studioReasonServingsBase" && r.values.servings === 2),
+  );
 });

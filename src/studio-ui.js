@@ -23,6 +23,15 @@ const atInitially = () => ({
   journal: {},
   family: { members: [], session: null },
 });
+// Core results carry translation keys; resolve them in the active locale.
+const atMessage = (t, item) => t(item.key, item.values);
+const atAisleKeys = {
+  chilled: "studioAisleChilled",
+  pantry: "studioAislePantry",
+  spices: "studioAisleSpices",
+  protein: "studioAisleProtein",
+  produce: "studioAisleProduce",
+};
 function atGroup(rows) {
   return [...new Set(rows.map((x) => x.category))].map((k) => ({
     category: k,
@@ -417,7 +426,7 @@ Object.assign(MealieAtelierCard.prototype, {
           : `${AtelierUI.surfaceStart()}<div class="studio-discover-result-head"><div><span class="eyebrow">${this.t("studioDiscoverResult")}</span><h2>${this.t("studioDiscoverResultTitle")}</h2></div><button class="btn tiny" data-action="studio-discover-edit">${icon("edit", 14)} ${this.t("studioDiscoverEdit")}</button></div>
       ${
         hero
-          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}<span class="studio-discover-photo-label">${hero.timeLabel || this.t("studioDiscoverTimeOpen")} <i>·</i> ${hero.people} ${hero.people === 1 ? this.t("studioDiscoverPerson") : this.t("studioDiscoverPeoplePlural")}</span></div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.t("studioDiscoverRecipeBase", { servings: hero.servings }) : this.t("studioDiscoverForPeople", { people: hero.people })}</span></div><p>${esc(hero.reasons.slice(0, 3).join(" · ") || this.t("studioDiscoverGoodIdea"))}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
+          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}<span class="studio-discover-photo-label">${hero.timeLabel || this.t("studioDiscoverTimeOpen")} <i>·</i> ${hero.people} ${hero.people === 1 ? this.t("studioDiscoverPerson") : this.t("studioDiscoverPeoplePlural")}</span></div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.t("studioDiscoverRecipeBase", { servings: hero.servings }) : this.t("studioDiscoverForPeople", { people: hero.people })}</span></div><p>${esc(hero.reasons.slice(0, 3).map((r) => this.t(r.key, r.values)).join(" · ") || this.t("studioDiscoverGoodIdea"))}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
       ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.t("studioDiscoverMoreIdeas", { count: alternatives.length })}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.t("servings")}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
           : `<div class="studio-discover-empty"><span>✦</span><h3>${this.t("studioDiscoverEmptyTitle")}</h3><p>${this.t("studioDiscoverEmpty")}</p><button class="btn" data-action="studio-discover-edit">${this.t("studioDiscoverAdjust")}</button><button class="btn" data-action="studio-analyze" ${this._catalogLoading ? "disabled" : ""}>${icon("refresh", 14)} ${this.t("studioDiscoverReload")}</button></div>`
       }</section>`
@@ -426,7 +435,7 @@ Object.assign(MealieAtelierCard.prototype, {
     const planner = this._discoverResults
       ? `${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioPlanKicker")}</span><h2>${this.t("studioPlanTitle")}</h2><p>${this.t("studioPlanDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-plan-preview" ${this._catalogLoading ? "disabled" : ""}>${icon("spark", 15)} ${this.t("studioPlanPreview")}</button>${upcoming.length ? `<button class="btn" data-action="studio-plan-commit" ${!this._permissions.can_write ? "disabled" : ""}>${icon("check", 15)} ${this.t("studioPlanCommit")}</button>` : ""}</div>
-      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div><b>${esc(x.name)}</b><p>${esc(x.reason)}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
+      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => this.t(r.key, r.values)).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
       : "";
     return this._studioShell(this.t("studioDiscoverTitle"), lead, `${flow}${planner}`);
   },
@@ -450,7 +459,7 @@ Object.assign(MealieAtelierCard.prototype, {
           ? atGroup(needs)
               .map(
                 (g) =>
-                  `<div class="studio-group"><h3>${esc(g.category)}</h3>${g.rows.map((x) => `<div class="studio-grocery-line"><span>${esc(x.name)}</span><strong>${x.needed == null ? this.t("studioQuantityCheck") : esc(atQty(x.needed, this._locale)) + " " + esc(x.unit)}${x.uncertain ? " ⚠" : ""}</strong></div>`).join("")}</div>`,
+                  `<div class="studio-group"><h3>${esc(this.t(atAisleKeys[g.category] || "studioAisleProduce"))}</h3>${g.rows.map((x) => `<div class="studio-grocery-line"><span>${esc(x.name)}</span><strong>${x.needed == null ? this.t("studioQuantityCheck") : esc(atQty(x.needed, this._locale)) + " " + esc(x.unit)}${x.uncertain ? " ⚠" : ""}</strong></div>`).join("")}</div>`,
               )
               .join("")
           : `<p class="studio-muted">${this.t("studioGroceryPreview")}</p>`
@@ -535,7 +544,7 @@ Object.assign(MealieAtelierCard.prototype, {
     this._grocery = AtelierStudio.shoppingNeeds(recipes, this._studio.pantry, this._studio.profile);
     this._view = "pantry";
     this._render();
-    if (!recipes.length) this._flash("Keine geplanten Gerichte mit abrufbaren Zutaten vorhanden.");
+    if (!recipes.length) this._flash(this.t("studioNoPlannedIngredients"));
   },
   async _studioCommitWeek() {
     if (!this._weekProposal?.length || !this._permissions.can_write) return;
@@ -558,7 +567,7 @@ Object.assign(MealieAtelierCard.prototype, {
         });
         success++;
       } catch (error) {
-        failed.push(`${entry.date}: ${error.message || "Fehler"}`);
+        failed.push(`${entry.date}: ${error.message || this.t("error")}`);
       }
     }
     this._weekProposal = failed.length
@@ -574,7 +583,7 @@ Object.assign(MealieAtelierCard.prototype, {
     if (!items.length) return;
     const list = this._activeList || String(this._data.shopping?.lists?.[0]?.id || "");
     if (!list) {
-      this._flash("Bitte erst in Mealie eine Einkaufsliste anlegen.");
+      this._flash(this.t("studioCreateShoppingListFirst"));
       return;
     }
     if (
@@ -615,16 +624,26 @@ Object.assign(MealieAtelierCard.prototype, {
     );
     const chosen = [...(this._bookSelected || [])];
     const from = this._fullCatalog || [];
-    const results = [];
+    const results = [],
+      skipped = [];
     for (const slug of chosen.slice(0, 120)) {
       let recipe = from.find((x) => x.slug === slug);
       if (!recipe?.recipeInstructions) {
         try {
           recipe = await this._ws("recipe", { slug });
-        } catch {}
+        } catch {
+          // Keep processing the remaining recipes and report the skipped ones afterwards.
+          skipped.push(recipe?.name || slug);
+          recipe = null;
+        }
       }
       if (recipe) results.push(recipe);
     }
+    if (skipped.length)
+      this._flash(
+        this.t("studioRecipeFetchFailed", { count: skipped.length, names: skipped.join(", ") }),
+        "error",
+      );
     const toc = results
       .map((r, i) => `<li><span>${esc(r.name)}</span><b>${i + 1}</b></li>`)
       .join("");
@@ -718,11 +737,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
   }
   if (this._modal === "journal" && this._detail)
     html = html
-      .replace(this.t("studioJournalLocal"), this.t("studioJournalShared"))
-      .replace(
-        "Stored only on this device, not synced to Mealie.",
-        "Saved in your Atelier profile for your connected devices.",
-      );
+      .replace(this.t("studioJournalLocal"), this.t("studioJournalShared"));
   if (this._modal === "recipe" && this._detail) {
     const audit = AtelierStudio.audit(this._detail);
     html = html.replace(
@@ -730,7 +745,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
       `<div class="studio-audit"><strong>${this.t("studioRecipeAuditTitle", { score: audit.score })}</strong><span>${
         audit.problems.length
           ? audit.problems
-              .map((x) => esc(x.message))
+              .map((x) => esc(atMessage(this.t.bind(this), x)))
               .slice(0, 3)
               .join(" · ")
           : this.t("studioRecipeAuditNone")
@@ -1133,7 +1148,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       });
       if (!raw) return;
       const found = AtelierStudio.substitutions(raw);
-      let output = found.map((x) => `${x.from}: ${x.to} (${x.warning})`).join(" · ");
+      let output = found.map((x) => `${x.from}: ${this.t(x.to)} (${this.t(x.warning)})`).join(" · ");
       if (!output) {
         try {
           const answer = await this._ws("studio_substitute", {
@@ -1179,7 +1194,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         kind: "info",
         title: this.t("studioAuditTitle", { score: r.score }),
         body:
-          (r.problems.map((x) => "• " + x.message).join("\n") || this.t("studioAuditNone")) +
+          (r.problems.map((x) => "• " + atMessage(this.t.bind(this), x)).join("\n") || this.t("studioAuditNone")) +
           "\n\n" +
           this.t("studioAuditDisclaimer"),
       });
@@ -1297,7 +1312,7 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
       return;
     }
     if (ok) {
-      this._flash("Im Atelier gespeichert.");
+      this._flash(this.t("studioSaved"));
     }
     return;
   }

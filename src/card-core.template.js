@@ -13,6 +13,8 @@ const MODES = [
   "manage",
 ];
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
+// Result cap of the official Home Assistant provider; hitting it means the list may be cut off.
+const NATIVE_RESULT_LIMIT = 500;
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",
@@ -21,6 +23,7 @@ const DEFAULTS = {
   density: "comfortable",
   columns: 3,
   show_images: true,
+  keep_awake: true,
   photo_ratio: "portrait",
   print_style: "editorial",
   print_image: false,
@@ -173,6 +176,12 @@ class MealieAtelierCard extends HTMLElement {
     this._busy = false;
     this._error = "";
     this._toast = "";
+    this._toastKind = "status";
+    this._providerTruncated = false;
+    this._wakeLock = AtelierWakeLock.create();
+    this._boundVisibility = () => {
+      if (document.visibilityState === "visible") this._wakeLock.resume();
+    };
     this._settings = false;
     this._local = {};
     this._status = null;
@@ -256,6 +265,7 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("input", this._boundInput);
     this.shadowRoot.addEventListener("keydown", this._boundKeyDown);
     document.addEventListener("keydown", this._boundPageKeyDown);
+    document.addEventListener("visibilitychange", this._boundVisibility);
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
@@ -272,6 +282,8 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("input", this._boundInput);
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
+    document.removeEventListener("visibilitychange", this._boundVisibility);
+    this._wakeLock.set(false);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);
     this.shadowRoot.removeEventListener("error", this._boundImageError, true);
@@ -330,7 +342,7 @@ class MealieAtelierCard extends HTMLElement {
       throw new Error(this.t("uiThisFeatureRequiresMealieAtelierBridge"));
     }
     if (!this._hass || typeof this._hass.callWS !== "function")
-      throw new Error("Home Assistant connection is not ready");
+      throw new Error(this.t("uiHomeAssistantNotReady"));
     const entry_id = this._config.entry_id || undefined;
     return this._hass.callWS({
       type: `mealie_atelier/${type}`,
@@ -385,7 +397,7 @@ class MealieAtelierCard extends HTMLElement {
       ...recipe,
       id: recipe.id || slug,
       slug,
-      name: recipe.name || recipe.recipeName || "Rezept",
+      name: recipe.name || recipe.recipeName || this.t("recipeFallback"),
       description: recipe.description || "",
       recipeInstructions: asArray(recipe.recipeInstructions || recipe.instructions),
       recipeIngredient: asArray(recipe.recipeIngredient || recipe.ingredients),
@@ -399,7 +411,7 @@ class MealieAtelierCard extends HTMLElement {
     const response = this._nativePayload(
       await this._nativeAction("get_recipes", {
         search_terms: String(search || "").slice(0, 160),
-        result_limit: 500,
+        result_limit: NATIVE_RESULT_LIMIT,
       }),
       "get_recipes",
     );
@@ -411,6 +423,7 @@ class MealieAtelierCard extends HTMLElement {
     const upstreamPerPage = Number(payload?.per_page ?? payload?.perPage);
     const upstreamTotalPages = Number(payload?.total_pages ?? payload?.totalPages);
     const totalCount = Number.isFinite(total) ? total : items.length;
+    this._providerTruncated = rows.length >= NATIVE_RESULT_LIMIT || totalCount > items.length;
     return {
       items,
       total: totalCount,
@@ -426,7 +439,7 @@ class MealieAtelierCard extends HTMLElement {
       partial:
         totalCount > items.length ||
         (Number.isFinite(upstreamTotalPages) && upstreamTotalPages > 1) ||
-        items.length >= 500,
+        items.length >= NATIVE_RESULT_LIMIT,
     };
   }
   async _nativeRecipe(slug) {
@@ -552,8 +565,9 @@ class MealieAtelierCard extends HTMLElement {
     }
     this._render();
   }
-  _flash(text) {
+  _flash(text, kind = "status") {
     this._toast = String(text || "").slice(0, 500);
+    this._toastKind = kind;
     this._render();
     if (this._toastTimer) clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(() => {
@@ -568,7 +582,7 @@ class MealieAtelierCard extends HTMLElement {
   _nav() {
     return `<aside class="sidebar">
       <div class="identity"><div class="logo">${icon("leaf", 22)}</div><div><strong>MEALIE<br>ATELIER</strong><span>KITCHEN STUDIO</span></div></div>
-      <div class="nav-label">MENU</div><nav class="nav" aria-label="Kitchen navigation">
+      <div class="nav-label">MENU</div><nav class="nav" aria-label="${esc(this.t("navKitchenLabel"))}">
       ${MODES.filter((mode) =>
         this._providerActive === "home_assistant"
           ? mode === "recipes"
@@ -677,6 +691,8 @@ class MealieAtelierCard extends HTMLElement {
 
   _render() {
     if (!this.isConnected) return;
+    // Hold the wake lock only while cook mode is open and the user keeps the toggle on.
+    this._wakeLock.set(this._modal === "cook" && this._design.keep_awake !== false);
     const d = this._design,
       theme = d.theme === "light" ? "light" : "dark";
     const configuredAccent = colorOk(d.accent) ? d.accent : DEFAULTS.accent;
@@ -734,7 +750,7 @@ class MealieAtelierCard extends HTMLElement {
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
       ${this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._body()}</div>
-      <footer class="atelier-credit-footer">${AtelierUI.attribution()}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast" role="status" aria-live="polite">${icon("check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
+      <footer class="atelier-credit-footer">${AtelierUI.attribution()}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
@@ -914,7 +930,11 @@ class MealieAtelierCard extends HTMLElement {
     }
     this._render();
   }
-  async _mutate(action, payload, refresh = "all") {
+  /**
+   * Run a write. `optimistic` applies the change to local state right away and returns a
+   * function that restores the previous state; it runs when the write fails.
+   */
+  async _mutate(action, payload, refresh = "all", optimistic = null) {
     this._toast = "";
     if (
       !this._permissions.can_write ||
@@ -924,6 +944,8 @@ class MealieAtelierCard extends HTMLElement {
       this._render();
       return false;
     }
+    const rollback = optimistic ? optimistic() : null;
+    if (rollback) this._render();
     try {
       await this._ws("mutate", { action, payload });
       if (refresh === "shopping") await this._loadShopping();
@@ -936,10 +958,40 @@ class MealieAtelierCard extends HTMLElement {
       this._flash(action.startsWith("recipe") ? this.t("saved") : this.t("saved"));
       return true;
     } catch (err) {
-      this._error = err?.message || this.t("error");
-      this._render();
+      if (rollback) rollback();
+      this._error = "";
+      this._flash(
+        this.t("uiMutationFailed", { error: err?.message || this.t("error") }),
+        "error",
+      );
       return false;
     }
+  }
+  // Optimistic local edits for _mutate; each returns its rollback.
+  _optimisticToggle(item_id, checked) {
+    const item = asArray(this._data.shopping?.items).find((x) => String(x.id) === String(item_id));
+    if (!item) return null;
+    const before = item.checked;
+    item.checked = checked;
+    return () => {
+      item.checked = before;
+    };
+  }
+  _optimisticAdd(key, row) {
+    const before = this._data[key];
+    const rows = asArray(key === "shopping" ? before?.items : before);
+    const next = [...rows, row];
+    this._data[key] = key === "shopping" ? { ...before, items: next } : next;
+    return () => {
+      this._data[key] = before;
+    };
+  }
+  _optimisticRemoveMeal(entry_id) {
+    const before = this._data.mealplan;
+    this._data.mealplan = asArray(before).filter((x) => String(x.id) !== String(entry_id));
+    return () => {
+      this._data.mealplan = before;
+    };
   }
   _setDesign(field, value) {
     if (
@@ -951,6 +1003,7 @@ class MealieAtelierCard extends HTMLElement {
         "columns",
         "radius",
         "show_images",
+        "keep_awake",
         "photo_ratio",
         "print_style",
         "print_image",
@@ -969,7 +1022,7 @@ class MealieAtelierCard extends HTMLElement {
     if (field === "density" && !["compact", "comfortable"].includes(value)) return;
     if (field === "motion" && !["expressive", "balanced", "off"].includes(value)) return;
     if (field === "radius" && !["large", "small", "square"].includes(value)) return;
-    if (field === "show_images" && typeof value !== "boolean") return;
+    if ((field === "show_images" || field === "keep_awake") && typeof value !== "boolean") return;
     if (field === "photo_ratio" && !["portrait", "square", "landscape"].includes(value)) return;
     if (field === "print_style" && !["editorial", "compact", "minimal"].includes(value)) return;
     if (
@@ -1221,7 +1274,7 @@ class MealieAtelierCard extends HTMLElement {
           expected_hash: n.preview.hash,
         });
         if (!Array.isArray(suggestions) || suggestions.length !== n.rows.length)
-          throw Error("Unexpected AI suggestion count");
+          throw Error(this.t("uiAiSuggestionCountMismatch"));
         suggestions.forEach((x, i) => {
           n.rows[i].query = String(x.query || "").slice(0, 100);
           n.rows[i].ai_note = x.note;
@@ -1418,12 +1471,16 @@ class MealieAtelierCard extends HTMLElement {
       el.disabled = true;
       const item_id = el.dataset.id;
       const checked = el.dataset.checked !== "true";
-      await this._mutate("shopping_toggle", { item_id, checked }, "shopping");
+      await this._mutate("shopping_toggle", { item_id, checked }, "shopping", () =>
+        this._optimisticToggle(item_id, checked),
+      );
       return;
     }
     if (action === "remove-meal") {
       el.disabled = true;
-      await this._mutate("mealplan_delete", { entry_id: v }, "mealplan");
+      await this._mutate("mealplan_delete", { entry_id: v }, "mealplan", () =>
+        this._optimisticRemoveMeal(v),
+      );
       return;
     }
   }
@@ -1500,6 +1557,10 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (type === "language") {
       this._setDesign("language", el.value);
+      return;
+    }
+    if (type === "keep-awake") {
+      this._setDesign("keep_awake", Boolean(el.checked));
       return;
     }
     if (type === "show-images") {
@@ -1658,6 +1719,13 @@ class MealieAtelierCard extends HTMLElement {
             "shopping_add",
             { list_id: this._activeList, note: tidy(values.note) },
             "shopping",
+            () =>
+              this._optimisticAdd("shopping", {
+                id: `pending-${Date.now()}`,
+                shoppingListId: this._activeList,
+                note: tidy(values.note),
+                checked: false,
+              }),
           );
         break;
       case "plan":
@@ -1666,6 +1734,15 @@ class MealieAtelierCard extends HTMLElement {
             "mealplan_add",
             { date: values.date, meal_type: values.meal_type, recipe_id: values.recipe_id },
             "mealplan",
+            () =>
+              this._optimisticAdd("mealplan", {
+                id: `pending-${Date.now()}`,
+                date: values.date,
+                entryType: values.meal_type,
+                recipe: asArray(this._data.recipes?.items).find(
+                  (x) => String(x.id) === String(values.recipe_id),
+                ),
+              }),
           );
         break;
       case "create":

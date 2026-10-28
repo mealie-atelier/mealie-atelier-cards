@@ -240,3 +240,62 @@ test("print document copy uses the same expandable locale resources as the card"
     for (const [locale, resource] of Object.entries(locales))
       assert.ok(key in resource, `${locale}.${key} must be translated`);
 });
+
+test("studio core emits translation keys instead of user-visible copy", () => {
+  const core = readFileSync(new URL("../src/studio-core.js", import.meta.url), "utf8");
+  const keys = [...core.matchAll(/["'](studio[A-Z][A-Za-z0-9]+)["']/g)].map(([, key]) => key);
+  assert.ok(keys.length >= 25, "reason, audit and swap keys are referenced");
+  for (const [locale, resource] of Object.entries(locales))
+    for (const key of keys) assert.ok(key in resource, `${locale}.${key} is used by studio-core`);
+  assert.doesNotMatch(core, /message:\s*[`"']/, "audit problems carry keys, not sentences");
+});
+
+test("no German or English user-facing literals remain outside the locale tables", () => {
+  const files = [
+    "studio-core.js",
+    "studio-ui.js",
+    "card-core.template.js",
+    "components/views.js",
+    "components/dialogs.js",
+    "components/nutrition-journal.js",
+  ];
+  const forbidden = [
+    "Zutaten mengenmäßig gedeckt",
+    "Vorrat noch nicht geprüft",
+    "Familienfreundlich markiert",
+    "gemeinsame Zutaten",
+    "Portionen für zwei Mahlzeiten",
+    "Reste: ",
+    "Keine geplanten Gerichte",
+    "Bitte erst in Mealie",
+    "Im Atelier gespeichert",
+    "Stored only on this device",
+    "Saved in your Atelier profile",
+    "Kühlregal",
+    "Textvorschlag",
+    "EXPERIMENTELL",
+    "Kitchen navigation",
+    'placeholder="z. B.',
+    '|| "Item"',
+    '|| "Mealie recipe"',
+    "Home Assistant connection is not ready",
+    "Unexpected AI suggestion count",
+    '"Fehler"',
+  ];
+  for (const file of files) {
+    const text = readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8");
+    for (const needle of forbidden)
+      assert.ok(!text.includes(needle), `${file} must not hardcode ${JSON.stringify(needle)}`);
+  }
+});
+
+test("new notices resolve in every locale with matching placeholders", () => {
+  for (const key of [
+    "uiProviderResultsTruncated",
+    "uiKeepScreenAwake",
+    "uiMutationFailed",
+    "studioRecipeFetchFailed",
+  ])
+    for (const [locale, resource] of Object.entries(locales))
+      assert.ok(resource[key], `${locale}.${key}`);
+});

@@ -2285,3 +2285,16 @@
     animation: none;
   }
 }
+.atelier .toast.toast-error {
+  background: #3a1d17;
+  color: #ffd9cd;
+  border: 1px solid #e7a79466;
+}
+.atelier .cook-wake {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--at-muted, inherit);
+  cursor: pointer;
+}

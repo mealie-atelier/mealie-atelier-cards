@@ -120,7 +120,8 @@ test("Home Assistant Mealie fallback is read-only, credential-safe, and visibly 
       .includes('callService("mealie",action,{config_entry_id,...data},undefined,false,true,)'),
     "Native service calls must use the configured Mealie entry and disable response handling",
   );
-  assert.match(core, /result_limit:\s*500/);
+  assert.match(core, /NATIVE_RESULT_LIMIT\s*=\s*500/);
+  assert.match(core, /result_limit:\s*NATIVE_RESULT_LIMIT/);
   assert.match(compactCore, /constpayload=response\?\.recipes\?\?response/);
   assert.match(compactCore, /payload\?\.items\|\|payload\?\.data/);
   assert.match(

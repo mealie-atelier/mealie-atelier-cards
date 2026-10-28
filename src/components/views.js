@@ -39,12 +39,12 @@ export const viewMethods = {
           recipe.recipeCategory?.[0]?.name || recipe.recipeCategory?.[0] || this.t("featured");
         const image = this._design.show_images !== false;
         const timeLabel =
-          AtelierStudio.formatTime(recipe.totalTime, this._language) || "Mealie recipe";
+          AtelierStudio.formatTime(recipe.totalTime, this._language) || this.t("uiMealieRecipeFallback");
         return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${image ? recipeImage(recipe) : ""}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div><div class="placeholder">${esc(recipe.name)}</div></div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon("clock", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(
         "",
-      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>` : ""}${!list.length ? `<div class="notice">${icon("book")} ${esc(this.t("noRecipes"))}</div>` : ""}`;
+      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length ? `<div class="notice">${icon("book")} ${esc(this.t("noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
     const page = this._data.recipes || {};
@@ -80,7 +80,7 @@ export const viewMethods = {
     const filtered = all.filter((i) => String(i.shoppingListId) === selected);
     const done = filtered.filter((i) => i.checked).length;
     return `<div class="shopping-card"><div class="toolbar shopping-toolbar"><button class="btn tiny" data-action="print-list">${icon("print", 14)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
-      <div class="shopping-list">${filtered.map((item) => `<div class="shopping-row ${item.checked ? "checked" : ""}"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(item.id)}" data-checked="${item.checked ? "true" : "false"}" role="checkbox" aria-checked="${item.checked ? "true" : "false"}" ${!this._permissions.can_write ? "disabled" : ""} aria-label="${esc(this.t(item.checked ? "uiMarkShoppingOpen" : "uiMarkShoppingComplete", { item: item.display || item.note || item.food?.name || "Item" }))}">${icon("check", 14)}</button><span class="shopping-name">${esc(item.display || item.note || item.food?.name || "Item")}</span><span class="shopping-qty">${esc(item.quantity && item.quantity !== 1 ? item.quantity : "")}</span></div>`).join("")}
+      <div class="shopping-list">${filtered.map((item) => `<div class="shopping-row ${item.checked ? "checked" : ""}"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(item.id)}" data-checked="${item.checked ? "true" : "false"}" role="checkbox" aria-checked="${item.checked ? "true" : "false"}" ${!this._permissions.can_write ? "disabled" : ""} aria-label="${esc(this.t(item.checked ? "uiMarkShoppingOpen" : "uiMarkShoppingComplete", { item: item.display || item.note || item.food?.name || this.t("itemFallback") }))}">${icon("check", 14)}</button><span class="shopping-name">${esc(item.display || item.note || item.food?.name || this.t("itemFallback"))}</span><span class="shopping-qty">${esc(item.quantity && item.quantity !== 1 ? item.quantity : "")}</span></div>`).join("")}
       ${!filtered.length ? `<div class="notice">${icon("cart")} ${esc(lists.length ? this.t("noShopping") : this.t("addListFirst"))}</div>` : ""}</div>
       ${lists.length && this._permissions.can_write ? `<form class="shopping-form" data-form="shopping-add"><input name="note" required maxlength="250" placeholder="${esc(this.t("addItem"))}" aria-label="${esc(this.t("addItem"))}"><button class="btn primary" type="submit">${icon("plus", 14)} ${esc(this.t("add"))}</button></form>` : ""}</div>`;
   },
@@ -103,7 +103,7 @@ export const viewMethods = {
             .slice(0, 6)
             .map(
               (x) =>
-                `<div class="mini-shopping"><span>${icon("cart", 15)}</span><button data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" aria-label="${esc(this.t("uiMarkComplete") + (x.display || x.note || x.food?.name || "Item"))}" ${!this._permissions.can_write ? "disabled" : ""}>${esc(x.display || x.note || x.food?.name || "")}</button></div>`,
+                `<div class="mini-shopping"><span>${icon("cart", 15)}</span><button data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" aria-label="${esc(this.t("uiMarkComplete") + (x.display || x.note || x.food?.name || this.t("itemFallback")))}" ${!this._permissions.can_write ? "disabled" : ""}>${esc(x.display || x.note || x.food?.name || "")}</button></div>`,
             )
             .join("")
         : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`

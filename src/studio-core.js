@@ -483,19 +483,22 @@ const AtelierStudio = (() => {
       (Number(feedback.rating) || 0) * 6 +
       (feedback.favorite === true ? 14 : 0) +
       (age < 3 ? -35 : age < 10 ? -15 : 6);
+    // Reasons are translation keys with values; the UI resolves them in the active locale.
     const reasons = [
       profile.usePantry === false
         ? null
         : available.length
-          ? `${available.length}/${rows.length} Zutaten mengenmäßig gedeckt`
-          : "Vorrat noch nicht geprüft",
-      unknown ? `${unknown} Mengen unklar` : null,
-      profile.kidFriendly && kidTags ? "Familienfreundlich markiert" : null,
-      serves ? `Rezeptbasis: ${serves} Portionen` : "Portionen offen",
+          ? { key: "studioReasonPantryCovered", values: { covered: available.length, total: rows.length } }
+          : { key: "studioReasonPantryUnchecked" },
+      unknown ? { key: "studioReasonAmountsUnclear", values: { count: unknown } } : null,
+      profile.kidFriendly && kidTags ? { key: "studioReasonFamilyFriendly" } : null,
+      serves
+        ? { key: "studioReasonServingsBase", values: { servings: serves } }
+        : { key: "studioReasonServingsOpen" },
       prep && prep <= Number(profile.maxMinutes || 40)
-        ? `${prep} Min. im Zeitbudget`
+        ? { key: "studioReasonWithinBudget", values: { minutes: prep } }
         : prep
-          ? `${prep} Min. · etwas über dem Zeitbudget`
+          ? { key: "studioReasonOverBudget", values: { minutes: prep } }
           : null,
     ].filter(Boolean);
     return {
@@ -573,7 +576,9 @@ const AtelierStudio = (() => {
         recipe_id: chosen.id,
         slug: chosen.slug,
         name: chosen.name,
-        reason: chosen.reasons.join(" · ") + (chosen.overlap ? " · gemeinsame Zutaten" : ""),
+        reasons: chosen.overlap
+          ? [...chosen.reasons, { key: "studioReasonSharedIngredients" }]
+          : chosen.reasons,
         score: chosen.planScore,
       });
       // Optional leftover lunch: only if recipe explicitly makes >= 2x household size.
@@ -598,8 +603,8 @@ const AtelierStudio = (() => {
             meal_type: "lunch",
             recipe_id: chosen.id,
             slug: chosen.slug,
-            name: "Reste: " + chosen.name,
-            reason: "Portionen für zwei Mahlzeiten",
+            name: chosen.name,
+            reasons: [{ key: "studioReasonTwoMeals" }],
             leftovers: true,
           });
       }
@@ -608,13 +613,14 @@ const AtelierStudio = (() => {
       (a, b) => a.date.localeCompare(b.date) || a.meal_type.localeCompare(b.meal_type),
     );
   }
+  // Aisle ids; the UI maps them to localized headings (studioAisle*).
   const category = (name) => {
     const s = clean(name);
-    if (/milch|kaese|käse|joghurt|quark|sahne|butter/.test(s)) return "Kühlregal";
-    if (/brot|mehl|nudel|reis|hafer|linsen|bohnen|kichererbse/.test(s)) return "Vorrat & Getreide";
-    if (/gewurz|salz|pfeffer|ol|öl|essig|zucker/.test(s)) return "Gewürze & Öle";
-    if (/fleisch|wurst|fisch|tofu|tempeh/.test(s)) return "Proteine";
-    return "Obst & Gemüse / Sonstiges";
+    if (/milch|kaese|käse|joghurt|quark|sahne|butter/.test(s)) return "chilled";
+    if (/brot|mehl|nudel|reis|hafer|linsen|bohnen|kichererbse/.test(s)) return "pantry";
+    if (/gewurz|salz|pfeffer|ol|öl|essig|zucker/.test(s)) return "spices";
+    if (/fleisch|wurst|fisch|tofu|tempeh/.test(s)) return "protein";
+    return "produce";
   };
   function shoppingNeeds(recipes, pantry = [], profile = {}) {
     const combined = [];
@@ -698,13 +704,13 @@ const AtelierStudio = (() => {
       problems.push({
         severity: "error",
         field: "ingredients",
-        message: "Keine Zutaten hinterlegt",
+        key: "studioAuditNoIngredients",
       });
     if (!steps.length)
       problems.push({
         severity: "error",
         field: "steps",
-        message: "Keine Zubereitungsschritte hinterlegt",
+        key: "studioAuditNoSteps",
       });
     for (let i = 0; i < ingredients.length; i++) {
       const p = parseIngredient(ingredients[i]);
@@ -713,24 +719,26 @@ const AtelierStudio = (() => {
           severity: "warning",
           field: "ingredients",
           index: i,
-          message: `Menge unklar: ${p.raw}`,
+          key: "studioAuditAmountUnclear",
+          values: { item: p.raw },
         });
       if (p.quantity > 10000 && p.unit === "g")
         problems.push({
           severity: "warning",
           field: "ingredients",
           index: i,
-          message: `Ungewöhnlich große Menge: ${p.raw}`,
+          key: "studioAuditAmountLarge",
+          values: { item: p.raw },
         });
     }
     if (!recipeServings(recipe))
       problems.push({
         severity: "warning",
         field: "servings",
-        message: "Portionen fehlen oder sind ungültig",
+        key: "studioAuditServingsInvalid",
       });
     if (!recipe.totalTime && !recipe.prepTime)
-      problems.push({ severity: "info", field: "time", message: "Gesamtzeit fehlt" });
+      problems.push({ severity: "info", field: "time", key: "studioAuditTimeMissing" });
     const seen = new Set();
     for (let i = 0; i < ingredients.length; i++) {
       const p = parseIngredient(ingredients[i]);
@@ -740,7 +748,8 @@ const AtelierStudio = (() => {
           severity: "warning",
           field: "ingredients",
           index: i,
-          message: `Möglicher doppelter Eintrag: ${p.label}`,
+          key: "studioAuditDuplicate",
+          values: { item: p.label },
         });
       seen.add(key);
     }
@@ -757,16 +766,17 @@ const AtelierStudio = (() => {
       ),
     };
   }
+  // Swap texts and the warning are translation keys; the UI resolves them per locale.
   const swaps = [
-    ["sahne", "Hafercuisine / Kochcreme"],
-    ["butter", "Pflanzenmargarine oder Olivenöl"],
-    ["ei", "Leinsamen-Ei (bei einigen Teigen)"],
-    ["milch", "Haferdrink"],
-    ["champignon", "Zucchini oder Aubergine"],
-    ["quark", "pflanzliche Quarkalternative"],
-    ["parmesan", "Hefeflocken oder vegane Hartkäsealternative"],
-    ["mehl", "anderes geeignetes Mehl, Konsistenz prüfen"],
-    ["zucker", "Ahornsirup (Flüssigkeit anpassen)"],
+    ["sahne", "studioSwapCream"],
+    ["butter", "studioSwapButter"],
+    ["ei", "studioSwapEgg"],
+    ["milch", "studioSwapMilk"],
+    ["champignon", "studioSwapMushroom"],
+    ["quark", "studioSwapQuark"],
+    ["parmesan", "studioSwapParmesan"],
+    ["mehl", "studioSwapFlour"],
+    ["zucker", "studioSwapSugar"],
   ];
   function substitutions(ingredientName) {
     const v = clean(ingredientName);
@@ -775,8 +785,7 @@ const AtelierStudio = (() => {
       .map(([from, to]) => ({
         from,
         to,
-        warning:
-          "Textvorschlag, kein geprüfter 1:1-Ersatz. Allergene und Konsistenz selbst prüfen.",
+        warning: "studioSwapWarning",
       }));
   }
   function safeHelperTasks(recipe) {

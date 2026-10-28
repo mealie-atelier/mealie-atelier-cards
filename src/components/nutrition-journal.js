@@ -33,7 +33,7 @@ export const nutritionJournalMethods = {
             row,
             i,
           ) => `<div class="nutri-row"><div class="nutri-row-head"><span class="nutri-number">${String(i + 1).padStart(2, "0")}</span><strong>${esc(row.text)}</strong><span class="nutri-state ${row.selected ? "matched" : ""}">${row.selected ? "✓ USDA" : this.t("uiNotMatched")}</span></div>
-        <div class="nutri-row-fields"><label><span>${esc(this.t("nutriGrams"))}</span><input type="number" min="0.01" max="50000" step="0.1" data-nutri-grams="${i}" value="${row.grams ?? ""}" placeholder="z. B. 200" aria-label="${esc(this.t("nutriGrams"))} ${i + 1}"></label>
+        <div class="nutri-row-fields"><label><span>${esc(this.t("nutriGrams"))}</span><input type="number" min="0.01" max="50000" step="0.1" data-nutri-grams="${i}" value="${row.grams ?? ""}" placeholder="${esc(this.t("nutriGramsPlaceholder"))}" aria-label="${esc(this.t("nutriGrams"))} ${i + 1}"></label>
         <label class="nutri-query"><span>${this.t("uiFoodSearchQuery")}</span><input data-nutri-query="${i}" maxlength="100" value="${esc(row.query)}" aria-label="${this.t("uiFindFood")} ${i + 1}"></label>
         <button class="btn tiny" data-action="nutri-search" data-index="${i}" ${!n.preview.fdc_enabled || n.busy ? "disabled" : ""}>${icon("search", 14)} ${esc(this.t("nutriSearch"))}</button></div>
         ${row.selected ? `<div class="nutri-source">✓ ${esc(row.selected.name)} <small>USDA FDC #${esc(row.selected.id)} · ${esc(row.selected.data_type || "")}</small></div>` : ""}
