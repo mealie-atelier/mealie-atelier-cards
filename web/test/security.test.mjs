@@ -122,10 +122,8 @@ test("server locks out a client after repeated wrong passwords and sets hardenin
     const sixth = await fetch(url, { headers: { Authorization: basic("wrong-password-x") } });
     assert.equal(sixth.status, 401);
     const locked = await fetch(url, { headers: { Authorization: basic(PASSWORD) } });
-    assert.equal(locked.status, 200, "correct credentials pass while the address is throttled");
-    const stillLocked = await fetch(url, { headers: { Authorization: basic("wrong-password-y") } });
-    assert.equal(stillLocked.status, 429, "wrong credentials from a throttled address get 429");
-    assert.ok(Number(stillLocked.headers.get("retry-after")) >= 1);
+    assert.equal(locked.status, 429, "even the correct password waits out the lockout");
+    assert.ok(Number(locked.headers.get("retry-after")) >= 1);
     const anonymousLocked = await fetch(url);
     assert.equal(anonymousLocked.status, 429, "anonymous requests from a throttled address wait");
   } finally {

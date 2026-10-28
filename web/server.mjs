@@ -135,15 +135,14 @@ const alarmAccess = (req) => ({
   name: req.atelierUser?.name || "",
   admin: req.atelierUser?.role === "admin",
 });
-async function isAuthorized(req, throttled = false) {
+async function isAuthorized(req) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Basic ")) return false;
   // Only attempts that carry credentials count; the browser's first anonymous request does not.
   const client = throttleClient(req);
   const who = await credentials.verify(header);
   if (who) {
-    // A shared (proxy) address keeps its failure count until the lockout runs out.
-    if (!throttled) authThrottle.succeed(client);
+    authThrottle.succeed(client);
     req.atelierUser = who;
   } else authThrottle.fail(client);
   return !!who;
@@ -933,16 +932,16 @@ const FILES = {
 };
 const server = createServer(async (req, res) => {
   warnUntrustedProxy(req);
-  const throttled = authThrottle.retryAfterMs(throttleClient(req)) > 0;
-  // A throttled address still gets its credentials checked: correct ones pass, wrong ones count.
-  if (!(await isAuthorized(req, throttled))) {
-    const retryMs = authThrottle.retryAfterMs(throttleClient(req));
-    if (throttled && retryMs > 0) {
-      reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
-        "Retry-After": String(Math.ceil(retryMs / 1000)),
-      });
-      return;
-    }
+  // A throttled address is refused before its credentials are checked, so the lockout cannot be
+  // used as a password oracle.
+  const retryMs = authThrottle.retryAfterMs(throttleClient(req));
+  if (retryMs > 0) {
+    reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
+      "Retry-After": String(Math.ceil(retryMs / 1000)),
+    });
+    return;
+  }
+  if (!(await isAuthorized(req))) {
     reply(res, 401, { error: "Sign in to Mealie Atelier" }, "application/json; charset=utf-8", {
       "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"',
     });
