@@ -11522,9 +11522,11 @@ class MealieAtelierCard extends HTMLElement {
       this._statusEntry.read_only !== true
     );
   }
-  /** Personal journal notes only need a loaded status that is not read-only. */
+  /** Personal journal notes need a loaded status that is not read-only; a shared journal needs write access. */
   get _canJournal() {
-    return Boolean(this._statusEntry) && this._statusEntry.read_only !== true;
+    const status = this._statusEntry;
+    if (!status || status.read_only === true) return false;
+    return status.features?.shared_journal !== true || this._permissions.can_write;
   }
   /** Maps a WebSocket or bridge error to its translated `err*` text (contract 0.1). */
   _errorText(err) {

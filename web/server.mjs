@@ -523,6 +523,8 @@ async function bridge(req) {
               structured_ingredients: structured,
               uploads: true,
               recipe_filters: true,
+              // One journal for the whole household, so changing it needs write access.
+              shared_journal: true,
             },
             limits: { upload_max_bytes: UPLOAD_MAX_BYTES, upload_chunk_bytes: UPLOAD_CHUNK_BYTES },
             can_write: permissions.can_write,
@@ -645,9 +647,10 @@ async function bridge(req) {
         }
         for (const timer of removed) {
           try {
-            await alarmStore.cancel(timer.id);
+            // Removing a session timer never cancels another person's alarm.
+            await alarmStore.cancel(timer.id, alarmAccess(req));
           } catch (e) {
-            if (e.status !== 404 && e.status !== 409) errors.push(e.message);
+            if (![403, 404, 409].includes(e.status)) errors.push(e.message);
           }
         }
         if (errors.length) updated.alarmWarnings = errors;

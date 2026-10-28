@@ -424,3 +424,14 @@ test("the helper task form needs can_manage, not just can_write", () => {
   admin.card._studio = studio;
   assert.match(admin.card._studioFamily(), /data-form="studio-task"/);
 });
+
+test("a shared journal needs write access while a personal journal only needs a writable kitchen", () => {
+  const shared = { features: { shared_journal: true } };
+  assert.equal(permissionCard(grants(true, false, false, shared)).card._canJournal, false);
+  assert.equal(permissionCard(grants(true, true, false, shared)).card._canJournal, true);
+  assert.equal(permissionCard(grants(true, false, false)).card._canJournal, true);
+  assert.equal(
+    permissionCard(grants(true, true, false, { read_only: true })).card._canJournal,
+    false,
+  );
+});

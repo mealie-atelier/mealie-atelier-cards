@@ -20,8 +20,8 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 ### Fixed
 
-- Security: timers in the standalone app now belong to the person who created them. Listing shows only your own timers and cancelling needs the owner or an admin (admins see all; timers stored without an owner are admin only).
-- Security: `journal_set` now needs the write level in the standalone app, because the journal is one shared object that a reader could overwrite.
+- Security: timers in the standalone app now belong to the person who created them. Listing shows only your own timers and cancelling needs the owner or an admin, also when a shared cooking session is ended (admins see all; timers stored without an owner are admin only). The timer limit counts only active timers, with at most 20 per account.
+- Security: `journal_set` now needs the write level in the standalone app, because the journal is one shared object that a reader could overwrite. The app reports `features.shared_journal`, so the cards hide journal actions from readers there.
 - Sign-in throttle behind a reverse proxy: the server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty, because all users would then share one throttle counter.
 
 ### Changed

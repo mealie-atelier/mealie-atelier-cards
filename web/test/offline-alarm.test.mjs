@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -379,3 +379,25 @@ test("shell CSS and service worker cache are in the offline allowlist", async ()
   assert.match(sw, /\/pwa-install\.js/);
   assert.doesNotMatch(html, /Catch cooking timer clicks before the old browser-only timer handler/);
 });
+
+test("timer limits count only active timers and cap each account at 20", () =>
+  temp(async (dir) => {
+    const now = 10_000_000;
+    const store = new AlarmStore({ dir, clock: () => now, deliver: async () => ({}) });
+    const timer = (owner) =>
+      store.create({ id: randomUUID(), label: "Tea", deadline: now + 60_000 }, owner);
+    for (let i = 0; i < 20; i++) await timer("ada");
+    await assert.rejects(timer("ada"), { status: 429 }, "the 21st active timer of one account");
+    await timer("wim");
+    const repeat = randomUUID();
+    await store.create({ id: repeat, label: "Tea", deadline: now + 60_000 }, "wim");
+    const again = await store.create({ id: repeat, label: "Tea", deadline: now + 60_000 }, "wim");
+    assert.equal(again.id, repeat, "a retried create stays idempotent");
+    const data = JSON.parse(readFileSync(join(dir, "alarms.json"), "utf8"));
+    for (const alarm of data.alarms) alarm.status = "sent";
+    data.alarms.push(
+      ...Array.from({ length: 300 }, () => ({ ...data.alarms[0], id: randomUUID() })),
+    );
+    await writeFile(join(dir, "alarms.json"), JSON.stringify(data));
+    await timer("ada");
+  }));

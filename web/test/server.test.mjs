@@ -621,6 +621,25 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
       subscriptions: [],
     }),
   );
+  // A shared cooking session that carries Ada's timer: ending it must not cancel her alarm.
+  await writeFile(
+    join(dataDir, "studio.json"),
+    JSON.stringify({
+      revision: 0,
+      family: {
+        members: [],
+        session: {
+          id: "session-ada",
+          slug: "lasagna",
+          name: "Lasagna",
+          step: 0,
+          started: new Date().toISOString(),
+          tasks: [],
+          timers: [{ id: timerIds.ada, name: "Pasta", deadline: Date.now() + 3600e3 }],
+        },
+      },
+    }),
+  );
   const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
     env: {
       ...process.env,
@@ -747,6 +766,18 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
       timer_id: timerIds.legacy,
     });
     assert.equal(legacyByAdmin.status, 200, "an admin can cancel a timer without owner");
+    const ended = await call("wim", passwords.wim, "mealie_atelier/studio_update", {
+      action: "session_end",
+      payload: { session_id: "session-ada" },
+    });
+    assert.equal(ended.status, 200, "a writer can end the shared session");
+    const adaTimers = (await (await call("ada", passwords.ada, "mealie_atelier/alarms")).json())
+      .alarms;
+    assert.equal(
+      adaTimers.find((a) => a.id === timerIds.ada)?.status,
+      "scheduled",
+      "ending a session never cancels another person's alarm",
+    );
 
     const readerRead = await call("rea", passwords.rea, "mealie_atelier/recipes");
     assert.equal(readerRead.status, 200, "readers can still read");

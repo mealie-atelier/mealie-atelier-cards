@@ -68,7 +68,6 @@ export class AlarmStore {
     if (!Number.isSafeInteger(time) || time < now + 1000 || time > now + 24 * 3600e3)
       throw err(400, "Timer must be 1 second to 24 hours in the future");
     return this.atomic(async (d) => {
-      if (d.alarms.length > 300) throw err(429, "Too many stored timers");
       const same = d.alarms.find((x) => x.id === id);
       if (same) {
         if (same.owner && owner && same.owner !== owner)
@@ -77,6 +76,10 @@ export class AlarmStore {
           throw err(409, "Timer ID was already used");
         return same;
       }
+      const active = d.alarms.filter((x) => ["scheduled", "retry", "sending"].includes(x.status));
+      if (active.length >= 300) throw err(429, "Too many stored timers");
+      if (owner && active.filter((x) => x.owner === owner).length >= 20)
+        throw err(429, "Too many active timers for this account");
       const record = {
         id,
         label: label.trim(),
