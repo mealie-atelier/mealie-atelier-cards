@@ -16,7 +16,8 @@
 - `web/`: Optional standalone server, PWA, API boundaries, state stores, and browser assets.
 - `web/test/`: Standalone app and server tests.
 - `demo/`: Fictional bilingual recipe data, showcase generator, and generated static site.
-- `docs/`: Architecture, setup, release status, and visual QA evidence.
+- `docs/`: Architecture, design system, control system, FAQ, distribution and repository map.
+- `CHANGELOG.md`: User-facing changes per version. Add an entry for every user-visible change.
 
 The Home Assistant integration is maintained in the separate [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge) repository. Run its lint and test commands from that repository’s own contributing guide.
 
@@ -38,4 +39,6 @@ node --test web/test/*.test.mjs
 npm run build:demo
 ```
 
-The card build must leave `dist/mealie-atelier-cards.js` and `web/public/mealie-atelier-cards.js` byte-identical. The demo generator must use only reviewed fictional data and produce separate German and English routes.
+Check formatting of Markdown with `npx prettier --check docs CHANGELOG.md CONTRIBUTING.md`.
+
+The card build must leave `dist/mealie-atelier-cards.js` and `web/public/mealie-atelier-cards.js` byte-identical. The demo generator must use only reviewed fictional data and produce separate German and English routes. Set `ATELIER_DEMO_BASE_URL` to the public URL for canonical links and the sitemap; the public demo runs at https://mealie.alles-automatisch.de.

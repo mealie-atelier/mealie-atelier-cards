@@ -1,14 +1,14 @@
 # Repository map and release boundaries
 
-Mealie Atelier uses one GitHub organization and two product repositories. The standalone Web app and static demo share the Cards repository but have independent manual release boundaries. No GitHub Actions, CI workflows, Dependabot version updates, or automated publishing are used.
+Mealie Atelier uses one GitHub organization and two product repositories. The standalone Web app and static demo share the Cards repository but have independent release boundaries. The only GitHub workflow is the HACS validation that the Marketplace catalog asks for; tests and linting run locally through `.githooks/`.
 
 ## Repositories
 
-| Repository                                                                         | What lives there                                                                                                   | Release channel                                                                  |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| [`.github`](https://github.com/mealie-atelier/.github)                             | Organization profile, shared community/security guidance, brand masters and credits                                | Profile and brand assets only                                                    |
-| [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards)   | HACS dashboard cards at the root, standalone Web app in `web/`, bilingual demo in `demo/`, product docs in `docs/` | Cards, Web, and demo are versioned and released manually as independent products |
-| [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge) | Home Assistant integration under `custom_components/mealie_atelier/`, API proxy, state, and tests                  | Independent, manually prepared HACS integration release                          |
+| Repository                                                                         | What lives there                                                                                                   | Release channel                                                         |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| [`.github`](https://github.com/mealie-atelier/.github)                             | Organization profile, shared community/security guidance, brand masters and credits                                | Profile and brand assets only                                           |
+| [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards)   | HACS dashboard cards at the root, standalone Web app in `web/`, bilingual demo in `demo/`, product docs in `docs/` | Cards, Web, and demo are versioned and released as independent products |
+| [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge) | Home Assistant integration under `custom_components/mealie_atelier/`, API proxy, state, and tests                  | Independent, manually prepared HACS integration release                 |
 
 ## Boundaries
 
@@ -18,15 +18,19 @@ Mealie Atelier uses one GitHub organization and two product repositories. The st
 - The Bridge owns Home Assistant-side credentials and durable integration state. Cards and Web must not contain secrets or depend on Bridge for standalone operation.
 - Shared photo assets have origin and rights notes in `brand/CREDITS.md`. Product icon and social-preview masters use the same original pasta-and-tomato photograph and square-edged artwork; export steps are in `brand/README.md`.
 
-## Manual release checks
+## Release checks
 
-Before each package release, run its documented build, tests, lint, and format checks locally from a clean checkout. Check package metadata and release contents by hand, then create the release only after the relevant live-service and device gates pass. HACS/Hassfest acceptance and catalog inclusion are separate external checks.
+Before each package release, run its documented build, tests, lint and format checks locally from a clean checkout and check the package contents. Distribution details are in [MARKETPLACE.md](MARKETPLACE.md), version history in [CHANGELOG.md](../CHANGELOG.md).
 
 - Cards artifacts contain the HACS JavaScript bundle and its checksum.
 - Web releases use an independent version and container artifact.
-- Demo/docs deployment is a separate manual operation and waits for confirmed public URLs and host instructions.
-- Bridge release tags and HACS publishing are prepared manually.
+- Demo deployment is a separate operation. Build it with `npm run build:demo` and set `ATELIER_DEMO_BASE_URL` to the public URL for canonical links and the sitemap.
+- Bridge release tags and publishing are prepared in the Bridge repository.
 
-## Corrections log
+## Product principles
 
-- 2026-10-28 — Replaced the previous CI/automation proposal with the owner's explicit repository policy: no GitHub Actions, Dependabot version updates, or automated publication. Actions are disabled across the organization; all checks/releases are run and reviewed manually.
+Mealie stays the recipe system of record, and credentials never reach browser code. The standalone experience stays useful without Home Assistant. The official Home Assistant Mealie provider is read-only; the Bridge adds authenticated images and explicit write operations. Privacy, accessibility, responsive behavior and safe failure states are part of the product, and German and English stay equally usable. Recipe suggestions are informational and are not medical or allergen-safety advice. This project is an unofficial companion and is not endorsed by Mealie or Home Assistant.
+
+Support is optional. The in-app Ko-fi link is user-initiated; there are no timed prompts or feature gates.
+
+**License:** MIT.

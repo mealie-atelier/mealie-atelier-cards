@@ -1,6 +1,5 @@
-# Generated output and archived captures are not formatted by hand.
+# Generated output is not formatted by hand.
 dist/
 demo/public-site/
-docs/qa/
 web/public/mealie-atelier-cards.js
 node_modules/

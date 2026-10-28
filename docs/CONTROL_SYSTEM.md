@@ -1,6 +1,6 @@
-# Control system QA
+# Control system
 
-This is the current control implementation note for Cards and the standalone web app. The binding product-wide rules live in [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md); old release notes are historical records, not current implementation instructions.
+This is the current control implementation note for Cards and the standalone web app. The binding product-wide rules live in [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md); version history is in [`CHANGELOG.md`](../CHANGELOG.md).
 
 ## Shared control contract
 
@@ -28,12 +28,6 @@ npm run check
 
 The test suite checks shared source ownership, touch-target tokens, accessibility state, editor label geometry, reduced motion, and the built bundle. It does not replace visual review of a real Home Assistant dashboard.
 
-## Visual evidence and limits
+## Limits
 
-The repository contains fictional-data view/dialog captures for German and English in [`docs/qa/visual-review-2026-10-28/README.md`](qa/visual-review-2026-10-28/README.md), a previous neutral/warm Light matrix in [`docs/qa/light-theme-review-2026-10-28/README.md`](qa/light-theme-review-2026-10-28/README.md), and the motion review in [`docs/qa/theme-motion-review-2026-10-28/README.md`](qa/theme-motion-review-2026-10-28/README.md). The final stone-and-plum Light refinement was checked at representative widths; its complete dialog matrix still needs a fresh capture.
-
-Browser-emulated screenshots do not establish physical-device, real HA dashboard, screen-reader, keyboard-only, printer, Safari/PWA, or live Mealie acceptance. Those release gates are tracked in [`RELEASE_READINESS_0.9.5.md`](RELEASE_READINESS_0.9.5.md).
-
-## Corrections log
-
-- **2026-10-28:** Replaced the obsolete German v0.9.1 note and removed references to QA scripts that are no longer in the repository. Pointed control rules and verification at the current shared stylesheet modules and test suite; recorded the completed neutral-Light matrix and current repository paths.
+Automated tests and browser-emulated screenshots do not establish physical-device, real Home Assistant dashboard, screen-reader, printer or Safari/PWA acceptance. Review changes to controls in a real dashboard before release.
