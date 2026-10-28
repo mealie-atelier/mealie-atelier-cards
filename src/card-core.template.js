@@ -1,4 +1,4 @@
-/* Mealie Atelier • v0.9.5 — zero dependency web components for Home Assistant. */
+/* Mealie Atelier: zero-dependency web components for Home Assistant (version in VERSION). */
 const VERSION = "0.10.0";
 const MODES = [
   "dashboard",
