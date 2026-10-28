@@ -2090,7 +2090,13 @@ for (const [tag, ctor, name, description] of CARD_TYPES) {
   if (!customElements.get(tag)) customElements.define(tag, ctor);
   window.customCards = window.customCards || [];
   if (!window.customCards.some((c) => c.type === tag))
-    window.customCards.push({ type: tag, name, description, preview: false });
+    window.customCards.push({
+      type: tag,
+      name,
+      description,
+      preview: false,
+      documentationURL: "https://alles-automatisch.de/lernen/mealie-atelier",
+    });
 }
 console.info(
   `%cMEALIE ATELIER ${VERSION}`,

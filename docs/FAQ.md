@@ -4,7 +4,7 @@ Full guides are on [alles-automatisch.de](https://alles-automatisch.de/lernen/me
 
 ## How do I install the cards?
 
-Open the Home Assistant Marketplace (Home Assistant 2026.11 and newer), search for **Mealie Atelier Cards** and install it. HACS works the same way on older versions. Both register the Lovelace resource for you, so there is no manual resource step. Then use **Edit dashboard → Add card** and search for **Mealie Atelier**.
+The cards are submitted to the default catalog that both the Home Assistant Marketplace (Home Assistant 2026.11 and newer) and HACS read. Once they are listed, search for **Mealie Atelier Cards** and install them. Until then, add `https://github.com/mealie-atelier/mealie-atelier-cards` as a custom repository of type Dashboard in HACS and install from there. On dashboards managed in the UI the Lovelace resource is registered for you; a YAML-mode dashboard needs the module resource `/local/community/mealie-atelier-cards/mealie-atelier-cards.js`. Then use **Edit dashboard → Add card** and search for **Mealie Atelier**.
 
 ## Do I need the Bridge integration?
 

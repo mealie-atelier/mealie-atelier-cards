@@ -12,7 +12,7 @@ Mealie Atelier uses one GitHub organization and two product repositories. The st
 
 ## Boundaries
 
-- The Cards root is the HACS plugin package. Keep root `hacs.json`, the built `dist/mealie-atelier-cards.js`, and `info.md` discoverable at the expected HACS locations.
+- The Cards root is the HACS plugin package. Keep root `hacs.json` and the built `dist/mealie-atelier-cards.js` discoverable at the expected HACS locations.
 - The Web app in `web/` is a standalone Node service. It keeps Mealie credentials on its server and works without Home Assistant.
 - The demo is generated from fictional bilingual recipes in `demo/data/recipes.json`. It stays static and browser-local; it must never use a household Mealie export or call live Mealie/Home Assistant services.
 - The Bridge owns Home Assistant-side credentials and durable integration state. Cards and Web must not contain secrets or depend on Bridge for standalone operation.
@@ -23,7 +23,7 @@ Mealie Atelier uses one GitHub organization and two product repositories. The st
 Before each package release, run its documented build, tests, lint and format checks locally from a clean checkout and check the package contents. Distribution details are in [MARKETPLACE.md](MARKETPLACE.md), version history in [CHANGELOG.md](../CHANGELOG.md).
 
 - Cards artifacts contain the HACS JavaScript bundle and its checksum.
-- Web releases use an independent version and container artifact.
+- The Web app shares the cards version (a bundle test enforces it) and ships as its own container image.
 - Demo deployment is a separate operation. Build it with `npm run build:demo` and set `ATELIER_DEMO_BASE_URL` to the public URL for canonical links and the sitemap.
 - Bridge release tags and publishing are prepared in the Bridge repository.
 

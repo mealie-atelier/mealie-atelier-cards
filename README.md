@@ -1,126 +1,141 @@
-# Mealie Atelier
+<p align="center"><img width="112" alt="Mealie Atelier icon: handmade pasta with tomatoes" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/brand/icon-512.png"></p>
 
-**A warmer, more useful kitchen companion for Mealie.** Home Assistant cards, an optional standalone Web app, and a bilingual demo live together here; the Bridge integration has its own repository.
+<h1 align="center">Mealie Atelier Cards</h1>
 
-<p align="center"><img width="96" alt="Mealie Atelier Cards app icon with pasta and tomatoes" src="brand/icon-512.png"></p>
+<p align="center"><strong>Your Mealie kitchen, beautifully at home in Home Assistant.</strong><br>Recipes, meal plans, shopping lists and a calm step-by-step cooking mode as dashboard cards, in light and dark, on the wall tablet and on the phone.</p>
 
-## Home Assistant Cards
+<p align="center">
+<a href="https://github.com/mealie-atelier/mealie-atelier-cards/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/mealie-atelier/mealie-atelier-cards?style=flat-square&color=75465d"></a>
+<a href="https://github.com/mealie-atelier/mealie-atelier-cards/actions/workflows/validate.yml"><img alt="Validate" src="https://img.shields.io/github/actions/workflow/status/mealie-atelier/mealie-atelier-cards/validate.yml?branch=main&style=flat-square&label=validate"></a>
+<a href="https://hacs.xyz"><img alt="HACS Dashboard" src="https://img.shields.io/badge/HACS-Dashboard-41BDF5?style=flat-square"></a>
+<img alt="Home Assistant 2026.10 or newer" src="https://img.shields.io/badge/Home%20Assistant-2026.10%2B-41BDF5?style=flat-square">
+<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/mealie-atelier/mealie-atelier-cards?style=flat-square"></a>
+</p>
 
-An elegant, visual Home Assistant kitchen studio for Mealie: recipes, meal planning, groceries, and a clean step-by-step cooking mode — all with a native UI editor, dark/light mode and colors.
+<p align="center">
+<a href="https://mealie.alles-automatisch.de"><strong>Try the live demo</strong></a> ·
+<a href="https://alles-automatisch.de/lernen/mealie-atelier">Documentation</a> ·
+<a href="https://github.com/mealie-atelier/mealie-atelier-bridge">Atelier Bridge</a> ·
+<a href="https://github.com/orgs/mealie-atelier/discussions">Discussions</a>
+</p>
 
-<p align="center"><a href="assets/showcase-discover-cook.gif"><img src="assets/showcase-desktop.png" width="800" alt="Select to view an animated tour from the recipe dashboard through recipe discovery and cooking mode"></a></p>
+<p align="center"><img width="900" alt="Mealie Atelier kitchen overview in a Home Assistant dashboard, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/dashboard-light.webp"></p>
 
-<p align="center"><em><a href="assets/showcase-discover-cook.gif">Play the recipe-to-cooking tour</a> · Animation opens on request.</em></p>
+## Why Mealie Atelier
 
-<details>
-<summary>Open desktop and mobile screenshots</summary>
+[Mealie](https://mealie.io) is a wonderful self-hosted recipe manager. Mealie Atelier brings it into the place your household already looks every day: the Home Assistant dashboard.
 
-<p align="center"><img src="assets/showcase-desktop.png" width="800" alt="Desktop dashboard with fictional demo recipes"></p>
-<p align="center"><img src="assets/showcase-mobile.png" width="300" alt="Mobile dashboard with fictional demo recipes"></p>
-<p align="center"><a href="assets/showcase-plan-shop.gif"><img src="docs/qa/visual-review-2026-10-28/1470px-view-mealplan.jpg" width="640" alt="Select to view an animated tour of meal planning, shopping, and cookbooks"></a></p>
-<p align="center"><a href="assets/showcase-plan-shop.gif">Play the meal-planning and shopping tour</a> · Animation opens on request.</p>
+- **Cook without the clutter.** A full-screen cooking mode with one step at a time, kitchen timers, step photos and a screen that stays awake.
+- **Plan the week at a glance.** A weekly planner with a searchable recipe picker.
+- **Shop together.** Tick items on the phone, even with a weak signal: edits wait on the device and are sent in order when the connection is back.
+- **Feels native.** A visual card editor, ten focused card types, German and English, light and dark, compact and comfortable density, your accent colour.
+- **Safe by design.** Your Mealie token stays on the server, writes respect per-user grants and an optional read-only mode, and every recipe edit is backed up first.
 
-</details>
+## Screenshots
 
-> Screenshots use fictional sample recipes, not a real Mealie account. Real recipe photos are loaded from Mealie via the Atelier Bridge.
+<p align="center"><img width="440" alt="Recipe collection with photos, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipes-dark.webp"> <img width="440" alt="Recipe details with cooking, nutrition and print actions, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipe-light.webp"></p>
+<p align="center"><img width="440" alt="Cooking mode with step, timer and photo, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/cook-dark.webp"> <img width="440" alt="Weekly meal planner, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/mealplan-light.webp"></p>
+<p align="center"><img width="440" alt="Shopping list with ticked items, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/shopping-dark.webp"> <img width="440" alt="Cook ideas questionnaire, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/discover-light.webp"></p>
+<p align="center"><img width="820" alt="Four phone screens: overview, recipe, cooking mode and shopping list" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/phones.webp"></p>
+
+<sub>All screenshots show fictional sample recipes in a disposable Home Assistant 2026.11 test instance. Photos are credited in the [demo catalogue](demo/data/recipes.json).</sub>
 
 ## Install
 
-For the easiest Home Assistant path, follow the [guided setup](docs/INSTALLATION_0.9.5.md). It starts with a choice: use Home Assistant's built-in Mealie integration for read-only recipe discovery, or add the optional Atelier Bridge for the complete studio.
+**1. Install the cards.** Mealie Atelier Cards is submitted to the default catalog used by the Home Assistant Marketplace (Home Assistant 2026.11 and newer) and HACS. Until it is listed, add it to HACS as a custom repository of type **Dashboard**:
 
-When published, install **Mealie Atelier Cards** from Home Assistant Marketplace or HACS under **Dashboard**. The UI-managed setup registers the JavaScript module resource for you; reload the browser when prompted. Then open **Edit dashboard → Add card**, search **Mealie Atelier**, and choose **Complete Kitchen** or a focused card. The visual editor detects an existing Mealie connection and walks through the opening view and appearance. No card YAML is needed.
+[![Open the repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-cards&category=plugin)
 
-This developer-preview archive is not published in the catalog yet. For temporary testing, copy `dist/mealie-atelier-cards.js` to `<config>/www/mealie-atelier-cards.js`, register `/local/mealie-atelier-cards.js` as a JavaScript **module** in **Settings → Dashboards → ⋮ → Resources**, and refresh the browser. YAML-managed Lovelace resources require the advanced manual path in the [setup guide](docs/INSTALLATION_0.9.5.md).
+The card bundle installs to `/local/community/mealie-atelier-cards/`, and the dashboard resource is registered for you. Reload the browser when Home Assistant asks.
 
-## Project status and help
+**2. Connect Mealie.** Pick one:
 
-- [Open work and release gates](docs/OPEN_TODOS.md)
-- [Frequently asked questions](docs/FAQ.md)
-- [Setup and troubleshooting discussions](https://github.com/orgs/mealie-atelier/discussions)
-- [Repository documentation](docs/REPOSITORY_MAP.md)
+| Connection                                                                                         | What you get                                                                                                  |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [Mealie Atelier Bridge](https://github.com/mealie-atelier/mealie-atelier-bridge) (recommended)     | Everything: photos, shopping and meal plan writes, recipe editing, timers, offline shopping, per-user grants. |
+| Home Assistant's built-in [Mealie integration](https://www.home-assistant.io/integrations/mealie/) | Read-only recipe browsing and cooking mode, no photos or writes.                                              |
 
-## Ten card types
+**3. Add a card.** Open **Edit dashboard → Add card**, search for **Mealie Atelier** and pick **Complete Kitchen** or a focused card. The visual editor finds your Mealie connection and walks you through view and appearance. No YAML needed.
 
-| Dashboard card type              | Purpose                                                                               |
-| -------------------------------- | ------------------------------------------------------------------------------------- |
-| `custom:mealie-atelier-card`     | Full kitchen overview with navigation and every feature                               |
-| `custom:mealie-atelier-today`    | Today overview: meals and outstanding groceries on one screen                         |
-| `custom:mealie-atelier-recipes`  | Recipe catalog, search, details and cooking mode                                      |
-| `custom:mealie-atelier-mealplan` | Weekly planner + add/delete meals                                                     |
-| `custom:mealie-atelier-shopping` | Interactive Mealie shopping list + item check/add                                     |
-| `custom:mealie-atelier-manage`   | Create/import recipes and edit name, description, servings, steps and ingredient text |
-| `custom:mealie-atelier-discover` | Personal recommendations and proposed seven-day menu                                  |
-| `custom:mealie-atelier-pantry`   | Pantry-light and grocery calculations                                                 |
-| `custom:mealie-atelier-family`   | Shared cooking sessions and adult-approved helper tasks                               |
-| `custom:mealie-atelier-cookbook` | Print-ready A4 recipe collection                                                      |
+Step-by-step guides in German: [setup](https://alles-automatisch.de/lernen/mealie-atelier-einrichten) and [troubleshooting](https://alles-automatisch.de/lernen/mealie-atelier-fehlerbehebung). Answers to common questions are in the [FAQ](docs/FAQ.md).
+
+<details>
+<summary>Dashboards in YAML mode</summary>
+
+Add the module resource yourself:
+
+```yaml
+lovelace:
+  resources:
+    - url: /local/community/mealie-atelier-cards/mealie-atelier-cards.js
+      type: module
+```
+
+</details>
+
+## Card types
+
+| Card type                        | Purpose                                                  |
+| -------------------------------- | -------------------------------------------------------- |
+| `custom:mealie-atelier-card`     | The complete kitchen with navigation and every view      |
+| `custom:mealie-atelier-today`    | Today's meals and open groceries on one screen           |
+| `custom:mealie-atelier-recipes`  | Recipe collection, search, details and cooking mode      |
+| `custom:mealie-atelier-mealplan` | Weekly planner with a searchable recipe picker           |
+| `custom:mealie-atelier-shopping` | Shopping lists with tick, add and offline queue          |
+| `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor |
+| `custom:mealie-atelier-discover` | Cook ideas and a proposed seven-day menu                 |
+| `custom:mealie-atelier-pantry`   | Pantry and staples for grocery planning                  |
+| `custom:mealie-atelier-family`   | Shared cooking sessions with helper tasks                |
+| `custom:mealie-atelier-cookbook` | A print-ready A4 cookbook                                |
+
+Every option is in the visual editor. The YAML equivalent looks like this:
 
 ```yaml
 type: custom:mealie-atelier-card
-mode: dashboard
-language: de
-theme: dark
+mode: dashboard # or recipes, mealplan, shopping, discover, ...
+theme: dark # light or dark
+language: en # auto, en or de
 accent: "#9dcbb2"
-columns: 3
+density: comfortable # or compact
 show_images: true
 ```
 
-This release uses a single `dist/mealie-atelier-cards.js` file, with no external JavaScript dependencies. The card supports German and English, automatic Home Assistant/browser language detection, and an explicit choice in both the card editor and **Design Studio**. Locale resources live in `src/i18n/`; the build discovers language files automatically, and tests enforce complete translation-key parity and coverage of Atelier-owned translation calls. The emulated visual matrices and limitations are recorded in the QA evidence and release-readiness checklist; they do not replace physical-device or live Home Assistant acceptance. Built-in graphical card settings also include mode, Mealie account, provider, appearance, density, columns, accent, rounded corners and recipe image visibility. Provider `auto` prefers Atelier and uses the official Home Assistant Mealie integration as a read-only fallback when the Bridge is unavailable. The Core provider supports recipe search, recipe details and cooking steps; photos and writes need Atelier Bridge. Some look settings are saved per browser. For publicly shared dashboards, enable only trusted users — write actions are possible in meal plans and shopping lists.
+## Features in detail
 
-## Preview
+- **Cooking mode:** one step per screen with swipe and keyboard navigation, step photos, kitchen timers that can notify after the browser closes (Bridge), personal notes and ratings, screen wake lock.
+- **Recipe editor:** structured ingredients with food and unit lookup, a review step with scaled preview, cover and step photo upload, and a version history with restore. Every write is backed up first.
+- **Print Studio:** A4 layouts for recipes, shopping lists, the week plan and a whole cookbook, in Editorial, Compact or Ink saver style.
+- **Nutrition Lab:** match ingredients against USDA data, confirm grams and store per-serving values in Mealie. AI name suggestions are optional and off by default.
+- **Smart Shopping Sync:** rule-based sync from a Mealie list to a Home Assistant To-do list such as Bring, with a preview before the first batch (Bridge).
+- **Offline shopping:** ticks and new items made without a connection are kept on the device and replayed in order, exactly once, when the connection returns.
+- **Accessibility:** keyboard navigation and focus management in every dialog, screen reader labels and reduced motion support.
 
-Build the standalone preview with `npm run build:demo`, serve the generated `demo/public-site/` directory, and open its `/de/` or `/en/` route. The checked-in `demo/preview.html` is the generator template and should not be opened directly. The interactive demo uses fictional data and keeps all changes in the current browser tab; it never contacts Mealie or Home Assistant. Ten bilingual, fully stepped recipe fixtures live in `demo/data/recipes.json` and use credited Unsplash photography.
+## Standalone web app and demo
 
-Generate the publishable bilingual showcase with `npm run build:demo`. This creates the interactive site, static DE/EN recipe pages and structured metadata in `demo/public-site/`. To emit canonical links, `robots.txt` sitemap reference, and `sitemap.xml`, provide the final public base URL, including its deployment subpath when applicable:
+The cards also run without Home Assistant. The [standalone web app](web/README.md) is a small Node server with accounts and roles that keeps the Mealie token on the server and installs as a PWA. The [live demo](https://mealie.alles-automatisch.de) runs the same cards with ten fictional recipes entirely in your browser; nothing is sent anywhere.
 
-```sh
-ATELIER_DEMO_BASE_URL=https://example.com/mealie-atelier/ npm run build:demo
-```
-
-The generated folder can be served as a static site; no API, account, backend, or environment secret is needed. Supply the real deployment URL only in the publish job so canonical metadata never points at an example host. Recipe and image source credits remain visible on every localized recipe page.
-
-## Limitations
-
-- Full features require Mealie Atelier Bridge. The official Home Assistant Mealie integration provides a limited, read-only recipe and cooking fallback (up to 500 returned matches; no recipe photos, shopping/planning writes, cookbook, nutrition workflow or server-managed kitchen alarms).
-- Current meal picker lists recipes on loaded page; searchable picker is planned.
-- The editor supports servings and plain-text steps. Replacing ingredient text is **disabled by default** and requires a Mealie backup plus an experimental setting in Bridge → Configure. Existing linked/quantified ingredients are protected by the backend. This still needs real Mealie acceptance tests. Image upload is not yet supported.
-- A safe read-only mode can be enabled under the Bridge integration options. All write buttons then disappear; the server enforces this restriction.
-- The repository is still a developer preview. Real HA/Mealie smoke tests and Marketplace registration remain release gates; see the [release checklist](docs/RELEASE_READINESS_0.9.5.md).
-
-**License:** MIT. Unofficial companion.
-
-## Print Studio (v0.3)
-
-Open a recipe and click **Print / PDF**, or print directly from your shopping list or planner. The in-card editor offers Editorial, Compact and Ink saver, photo, checkboxes and notes. Printed A4 documents exclude all dashboard navigation. This is client-side, using already authorized Mealie data; no additional server endpoint or secrets are required.
-
-## Nutrition Lab & cooking tools (v0.5)
-
-Open a recipe and click **Nährwerte** (Nutrition) to review USDA food matches, confirm grams and calculate source-backed per-serving totals. Optionally enable AI ingredient-name suggestions on the backend. Nutrition saves ask for explicit confirmation, require valid matches for every ingredient, and cannot run in read-only mode. Stored nutrition can be added to recipe printouts using the new **Print nutrition** checkbox; it is off by default.
-
-The cooking mode offers per-recipe notes and ratings plus kitchen timers. In the Atelier Bridge and standalone providers, shared-session timers are stored server-side and can notify after the browser closes; delivery depends on the configured Home Assistant notification service or standalone Web Push subscription. Core-provider timers are local to the current browser session. Personal notes and ratings remain scoped to the current user/provider. Demo nutrient numbers are artificial.
-
-## Kitchen Intelligence cards (v0.6)
-
-Discover, Pantry, Family and Cookbook were added to the standard six cards. Each works as a dedicated Lovelace card or as a view in the full kitchen dashboard. The native graphic editor supports kiosk-style presentation as well as optional kitchen HA scene, volume and TTS entity IDs, executed **only when clicked**.
-
-The offline demo contains artificial recipe and pantry fixtures. The persistent state lives in the companion server or HA Bridge; it is no longer limited to browser localStorage. In Home Assistant, journals are scoped to the logged-in HA user. Keep your Home Assistant permissions restrictive; the simplified child view is not a security boundary.
-
-The current recommendation engine is a deterministic heuristic, not a culinary/allergen diagnosis. Pantry/staple quantities are user-provided, not detected automatically. Weekly planning and shopping writes need a supported Mealie API and explicit user confirmation. The cookbook print path was browser-tested with eight demo recipes over ten A4 pages; real printer and iPhone/Safari tests remain.
-
-## Support
-
-Mealie Atelier is an independent community project. If it makes your kitchen easier, you can optionally [say thanks on Ko-fi](https://ko-fi.com/allesautomatisch). The card offers the same voluntary link in Design Studio; it never interrupts cooking or gates features.
-
-## Standalone Web app, demo, and documentation
-
-- The independent [Web app](web/README.md) runs without Home Assistant and keeps the Mealie token on its server. Its Docker image and tests are released independently from HACS card packages; all build, test, and publication steps are manual.
-- The [bilingual live-demo source](docs/DELIVERY_CHECKLIST_2026-10-28.md) builds from ten fictional recipes. Visitor changes remain in the browser and never reach Mealie or Home Assistant. It has not been deployed to a public URL yet.
-- German and English documentation sources live in [`docs/site/de/`](docs/site/de/) and [`docs/site/en/`](docs/site/en/); the hosting route still needs final confirmation.
-- Repository layout and publication boundaries: [`docs/REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md).
+Build the demo locally with `npm run build:demo` and serve `demo/public-site/`.
 
 ## Development
 
-From this repository root, run `npm run build && npm test && npm run check`. Run the standalone Web tests with `cd web && node --test test/*.test.mjs`. The Bridge package has its own tests and release boundary in [its repository](https://github.com/mealie-atelier/mealie-atelier-bridge). Run and review each package’s checks manually before publishing.
+```sh
+npm ci
+npm run build && npm test && npm run check
+node --test web/test/*.test.mjs
+```
 
-## Made with love
+Architecture, design system and release steps are in [`docs/`](docs/REPOSITORY_MAP.md), changes in the [changelog](CHANGELOG.md), contribution rules in [CONTRIBUTING.md](CONTRIBUTING.md). Live acceptance tests against disposable Mealie and Home Assistant containers live in the [Bridge repository](https://github.com/mealie-atelier/mealie-atelier-bridge/tree/main/tests/live).
 
-Made with love by Daniel Boberg · [alles-automatisch.de](https://alles-automatisch.de/).
+## Support the project
+
+Mealie Atelier is free, open source and independent. If it makes your kitchen a little calmer:
+
+- [Buy me a coffee on Ko-fi](https://ko-fi.com/allesautomatisch)
+- [Become a member of the Alles Automatisch YouTube channel](https://www.youtube.com/@alles-automatisch/join)
+- Star the repository and share your dashboard in [Show and tell](https://github.com/orgs/mealie-atelier/discussions)
+
+## License
+
+[MIT](LICENSE). Mealie Atelier is an unofficial companion and is not affiliated with Mealie or Home Assistant.
+
+<p align="center"><sub>Made with love by Daniel Boberg · <a href="https://alles-automatisch.de">alles-automatisch.de</a></sub></p>

@@ -31,12 +31,14 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 ### Fixed
 
 - Recipe and cook dialogs open above the Home Assistant sidebar instead of being partly covered by it.
+- Re-rendering an open dialog no longer moves focus into its first field.
+- The cooking mode swipe hint and the new-list dialog heading are translated instead of always German.
 - Optimistic rollbacks undo only their own change, so a write that succeeded in between is no longer wiped. A failed write reloads the collection, and pending rows are disabled while saving.
 - A queued entry the user took back is never replayed, and a failed tick holds back later ticks on the same item so their order holds.
 - Losing the write grant clears the offline queue instead of replaying it.
 - Behind a reverse proxy, one attacker no longer locks out every user.
 
-## [0.9.5] - 2026-10-28
+## [0.9.5]
 
 ### Added
 
@@ -52,7 +54,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - The standalone app and demo moved into the Cards repository (`web/` and `demo/`). The Bridge integration lives in its own repository.
 - Catalog paging, signed recipe and step photos, cookbooks, shopping and planning stay Bridge features. The Core provider requests up to 500 matches and pages them locally in sets of 24.
 
-## [0.9.3] - 2026-10-28
+## [0.9.3]
 
 ### Changed
 
@@ -63,7 +65,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - HTTP level contract tests for the ingredient workflow, photo upload, write limits and the Home Assistant handlers.
 
-## [0.9.2] - 2026-10-28
+## [0.9.2]
 
 ### Added
 
@@ -80,7 +82,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - Mobile overflow in the dashboard and in Manage caused by the recipe gallery rail.
 
-## [0.9.1] - 2026-10-28
+## [0.9.1]
 
 ### Added
 
@@ -93,7 +95,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Shopping and family checkboxes have the correct role and an accessible name.
 - Accent, theme, motion and print template choices report their state with `aria-pressed`.
 
-## [0.9.0] - 2026-10-28
+## [0.9.0]
 
 ### Added
 
@@ -127,7 +129,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - A new shared cooking session no longer replaces a running one without consent, and family members with open tasks cannot be removed silently.
 
-## [0.7.0] - 2026-10-28
+## [0.7.0]
 
 ### Added
 
@@ -140,7 +142,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Shared motion language: page transitions, card depth, dialog opening, success feedback and loading states.
 - Stronger keyboard focus rings, focus returns after a dialog closes, larger touch targets.
 
-## [0.6.0] - 2026-10-28
+## [0.6.0]
 
 ### Added
 

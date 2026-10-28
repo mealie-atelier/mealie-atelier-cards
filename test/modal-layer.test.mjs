@@ -52,3 +52,11 @@ test("dialogs mark their first field without the native autofocus attribute", ()
     if (modal === "create-list") assert.doesNotMatch(html, /LISTENNAME/);
   }
 });
+
+test("every card in the picker links to the documentation", () => {
+  const window = {};
+  loadCards({ window });
+  assert.equal(window.customCards.length, 10);
+  for (const card of window.customCards)
+    assert.equal(card.documentationURL, "https://alles-automatisch.de/lernen/mealie-atelier");
+});
