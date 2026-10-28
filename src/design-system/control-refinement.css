@@ -1,0 +1,160 @@
+/* Atelier Control Refinement 0.9.5: single geometric contract.
+   Loaded last, scoped to Atelier, preserving colors, surfaces and typography. */
+:host {
+  --ds-control-height: 48px;
+  --ds-button-padding-x: var(--ds-control-padding-x);
+  --ds-button-padding-y: var(--ds-control-padding-y);
+  --ds-action-row-gap: var(--ds-action-gap);
+}
+.atelier :is(.btn, .icon-btn, .command-launch) {
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+.atelier .btn:not(.icon-only) {
+  display: inline-flex;
+  min-height: var(--ds-control-height);
+  padding: var(--ds-button-padding-y) var(--ds-button-padding-x);
+  gap: var(--ds-control-gap);
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  min-width: 0;
+}
+.atelier .btn:is(.tiny, .plain) {
+  min-height: 44px;
+}
+.atelier .btn.icon-only,
+.atelier .icon-btn {
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  flex: 0 0 48px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+}
+.atelier :is(.btn, .icon-btn, .command-launch) > svg {
+  width: var(--ds-control-icon);
+  height: var(--ds-control-icon);
+  flex: 0 0 var(--ds-control-icon);
+  display: block;
+  margin: 0;
+  align-self: center;
+}
+.atelier :is(.btn, .icon-btn, .command-launch):focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 3px;
+}
+/* Normalize toolbars without shrinking primary calls to action. */
+.atelier :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions) {
+  align-items: center;
+  column-gap: var(--ds-action-row-gap);
+  row-gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions) > * {
+  max-width: 100%;
+}
+/* Native form controls and select arrows share geometry across all views. */
+.atelier :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  min-height: var(--ds-control-height);
+  padding: var(--ds-field-padding-y) var(--ds-field-padding-x);
+  line-height: 1.45;
+  font-size: 16px;
+}
+.atelier :is(select:not([multiple]):not([size])) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-inline-end: var(--ds-select-clearance);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m5 7 5 5 5-5' stroke='%2399afa3' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: var(--ds-select-arrow-size) var(--ds-select-arrow-size);
+  background-position: right var(--ds-select-arrow-inset) center;
+  cursor: pointer;
+}
+.atelier.light :is(select:not([multiple]):not([size])) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m5 7 5 5 5-5' stroke='%234c6256' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.atelier select:disabled {
+  cursor: not-allowed;
+}
+.atelier :is(.field, .ds-field, .studio-form > label, .studio-formline > label) {
+  min-width: 0;
+  row-gap: var(--ds-space-2);
+  line-height: 1.4;
+}
+.atelier :is(.field, .ds-field) > :is(input, select, textarea),
+.atelier :is(.studio-form > label, .studio-formline > label) > :is(input, select, textarea) {
+  max-width: 100%;
+}
+.atelier textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+/* Keep true checkboxes/radios away from text-field sizing and select appearance. */
+.atelier input:is([type="checkbox"], [type="radio"]) {
+  width: var(--ds-check-size);
+  min-width: var(--ds-check-size);
+  min-height: var(--ds-check-size);
+  padding: 0;
+}
+@container atelier-card (max-width: 420px) {
+  .atelier :is(.form-actions, .studio-actions, .cook-actions) {
+    column-gap: var(--ds-space-2);
+  }
+  .atelier .btn:not(.icon-only) {
+    padding-inline: 14px;
+  }
+  .atelier .btn.icon-only,
+  .atelier .icon-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    flex-basis: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier :is(.btn, .icon-btn, select) {
+    transition-duration: var(--ds-motion-reduced);
+  }
+}
+/* Consistent vertical rhythm and icon alignment for grouped actions. */
+.atelier
+  :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions)
+  > :is(.btn, .icon-btn) {
+  margin-block: 0;
+  align-self: center;
+}
+.atelier :is(.btn, .icon-btn) :is(svg, img) {
+  position: relative;
+  inset: auto;
+  vertical-align: middle;
+}
+.atelier :is(.field, .ds-field) > :is(label, .field-label) {
+  display: block;
+  margin: 0;
+  line-height: 1.4;
+}
+.atelier select:focus-visible,
+.atelier :is(input, textarea):focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 2px;
+}
+.atelier :is(input, select, textarea):disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+@container atelier-card (max-width: 420px) {
+  .atelier :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions) {
+    row-gap: 10px;
+  }
+}

@@ -1,0 +1,590 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+function send(res, code, body, type = "application/json") {
+  res.writeHead(code, { "Content-Type": type });
+  res.end(typeof body === "string" ? body : JSON.stringify(body));
+}
+async function fixture({ legacyRecipeEndpoint = false } = {}) {
+  const items = [
+    { id: "item-1", shoppingListId: "list-1", note: "Milk", quantity: 1, checked: false },
+  ];
+  const meals = [
+    {
+      id: "meal-1",
+      date: "2026-10-27",
+      entryType: "dinner",
+      recipeId: "recipe-1",
+      recipe: { id: "recipe-1", slug: "lasagna", name: "Lasagna", image: "abc" },
+    },
+  ];
+  const lists = [{ id: "list-1", name: "Groceries" }];
+  let reads = 0;
+  let lastRecipePatch = null;
+  let lastMealplanQuery = null;
+  const recipeTransferRequests = [];
+  const server = createServer(async (req, res) => {
+    const pathname = new URL(req.url, "http://localhost").pathname;
+    if (req.headers.authorization !== "Bearer DEMO_MOCK_TOKEN") {
+      send(res, 401, { error: "No auth" });
+      return;
+    }
+    reads++;
+    const buf = [];
+    for await (const b of req) buf.push(b);
+    const body = buf.length ? JSON.parse(Buffer.concat(buf).toString()) : {};
+    if (pathname === "/api/users/self") return send(res, 200, { id: "user-1", username: "test" });
+    if (pathname === "/api/recipes" && req.method === "GET")
+      return send(res, 200, {
+        items: [{ id: "recipe-1", slug: "lasagna", name: "Lasagna", image: "abc" }],
+        total: 1,
+        page: 1,
+        per_page: 24,
+      });
+    if (pathname === "/api/recipes" && req.method === "POST") return send(res, 201, '"new-recipe"');
+    if (pathname === "/api/recipes/lasagna" && req.method === "GET")
+      return send(res, 200, {
+        id: "recipe-1",
+        slug: "lasagna",
+        name: "Lasagna",
+        image: "abc",
+        recipeInstructions: [
+          {
+            id: "step-1",
+            title: "Sauce",
+            text: 'Saute\n\n<img src="/api/media/recipes/recipe-1/assets/step-1.jpg" width="100%">\n<img src="https://attacker.example/image.jpg">',
+            ingredientReferences: [],
+          },
+        ],
+      });
+    if (pathname === "/api/recipes/lasagna" && req.method === "PATCH") {
+      lastRecipePatch = body;
+      return send(res, 200, { id: "recipe-1", slug: "lasagna", ...body });
+    }
+    if (pathname === "/api/households/mealplans" && req.method === "GET") {
+      lastMealplanQuery = new URL(req.url, "http://localhost").searchParams;
+      const start = lastMealplanQuery.get("start_date");
+      const end = lastMealplanQuery.get("end_date");
+      if (!start || !end) return send(res, 400, { error: "Missing start_date/end_date" });
+      return send(
+        res,
+        200,
+        meals.filter((item) => item.date >= start && item.date <= end),
+      );
+    }
+    if (pathname === "/api/households/cookbooks" && req.method === "GET")
+      return send(res, 200, {
+        items: [{ name: "Schnell", slug: "schnell", queryFilter: { parts: [] } }],
+      });
+    if (
+      (pathname === "/api/organizers/categories" || pathname === "/api/organizers/tags") &&
+      req.method === "GET"
+    )
+      return send(res, 200, { items: [] });
+    if (pathname === "/api/households/mealplans" && req.method === "POST") {
+      meals.push({ ...body, id: "meal-2" });
+      return send(res, 201, { id: "meal-2", ...body });
+    }
+    if (pathname === "/api/households/mealplans/meal-1" && req.method === "DELETE")
+      return send(res, 204, "");
+    if (pathname === "/api/households/shopping/lists" && req.method === "GET")
+      return send(res, 200, { items: lists });
+    if (pathname === "/api/households/shopping/lists" && req.method === "POST") {
+      const item = { id: "list-2", name: body.name };
+      lists.push(item);
+      return send(res, 201, item);
+    }
+    if (pathname === "/api/households/shopping/lists/list-1/recipe" && req.method === "POST") {
+      recipeTransferRequests.push({ pathname, body });
+      if (legacyRecipeEndpoint) return send(res, 404, { error: "Batch route unavailable" });
+      if (!Array.isArray(body) || body.length !== 1 || body[0].recipeId !== "recipe-1")
+        return send(res, 400, { error: "Invalid batch payload" });
+      items.push({
+        id: "item-3",
+        shoppingListId: "list-1",
+        display: "200 g Pasta",
+        checked: false,
+      });
+      return send(res, 200, { added: 1 });
+    }
+    if (
+      pathname === "/api/households/shopping/lists/list-1/recipe/recipe-1" &&
+      req.method === "POST"
+    ) {
+      recipeTransferRequests.push({ pathname, body });
+      items.push({
+        id: "item-3",
+        shoppingListId: "list-1",
+        display: "200 g Pasta",
+        checked: false,
+      });
+      return send(res, 200, { added: 1 });
+    }
+    if (pathname === "/api/households/shopping/items" && req.method === "GET")
+      return send(res, 200, { items });
+    if (pathname === "/api/households/shopping/items" && req.method === "POST") {
+      items.push({ ...body, id: "item-2" });
+      return send(res, 201, { ...body, id: "item-2" });
+    }
+    if (pathname === "/api/households/shopping/items/item-1" && req.method === "GET")
+      return send(res, 200, items[0]);
+    if (pathname === "/api/households/shopping/items/item-1" && req.method === "PUT") {
+      Object.assign(items[0], body);
+      return send(res, 200, items[0]);
+    }
+    if (pathname === "/api/media/recipes/recipe-1/images/min-original.webp")
+      return send(res, 200, Buffer.from("RIFFaaaaWEBP"), "image/webp");
+    if (pathname === "/api/media/recipes/recipe-1/assets/step-1.jpg") {
+      res.writeHead(200, { "Content-Type": "image/jpeg" });
+      res.end(Buffer.from([255, 216, 255, 0]));
+      return;
+    }
+    return send(res, 404, { error: "Missing route" });
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  return {
+    server,
+    port: server.address().port,
+    reads: () => reads,
+    patch: () => lastRecipePatch,
+    mealplanQuery: () => lastMealplanQuery,
+    recipeTransferRequests: () => recipeTransferRequests,
+  };
+}
+
+await test("private web companion responds to real-shaped Mealie calls", async () => {
+  const remote = await fixture();
+  const password = "lengthy-test-password";
+  const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
+    env: {
+      ...process.env,
+      MEALIE_URL: `http://127.0.0.1:${remote.port}`,
+      MEALIE_API_TOKEN: "DEMO_MOCK_TOKEN",
+      ATELIER_PASSWORD: password,
+      ATELIER_USERNAME: "atelier",
+      ATELIER_EXPERIMENTAL_INGREDIENTS: "true",
+      PORT: "0",
+      HOST: "127.0.0.1",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let port;
+  try {
+    port = await new Promise((resolve, reject) => {
+      let out = "";
+      const timeout = setTimeout(() => reject(Error("App did not start")), 5000);
+      child.stdout.on("data", (chunk) => {
+        out += chunk.toString();
+        const m = out.match(/http:\/\/127\.0\.0\.1:(\d+)/);
+        if (m) {
+          clearTimeout(timeout);
+          resolve(Number(m[1]));
+        }
+      });
+      child.stderr.on("data", (chunk) => reject(Error(chunk.toString())));
+      child.once("exit", (code) => reject(Error("App exited " + code)));
+    });
+    const url = `http://127.0.0.1:${port}`;
+    const head = {
+      Authorization: "Basic " + Buffer.from("atelier:" + password).toString("base64"),
+    };
+    const bridge = async (type, extras = {}) =>
+      fetch(url + "/api/bridge", {
+        method: "POST",
+        headers: { ...head, "Content-Type": "application/json", "X-Atelier-Request": "1" },
+        body: JSON.stringify({ type, ...extras }),
+      });
+    const denied = await fetch(url + "/");
+    assert.equal(denied.status, 401);
+    assert.ok(!(await denied.text().then((x) => x.includes("DEMO_MOCK_TOKEN"))));
+    const page = await fetch(url + "/", { headers: head });
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /mealie-atelier-card/);
+    const csrfDenied = await fetch(url + "/api/bridge", {
+      method: "POST",
+      headers: { ...head, "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "mealie_atelier/recipes" }),
+    });
+    assert.equal(csrfDenied.status, 403);
+    const recipes = await bridge("mealie_atelier/recipes");
+    assert.equal(recipes.status, 200);
+    const found = await recipes.json();
+    assert.equal(found.items[0].imageUrl, "/api/image/recipe-1");
+    const metadata = await (await bridge("mealie_atelier/metadata")).json();
+    assert.equal(metadata.cookbooks[0].slug, "schnell");
+    const detail = await (await bridge("mealie_atelier/recipe", { slug: "lasagna" })).json();
+    assert.equal(detail.recipeInstructions[0].text, "Saute");
+    assert.deepEqual(detail.recipeInstructions[0].imageUrls, [
+      "/api/recipe-asset/recipe-1/step-1.jpg",
+    ]);
+    const stepImage = await fetch(url + detail.recipeInstructions[0].imageUrls[0], {
+      headers: head,
+    });
+    assert.equal(stepImage.status, 200);
+    assert.equal(stepImage.headers.get("content-type"), "image/jpeg");
+    const invalidAsset = await fetch(url + "/api/recipe-asset/recipe-1/%2e%2e%2Fsecret", {
+      headers: head,
+    });
+    assert.equal(invalidAsset.status, 400);
+    const image = await fetch(url + "/api/image/recipe-1", { headers: head });
+    assert.equal(image.status, 200);
+    assert.equal(image.headers.get("content-type"), "image/webp");
+    const plan = await (
+      await bridge("mealie_atelier/mealplan", { start: "2026-10-27", end: "2026-11-02" })
+    ).json();
+    assert.equal(plan.length, 1);
+    assert.equal(plan[0].recipe.imageUrl, "/api/image/recipe-1");
+    assert.equal(remote.mealplanQuery().get("start_date"), "2026-10-27");
+    assert.equal(remote.mealplanQuery().get("startDate"), null);
+    let shopping = await (await bridge("mealie_atelier/shopping")).json();
+    assert.equal(shopping.items.length, 1);
+    let toggle = await bridge("mealie_atelier/mutate", {
+      action: "shopping_toggle",
+      payload: { item_id: "item-1", checked: true },
+    });
+    assert.equal(toggle.status, 200);
+    shopping = await (await bridge("mealie_atelier/shopping")).json();
+    assert.equal(shopping.items[0].checked, true);
+    const added = await bridge("mealie_atelier/mutate", {
+      action: "shopping_add",
+      payload: { list_id: "list-1", note: "Bread" },
+    });
+    assert.equal(added.status, 200);
+    assert.equal((await added.json()).note, "Bread");
+    const createdList = await bridge("mealie_atelier/mutate", {
+      action: "shopping_list_create",
+      payload: { name: "Weekend market" },
+    });
+    assert.equal(createdList.status, 200);
+    assert.equal((await createdList.json()).name, "Weekend market");
+    const recipeAdd = await bridge("mealie_atelier/mutate", {
+      action: "shopping_from_recipe",
+      payload: { list_id: "list-1", recipe_id: "recipe-1" },
+    });
+    assert.equal(recipeAdd.status, 200);
+    assert.deepEqual(remote.recipeTransferRequests(), [
+      {
+        pathname: "/api/households/shopping/lists/list-1/recipe",
+        body: [{ recipeId: "recipe-1" }],
+      },
+    ]);
+    shopping = await (await bridge("mealie_atelier/shopping")).json();
+    assert.ok(shopping.items.find((i) => i.display === "200 g Pasta"));
+    const recipeUpdated = await bridge("mealie_atelier/mutate", {
+      action: "recipe_update",
+      payload: {
+        slug: "lasagna",
+        name: "Sunday Lasagna",
+        description: "Fresh",
+        servings: 4,
+        instructions: [{ id: "step-1", text: "Heat oven" }, "Bake"],
+        ingredients: ["200 g Pasta", "2 tomatoes"],
+      },
+    });
+    assert.equal(recipeUpdated.status, 200);
+    assert.deepEqual(remote.patch().recipeInstructions, [
+      {
+        id: "step-1",
+        title: "Sauce",
+        text: 'Heat oven\n\n<img src="/api/media/recipes/recipe-1/assets/step-1.jpg" width="100%">',
+        ingredientReferences: [],
+      },
+      { text: "Bake" },
+    ]);
+    assert.equal(remote.patch().recipeServings, 4);
+    assert.deepEqual(
+      remote.patch().recipeIngredient.map(({ referenceId, ...row }) => row),
+      [
+        { originalText: "200 g Pasta", display: "200 g Pasta" },
+        { originalText: "2 tomatoes", display: "2 tomatoes" },
+      ],
+    );
+    for (const ingredient of remote.patch().recipeIngredient)
+      assert.match(ingredient.referenceId, /^[0-9a-f-]{36}$/);
+    const invalid = await bridge("mealie_atelier/recipe", { slug: "../../notallowed" });
+    assert.equal(invalid.status, 400);
+    const invalidDate = await bridge("mealie_atelier/mealplan", {
+      start: "2026-02-30",
+      end: "2026-03-02",
+    });
+    assert.equal(invalidDate.status, 400);
+    const invalidIngredients = await bridge("mealie_atelier/mutate", {
+      action: "recipe_update",
+      payload: { slug: "lasagna", ingredients: ["   "] },
+    });
+    assert.equal(invalidIngredients.status, 400);
+    const invalidIdentifier = await bridge("mealie_atelier/mutate", {
+      action: "shopping_from_recipe",
+      payload: { list_id: "../", recipe_id: "recipe-1" },
+    });
+    assert.equal(invalidIdentifier.status, 400);
+    assert.ok(remote.reads() > 0);
+  } finally {
+    child.kill("SIGTERM");
+    remote.server.close();
+  }
+});
+
+await test("recipe transfer uses the legacy route only when the batch route is unavailable", async () => {
+  const remote = await fixture({ legacyRecipeEndpoint: true });
+  const password = "legacy-route-test-password";
+  const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
+    env: {
+      ...process.env,
+      MEALIE_URL: `http://127.0.0.1:${remote.port}`,
+      MEALIE_API_TOKEN: "DEMO_MOCK_TOKEN",
+      ATELIER_PASSWORD: password,
+      ATELIER_USERNAME: "atelier",
+      PORT: "0",
+      HOST: "127.0.0.1",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  try {
+    const port = await new Promise((resolve, reject) => {
+      let out = "";
+      const timeout = setTimeout(() => reject(Error("App did not start")), 5000);
+      child.stdout.on("data", (chunk) => {
+        out += chunk.toString();
+        const m = out.match(/http:\/\/127\.0\.0\.1:(\d+)/);
+        if (m) {
+          clearTimeout(timeout);
+          resolve(Number(m[1]));
+        }
+      });
+      child.stderr.on("data", (chunk) => reject(Error(chunk.toString())));
+      child.once("exit", (code) => reject(Error("App exited " + code)));
+    });
+    const head = {
+      Authorization: "Basic " + Buffer.from("atelier:" + password).toString("base64"),
+      "Content-Type": "application/json",
+      "X-Atelier-Request": "1",
+    };
+    const response = await fetch(`http://127.0.0.1:${port}/api/bridge`, {
+      method: "POST",
+      headers: head,
+      body: JSON.stringify({
+        type: "mealie_atelier/mutate",
+        action: "shopping_from_recipe",
+        payload: { list_id: "list-1", recipe_id: "recipe-1" },
+      }),
+    });
+    assert.equal(response.status, 200);
+    assert.deepEqual(remote.recipeTransferRequests(), [
+      {
+        pathname: "/api/households/shopping/lists/list-1/recipe",
+        body: [{ recipeId: "recipe-1" }],
+      },
+      { pathname: "/api/households/shopping/lists/list-1/recipe/recipe-1", body: {} },
+    ]);
+  } finally {
+    child.kill("SIGTERM");
+    remote.server.close();
+  }
+});
+
+test("read-only companion exposes permission and denies writes at the server boundary", async () => {
+  const remote = await fixture();
+  const password = "read-only-test-password";
+  const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
+    env: {
+      ...process.env,
+      MEALIE_URL: `http://127.0.0.1:${remote.port}`,
+      MEALIE_API_TOKEN: "DEMO_MOCK_TOKEN",
+      ATELIER_PASSWORD: password,
+      ATELIER_USERNAME: "atelier",
+      ATELIER_READ_ONLY: "true",
+      PORT: "0",
+      HOST: "127.0.0.1",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  try {
+    const port = await new Promise((resolve, reject) => {
+      let out = "";
+      const timeout = setTimeout(() => reject(Error("App did not start")), 5000);
+      child.stdout.on("data", (chunk) => {
+        out += chunk.toString();
+        const m = out.match(/http:\/\/127\.0\.0\.1:(\d+)/);
+        if (m) {
+          clearTimeout(timeout);
+          resolve(Number(m[1]));
+        }
+      });
+      child.once("exit", (code) => reject(Error("App exited " + code)));
+    });
+    const head = {
+      Authorization: "Basic " + Buffer.from("atelier:" + password).toString("base64"),
+      "Content-Type": "application/json",
+      "X-Atelier-Request": "1",
+    };
+    const call = (type, other = {}) =>
+      fetch(`http://127.0.0.1:${port}/api/bridge`, {
+        method: "POST",
+        headers: head,
+        body: JSON.stringify({ type, ...other }),
+      });
+    const status = await (await call("mealie_atelier/status")).json();
+    assert.equal(status.entries[0].read_only, true);
+    assert.equal(status.entries[0].can_write, false);
+    assert.equal(status.entries[0].can_manage, false);
+    assert.equal((await call("mealie_atelier/recipes")).status, 200);
+    const n = remote.reads();
+    const denied = await call("mealie_atelier/mutate", {
+      action: "shopping_add",
+      payload: { list_id: "list-1", note: "Should not be added" },
+    });
+    assert.equal(denied.status, 403);
+    assert.match((await denied.json()).error, /read-only/);
+    assert.equal(remote.reads(), n, "Blocked writes must never hit Mealie");
+  } finally {
+    child.kill("SIGTERM");
+    remote.server.close();
+  }
+});
+
+test("studio state survives requests and server restart, rejects stale revisions and unauthorized API usage", async () => {
+  const { mkdtemp, readFile, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const dir = await mkdtemp(join(tmpdir(), "atelier-persistence-"));
+  const remote = await fixture();
+  const password = "independent-studio-test";
+  const headers = {
+    Authorization: "Basic " + Buffer.from("atelier:" + password).toString("base64"),
+    "Content-Type": "application/json",
+    "X-Atelier-Request": "1",
+  };
+  let child, port;
+  const run = async (readOnly = false) => {
+    child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
+      env: {
+        ...process.env,
+        MEALIE_URL: `http://127.0.0.1:${remote.port}`,
+        MEALIE_API_TOKEN: "DEMO_MOCK_TOKEN",
+        ATELIER_PASSWORD: password,
+        ATELIER_USERNAME: "atelier",
+        ATELIER_DATA_DIR: dir,
+        ATELIER_READ_ONLY: String(readOnly),
+        PORT: "0",
+        HOST: "127.0.0.1",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    port = await new Promise((resolve, reject) => {
+      let text = "";
+      let done = false;
+      const timer = setTimeout(() => {
+        if (!done) {
+          done = true;
+          reject(Error("Studio server startup timed out"));
+        }
+      }, 6000);
+      child.stdout.on("data", (bytes) => {
+        text += bytes.toString();
+        const m = text.match(/http:\/\/127\.0\.0\.1:(\d+)/);
+        if (m && !done) {
+          done = true;
+          clearTimeout(timer);
+          resolve(Number(m[1]));
+        }
+      });
+      child.once("exit", (code) => {
+        if (!done) {
+          done = true;
+          clearTimeout(timer);
+          reject(Error("Premature exit " + code));
+        }
+      });
+    });
+  };
+  const call = (type, rest = {}, extraHeaders = headers) =>
+    fetch(`http://127.0.0.1:${port}/api/bridge`, {
+      method: "POST",
+      headers: extraHeaders,
+      body: JSON.stringify({ type, ...rest }),
+    });
+  const change = (action, payload, revision) =>
+    call("mealie_atelier/studio_update", { action, payload, expected_revision: revision });
+  const stop = async () => {
+    if (child?.exitCode === null) {
+      child.kill("SIGTERM");
+      await Promise.race([once(child, "exit"), new Promise((r) => setTimeout(r, 1000))]);
+    }
+  };
+  try {
+    await run();
+    let got = await call("mealie_atelier/studio_state");
+    assert.equal(got.status, 200);
+    let state = await got.json();
+    assert.equal(state.revision, 0);
+    got = await change("pantry_put", { name: "Tomaten", amount: 300, unit: "g" }, 0);
+    assert.equal(got.status, 200);
+    state = await got.json();
+    assert.equal(state.revision, 1);
+    assert.equal(state.pantry.length, 1);
+    const stale = await change("profile_set", { people: 4, maxMinutes: 35 }, 0);
+    assert.equal(stale.status, 409, "stale writes must be rejected");
+    assert.match((await stale.json()).error, /changed/i);
+    got = await change("family_member", { name: "Helferkind", child: true }, 1);
+    assert.equal(got.status, 200);
+    state = await got.json();
+    const member = state.family.members[0];
+    assert.equal(member.child, true);
+    got = await change("session_start", { slug: "lasagna", name: "Lasagna" }, 2);
+    assert.equal(got.status, 200);
+    state = await got.json();
+    const session = state.family.session;
+    const denied = await change(
+      "session_task",
+      { session_id: session.id, text: "Tisch decken", memberId: member.id },
+      3,
+    );
+    assert.equal(denied.status, 400);
+    got = await change(
+      "session_task",
+      { session_id: session.id, text: "Tisch decken", memberId: member.id, adultApproved: true },
+      3,
+    );
+    assert.equal(got.status, 200);
+    state = await got.json();
+    const task = state.family.session.tasks[0];
+    got = await change("session_task", { session_id: session.id, id: task.id, done: true }, 4);
+    assert.equal(got.status, 200);
+    state = await got.json();
+    assert.equal(state.family.session.tasks[0].done, true);
+    const noToken = await readFile(join(dir, "studio.json"), "utf8");
+    assert.ok(!noToken.includes("DEMO_MOCK_TOKEN"));
+    await stop();
+    await run();
+    got = await call("mealie_atelier/studio_state");
+    state = await got.json();
+    assert.equal(state.revision, 5);
+    assert.equal(state.pantry[0].amount, 300);
+    assert.equal(state.family.session.tasks[0].done, true);
+    const noAI = await call("mealie_atelier/studio_ai_audit", { slug: "lasagna" });
+    assert.equal(noAI.status, 400);
+    await stop();
+    await run(true);
+    const protectedWrite = await change("pantry_delete", { id: state.pantry[0].id }, 5);
+    assert.equal(protectedWrite.status, 403);
+    got = await call("mealie_atelier/studio_state");
+    assert.equal((await got.json()).pantry.length, 1);
+    const csrf = await call(
+      "mealie_atelier/studio_update",
+      { action: "pantry_delete", payload: { id: "any" } },
+      { Authorization: headers.Authorization, "Content-Type": "application/json" },
+    );
+    assert.equal(csrf.status, 403);
+  } finally {
+    await stop();
+    remote.server.close();
+    await rm(dir, { recursive: true, force: true });
+  }
+});

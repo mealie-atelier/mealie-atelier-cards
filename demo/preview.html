@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="description" content="__SEO_DESCRIPTION__" />
+    <meta name="theme-color" content="#f4f1eb" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="__SEO_TITLE__" />
+    <meta property="og:description" content="__SEO_DESCRIPTION__" />
+    <meta property="og:image" content="__OG_IMAGE__" />
+    <link rel="canonical" href="__CANONICAL_URL__" />
+    <link rel="alternate" hreflang="de" href="__GERMAN_URL__" />
+    <link rel="alternate" hreflang="en" href="__ENGLISH_URL__" />
+    <link rel="alternate" hreflang="x-default" href="__GERMAN_URL__" />
+    <title>__SEO_TITLE__</title>
+    <link rel="icon" type="image/png" href="__FAVICON__" />
+    <link rel="stylesheet" href="./live-demo.css" />
+    <script type="application/ld+json">__JSON_LD__</script>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="demo-header">
+        <a class="demo-brand" href="__DEMO_HOME__" aria-label="Mealie Atelier"><span class="demo-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z"/><path d="M5 20c2-4 5-7 10-10"/></svg></span><span>Mealie Atelier</span></a>
+        <nav class="demo-language" aria-label="__LANGUAGE_LABEL__"><a href="__GERMAN_URL__" data-language="de">DE</a><a href="__ENGLISH_URL__" data-language="en">EN</a></nav>
+      </header>
+      <section class="demo-hero">
+        <div><p class="demo-eyebrow">__HERO_EYEBROW__</p><h1>__HERO_TITLE__</h1><p>__HERO_COPY__</p></div>
+        <aside class="demo-promise"><strong>__LOCAL_TITLE__</strong>__LOCAL_COPY__</aside>
+      </section>
+      <p class="demo-local-note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M7 8h6M7 11h4"/></svg><span>__LOCAL_NOTICE__</span></p>
+      <mealie-atelier-card></mealie-atelier-card>
+      <section class="demo-directory" aria-labelledby="demo-directory-title"><h2 id="demo-directory-title">__DIRECTORY_TITLE__</h2><p class="demo-directory-intro">__DIRECTORY_COPY__</p><div class="demo-recipe-list">__SEO_RECIPE_DIRECTORY__</div></section>
+      <footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/" rel="me">Daniel</a> · __UNSPLASH_COPY__</span><a href="https://alles-automatisch.de/">__DOCS_LINK__</a></footer>
+    </div>
+    <script type="module">
+      import "../dist/mealie-atelier-cards.js";
+      import { searchDemoRecipes } from "./recipe-search.js";
+      const demoLanguage = new URLSearchParams(window.location.search).get("lang") === "en" ? "en" : "de";
+      const catalogResponse = await fetch("./data/recipes.json");
+      if (!catalogResponse.ok) throw new Error("Could not load the demo recipe catalog");
+      const catalog = await catalogResponse.json();
+      if (catalog.recipes?.length !== 10) throw new Error("The public demo requires exactly ten recipes");
+      const localize = (value) => {
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          return value[demoLanguage] ?? value;
+        }
+        return value;
+      };
+      document.documentElement.lang = demoLanguage;
+      const recipes = catalog.recipes.map((item, index) => ({
+        id: "recipe-" + (index + 1),
+        slug: item.slug,
+        name: localize(item.title),
+        searchTerms: [
+          ...(item.searchTerms || []),
+          ...(item.title?.[demoLanguage === "de" ? "en" : "de"] ? [item.title[demoLanguage === "de" ? "en" : "de"]] : []),
+          ...(item.description?.[demoLanguage === "de" ? "en" : "de"] ? [item.description[demoLanguage === "de" ? "en" : "de"]] : []),
+          ...(item.category?.[demoLanguage === "de" ? "en" : "de"] ? [item.category[demoLanguage === "de" ? "en" : "de"]] : []),
+          ...(item.cuisine?.[demoLanguage === "de" ? "en" : "de"] ? [item.cuisine[demoLanguage === "de" ? "en" : "de"]] : []),
+          ...(item.ingredients?.[demoLanguage === "de" ? "en" : "de"] || []),
+          ...((item.steps?.[demoLanguage === "de" ? "en" : "de"] || []).flatMap((step) => [step.title, step.summary, step.text])),
+        ],
+        imageUrl: item.image.url,
+        totalTime: item.prepMinutes + item.cookMinutes,
+        recipeCategory: [{ name: localize(item.category) }],
+        recipeCuisine: [{ name: localize(item.cuisine) }],
+        tags: item.tags.map((name) => ({ name })),
+      }));
+      const recipeStories = catalog.recipes.map((item) => ({
+        description: localize(item.description),
+        ingredients: localize(item.ingredients),
+        steps: localize(item.steps).map((step) => [step.title, step.summary, step.text]),
+        imageUrl: item.image.url,
+        servings: item.servings,
+      }));
+
+      const dateAdd = (n) => {
+        let d = new Date();
+        d.setHours(12, 0, 0, 0);
+        d.setDate(d.getDate() + n);
+        return [
+          d.getFullYear(),
+          ("0" + (d.getMonth() + 1)).slice(-2),
+          ("0" + d.getDate()).slice(-2),
+        ].join("-");
+      };
+      const meals = [
+        { id: "meal-1", date: dateAdd(0), entryType: "dinner", recipe: recipes[0] },
+        ...[
+          [1, 2, "lunch"],
+          [2, 1, "dinner"],
+          [3, 3, "lunch"],
+          [4, 4, "dinner"],
+          [5, 5, "dinner"],
+          [6, 6, "lunch"],
+        ].map(([d, ix, type]) => ({
+          id: "meal-" + (d + 1),
+          date: dateAdd(d),
+          entryType: type,
+          recipe: recipes[ix],
+        })),
+      ];
+      const shoppingLists = [
+        { id: "list-1", name: demoLanguage === "de" ? "Wocheneinkauf" : "Weekly shop" },
+        { id: "list-2", name: demoLanguage === "de" ? "Vorrat" : "Pantry" },
+      ];
+      let shoppingItems = recipeStories
+        .flatMap((story) => story.ingredients)
+        .slice(0, 5)
+        .map((note, i) => ({
+        id: "sh-" + i,
+        shoppingListId: "list-1",
+        note,
+        checked: i === 2,
+        quantity: i === 0 ? 2 : 1,
+      }));
+      const details = recipes.map((recipe, index) => ({
+        ...recipe,
+        description: recipeStories[index].description,
+        recipeYield: recipeStories[index].servings + (demoLanguage === "de" ? " Portionen" : " servings"),
+        recipeServings: recipeStories[index].servings,
+        recipeIngredient: recipeStories[index].ingredients.map((display) => ({ display })),
+        recipeInstructions: recipeStories[index].steps.map(([title, summary, text], stepIndex) => ({
+          id: "demo-step-" + index + "-" + (stepIndex + 1),
+          title,
+          summary,
+          text,
+          imageUrls: stepIndex === recipeStories[index].steps.length - 1 ? [recipeStories[index].imageUrl] : [],
+        })),
+      }));
+
+      // All Kitchen Intelligence changes in this showroom are memory-only fictional data.
+      let demoStudio = {
+        revision: 0,
+        profile: { people: 2, maxMinutes: 40, diets: [], exclude: [], quietHours: false },
+        pantry: [
+          {
+            id: "p-1",
+            name: demoLanguage === "de" ? "Tomaten" : "Tomatoes",
+            amount: 600,
+            unit: "g",
+            expires: dateAdd(2),
+            staple: false,
+          },
+          { id: "p-2", name: demoLanguage === "de" ? "Zwiebeln" : "Onions", amount: 2, unit: "stück", expires: "", staple: false },
+          { id: "p-3", name: demoLanguage === "de" ? "Olivenöl" : "Olive oil", amount: 500, unit: "ml", expires: "", staple: true },
+        ],
+        journal: {
+          "shakshuka-mit-paprika": {
+            rating: 5,
+            note: demoLanguage === "de" ? "Beim nächsten Mal mehr Paprika." : "Add a little more pepper next time.",
+            favorite: true,
+          },
+        },
+        family: {
+          members: [
+            { id: "adult-1", name: demoLanguage === "de" ? "Alex" : "Alex", child: false },
+            { id: "child-1", name: demoLanguage === "de" ? "Küchenhelfer" : "Little helper", child: true },
+          ],
+          session: null,
+        },
+        savedAt: null,
+      };
+      let demoIndex = 100;
+      const demoAlarms = new Map();
+      const nextDemoId = () => `demo-${demoIndex++}`;
+      function demoUpdate(action, p) {
+        const f = demoStudio.family,
+          s = f.session;
+        if (action === "profile_set") demoStudio.profile = { ...demoStudio.profile, ...p };
+        if (action === "pantry_put") {
+          const row = { ...p, id: p.id || nextDemoId() };
+          const i = demoStudio.pantry.findIndex((x) => x.id === row.id);
+          if (i >= 0) demoStudio.pantry[i] = row;
+          else demoStudio.pantry.push(row);
+        }
+        if (action === "pantry_delete")
+          demoStudio.pantry = demoStudio.pantry.filter((x) => x.id !== p.id);
+        if (action === "journal_set")
+          demoStudio.journal[p.slug] = {
+            rating: p.rating,
+            note: p.note,
+            favorite: p.favorite,
+            lastCooked: p.cooked
+              ? new Date().toISOString()
+              : demoStudio.journal[p.slug]?.lastCooked,
+          };
+        if (action === "family_member") {
+          if (p.remove) f.members = f.members.filter((x) => x.id !== p.id);
+          else f.members.push({ id: nextDemoId(), name: p.name, child: p.child });
+        }
+        if (action === "session_start")
+          f.session = {
+            id: nextDemoId(),
+            slug: p.slug,
+            name: p.name,
+            step: 0,
+            started: new Date().toISOString(),
+            tasks: [],
+            timers: [],
+            revision: 0,
+          };
+        if (action === "session_step" && s) s.step = p.step;
+        if (action === "session_end") f.session = null;
+        if (action === "session_timer" && s) {
+          if (p.remove) s.timers = s.timers.filter((x) => x.id !== p.id);
+          else
+            s.timers.push({
+              id: nextDemoId(),
+              name: p.name,
+              deadline: Date.now() + p.minutes * 60000,
+            });
+        }
+        if (action === "session_task" && s) {
+          if (p.remove) s.tasks = s.tasks.filter((x) => x.id !== p.id);
+          else {
+            const row = { ...p, id: p.id || nextDemoId() };
+            const i = s.tasks.findIndex((x) => x.id === row.id);
+            if (i >= 0) s.tasks[i] = row;
+            else s.tasks.push(row);
+          }
+        }
+        demoStudio.revision++;
+        demoStudio.savedAt = new Date().toISOString();
+        return structuredClone(demoStudio);
+      }
+      const card = document.querySelector("mealie-atelier-card");
+      card.setConfig({
+        mode: "dashboard",
+        theme: "light",
+        language: demoLanguage,
+        accent: "#75465d",
+        columns: 3,
+      });
+      card.hass = {
+        language: demoLanguage,
+        callWS: async ({ type, ...req }) => {
+          await new Promise((resolve) => setTimeout(resolve, 45));
+          if (type === "mealie_atelier/alarm_create") {
+            demoAlarms.set(req.timer.id, structuredClone(req.timer));
+            return { scheduled: true };
+          }
+          if (type === "mealie_atelier/alarm_cancel") {
+            demoAlarms.delete(req.timer_id);
+            return { cancelled: true };
+          }
+          if (type === "mealie_atelier/studio_state") return structuredClone(demoStudio);
+          if (type === "mealie_atelier/studio_update")
+            return demoUpdate(req.action, req.payload || {});
+          if (type === "mealie_atelier/studio_ai_audit")
+            return {
+              issues: [
+                {
+                  severity: "warning",
+                  area: "Zutaten",
+                  issue: "Demo: Unklare Einheit",
+                  suggestion: "Bitte Menge prüfen.",
+                },
+              ],
+              summary: "Fiktiver Demo-KI-Check",
+              disclaimer: "DEMO – kein echter KI-Aufruf.",
+            };
+          if (type === "mealie_atelier/studio_substitute")
+            return {
+              alternatives: [
+                {
+                  name: "Hafercuisine (Demovorschlag)",
+                  adjustment: "Menge und Konsistenz überprüfen.",
+                },
+              ],
+              warning: "DEMO: Kein echter KI-Aufruf.",
+            };
+          if (type === "mealie_atelier/status")
+            return {
+              entries: [
+                {
+                  entry_id: "demo",
+                  name: "Demo Kitchen",
+                  connected: true,
+                  read_only: false,
+                  can_write: true,
+                  can_manage: true,
+                  can_edit_ingredients: true,
+                },
+              ],
+              version: "0.9.0",
+            };
+          if (type === "mealie_atelier/nutrition_prepare") {
+            const recipe = details.find((r) => r.slug === req.slug) || details[0];
+            return {
+              slug: recipe.slug,
+              name: recipe.name,
+              hash: "demo-hash-v05",
+              servings: recipe.recipeServings,
+              existing: recipe.nutrition || null,
+              fdc_enabled: true,
+              ai_enabled: true,
+              ingredients: recipe.recipeIngredient.map((row, index) => ({
+                index,
+                text: row.display,
+                query: row.display.replace(/^\d+(?:[.,]\d+)?\s*(?:kg|g|EL)?\s*/i, "").trim(),
+                grams: (row.display.match(/^(\d+)\s*g\b/i) || [])[1] ? Number(RegExp.$1) : null,
+                needs_review: index >= 2,
+              })),
+            };
+          }
+          if (type === "mealie_atelier/nutrition_search") {
+            const name = req.query || "Lebensmittel";
+            return [
+              {
+                id: 10000 + name.length,
+                name: `${name} – Demo-Nährwertdatensatz (kein USDA Live-Treffer)`,
+                data_type: "DEMO (fiktiv)",
+                per_100g: {
+                  calories: 120,
+                  protein: 6.2,
+                  carbohydrate: 14.1,
+                  fat: 4.4,
+                  fiber: 1.4,
+                  sugar: 1.2,
+                  sodium: 12,
+                  saturated_fat: 0.4,
+                },
+              },
+              {
+                id: 20000 + name.length,
+                name: `${name} – Demo-Alternative`,
+                data_type: "DEMO (fiktiv)",
+                per_100g: { calories: 105, protein: 5, carbohydrate: 16, fat: 3 },
+              },
+            ];
+          }
+          if (type === "mealie_atelier/nutrition_ai")
+            return (details.find((r) => r.slug === req.slug) || details[0]).recipeIngredient.map(
+              (row, index) => ({
+                index,
+                query: row.display.replace(/^\d+(?:[.,]\d+)?\s*(?:kg|g|EL)?\s*/i, "").trim(),
+                note: "Demo-KI-Vorschlag, keine echte Anfrage",
+              }),
+            );
+          if (
+            type === "mealie_atelier/nutrition_calculate" ||
+            type === "mealie_atelier/nutrition_save"
+          ) {
+            const grams = req.entries.reduce((s, x) => s + Number(x.grams || 0), 0),
+              servings = 2;
+            if (req.entries.some((x) => !Number(x.grams) || !Number(x.fdc_id)))
+              throw Error("Bitte jede Zutat mit Menge und Testdatensatz versehen");
+            const per_portion = {
+              calories: Math.round((120 * grams) / 100 / servings),
+              protein: Math.round(((6.2 * grams) / 100 / servings) * 10) / 10,
+              carbohydrate: Math.round(((14.1 * grams) / 100 / servings) * 10) / 10,
+              fat: Math.round(((4.4 * grams) / 100 / servings) * 10) / 10,
+              fiber: null,
+              sugar: null,
+              sodium: null,
+            };
+            const report = {
+              per_portion,
+              servings,
+              coverage: { calories: "5/5", protein: "5/5", fat: "5/5", carbohydrate: "5/5" },
+              source: "FIKTIVE DEMODATEN – KEINE ECHTEN NÄHRWERTE",
+              ingredients: req.entries.map((x) => ({
+                fdc_id: x.fdc_id,
+                source_url: "https://fdc.nal.usda.gov/",
+              })),
+            };
+            if (type.endsWith("nutrition_save")) {
+              const recipe = details.find((r) => r.slug === req.slug);
+              recipe.nutrition = {
+                calories: `${per_portion.calories} kcal`,
+                proteinContent: `${per_portion.protein} g`,
+                fatContent: `${per_portion.fat} g`,
+                carbohydrateContent: `${per_portion.carbohydrate} g`,
+              };
+              return { saved: true, report };
+            }
+            return report;
+          }
+          if (type === "mealie_atelier/recipes") {
+            const filtered = searchDemoRecipes(recipes, details, req.search || "");
+            return {
+              items: filtered.slice(((req.page || 1) - 1) * 24, (req.page || 1) * 24),
+              page: req.page || 1,
+              per_page: 24,
+              total: filtered.length,
+            };
+          }
+          if (type === "mealie_atelier/recipe")
+            return details.find((r) => r.slug === req.slug) || details[0];
+          if (type === "mealie_atelier/mealplan")
+            return meals.filter((m) => m.date >= req.start && m.date <= req.end);
+          if (type === "mealie_atelier/shopping")
+            return { lists: shoppingLists, items: shoppingItems };
+          if (type === "mealie_atelier/mutate") {
+            if (req.action === "shopping_toggle") {
+              shoppingItems = shoppingItems.map((i) =>
+                i.id === req.payload.item_id ? { ...i, checked: req.payload.checked } : i,
+              );
+              return {};
+            }
+            if (req.action === "shopping_list_create") {
+              const list = { id: "list-" + (shoppingLists.length + 1), name: req.payload.name };
+              shoppingLists.push(list);
+              return list;
+            }
+            if (req.action === "shopping_from_recipe") {
+              const rec = details.find((r) => r.id === req.payload.recipe_id);
+              for (const row of rec?.recipeIngredient || [])
+                shoppingItems.push({
+                  id: "sh-" + shoppingItems.length,
+                  shoppingListId: req.payload.list_id,
+                  display: row.display,
+                  note: row.display,
+                  checked: false,
+                });
+              return {};
+            }
+            if (req.action === "shopping_add") {
+              shoppingItems.push({
+                id: "sh-" + shoppingItems.length,
+                shoppingListId: req.payload.list_id,
+                note: req.payload.note,
+                checked: false,
+              });
+              return {};
+            }
+            if (req.action === "mealplan_add") {
+              const rec = recipes.find((r) => r.id === req.payload.recipe_id);
+              meals.push({
+                id: "meal-" + (meals.length + 1),
+                date: req.payload.date,
+                entryType: req.payload.meal_type,
+                recipe: rec,
+              });
+              return {};
+            }
+            if (req.action === "mealplan_delete") {
+              const index = meals.findIndex((m) => m.id === req.payload.entry_id);
+              if (index >= 0) meals.splice(index, 1);
+              return {};
+            }
+            if (req.action === "recipe_create") {
+              const rec = {
+                id: "recipe-" + (recipes.length + 1),
+                slug: "rezept-" + (recipes.length + 1),
+                name: req.payload.name,
+                totalTime: 25,
+              };
+              recipes.unshift(rec);
+              details.unshift({ ...rec, recipeIngredient: [], recipeInstructions: [] });
+              return rec.slug;
+            }
+            if (req.action === "recipe_import" || req.action === "recipe_update") return {};
+          }
+          throw Error("Unbekannte Aktion " + type);
+        },
+      };
+    </script>
+  </body>
+</html>

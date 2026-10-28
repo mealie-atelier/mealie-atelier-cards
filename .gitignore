@@ -1,0 +1,21 @@
+# Local configuration and secrets.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Local state and generated Python caches.
+/web/data/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/.venv/
+**/.coverage
+
+# JavaScript dependencies and local operating-system files.
+**/node_modules/
+.DS_Store
+**/.DS_Store

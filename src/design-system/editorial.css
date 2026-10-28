@@ -1,0 +1,1522 @@
+/* Mealie Atelier 0.4: food-first editorial design. Built into dist/mealie-atelier-cards.js. */
+:host {
+  --at-serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+}
+.atelier {
+  line-height: 1.52;
+  border-radius: 28px;
+  background: var(--at-surface);
+}
+.atelier .shell {
+  grid-template-columns: 212px minmax(0, 1fr);
+}
+.atelier .sidebar {
+  background: linear-gradient(180deg, #131c17, #111815 55%, #101612);
+  padding: 35px 19px;
+  min-height: 900px;
+}
+.atelier.light .sidebar {
+  background: linear-gradient(180deg, var(--ds-sidebar-start), var(--ds-sidebar-end));
+}
+.atelier .identity {
+  gap: 12px;
+  padding-bottom: 52px;
+}
+.atelier .logo {
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  box-shadow: none;
+}
+.atelier .identity strong {
+  font-weight: 750;
+  line-height: 1.13;
+  letter-spacing: 0.8px;
+  font-size: 12px;
+}
+.atelier .identity span {
+  font-size: 8px;
+  letter-spacing: 2.25px;
+  margin-top: 7px;
+}
+.atelier .nav-label {
+  font-size: 9px;
+  letter-spacing: 2.4px;
+  padding-left: 13px;
+  margin-bottom: 7px;
+}
+.atelier .nav {
+  gap: 6px;
+}
+.atelier .nav button {
+  font-size: 12px;
+  font-weight: 640;
+  padding: 13px 13px;
+  border-radius: 11px;
+}
+.atelier .nav button.active {
+  color: var(--at-ink);
+  background: color-mix(in srgb, var(--at-accent) 18%, transparent);
+}
+.atelier .nav button.active:before {
+  display: none;
+}
+.atelier .sidebar-footer {
+  font-size: 10px;
+  letter-spacing: 0.2px;
+}
+.atelier .main {
+  padding: clamp(25px, 3.7vw, 54px);
+}
+.atelier .topbar {
+  border-bottom: 1px solid var(--at-line);
+  padding-bottom: 14px;
+  margin-bottom: 33px;
+  min-height: 42px;
+}
+.atelier .breadcrumb {
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+.atelier .icon-btn {
+  border-radius: 50%;
+  width: 39px;
+  height: 39px;
+  background: transparent;
+}
+.atelier .eyebrow {
+  font-size: 9px;
+  letter-spacing: 2.65px;
+  font-weight: 760;
+}
+.atelier .intro {
+  margin: 8px 0 29px;
+}
+.atelier .intro h1 {
+  font-family: var(--at-serif);
+  font-size: clamp(39px, 4.4vw, 64px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -2.6px;
+}
+.atelier .intro h1 em {
+  font-weight: 400;
+  font-style: italic;
+}
+.atelier .intro .muted {
+  font-size: 13px;
+  margin-top: 12px;
+  letter-spacing: 0.08px;
+}
+.atelier .hero {
+  height: 345px;
+  min-height: 345px;
+  padding: 40px 47px;
+  background: #28332b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  isolation: isolate;
+}
+.atelier .hero .hero-food {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 52%;
+  opacity: 1;
+  mask-image: none;
+}
+.atelier .hero:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(13, 23, 17, 0.97) 0%,
+    rgba(16, 27, 20, 0.93) 35%,
+    rgba(13, 24, 18, 0.54) 60%,
+    rgba(11, 20, 15, 0.06) 100%
+  );
+}
+.atelier .hero .hero-copy {
+  max-width: 64%;
+  z-index: 2;
+  gap: 14px;
+  align-items: start;
+}
+.atelier .hero h2 {
+  font-family: var(--at-serif);
+  font-size: clamp(36px, 3.7vw, 57px);
+  font-weight: 400;
+  letter-spacing: -1.9px;
+  line-height: 1.03;
+  max-width: 535px;
+  text-wrap: balance;
+}
+.atelier .hero p {
+  font-size: 12px;
+  color: #d4dacb;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.atelier .hero .btn.primary {
+  margin-top: 12px;
+}
+.atelier .hero .hero-art {
+  right: 3%;
+  top: 0;
+  opacity: 0.42;
+}
+.atelier .hero .plate {
+  width: min(280px, 94%);
+  box-shadow: 25px 32px 45px #0309066c;
+}
+.atelier .btn {
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 720;
+  min-height: 42px;
+  padding: 11px 18px;
+}
+.atelier .btn.primary {
+  box-shadow: 0 7px 23px color-mix(in srgb, var(--at-accent) 13%, transparent);
+}
+.atelier .btn.tiny {
+  padding: 9px 14px;
+  min-height: 35px;
+}
+.atelier .statline {
+  margin: 19px 0 47px;
+  padding: 10px 0;
+  background: transparent;
+  border-bottom: 1px solid var(--at-line);
+  border-top: 1px solid var(--at-line);
+  gap: 0;
+}
+.atelier .stat {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  min-height: 65px;
+  padding: 8px 22px;
+  position: relative;
+}
+.atelier .stat:not(:first-child):before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22%;
+  height: 56%;
+  width: 1px;
+  background: var(--at-line);
+}
+.atelier .stat-icon {
+  border-radius: 50%;
+  height: 39px;
+  width: 39px;
+}
+.atelier .stat strong {
+  font-family: var(--at-serif);
+  font-size: 24px;
+  font-weight: 400;
+}
+.atelier .stat span {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+.atelier .section {
+  margin-top: 44px;
+}
+.atelier .heading {
+  margin-bottom: 20px;
+  align-items: center;
+}
+.atelier .heading h2 {
+  font-family: var(--at-serif);
+  font-size: clamp(25px, 2.6vw, 35px);
+  font-weight: 400;
+  letter-spacing: -0.9px;
+  line-height: 1.12;
+}
+.atelier .heading p {
+  font-size: 12px;
+  margin-top: 10px;
+}
+.atelier .btn.plain {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 760;
+}
+.atelier .recipe-grid {
+  gap: 22px;
+}
+.atelier .recipe-tile {
+  border: 0;
+  background: transparent;
+  border-radius: 15px;
+  overflow: visible;
+  transition: transform var(--ds-motion-base);
+  box-shadow: none;
+}
+.atelier .recipe-tile:hover {
+  border-color: transparent;
+  transform: translateY(-5px);
+}
+.atelier .tile-image,
+.atelier .recipe-tile .tile-image {
+  height: auto;
+  aspect-ratio: var(--at-tile-ratio, 4/5);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ds-photo-fallback, linear-gradient(145deg, #304237, #67775b));
+}
+.atelier .tile-image img {
+  object-fit: cover;
+  object-position: center center;
+  filter: saturate(0.93);
+  transition:
+    transform var(--ds-motion-image) var(--ds-motion-ease),
+    filter var(--ds-motion-image) var(--ds-motion-ease);
+}
+.atelier .recipe-tile:hover .tile-image img {
+  transform: scale(1.045);
+  filter: saturate(1.1);
+}
+.atelier .tile-image:before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 40% 0 0;
+  background: linear-gradient(180deg, transparent, rgba(12, 21, 16, 0.45));
+  pointer-events: none;
+}
+.atelier .tile-image:has(img) .placeholder {
+  display: none;
+}
+.atelier .tile-image .placeholder {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 35px;
+  min-height: 130px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  font-family: var(--at-serif);
+  font-size: clamp(20px, 2vw, 30px);
+  color: #f0e9d2;
+  filter: none;
+  font-style: italic;
+  line-height: 1.13;
+}
+.atelier.light .tile-image .placeholder {
+  color: #fffdfa;
+  text-shadow: 0 2px 14px rgba(45, 34, 42, 0.35);
+}
+.atelier .photo-index {
+  position: absolute;
+  z-index: 2;
+  left: 15px;
+  top: 14px;
+  color: #fffce9;
+  font-size: 10px;
+  letter-spacing: 1.7px;
+  font-weight: 700;
+  text-shadow: 0 1px 8px #0009;
+}
+.atelier .tile-body {
+  position: relative;
+  padding: 19px 3px 12px;
+  display: flex;
+  flex-direction: column;
+}
+.atelier .tile-body small {
+  color: var(--ds-brand);
+  font-size: 9px;
+  letter-spacing: 2.15px;
+  font-weight: 730;
+  margin-bottom: 9px;
+}
+.atelier .tile-body h3 {
+  font-family: var(--at-serif);
+  font-size: clamp(17px, 1.65vw, 23px);
+  font-weight: 400;
+  letter-spacing: -0.6px;
+  line-height: 1.19;
+  min-height: 55px;
+  max-width: 90%;
+  text-wrap: balance;
+}
+.atelier .tile-meta {
+  font-size: 11px;
+  margin-top: 12px;
+  opacity: 0.95;
+}
+.atelier .tile-open {
+  position: absolute;
+  right: 6px;
+  bottom: 12px;
+  color: var(--ds-brand);
+  width: 27px;
+  height: 27px;
+  border: 1px solid var(--at-line);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.atelier .recipe-tools {
+  margin: 20px 0 28px;
+}
+.atelier .search {
+  border-radius: 999px;
+  background: var(--at-panel2);
+  max-width: 470px;
+}
+.atelier .search input {
+  padding: 15px 0;
+  font-size: 13px;
+}
+.atelier .week-grid {
+  gap: 11px;
+  scrollbar-width: thin;
+}
+.atelier .day {
+  min-height: 170px;
+  border-radius: 15px;
+  padding: 15px 12px;
+  background: var(--at-panel);
+}
+.atelier .day-head span {
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.atelier .day-head b {
+  font-family: var(--at-serif);
+  font-size: 20px;
+  font-weight: 400;
+}
+.atelier .day-meal {
+  font-size: 11px;
+  background: var(--at-panel2);
+  border-radius: 9px;
+  padding: 11px 10px;
+}
+.atelier .shopping-card,
+.atelier .today-panel,
+.atelier .manage-card {
+  border-radius: 19px;
+  padding: 27px;
+  background: var(--at-panel);
+}
+.atelier .shopping-row {
+  padding: 14px 1px;
+}
+.atelier .shopping-name {
+  font-size: 13px;
+}
+.atelier .today-panel h3,
+.atelier .manage-card h3 {
+  font-family: var(--at-serif);
+  font-size: 25px;
+  font-weight: 400;
+}
+.atelier .today-board {
+  gap: 18px;
+}
+.atelier .modal-backdrop {
+  background: rgba(2, 7, 4, 0.82);
+  backdrop-filter: blur(13px);
+}
+.atelier .modal {
+  border-radius: 23px;
+  max-height: min(94dvh, 1050px);
+  width: min(750px, 100%);
+  box-shadow: 0 50px 140px rgba(0, 0, 0, 0.62);
+}
+.atelier .modal.large {
+  width: min(1050px, 100%);
+}
+.atelier .modal-content {
+  padding: 34px 41px 38px;
+}
+.atelier .modal .modal-close {
+  z-index: 5;
+  right: 20px;
+  top: 20px;
+  background: rgba(23, 29, 23, 0.8);
+  color: #fbfaf2;
+  border: 1px solid #ffffff3b;
+  backdrop-filter: blur(8px);
+}
+.atelier .modal-hero {
+  height: 315px;
+  display: block;
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, #324236, #8a8863);
+  color: #d2dac8;
+}
+.atelier .modal-hero img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 50%;
+}
+.atelier .modal-hero:after {
+  content: "";
+  position: absolute;
+  inset: 65% 0 0;
+  background: linear-gradient(transparent, rgba(9, 19, 14, 0.5));
+  pointer-events: none;
+}
+.atelier .modal .modal-content > h2 {
+  font-family: var(--at-serif);
+  font-weight: 400;
+  font-size: clamp(33px, 3.6vw, 52px);
+  line-height: 1.06;
+  letter-spacing: -1.6px;
+  margin-top: 13px;
+  max-width: 740px;
+}
+.atelier .modal .description {
+  font-size: 14px;
+  line-height: 1.75;
+  max-width: 720px;
+  margin: 14px 0 23px;
+}
+.atelier .pill {
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-size: 10px;
+}
+.atelier .detail-cols {
+  grid-template-columns: 0.82fr 1.2fr;
+  gap: 48px;
+  margin-top: 40px;
+  border-top: 1px solid var(--at-line);
+  padding-top: 30px;
+}
+.atelier .detail-cols h3 {
+  font-family: var(--at-serif);
+  font-size: 26px;
+  font-weight: 400;
+  margin: 0 0 16px;
+}
+.atelier .ingredient {
+  padding: 14px 0;
+  font-size: 13px;
+  line-height: 1.55;
+  gap: 13px;
+}
+
+.atelier .step {
+  border: 0;
+  border-bottom: 1px solid var(--at-line);
+  border-radius: 0;
+  margin: 0;
+  padding: 16px 0;
+  font-size: 14px;
+  line-height: 1.65;
+  gap: 17px;
+}
+.atelier .step.active {
+  border-color: var(--ds-brand);
+  background: none;
+}
+.atelier .step-number {
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  font-family: var(--at-serif);
+  font-size: 14px;
+}
+.atelier .cook-layout {
+  display: grid;
+  grid-template-columns: 43% minmax(0, 1fr);
+  min-height: 590px;
+}
+.atelier .cook-visual {
+  position: relative;
+  min-height: 590px;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 40%, #485a40, #152018);
+}
+.atelier .cook-visual img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.atelier .cook-visual .cook-brand {
+  position: absolute;
+  bottom: 30px;
+  left: 27px;
+  color: white;
+  font-family: var(--at-serif);
+  font-size: 28px;
+  line-height: 1.1;
+  text-shadow: 0 2px 12px #000c;
+  max-width: 75%;
+}
+.atelier .cook-visual:after {
+  content: "";
+  position: absolute;
+  inset: 35% 0 0;
+  background: linear-gradient(transparent, rgba(10, 19, 13, 0.7));
+  pointer-events: none;
+}
+.atelier .cook-visual .cook-brand {
+  z-index: 2;
+}
+.atelier .cook-content {
+  min-width: 0;
+  padding: 67px 42px 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  justify-content: center;
+}
+.atelier .cook-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ds-brand);
+  text-transform: uppercase;
+  font-weight: 760;
+}
+.atelier .cook-track {
+  height: 3px;
+  background: var(--at-panel2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.atelier .cook-fill {
+  height: 100%;
+  background: var(--at-accent);
+  transition: width var(--ds-motion-enter) var(--ds-motion-ease);
+}
+.atelier .cook-stage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  text-align: left;
+  padding: 0;
+  min-height: 245px;
+  gap: 16px;
+}
+.atelier .cook-stage .step-count {
+  font-family: var(--at-serif);
+  font-style: italic;
+  font-size: 17px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.atelier .cook-stage h2 {
+  font-family: var(--at-serif);
+  font-size: clamp(28px, 2.9vw, 42px);
+  line-height: 1.19;
+  font-weight: 400;
+  letter-spacing: -0.9px;
+  margin: 0;
+  text-wrap: pretty;
+}
+.atelier .cook-stage .muted {
+  font-size: 12px;
+}
+.atelier .cook-actions {
+  justify-content: start;
+  flex-wrap: wrap;
+  margin: 0;
+}
+.atelier .cook-actions .btn {
+  min-width: 137px;
+  min-height: 48px;
+}
+.atelier .cook-footnote {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--at-sub);
+}
+.atelier .editor-lead {
+  margin-bottom: 23px;
+}
+.atelier .editor-lead h2 {
+  font-family: var(--at-serif);
+  font-size: clamp(32px, 3vw, 43px);
+  font-weight: 400;
+  letter-spacing: -1.2px;
+  max-width: 660px;
+  line-height: 1.1;
+}
+.atelier .editor-lead p {
+  font-size: 13px;
+}
+.atelier .editor-stamp {
+  border-radius: 50%;
+  height: 55px;
+  width: 55px;
+}
+.atelier .editor-card {
+  border-radius: 18px;
+  padding: 27px 29px;
+  background: var(--at-panel);
+}
+.atelier .editor-card h3 {
+  font-family: var(--at-serif);
+  font-size: 26px;
+  font-weight: 400;
+  margin-bottom: 9px;
+}
+.atelier .editor-card .eyebrow {
+  margin-bottom: 12px;
+}
+.atelier .editor-card .editor-sub {
+  font-size: 12px;
+  line-height: 1.75;
+}
+.atelier .editor-card .field span {
+  font-size: 10px;
+  letter-spacing: 1.1px;
+  font-weight: 780;
+  text-transform: uppercase;
+}
+.atelier .editor-card input:not([type="checkbox"]),
+.atelier .editor-card select,
+.atelier .editor-card textarea {
+  font-size: 14px;
+  border-radius: 11px;
+  padding: 14px 15px;
+}
+.atelier .editor-step {
+  border-radius: 14px;
+}
+.atelier .editor-footer {
+  background: var(--at-panel);
+  border-radius: 0 0 18px 18px;
+}
+.atelier .print-setup {
+  gap: 30px;
+}
+.atelier .print-paper {
+  box-shadow: 0 20px 55px #0005;
+  transform: rotate(1deg);
+}
+.atelier .print-option {
+  border-radius: 13px;
+  padding: 17px;
+}
+.atelier .print-option.active {
+  box-shadow: inset 3px 0 var(--at-accent);
+}
+.atelier .settings-group h3 {
+  font-family: var(--at-serif);
+  font-size: 21px;
+  font-weight: 400;
+}
+.atelier .page-head {
+  margin-bottom: 22px;
+}
+@media (max-width: 1080px) {
+  .atelier .shell {
+    grid-template-columns: 178px minmax(0, 1fr);
+  }
+  .atelier .main {
+    padding: 28px;
+  }
+  .atelier .hero {
+    height: 290px;
+    min-height: 290px;
+    padding: 32px;
+  }
+  .atelier .hero h2 {
+    font-size: 39px;
+  }
+  .atelier .recipe-grid {
+    gap: 15px;
+  }
+  .atelier .tile-body h3 {
+    font-size: 20px;
+  }
+}
+@media (max-width: 760px) {
+  .atelier {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    min-height: 100vh;
+  }
+  .atelier .shell {
+    display: flex;
+    flex-direction: column;
+  }
+  .atelier .sidebar {
+    order: 0;
+    min-height: 0;
+    padding: 12px 12px 11px;
+    background: var(--at-surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--at-line);
+  }
+  .atelier .nav {
+    gap: 4px;
+    justify-content: space-between;
+  }
+  .atelier .nav button {
+    padding: 9px 8px;
+    font-size: 10px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 61px;
+    gap: 5px;
+    border-radius: 10px;
+  }
+  .atelier .nav button svg {
+    width: 17px;
+    height: 17px;
+  }
+  .atelier .nav button.active {
+    background: var(--at-panel2);
+  }
+  .atelier .main {
+    order: 1;
+    padding: 24px 19px 52px;
+  }
+  .atelier .topbar {
+    margin-bottom: 28px;
+  }
+  .atelier .intro {
+    margin: 3px 0 25px;
+  }
+  .atelier .intro h1 {
+    font-size: clamp(37px, 10.5vw, 56px);
+    letter-spacing: -1.7px;
+  }
+  .atelier .intro .muted {
+    font-size: 12px;
+  }
+  .atelier .hero {
+    height: 310px;
+    min-height: 310px;
+    padding: 25px 24px;
+    border-radius: 17px;
+  }
+  .atelier .hero:after {
+    background: linear-gradient(
+      0deg,
+      rgba(10, 20, 14, 0.95) 0%,
+      rgba(10, 20, 14, 0.53) 60%,
+      rgba(10, 20, 14, 0.11) 100%
+    );
+  }
+  .atelier .hero .hero-food {
+    object-position: center 45%;
+  }
+  .atelier .hero .hero-copy {
+    max-width: 100%;
+    align-self: end;
+    justify-content: end;
+    gap: 9px;
+  }
+  .atelier .hero h2 {
+    font-size: clamp(29px, 7.5vw, 42px);
+    max-width: 310px;
+  }
+  .atelier .hero p {
+    font-size: 10px;
+  }
+  .atelier .hero .btn.primary {
+    margin-top: 3px;
+  }
+  .atelier .statline {
+    margin: 15px 0 36px;
+  }
+  .atelier .stat {
+    padding: 8px;
+    justify-content: center;
+    gap: 8px;
+    min-height: 60px;
+  }
+  .atelier .stat strong {
+    font-size: 21px;
+  }
+  .atelier .stat-icon {
+    display: none;
+  }
+  .atelier .stat span {
+    font-size: 9px;
+  }
+  .atelier .heading h2 {
+    font-size: 30px;
+  }
+  .atelier .section {
+    margin-top: 37px;
+  }
+  .atelier .recipe-grid.is-featured {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 14px;
+    gap: 16px;
+    margin-right: -19px;
+    padding-right: 19px;
+  }
+  .atelier .recipe-grid.is-featured::-webkit-scrollbar {
+    display: none;
+  }
+  .atelier .recipe-grid.is-featured .recipe-tile {
+    flex: 0 0 min(70vw, 265px);
+    scroll-snap-align: start;
+  }
+  .atelier .recipe-grid.is-featured .tile-image {
+    height: auto;
+    aspect-ratio: 4/5;
+  }
+  .atelier .recipe-grid:not(.is-featured) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 13px;
+  }
+  .atelier .recipe-grid:not(.is-featured) .tile-image {
+    height: auto;
+    aspect-ratio: var(--at-tile-ratio, 4/5);
+  }
+  .atelier .tile-body {
+    padding: 14px 2px 10px;
+  }
+  .atelier .tile-body h3 {
+    font-size: 19px;
+    min-height: 48px;
+  }
+  .atelier .tile-body small {
+    font-size: 8px;
+    letter-spacing: 1.25px;
+  }
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, 155px);
+    gap: 11px;
+  }
+  .atelier .day {
+    min-height: 177px;
+  }
+  .atelier .shopping-card,
+  .atelier .today-panel {
+    padding: 18px;
+  }
+  .atelier .modal {
+    width: 100%;
+    max-height: 95dvh;
+    border-radius: 20px;
+  }
+  .atelier .modal.large {
+    width: 100%;
+  }
+  .atelier .modal-content {
+    padding: 27px 23px;
+  }
+  .atelier .modal-hero {
+    height: 260px;
+  }
+  .atelier .detail-cols {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .atelier .modal .modal-content > h2 {
+    font-size: 36px;
+  }
+  .atelier .cook-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .atelier .cook-visual {
+    min-height: 210px;
+    height: 210px;
+  }
+  .atelier .cook-visual .cook-brand {
+    font-size: 20px;
+    left: 20px;
+    bottom: 14px;
+  }
+  .atelier .cook-content {
+    padding: 30px 24px 33px;
+    gap: 20px;
+  }
+  .atelier .cook-stage {
+    min-height: 190px;
+  }
+  .atelier .cook-stage h2 {
+    font-size: 30px;
+  }
+  .atelier .cook-actions .btn {
+    min-width: 110px;
+  }
+  .atelier .editor-card {
+    padding: 20px;
+  }
+  .atelier .editor-card h3 {
+    font-size: 24px;
+  }
+  .atelier .editor-footer {
+    margin: 0 -20px -20px;
+    padding: 15px 20px;
+  }
+  .atelier .print-paper {
+    transform: none;
+  }
+}
+@media (max-width: 390px) {
+  .atelier .nav button {
+    min-width: 52px;
+    font-size: 9px;
+  }
+  .atelier .main {
+    padding: 20px 15px 45px;
+  }
+  .atelier .recipe-grid.is-featured {
+    margin-right: -15px;
+    padding-right: 15px;
+  }
+  .atelier .hero {
+    height: 294px;
+    min-height: 294px;
+  }
+  .atelier .hero h2 {
+    font-size: 29px;
+  }
+  .atelier .stat strong {
+    font-size: 19px;
+  }
+  .atelier .tile-body h3 {
+    font-size: 18px;
+  }
+}
+
+.atelier .print-paper .paper-preview-row {
+  height: auto;
+  min-height: 0;
+  width: auto;
+  background: transparent;
+  border-radius: 0;
+  color: #263f30;
+  font-size: 9px;
+  line-height: 1.45;
+  border-bottom: 1px solid #e5e9e2;
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+.atelier .print-paper .paper-preview-row b {
+  font-family: Georgia, serif;
+  color: #70947d;
+}
+.atelier .cook-actions .btn[data-action="cook-back"] svg {
+  transform: rotate(180deg);
+}
+
+/* Recipe instructions use Mealie's section and step-summary fields when present. */
+.atelier .detail-instructions {
+  min-width: 0;
+}
+.atelier .detail-instructions > h3 {
+  margin-bottom: 13px;
+}
+.atelier .recipe-steps {
+  display: grid;
+  gap: 13px;
+}
+.atelier .recipe-step-row {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.atelier .step-section {
+  padding: 8px 0 1px;
+  font: italic 19px/1.25 var(--at-serif);
+  font-weight: 400;
+  color: var(--ds-brand);
+}
+.atelier .detail-cols .step {
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  min-height: 0;
+  padding: 15px;
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+  background: var(--at-panel);
+  text-align: left;
+  transition:
+    background var(--at-fast),
+    border-color var(--at-fast),
+    transform var(--at-fast);
+}
+.atelier .detail-cols .step:hover,
+.atelier .detail-cols .step:focus-visible {
+  border-color: color-mix(in srgb, var(--at-accent) 42%, var(--at-line));
+  background: var(--at-panel2);
+}
+.atelier .detail-cols .step:hover {
+  transform: translateY(-1px);
+}
+.atelier .detail-cols .step:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 3px;
+}
+.atelier .detail-cols .step:active {
+  transform: scale(0.995);
+}
+.atelier .detail-cols .step-number {
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+  border: 1px solid var(--at-line);
+  background: var(--at-panel2);
+  font-size: 13px;
+}
+.atelier .step-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding-top: 1px;
+}
+.atelier .step-summary {
+  font-family: var(--at-serif);
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 500;
+  color: var(--at-ink);
+}
+.atelier .step-text {
+  display: block;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: var(--at-sub);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.atelier .step-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+  width: 100%;
+  margin-top: 11px;
+}
+.atelier .step-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+  aspect-ratio: 1.65;
+  object-fit: cover;
+  border: 1px solid var(--at-line);
+  border-radius: 10px;
+  background: var(--at-panel2);
+}
+.atelier .detail-cols .step.active {
+  border-color: color-mix(in srgb, var(--at-accent) 54%, var(--at-line));
+  background: color-mix(in srgb, var(--at-accent) 8%, var(--at-panel));
+}
+.atelier .detail-cols .step.active .step-text {
+  color: var(--at-ink);
+}
+.atelier .cook-step-section {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ds-brand);
+  font-weight: 760;
+}
+.atelier .cook-stage .cook-step-detail {
+  max-width: 620px;
+  color: var(--at-sub);
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.atelier .cook-step-figure {
+  width: min(100%, 680px);
+  margin: 6px 0 0;
+  overflow: hidden;
+  border: 1px solid var(--at-line);
+  border-radius: 17px;
+  background: var(--at-panel2);
+  box-shadow: 0 13px 32px rgba(0, 0, 0, 0.12);
+}
+.atelier .cook-step-photo {
+  display: block;
+  width: 100%;
+  height: clamp(170px, 38vw, 300px);
+  max-height: 300px;
+  aspect-ratio: 3/2;
+  object-fit: cover;
+  object-position: center 45%;
+}
+@media (max-width: 760px) {
+  .atelier .recipe-steps {
+    gap: 11px;
+  }
+  .atelier .detail-cols .step {
+    gap: 11px;
+    padding: 13px;
+  }
+  .atelier .detail-cols .step-number {
+    flex-basis: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  .atelier .step-summary {
+    font-size: 16px;
+  }
+  .atelier .step-text {
+    font-size: 14px;
+  }
+  .atelier .step-photos {
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-top: 9px;
+  }
+  .atelier .step-photo {
+    max-height: 220px;
+    aspect-ratio: 1.7;
+  }
+  .atelier .cook-stage .cook-step-detail {
+    font-size: 14px;
+  }
+  .atelier .cook-step-figure {
+    border-radius: 13px;
+  }
+  .atelier .cook-step-photo {
+    height: clamp(170px, 48vw, 240px);
+    max-height: 240px;
+  }
+}
+
+/* v0.5 — Atelier Nutrition & the kitchen companion. */
+.atelier .nutrition-studio .editor-lead h2,
+.atelier .journal-studio h2 {
+  font-family: var(--at-serif);
+  font-size: clamp(31px, 3.4vw, 49px);
+  letter-spacing: -1.7px;
+  font-weight: 500;
+}
+.atelier .nutri-header {
+  background: linear-gradient(120deg, rgba(157, 203, 178, 0.2), rgba(157, 203, 178, 0.035));
+  border: 1px solid var(--at-line);
+  padding: 22px 25px;
+  border-radius: 22px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 18px;
+  margin: 8px 0 19px;
+}
+.atelier .nutri-header .nutri-eyebrow {
+  font-family: var(--at-serif);
+  font-size: 24px;
+  grid-row: span 2;
+  max-width: 520px;
+}
+.atelier .nutri-header strong {
+  font-family: var(--at-serif);
+  font-size: 30px;
+  color: var(--ds-brand);
+  text-align: right;
+  font-weight: 400;
+}
+.atelier .nutri-header span {
+  font-size: 11px;
+  color: var(--at-sub);
+  text-align: right;
+}
+.atelier .nutri-alert {
+  padding: 12px 16px;
+  border: 1px solid rgba(235, 181, 111, 0.4);
+  background: rgba(235, 181, 111, 0.07);
+  color: var(--at-ink);
+  font-size: 12px;
+  line-height: 1.6;
+  border-radius: 13px;
+  margin-bottom: 12px;
+}
+.atelier .nutri-tools {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 4px 0 21px;
+}
+.atelier .nutri-tools span {
+  font-size: 11px;
+  color: var(--at-sub);
+  max-width: 330px;
+  line-height: 1.5;
+}
+.atelier .nutri-table {
+  display: grid;
+  gap: 10px;
+}
+.atelier .nutri-table > .eyebrow {
+  margin: 5px 0 10px;
+}
+.atelier .nutri-row {
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 18px;
+  padding: 17px 19px;
+  display: grid;
+  gap: 13px;
+}
+.atelier .nutri-row-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.atelier .nutri-number {
+  font-family: var(--at-serif);
+  font-size: 19px;
+  color: var(--ds-brand);
+}
+.atelier .nutri-row-head > strong {
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 650;
+  flex: 1;
+}
+.atelier .nutri-state {
+  border: 1px solid var(--at-line);
+  color: var(--at-sub);
+  padding: 5px 9px;
+  font-size: 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.atelier .nutri-state.matched {
+  border-color: rgba(157, 203, 178, 0.45);
+  background: rgba(157, 203, 178, 0.1);
+  color: var(--ds-brand);
+}
+.atelier .nutri-row-fields {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+.atelier .nutri-row-fields label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.atelier .nutri-row-fields label span {
+  font-size: 10px;
+  color: var(--at-sub);
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+.atelier .nutri-row-fields input {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--at-line);
+  background: var(--at-surface);
+  border-radius: 10px;
+  color: var(--at-ink);
+  font-size: 12px;
+  min-height: 40px;
+}
+.atelier .nutri-row-fields .btn {
+  min-height: 40px;
+  white-space: nowrap;
+}
+.atelier .nutri-source {
+  border-radius: 10px;
+  padding: 10px 13px;
+  color: var(--at-ink);
+  font-size: 11px;
+  background: rgba(157, 203, 178, 0.08);
+}
+.atelier .nutri-source small {
+  display: block;
+  color: var(--at-sub);
+  padding: 3px 0 0 16px;
+}
+.atelier .nutri-choices {
+  display: grid;
+  gap: 6px;
+  padding: 3px 0;
+}
+.atelier .nutri-choices button {
+  background: var(--at-panel2);
+  border: 1px solid var(--at-line);
+  color: var(--at-ink);
+  text-align: left;
+  border-radius: 11px;
+  padding: 12px 13px;
+  cursor: pointer;
+}
+.atelier .nutri-choices button:hover {
+  border-color: var(--ds-brand);
+}
+.atelier .nutri-choices strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+}
+.atelier .nutri-choices small {
+  display: block;
+  font-size: 11px;
+  color: var(--at-sub);
+  padding-top: 3px;
+}
+.atelier .nutri-result {
+  margin: 23px 0;
+  padding: 24px;
+  background: var(--at-panel2);
+  border-radius: 21px;
+}
+.atelier .nutri-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+.atelier .nutri-stat {
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  min-height: 100px;
+  gap: 4px;
+}
+.atelier .nutri-stat span {
+  color: var(--at-sub);
+  font-size: 10px;
+}
+.atelier .nutri-stat strong {
+  color: var(--at-ink);
+  font-family: var(--at-serif);
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+.atelier .nutri-stat small {
+  font-size: 11px;
+  color: var(--at-sub);
+}
+.atelier .nutri-subnote {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--at-sub);
+  margin-top: 15px;
+}
+.atelier .nutri-provenance {
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--at-sub);
+  margin: 11px 0 18px;
+}
+.atelier .nutri-provenance strong {
+  color: var(--at-ink);
+}
+.atelier .nutri-provenance a {
+  color: var(--ds-brand);
+  margin-left: 8px;
+}
+.atelier .nutri-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0 12px;
+}
+.atelier .nutri-current,
+.atelier .journal-hint {
+  margin: 16px 0 12px;
+  border: 1px solid var(--at-line);
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: var(--at-panel2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.atelier .nutri-current span,
+.atelier .journal-hint span {
+  color: var(--ds-brand);
+  font-size: 11px;
+  font-weight: 750;
+}
+.atelier .nutri-current strong,
+.atelier .journal-hint strong {
+  color: var(--at-ink);
+  font-size: 12px;
+  font-weight: 600;
+}
+.atelier .cook-note {
+  border-left: 2px solid var(--at-accent);
+  padding: 10px 12px;
+  margin-top: 13px;
+  font-size: 11px;
+  color: var(--at-ink);
+  display: flex;
+  gap: 8px;
+  line-height: 1.5;
+}
+.atelier .journal-studio .editor-card {
+  margin-top: 22px;
+}
+@media (max-width: 700px) {
+  .atelier .nutri-row-fields {
+    grid-template-columns: 112px 1fr;
+  }
+  .atelier .nutri-row-fields .btn {
+    grid-column: 1/-1;
+    justify-content: center;
+  }
+  .atelier .nutri-header {
+    padding: 16px;
+    grid-template-columns: 1fr auto;
+  }
+  .atelier .nutri-header .nutri-eyebrow {
+    font-size: 19px;
+  }
+  .atelier .nutri-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .atelier .nutri-result {
+    padding: 16px;
+  }
+  .atelier .nutri-row {
+    padding: 13px;
+  }
+  .atelier .nutri-row-head {
+    gap: 8px;
+  }
+  .atelier .nutri-actions > * {
+    flex: 1;
+    min-width: 112px;
+  }
+  .atelier .cook-utility {
+    padding: 13px;
+  }
+}

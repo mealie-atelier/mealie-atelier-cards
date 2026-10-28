@@ -1,0 +1,315 @@
+/* Companion application chrome. Matches the Mealie Atelier design scale. */
+:root {
+  --shell-space-1: 4px;
+  --shell-space-2: 8px;
+  --shell-space-3: 12px;
+  --shell-space-4: 16px;
+  --shell-space-5: 20px;
+  --shell-space-6: 24px;
+  --shell-ink: #e8f1ec;
+  --shell-muted: #afc2b6;
+  --shell-panel: #1a2824;
+  --shell-panel-raised: #22362e;
+  --shell-line: rgba(202, 226, 209, 0.16);
+  --shell-accent: #9dcbb2;
+  --shell-control: 48px;
+  --shell-radius: 16px;
+  --shell-focus: 0 0 0 3px rgba(157, 203, 178, 0.26);
+  --shell-page: #101613;
+  --shell-page-gradient: radial-gradient(ellipse at top, #2a372d 0, #101613 56%);
+  --shell-button: #294337;
+  --shell-button-hover: #345642;
+  --shell-soft: rgba(255, 255, 255, 0.025);
+  --shell-hover: rgba(255, 255, 255, 0.07);
+  --ds-motion-fast: 140ms;
+  --ds-motion-base: 220ms;
+  --ds-motion-enter: 300ms;
+  --ds-motion-slow: 480ms;
+  --ds-motion-balanced-fast: 110ms;
+  --ds-motion-balanced-base: 160ms;
+  --ds-motion-balanced-enter: 200ms;
+  --ds-motion-balanced-slow: 260ms;
+  --ds-motion-off: 0ms;
+  --ds-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ds-motion-reduced: 0.01ms;
+  transition:
+    background-color var(--ds-motion-slow, 480ms) var(--ds-motion-ease),
+    color var(--ds-motion-slow, 480ms) var(--ds-motion-ease);
+}
+:root[data-motion="balanced"] {
+  --ds-motion-fast: var(--ds-motion-balanced-fast);
+  --ds-motion-base: var(--ds-motion-balanced-base);
+  --ds-motion-enter: var(--ds-motion-balanced-enter);
+  --ds-motion-slow: var(--ds-motion-balanced-slow);
+}
+:root[data-motion="off"] {
+  --ds-motion-fast: var(--ds-motion-off);
+  --ds-motion-base: var(--ds-motion-off);
+  --ds-motion-enter: var(--ds-motion-off);
+  --ds-motion-slow: var(--ds-motion-off);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --shell-ink: #29252a;
+  --shell-muted: #665e65;
+  --shell-panel: #fffdfa;
+  --shell-panel-raised: #eee9e3;
+  --shell-line: rgba(57, 45, 54, 0.15);
+  --shell-accent: #75465d;
+  --shell-focus: 0 0 0 3px rgba(117, 70, 93, 0.2);
+  --shell-page: #f4f1eb;
+  --shell-page-gradient: radial-gradient(ellipse at top, #fffdfa 0, #f4f1eb 62%);
+  --shell-button: #eee9e3;
+  --shell-button-hover: #e5ded8;
+  --shell-soft: rgba(57, 45, 54, 0.035);
+  --shell-hover: rgba(57, 45, 54, 0.07);
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+.atelier-connectivity {
+  margin: 0 0 var(--shell-space-4);
+  color: var(--shell-ink);
+  font-size: 13px;
+  line-height: 1.48;
+  background: linear-gradient(118deg, var(--shell-panel-raised), var(--shell-panel));
+  border: 1px solid var(--shell-line);
+  border-radius: var(--shell-radius);
+  box-shadow: var(--ds-shell-elevation, 0 12px 30px rgba(2, 10, 7, 0.1));
+  overflow: hidden;
+  transition:
+    background-color var(--ds-motion-base) var(--ds-motion-ease),
+    border-color var(--ds-motion-base) var(--ds-motion-ease),
+    box-shadow var(--ds-motion-base) var(--ds-motion-ease);
+}
+.a-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--shell-space-3);
+  min-height: 56px;
+  padding: var(--shell-space-3) var(--shell-space-5);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.a-summary::-webkit-details-marker {
+  display: none;
+}
+.a-summary:hover {
+  background: color-mix(in srgb, var(--shell-accent) 9%, transparent);
+}
+.a-summary:focus-visible {
+  outline: 2px solid var(--shell-accent);
+  outline-offset: -4px;
+}
+.a-summary-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--shell-accent) 13%, transparent);
+  color: var(--shell-accent);
+}
+.a-summary-icon svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+.a-summary-copy {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.a-summary-copy strong {
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.a-summary-copy small {
+  color: var(--shell-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.a-chevron {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  transition: transform var(--ds-motion-fast) var(--ds-motion-ease);
+  color: var(--shell-muted);
+}
+.atelier-connectivity[open] .a-chevron {
+  transform: rotate(180deg);
+}
+.a-sync-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: #87a293;
+  box-shadow: 0 0 0 4px rgba(135, 162, 147, 0.09);
+}
+.a-sync-indicator[data-tone="ok"] {
+  background: #9dcbb2;
+}
+.a-sync-indicator[data-tone="warning"] {
+  background: #e4ba89;
+}
+.a-sync-indicator[data-tone="offline"] {
+  background: #e7a8a0;
+}
+.a-connectivity-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--shell-space-4);
+  border-top: 1px solid var(--shell-line);
+  padding: var(--shell-space-5);
+}
+.a-connectivity-group {
+  min-width: 0;
+  display: grid;
+  align-content: start;
+  gap: var(--shell-space-3);
+  background: var(--shell-soft);
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  padding: var(--shell-space-4);
+}
+.a-connectivity-group header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--shell-space-3);
+}
+.a-connectivity-group h3 {
+  font-size: 14px;
+  line-height: 1.3;
+  font-weight: 700;
+  margin: 0;
+}
+.a-connectivity-group p {
+  font-size: 12px;
+  color: var(--shell-muted);
+  margin: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.a-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--shell-space-2);
+}
+.atelier-connectivity button {
+  font: inherit;
+  min-height: var(--shell-control);
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--shell-space-2);
+  padding: 10px 15px;
+  border: 1px solid color-mix(in srgb, var(--shell-accent) 28%, var(--shell-line));
+  border-radius: 999px;
+  color: var(--shell-ink);
+  background: var(--shell-button);
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease),
+    transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier-connectivity button:is(:hover, :focus-visible) {
+  background: var(--shell-button-hover);
+  border-color: var(--shell-accent);
+}
+.atelier-connectivity button:focus-visible {
+  outline: 2px solid var(--shell-accent);
+  outline-offset: 3px;
+}
+.atelier-connectivity button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.atelier-connectivity button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+.atelier-connectivity button[data-quiet] {
+  background: transparent;
+}
+.a-conflicts {
+  display: grid;
+  gap: var(--shell-space-2);
+  margin-top: var(--shell-space-2);
+}
+.a-conflict,
+.a-alarm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--shell-space-3);
+  border-top: 1px solid var(--shell-line);
+  padding: var(--shell-space-3) 0;
+  min-width: 0;
+}
+.a-conflict-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.a-conflict-copy strong,
+.a-alarm strong {
+  font-weight: 700;
+  font-size: 13px;
+}
+.a-conflict-copy small,
+.a-alarm small {
+  color: var(--shell-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.a-error {
+  color: #efbaad !important;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 700px) {
+  .atelier-connectivity {
+    margin: 10px 12px 0;
+    border-radius: 14px;
+  }
+  .a-summary {
+    padding: 10px 14px;
+    min-height: 58px;
+    gap: 10px;
+  }
+  .a-connectivity-details {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+    gap: 12px;
+  }
+  .a-connectivity-group {
+    padding: 15px;
+  }
+  .a-actions button {
+    flex: 1 1 132px;
+  }
+  .a-conflict,
+  .a-alarm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier-connectivity * {
+    transition-duration: var(--ds-motion-reduced) !important;
+    scroll-behavior: auto !important;
+  }
+}

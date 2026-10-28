@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#35262f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Atelier" />
+    <meta
+      name="description"
+      content="Mealie Atelier — beautiful recipes, meal planning and shopping, privately hosted."
+    />
+    <link rel="stylesheet" href="/shell.css?v=0.9.5" />
+    <link rel="stylesheet" href="/pwa-install.css?v=0.9.5" />
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <title>Mealie Atelier — Dein Küchenstudio</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        background: var(--shell-page);
+        font:
+          14px system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: max(18px, env(safe-area-inset-top)) 20px 35px;
+        min-height: 100vh;
+        background: var(--shell-page-gradient);
+      }
+      main {
+        max-width: 1510px;
+        margin: 0 auto;
+      }
+      mealie-atelier-card {
+        display: block;
+      }
+      .foot {
+        text-align: center;
+        color: var(--shell-muted);
+        font-size: 11px;
+        margin: 22px auto;
+        letter-spacing: 0.4px;
+      }
+      .foot-copy {
+        display: block;
+        margin-bottom: 8px;
+      }
+      @media (max-width: 600px) {
+        body {
+          padding: 0 0 15px;
+        }
+        .foot {
+          margin-top: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <mealie-atelier-card></mealie-atelier-card>
+      <footer class="foot">
+        <span class="foot-copy">MEALIE ATELIER · PRIVATE KITCHEN STUDIO · POWERED BY MEALIE</span>
+        <button class="pwa-install-trigger" id="pwa-install-trigger" type="button" hidden>
+          <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+            <path
+              d="M10 2.5v9m0 0 3.5-3.5M10 11.5 6.5 8M4 13v3.25c0 .69.56 1.25 1.25 1.25h9.5c.69 0 1.25-.56 1.25-1.25V13"
+            />
+          </svg>
+          <span data-install-label>App installieren</span>
+        </button>
+      </footer>
+    </main>
+    <dialog class="pwa-install-dialog" id="pwa-install-dialog" aria-labelledby="pwa-install-title">
+      <div class="pwa-install-panel">
+        <header class="pwa-install-header">
+          <span class="pwa-install-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" focusable="false">
+              <circle cx="16" cy="16" r="12" />
+              <path d="M16 19c5-1 7-5 8-9-5 0-8 3-8 9Zm-2 4 5-9" />
+            </svg>
+          </span>
+          <button class="pwa-install-close" type="button" data-install-close aria-label="Schließen">
+            <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+              <path d="m5 5 10 10M15 5 5 15" />
+            </svg>
+          </button>
+        </header>
+        <h2 id="pwa-install-title" data-install-title>Dein Küchenstudio. Immer griffbereit.</h2>
+        <p class="pwa-install-intro" data-install-intro>
+          Lege Mealie Atelier auf deinen Home-Bildschirm und öffne es wie eine App.
+        </p>
+        <ol class="pwa-install-steps" data-install-steps></ol>
+        <p class="pwa-install-note" data-install-note>
+          Die Installation ändert nichts an deinem Mealie-Konto oder deiner privaten Server-Adresse.
+        </p>
+        <div class="pwa-install-actions">
+          <button class="pwa-install-primary" type="button" data-install-action hidden>
+            Jetzt installieren
+          </button>
+          <button class="pwa-install-secondary" type="button" data-install-close>Später</button>
+        </div>
+      </div>
+    </dialog>
+    <script type="module">
+      import { initPwaInstall } from "/pwa-install.js";
+      const pwaInstall = initPwaInstall();
+      await import("/mealie-atelier-cards.js?v=0.9.5");
+      const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi } = await import(
+        "/offline-client.js"
+      );
+      const registrationPromise =
+        "serviceWorker" in navigator
+          ? navigator.serviceWorker.register("/sw.js").catch(() => null)
+          : Promise.resolve(null);
+      await registrationPromise;
+      const offline = await new AtelierOfflineClient().init();
+      const alarms = await new AtelierAlarmClient().init();
+      const card = document.querySelector("mealie-atelier-card");
+      card.setConfig({
+        mode: "dashboard",
+        theme: "dark",
+        accent: "#9dcbb2",
+        columns: 3,
+        language: "auto",
+      });
+      const syncShellTheme = (theme) => {
+        const normalizedTheme = theme === "light" ? "light" : "dark";
+        document.documentElement.dataset.theme = normalizedTheme;
+        document.documentElement.style.colorScheme = normalizedTheme;
+        document
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute("content", normalizedTheme === "light" ? "#f4f1eb" : "#111613");
+      };
+      syncShellTheme(card._design.theme);
+      const syncShellLanguage = (language) => {
+        const isGerman = language === "de";
+        document.documentElement.lang = language;
+        document.title = isGerman
+          ? "Mealie Atelier — Dein Küchenstudio"
+          : "Mealie Atelier — Your kitchen studio";
+        document
+          .querySelector('meta[name="description"]')
+          ?.setAttribute(
+            "content",
+            isGerman
+              ? "Mealie Atelier — Rezepte, Wochenplanung und Einkauf, privat gehostet."
+              : "Mealie Atelier — recipes, meal planning and shopping, privately hosted.",
+          );
+        pwaInstall?.refresh(language);
+      };
+      syncShellLanguage(card._language);
+      card.addEventListener("mealie-atelier-language-change", (event) => {
+        syncShellLanguage(event.detail?.language || card._language);
+      });
+      document.documentElement.dataset.motion = card._design.motion || "expressive";
+      card.addEventListener("mealie-atelier-theme-change", (event) => {
+        syncShellTheme(event.detail?.theme);
+      });
+      card.addEventListener("mealie-atelier-motion-change", (event) => {
+        const motion = event.detail?.motion;
+        if (["expressive", "balanced", "off"].includes(motion))
+          document.documentElement.dataset.motion = motion;
+      });
+      const originalBridge = async (message) => {
+        const response = await fetch("/api/bridge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Atelier-Request": "1" },
+          credentials: "same-origin",
+          body: JSON.stringify(message),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw Error(payload.error || `HTTP ${response.status}`);
+        return payload;
+      };
+      if (!navigator.onLine && offline.enabled) {
+        const cached = await self.AtelierOfflineCore.get("permissions");
+        if (cached) card._status = cached;
+      }
+      card.hass = {
+        language: navigator.language || "de",
+        callWS: async (message) => {
+          if (message.type === "mealie_atelier/shopping")
+            return offline.getShopping(() => originalBridge(message));
+          if (
+            message.type === "mealie_atelier/mutate" &&
+            ["shopping_toggle", "shopping_add"].includes(message.action) &&
+            offline.enabled
+          )
+            return offline.enqueue(message.action, message.payload);
+          const result = await originalBridge(message);
+          if (message.type === "mealie_atelier/status" && offline.enabled)
+            await self.AtelierOfflineCore.put("permissions", result);
+          return result;
+        },
+      };
+      attachOfflineUi(card, offline, alarms);
+      // Native card and companion use the same timer implementation. No second click-handler
+      // intercepts or duplicates the card's alarm creation/cancellation requests.
+      window.addEventListener("online", () => alarms.refresh().catch(() => {}));
+      navigator.serviceWorker?.addEventListener("message", (event) => {
+        if (event.data?.type === "TIMER_EXPIRED") alarms.refresh().catch(() => {});
+      });
+      const reg = await registrationPromise;
+      if (reg && offline.enabled) reg.active?.postMessage({ type: "ENABLE_OFFLINE" });
+    </script>
+  </body>
+</html>

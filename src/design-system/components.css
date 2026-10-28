@@ -1,0 +1,634 @@
+/* Shared control, surface, field and feedback contract. */
+.atelier .ds-surface,
+.atelier .studio-panel,
+.atelier .editor-card,
+.atelier .manage-card,
+.atelier .shopping-card,
+.atelier .today-panel {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-panel-padding);
+  min-width: 0;
+  box-shadow: var(--ds-shadow-panel);
+}
+.atelier .ds-surface[data-elevation="flat"] {
+  box-shadow: none;
+}
+.atelier .ds-surface[data-tone="subtle"] {
+  background: var(--ds-surface-raised);
+}
+.atelier .ds-surface-header,
+.atelier .studio-head {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin-bottom: var(--ds-space-5);
+  min-width: 0;
+}
+.atelier .ds-surface-header h2,
+.atelier .studio-head h2 {
+  margin: 0;
+  font-family: var(--at-serif, Georgia, serif);
+  font-weight: 400;
+  font-size: clamp(23px, 2.1cqi, 31px);
+  line-height: var(--ds-line-tight);
+}
+.atelier .ds-surface-header p,
+.atelier .studio-head p {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-md);
+  line-height: var(--ds-line-body);
+}
+.atelier .ds-empty {
+  display: grid;
+  justify-items: start;
+  align-content: center;
+  gap: var(--ds-space-3);
+  min-height: 160px;
+  padding: var(--ds-space-6);
+  background: var(--ds-surface-raised);
+  border: 1px dashed var(--ds-border);
+  border-radius: var(--ds-radius-md);
+}
+.atelier .ds-empty strong {
+  font-size: var(--ds-font-lg);
+}
+.atelier .ds-empty p {
+  color: var(--ds-muted);
+  max-width: 56ch;
+  line-height: var(--ds-line-body);
+}
+.atelier .ds-field,
+.atelier .studio-form > label,
+.atelier .studio-formline > label,
+.atelier .field {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  font-size: var(--ds-font-sm);
+  font-weight: 650;
+  color: var(--ds-text);
+}
+.atelier .ds-field-hint {
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  line-height: 1.5;
+  font-weight: 400;
+}
+.atelier .ds-field > span:first-child {
+  line-height: 1.4;
+}
+.atelier .ds-field[data-invalid="true"] input {
+  border-color: #dc9b83;
+}
+.atelier input:not([type="checkbox"]):not([type="radio"]),
+.atelier textarea,
+.atelier select {
+  min-height: var(--ds-control-height);
+  width: 100%;
+  min-width: 0;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-border);
+  background: var(--ds-background);
+  color: var(--ds-text);
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-font-md);
+  line-height: 1.45;
+}
+.atelier .search input:not([type="checkbox"]) {
+  background: transparent;
+  min-height: 0;
+  border: 0;
+}
+.atelier textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.atelier button,
+.atelier .btn {
+  min-height: var(--ds-control-height);
+}
+.atelier button:not(.icon-btn):not(.studio-check):not(.nav button) {
+  max-width: 100%;
+}
+.atelier .btn {
+  padding: var(--ds-space-3) var(--ds-space-5);
+  border-radius: var(--ds-radius-pill);
+  font-size: var(--ds-font-sm);
+  line-height: 1.28;
+  white-space: normal;
+  text-align: center;
+}
+.atelier .btn.tiny {
+  min-height: 38px;
+}
+.atelier button:focus-visible,
+.atelier a:focus-visible,
+.atelier [tabindex]:focus-visible,
+.atelier input:focus-visible,
+.atelier select:focus-visible,
+.atelier textarea:focus-visible {
+  outline: 3px solid var(--ds-ring);
+  outline-offset: 3px;
+}
+.atelier .studio-warning,
+.atelier .notice {
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.atelier .recipe-title {
+  margin-block-start: var(--ds-space-3);
+}
+.atelier .recipe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-5);
+}
+.atelier .recipe-actions {
+  flex-wrap: wrap;
+}
+.atelier .editing-hint {
+  margin-block-start: var(--ds-space-3);
+}
+.atelier .editor-card--steps {
+  padding: var(--ds-space-6);
+}
+.atelier .print-detail-heading {
+  margin-block: var(--ds-space-6) var(--ds-space-3);
+}
+.atelier .btn.print-submit {
+  width: 100%;
+  margin-block-start: var(--ds-space-5);
+}
+.atelier .settings-title {
+  margin: var(--ds-space-2) 0 var(--ds-space-6);
+}
+.atelier .studio-muted {
+  font-size: var(--ds-font-xs) !important;
+  line-height: 1.55;
+}
+.atelier .studio-form {
+  gap: var(--ds-space-4);
+}
+.atelier .studio-form .studio-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  font-size: var(--ds-font-sm);
+}
+.atelier .studio-member,
+.atelier .studio-timer-row,
+.atelier .studio-task,
+.atelier .shopping-row {
+  min-height: var(--ds-touch-height);
+  gap: var(--ds-space-3);
+}
+.atelier .studio-member > span,
+.atelier .studio-task > span,
+.atelier .studio-timer-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.atelier .studio-diagnostic-row {
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-4);
+}
+.atelier .at-premium-dialog,
+.at-premium-dialog {
+  border-radius: var(--ds-radius-lg, 20px);
+  box-shadow: var(--ds-shadow-dialog, 0 35px 90px #0006);
+}
+@container atelier-card (max-width: 760px) {
+  .atelier .studio-actions .btn,
+  .atelier .ds-cluster .btn {
+    min-height: var(--ds-touch-height);
+  }
+  .atelier .studio-form button[type="submit"] {
+    min-height: var(--ds-touch-height);
+  }
+  .atelier .studio-plan-row {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+}
+@container atelier-card (max-width: 430px) {
+  .atelier .studio-actions > .btn {
+    flex: 1 1 145px;
+  }
+  .atelier .studio-actions > .btn:only-child {
+    flex-grow: 0;
+  }
+  .atelier .studio-form .studio-inline {
+    align-items: flex-start;
+  }
+  .atelier .studio-plan-row {
+    grid-template-columns: 65px minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .ds-surface,
+  .atelier .ds-grid *,
+  .atelier .ds-page * {
+    scroll-behavior: auto !important;
+    animation-duration: var(--ds-motion-reduced) !important;
+    transition-duration: var(--ds-motion-reduced) !important;
+  }
+}
+
+.atelier .studio-panel p:not(.studio-muted) {
+  font-size: var(--ds-font-sm);
+  line-height: var(--ds-line-body);
+}
+.atelier .studio-suggestion-copy p {
+  font-size: var(--ds-font-xs);
+  line-height: 1.55;
+}
+.atelier .studio-suggestion-copy strong {
+  font-size: clamp(19px, 1.7cqi, 24px);
+  line-height: 1.18;
+}
+.atelier .studio-book-list {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ds-muted) transparent;
+}
+.atelier .icon-btn {
+  min-inline-size: var(--ds-control-height);
+  min-block-size: var(--ds-control-height);
+}
+.atelier :is(button, [role="button"], a) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.atelier
+  :is(.studio-panel, .editor-card, .manage-card, .shopping-card, .today-panel)
+  :is(h1, h2, h3, p) {
+  overflow-wrap: break-word;
+}
+.atelier .studio-grocery-line,
+.atelier .studio-task,
+.atelier .studio-member {
+  min-width: 0;
+}
+.atelier [aria-busy="true"] {
+  cursor: progress;
+}
+.atelier button:disabled,
+.atelier .btn[disabled] {
+  cursor: not-allowed;
+}
+.atelier .cook-utility {
+  display: grid;
+  gap: var(--ds-space-3);
+  min-width: 0;
+  margin: 0;
+  padding: var(--ds-space-4);
+  border: 1px solid color-mix(in srgb, var(--ds-brand) 18%, var(--ds-border));
+  border-radius: var(--ds-radius-lg);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--ds-surface-raised) 88%, var(--ds-brand) 12%),
+    var(--ds-surface-raised)
+  );
+}
+.atelier .cook-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+.atelier .cook-timer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-width: 0;
+}
+.atelier .cook-timer-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  inline-size: 42px;
+  block-size: 42px;
+  border: 1px solid color-mix(in srgb, var(--ds-brand) 26%, var(--ds-border));
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-brand) 12%, var(--ds-surface));
+  color: var(--ds-brand);
+}
+.atelier .cook-timer-header > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.atelier .cook-timer-kicker {
+  color: var(--ds-brand);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  line-height: 1.4;
+}
+.atelier .cook-timer-header strong {
+  color: var(--ds-text);
+  font-family: var(--at-serif, Georgia, serif);
+  font-size: clamp(15px, 1.4cqi, 18px);
+  font-weight: 400;
+  line-height: 1.2;
+}
+.atelier .cook-timer-count {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  padding: 5px 9px;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.atelier .cook-timers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .cook-timer-card {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-width: 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-surface) 92%, var(--ds-brand) 8%);
+}
+.atelier .cook-timer-dial {
+  display: grid;
+  place-items: center;
+  inline-size: 60px;
+  block-size: 60px;
+  padding: 4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--ds-brand) var(--timer-progress, 0%),
+    color-mix(in srgb, var(--ds-brand) 13%, var(--ds-border)) 0
+  );
+  transition: background var(--ds-motion-base) linear;
+}
+.atelier .cook-timer-dial > span {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  border: 1px solid var(--ds-border);
+  border-radius: 50%;
+  background: var(--ds-surface);
+}
+.atelier .cook-timer-dial time {
+  color: var(--ds-text);
+  font-size: 12px;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em;
+}
+.atelier .cook-timer-card.is-progress-unknown .cook-timer-dial {
+  background: color-mix(in srgb, var(--ds-brand) 15%, var(--ds-border));
+}
+.atelier .cook-timer-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.atelier .cook-timer-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ds-muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  line-height: 1.4;
+}
+.atelier .cook-timer-status::before {
+  content: "";
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--ds-brand);
+  animation: at-timer-live var(--ds-motion-loading) ease-in-out infinite;
+}
+.atelier .cook-timer-card.is-done .cook-timer-status {
+  color: var(--ds-brand);
+}
+.atelier .cook-timer-card.is-done .cook-timer-status::before {
+  animation: none;
+}
+.atelier .cook-timer-copy strong {
+  color: var(--ds-text);
+  font-size: var(--ds-font-md);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.atelier .cook-timer-copy small {
+  color: var(--ds-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.atelier .cook-timer-card .icon-btn {
+  display: grid;
+  place-items: center;
+  min-inline-size: 44px;
+  inline-size: 44px;
+  min-block-size: 44px;
+  block-size: 44px;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-muted);
+}
+.atelier .cook-timer-card .icon-btn:hover {
+  background: color-mix(in srgb, var(--ds-brand) 12%, transparent);
+  color: var(--ds-text);
+}
+.atelier .cook-timers-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-height: 38px;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  line-height: 1.5;
+}
+.atelier .cook-timers-empty > span:first-child {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 50%;
+  color: var(--ds-brand);
+  background: color-mix(in srgb, var(--ds-brand) 11%, var(--ds-surface));
+}
+.atelier .cook-timer-compose {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--ds-border);
+}
+.atelier .cook-timer-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+}
+.atelier .cook-timer-presets button {
+  min-height: 44px;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-surface);
+  color: var(--ds-text);
+  font-size: var(--ds-font-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition:
+    transform var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease),
+    background var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier .cook-timer-presets button:hover {
+  transform: translateY(-1px);
+  border-color: var(--ds-brand);
+  background: color-mix(in srgb, var(--ds-brand) 9%, var(--ds-surface));
+}
+.atelier .cook-timer-fields {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.52fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .cook-timer-fields label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--ds-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+.atelier .cook-timer-fields label > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atelier .cook-timer-fields input {
+  min-height: 44px !important;
+  padding: var(--ds-space-2) var(--ds-space-3) !important;
+  border-radius: var(--ds-radius-sm) !important;
+  font-size: var(--ds-font-xs) !important;
+}
+.atelier .cook-timer-fields input[data-timer-minutes] {
+  font-variant-numeric: tabular-nums;
+}
+.atelier .cook-timer-start {
+  min-height: 44px;
+  padding-inline: var(--ds-space-4);
+  white-space: nowrap;
+}
+.atelier .cook-timer-start svg {
+  flex: 0 0 auto;
+}
+@keyframes at-timer-live {
+  50% {
+    opacity: 0.42;
+    transform: scale(0.82);
+  }
+}
+@container atelier-card (max-width:430px) {
+  .atelier .cook-utility {
+    padding: var(--ds-space-3);
+  }
+  .atelier .cook-timer-fields {
+    grid-template-columns: minmax(72px, 0.45fr) minmax(0, 1fr);
+  }
+  .atelier .cook-timer-start {
+    grid-column: 1/-1;
+    width: 100%;
+    justify-content: center;
+  }
+  .atelier .cook-timer-card {
+    grid-template-columns: 56px minmax(0, 1fr) 44px;
+    gap: var(--ds-space-2);
+    padding: var(--ds-space-2);
+  }
+  .atelier .cook-timer-dial {
+    inline-size: 56px;
+    block-size: 56px;
+  }
+  .atelier .cook-timer-header strong {
+    font-size: 15px;
+  }
+}
+@container atelier-card (max-width:760px) {
+  .atelier .cook-controls {
+    gap: var(--ds-space-3);
+  }
+  .atelier .cook-actions {
+    order: 3;
+  }
+  .atelier .cook-utility {
+    order: 4;
+  }
+  .atelier .cook-note {
+    order: 5;
+  }
+  .atelier .cook-footnote {
+    order: 6;
+  }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .atelier .cook-actions {
+    order: 3;
+  }
+  .atelier .cook-utility {
+    order: 4;
+  }
+  .atelier .cook-note {
+    order: 5;
+  }
+  .atelier .cook-footnote {
+    order: 6;
+  }
+}
+@container atelier-card (max-width: 430px) {
+  .atelier .studio-book-list {
+    max-block-size: clamp(230px, 45cqh, 320px);
+  }
+  .atelier .studio-book-row {
+    min-block-size: 52px;
+  }
+  .atelier .studio-actions {
+    gap: var(--ds-space-2);
+  }
+  .atelier .studio-actions > .btn {
+    flex: 1 1 min(100%, 145px);
+  }
+  .atelier .studio-actions > .btn:only-child {
+    flex: 1 1 auto;
+  }
+}
+.atelier .provider-note {
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--at-line);
+  border-radius: 12px;
+  color: var(--at-sub);
+  background: var(--at-panel);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.atelier .provider-note:before {
+  content: "↳";
+  margin-inline-end: 8px;
+  color: var(--ds-brand);
+  font-weight: 800;
+}

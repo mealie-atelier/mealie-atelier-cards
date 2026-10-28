@@ -1,0 +1,138 @@
+/* Mealie Atelier Design System / v1.0 foundations.
+   All screens and cards inherit the same semantic tokens. No device-specific pixels in components. */
+:host {
+  container: atelier-card / inline-size;
+  --ds-space-0: 0;
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-5: 20px;
+  --ds-space-6: 24px;
+  --ds-space-7: 28px;
+  --ds-space-8: 32px;
+  --ds-space-10: 40px;
+  --ds-space-12: 48px;
+  --ds-space-16: 64px;
+  --ds-radius-sm: 10px;
+  --ds-radius-md: 14px;
+  --ds-radius-lg: 20px;
+  --ds-radius-xl: 26px;
+  --ds-radius-pill: 999px;
+  --ds-control-height: 48px;
+  --ds-touch-height: 48px;
+  --ds-control-radius: 12px;
+  --ds-control-padding-x: 17px;
+  --ds-control-padding-y: 10px;
+  --ds-field-padding-x: 15px;
+  --ds-field-padding-y: 11px;
+  --ds-control-gap: 10px;
+  --ds-control-icon: 18px;
+  --ds-select-arrow-size: 18px;
+  --ds-select-arrow-inset: 14px;
+  --ds-select-clearance: 43px;
+  --ds-field-gap: 8px;
+  --ds-action-gap: 12px;
+  --ds-font-xs: 12px;
+  --ds-font-sm: 13px;
+  --ds-font-md: 14px;
+  --ds-font-lg: 17px;
+  --ds-line-tight: 1.17;
+  --ds-line-body: 1.62;
+  --ds-sidebar-width: 216px;
+  --ds-content-max: 1220px;
+  --ds-page-gutter: clamp(24px, 3.1cqi, 48px);
+  --ds-grid-gap: var(--ds-space-6);
+  --ds-panel-padding: clamp(18px, 2.2cqi, 28px);
+  --ds-shadow-panel: 0 14px 40px rgba(0, 0, 0, 0.075);
+  --ds-shadow-dialog: 0 35px 90px rgba(0, 0, 0, 0.4);
+  --ds-motion-fast: 140ms;
+  --ds-motion-base: 220ms;
+  --ds-motion-enter: 300ms;
+  --ds-motion-slow: 480ms;
+  --ds-motion-image: 680ms;
+  --ds-motion-image-long: 960ms;
+  --ds-motion-loading: 1800ms;
+  --ds-motion-reduced: 0.01ms;
+  --ds-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ds-motion-spring: cubic-bezier(0.18, 1.12, 0.32, 1);
+  --ds-motion-linear: linear;
+  --ds-page-stack-gap: var(--ds-space-7);
+  --ds-transition: var(--ds-motion-base) var(--ds-motion-ease);
+}
+.atelier {
+  --at-surface: #111613;
+  --at-ink: #f3f0e8;
+  --at-sub: #a5aca3;
+  --at-panel: #1b241e;
+  --at-panel2: #263027;
+  --at-line: rgba(230, 237, 220, 0.12);
+  --at-shadow: 0 30px 85px rgba(2, 9, 5, 0.3);
+  --ds-sidebar-start: #131c17;
+  --ds-sidebar-end: #101612;
+  --ds-shell-elevation: 0 12px 30px rgba(2, 10, 7, 0.1);
+  --ds-background: var(--at-surface);
+  --ds-surface: var(--at-panel);
+  --ds-surface-raised: var(--at-panel2);
+  --ds-text: var(--at-ink);
+  --ds-muted: var(--at-sub);
+  --ds-border: var(--at-line);
+  --ds-brand: var(--at-accent);
+  --ds-brand-foreground: #12221b;
+  --ds-ring: color-mix(in srgb, var(--at-accent) 55%, white);
+  --ds-photo-fallback: linear-gradient(145deg, #304237, #67775b);
+  --at-gap: var(--ds-grid-gap);
+  --at-pad: var(--ds-page-gutter);
+  font-size: var(--ds-font-md);
+  line-height: var(--ds-line-body);
+  transition:
+    background-color var(--ds-motion-slow) var(--ds-motion-ease),
+    color var(--ds-motion-slow) var(--ds-motion-ease),
+    border-color var(--ds-motion-slow) var(--ds-motion-ease),
+    box-shadow var(--ds-motion-slow) var(--ds-motion-ease);
+}
+.atelier.compact {
+  --ds-grid-gap: var(--ds-space-4);
+  --ds-panel-padding: var(--ds-space-4);
+  --ds-page-stack-gap: var(--ds-space-5);
+}
+.atelier.comfortable {
+  --ds-grid-gap: var(--ds-space-6);
+}
+.atelier.motion-balanced {
+  --ds-motion-fast: 110ms;
+  --ds-motion-base: 160ms;
+  --ds-motion-enter: 200ms;
+  --ds-motion-slow: 260ms;
+  --ds-motion-image: 400ms;
+  --ds-motion-image-long: 600ms;
+  --ds-motion-loading: 1500ms;
+  --ds-motion-spring: var(--ds-motion-ease);
+}
+.atelier.motion-off {
+  --ds-motion-fast: 0ms;
+  --ds-motion-base: 0ms;
+  --ds-motion-enter: 0ms;
+  --ds-motion-slow: 0ms;
+  --ds-motion-image: 0ms;
+  --ds-motion-image-long: 0ms;
+  --ds-motion-loading: 0ms;
+}
+.atelier.light {
+  color-scheme: light;
+  --ds-brand: color-mix(in srgb, var(--at-accent) 88%, #281b22);
+  --ds-brand-foreground: #fffdfa;
+  --ds-ring: color-mix(in srgb, var(--at-accent) 82%, #241921);
+  --ds-photo-fallback: linear-gradient(145deg, #b8a7a2, #806877);
+  --at-surface: #f4f1eb;
+  --at-ink: #29252a;
+  --at-sub: #665e65;
+  --at-panel: #fffdfa;
+  --at-panel2: #eee9e3;
+  --at-line: rgba(57, 45, 54, 0.15);
+  --at-shadow: 0 18px 48px rgba(49, 37, 43, 0.085);
+  --ds-sidebar-start: #eee9e3;
+  --ds-sidebar-end: #e9e3dd;
+  --ds-shell-elevation: 0 12px 32px rgba(49, 37, 43, 0.065);
+  --ds-shadow-panel: 0 15px 40px rgba(49, 37, 43, 0.055);
+}

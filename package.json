@@ -1,0 +1,13 @@
+{
+  "name": "mealie-atelier-cards",
+  "version": "0.9.5",
+  "type": "module",
+  "private": true,
+  "description": "Premium Home Assistant custom cards for Mealie",
+  "scripts": {
+    "build": "node scripts/build-design-system.mjs",
+    "build:demo": "npm run build && node scripts/generate-demo-site.mjs",
+    "check": "node --check dist/mealie-atelier-cards.js",
+    "test": "node --test test/*.test.mjs"
+  }
+}

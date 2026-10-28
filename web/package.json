@@ -1,0 +1,13 @@
+{
+  "name": "mealie-atelier-web",
+  "version": "0.9.5",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file=.env server.mjs",
+    "check": "node --check server.mjs && node --check public/mealie-atelier-cards.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

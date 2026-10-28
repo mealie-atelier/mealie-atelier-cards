@@ -1,0 +1,1738 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Ein fiktiver Abend, zwei Küchenabläufe: Entdecke, wie Mealie Atelier Rezepte, Vorbereitung und Kochen zusammenbringt."
+    />
+    <meta name="theme-color" content="#111711" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%239dcbb2'/%3E%3Cpath d='M18 34c12-19 23-20 28-16-3 16-13 28-28 22' fill='none' stroke='%23111613' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <title>Ein Abend. Ein besserer Küchenflow. · Mealie Atelier</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #172019;
+        --ink-soft: #59665c;
+        --night: #111711;
+        --night-raised: #19211a;
+        --night-line: rgba(231, 239, 230, 0.13);
+        --paper: #f3f2e9;
+        --paper-muted: #e8e9dd;
+        --mint: #a9d7b6;
+        --mint-strong: #81bd95;
+        --tomato: #e18461;
+        --muted: #aab6a9;
+        --line: #d5dbce;
+        --radius-card: 28px;
+        --radius-control: 14px;
+        --page-width: 1220px;
+        --ease: cubic-bezier(0.2, 0.75, 0.25, 1);
+        font-family:
+          "Avenir Next",
+          Avenir,
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--night);
+        color: var(--paper);
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        background:
+          radial-gradient(ellipse at 76% 0%, rgba(91, 127, 92, 0.2), transparent 39rem),
+          var(--night);
+      }
+
+      button,
+      select {
+        color: inherit;
+        font: inherit;
+      }
+
+      button:focus-visible,
+      select:focus-visible,
+      a:focus-visible {
+        outline: 3px solid var(--tomato);
+        outline-offset: 4px;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        width: min(calc(100% - 48px), var(--page-width));
+        margin-inline: auto;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 78px;
+        border-bottom: 1px solid var(--night-line);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 11px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 760;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border: 1px solid rgba(169, 215, 182, 0.4);
+        border-radius: 12px;
+        color: var(--mint);
+        background: rgba(169, 215, 182, 0.08);
+      }
+
+      .brand-mark svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .language-switch {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 1px solid var(--night-line);
+        border-radius: 999px;
+      }
+
+      .language-switch button {
+        min-width: 38px;
+        min-height: 34px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .language-switch button[aria-pressed="true"] {
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .support-link {
+        color: var(--muted);
+        font-size: 13px;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.46fr);
+        align-items: end;
+        gap: 36px;
+        padding: clamp(54px, 9vw, 112px) 0 54px;
+      }
+
+      .eyebrow,
+      .panel-kicker {
+        margin: 0 0 14px;
+        color: var(--mint);
+        font-size: 12px;
+        font-weight: 760;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 760px;
+        margin-bottom: 20px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(46px, 7.5vw, 88px);
+        font-weight: 400;
+        letter-spacing: -0.065em;
+        line-height: 0.98;
+      }
+
+      .hero-copy {
+        max-width: 660px;
+        margin-bottom: 0;
+        color: #c0cbc0;
+        font-size: clamp(16px, 1.8vw, 19px);
+        line-height: 1.65;
+      }
+
+      .hero-note {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        align-items: start;
+        gap: 12px;
+        padding: 18px 0 7px 18px;
+        border-left: 1px solid rgba(169, 215, 182, 0.5);
+        color: #c0cbc0;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .hero-note svg {
+        width: 25px;
+        height: 25px;
+        color: var(--mint);
+      }
+
+      .hero-note strong {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--paper);
+        font-size: 15px;
+      }
+
+      .comparison-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 28px;
+        margin-bottom: 18px;
+      }
+
+      .comparison-head h2 {
+        margin-bottom: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(26px, 4vw, 42px);
+        font-weight: 400;
+        letter-spacing: -0.04em;
+      }
+
+      .fiction-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex: 0 0 auto;
+        padding: 9px 12px;
+        border: 1px solid rgba(225, 132, 97, 0.34);
+        border-radius: 999px;
+        color: #f2b099;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .fiction-label svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .mobile-tabs {
+        display: none;
+      }
+
+      .panels {
+        display: grid;
+        grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+        align-items: stretch;
+        gap: 18px;
+      }
+
+      .panel {
+        min-width: 0;
+        overflow: hidden;
+        border: 1px solid var(--night-line);
+        border-radius: var(--radius-card);
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .panel.before {
+        background: var(--paper-muted);
+      }
+
+      .panel.after {
+        border-color: rgba(169, 215, 182, 0.55);
+        box-shadow: 0 20px 80px rgba(64, 112, 78, 0.13);
+      }
+
+      .panel-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 24px 26px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .panel-kicker {
+        margin-bottom: 6px;
+        color: #5c695d;
+        font-size: 10px;
+      }
+
+      .after .panel-kicker {
+        color: #477555;
+      }
+
+      .panel-top h3 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 25px;
+        font-weight: 400;
+        letter-spacing: -0.035em;
+      }
+
+      .panel-step {
+        display: inline-flex;
+        min-height: 31px;
+        align-items: center;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: #58645a;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .panel-body {
+        padding: 22px 26px 26px;
+      }
+
+      .recipe-card {
+        display: grid;
+        grid-template-columns: 108px minmax(0, 1fr);
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .recipe-card img {
+        display: block;
+        width: 108px;
+        height: 102px;
+        border-radius: 18px;
+        object-fit: cover;
+      }
+
+      .recipe-copy h4 {
+        margin: 0 0 7px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 20px;
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        line-height: 1.12;
+      }
+
+      .recipe-copy p {
+        margin: 0;
+        color: var(--ink-soft);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 11px;
+      }
+
+      .fact {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        background: rgba(23, 32, 25, 0.06);
+        color: #475448;
+        font-size: 11px;
+      }
+
+      .fact svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .workflow-list {
+        display: grid;
+        gap: 0;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid var(--line);
+      }
+
+      .workflow-item {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 11px;
+        min-height: 68px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .workflow-icon {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        place-items: center;
+        border-radius: 11px;
+        background: rgba(23, 32, 25, 0.06);
+        color: #576358;
+      }
+
+      .workflow-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .workflow-copy strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+        font-weight: 690;
+      }
+
+      .workflow-copy span {
+        display: block;
+        color: var(--ink-soft);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .workflow-status {
+        color: #566257;
+        font-size: 11px;
+        text-align: right;
+      }
+
+      .workflow-status svg {
+        display: block;
+        width: 17px;
+        height: 17px;
+        margin-inline: auto;
+      }
+
+      .quiet-note {
+        margin: 16px 0 0;
+        color: #5b685c;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .after-content {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(210px, 1.1fr);
+        gap: 24px;
+      }
+
+      .mission-main {
+        min-width: 0;
+      }
+
+      .mission-description {
+        margin: 0 0 17px;
+        color: var(--ink-soft);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .step-counter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+        color: #506a56;
+        font-size: 11px;
+        font-weight: 730;
+      }
+
+      .progress-track {
+        height: 4px;
+        overflow: hidden;
+        border-radius: 99px;
+        background: #d7dfd3;
+      }
+
+      .progress-fill {
+        width: 33.333%;
+        height: 100%;
+        border-radius: inherit;
+        background: #548e63;
+        transition: width 260ms var(--ease);
+      }
+
+      .step-title {
+        min-height: 72px;
+        margin: 18px 0 11px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(22px, 2.4vw, 29px);
+        font-weight: 400;
+        letter-spacing: -0.04em;
+        line-height: 1.14;
+      }
+
+      .step-text {
+        min-height: 48px;
+        margin: 0 0 19px;
+        color: var(--ink-soft);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .step-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+      }
+
+      .btn {
+        display: inline-flex;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 0 14px;
+        border: 1px solid #ccd6ca;
+        border-radius: var(--radius-control);
+        background: transparent;
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+        transition:
+          transform 180ms var(--ease),
+          background-color 180ms var(--ease),
+          border-color 180ms var(--ease);
+      }
+
+      .btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+        border-color: #94b99b;
+      }
+
+      .btn:active:not(:disabled) {
+        transform: translateY(0) scale(0.985);
+      }
+
+      .btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.48;
+      }
+
+      .btn.primary {
+        border-color: #a6d6b3;
+        background: var(--mint);
+        color: #183021;
+      }
+
+      .btn svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .mission-side {
+        display: grid;
+        align-content: start;
+        gap: 12px;
+      }
+
+      .side-card {
+        padding: 15px;
+        border: 1px solid #dce2d7;
+        border-radius: 18px;
+        background: #f9f8f1;
+      }
+
+      .side-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .side-head h4 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 740;
+      }
+
+      .servings-select {
+        min-height: 34px;
+        padding: 0 28px 0 10px;
+        border: 1px solid #cdd7ca;
+        border-radius: 10px;
+        background-color: #fff;
+        color: var(--ink);
+        font-size: 12px;
+      }
+
+      .ingredient-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .ingredient-list label {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #48554a;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .ingredient-list input,
+      .helper-check input {
+        width: 17px;
+        height: 17px;
+        flex: 0 0 auto;
+        margin: 0;
+        accent-color: #49865b;
+      }
+
+      .helper-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #48554a;
+        font-size: 12px;
+        line-height: 1.4;
+        cursor: pointer;
+      }
+
+      .helper-avatar {
+        display: grid;
+        width: 29px;
+        height: 29px;
+        flex: 0 0 auto;
+        place-items: center;
+        border-radius: 50%;
+        background: #f5dfc6;
+        color: #794a31;
+        font-size: 12px;
+        font-weight: 780;
+      }
+
+      .timer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .timer-copy {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #48554a;
+        font-size: 12px;
+        font-weight: 680;
+      }
+
+      .timer-copy svg {
+        width: 18px;
+        height: 18px;
+        color: #548e63;
+      }
+
+      .timer-state {
+        min-height: 17px;
+        margin: 9px 0 0;
+        color: #59665a;
+        font-size: 11px;
+      }
+
+      .bottom-story {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 0.62fr);
+        align-items: center;
+        gap: 34px;
+        padding: 66px 0 78px;
+      }
+
+      .bottom-story h2 {
+        max-width: 640px;
+        margin-bottom: 13px;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(29px, 4.2vw, 48px);
+        font-weight: 400;
+        letter-spacing: -0.05em;
+        line-height: 1.05;
+      }
+
+      .bottom-story p {
+        max-width: 640px;
+        margin: 0;
+        color: #c0cbc0;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .quote-mark {
+        padding: 21px 0 21px 20px;
+        border-left: 1px solid rgba(169, 215, 182, 0.5);
+        color: var(--mint);
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 21px;
+        line-height: 1.42;
+      }
+
+      .footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 20px 0 28px;
+        border-top: 1px solid var(--night-line);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .footer a {
+        color: var(--paper);
+        text-decoration-color: rgba(169, 215, 182, 0.65);
+        text-underline-offset: 4px;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        clip-path: inset(50%);
+      }
+
+      .state-change {
+        animation: state-in 240ms var(--ease) both;
+      }
+
+      @keyframes state-in {
+        from {
+          opacity: 0.45;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 900px) {
+        .hero {
+          grid-template-columns: minmax(0, 1fr) minmax(220px, 0.48fr);
+          gap: 25px;
+        }
+        .after-content {
+          grid-template-columns: 1fr;
+          gap: 17px;
+        }
+        .step-title,
+        .step-text {
+          min-height: 0;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .page {
+          width: min(calc(100% - 32px), var(--page-width));
+        }
+        .topbar {
+          min-height: 68px;
+        }
+        .support-link {
+          display: none;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 27px;
+          padding: 58px 0 42px;
+        }
+        h1 {
+          max-width: 540px;
+          font-size: clamp(48px, 13vw, 72px);
+        }
+        .hero-note {
+          max-width: 420px;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+        .comparison-head {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 13px;
+          margin-bottom: 14px;
+        }
+        .mobile-tabs {
+          display: flex;
+          gap: 6px;
+          margin-bottom: 12px;
+          padding: 4px;
+          border: 1px solid var(--night-line);
+          border-radius: 15px;
+          background: rgba(255, 255, 255, 0.035);
+        }
+        .mobile-tabs button {
+          min-height: 40px;
+          flex: 1;
+          border: 0;
+          border-radius: 11px;
+          background: transparent;
+          color: var(--muted);
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 700;
+        }
+        .mobile-tabs button[aria-pressed="true"] {
+          background: var(--paper);
+          color: var(--ink);
+        }
+        .panels {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .panels[data-focus="before"] .after,
+        .panels[data-focus="after"] .before {
+          display: none;
+        }
+        .panel {
+          border-radius: 23px;
+        }
+        .panel-top {
+          padding: 19px 19px 15px;
+        }
+        .panel-top h3 {
+          font-size: 23px;
+        }
+        .panel-body {
+          padding: 18px 19px 20px;
+        }
+        .recipe-card {
+          grid-template-columns: 92px minmax(0, 1fr);
+          gap: 12px;
+        }
+        .recipe-card img {
+          width: 92px;
+          height: 94px;
+          border-radius: 15px;
+        }
+        .recipe-copy h4 {
+          font-size: 18px;
+        }
+        .workflow-item {
+          grid-template-columns: 31px minmax(0, 1fr) auto;
+          gap: 9px;
+          min-height: 67px;
+        }
+        .workflow-copy span {
+          font-size: 11px;
+        }
+        .workflow-status {
+          max-width: 68px;
+          font-size: 10px;
+        }
+        .after-content {
+          grid-template-columns: 1fr;
+          gap: 17px;
+        }
+        .step-title {
+          min-height: 0;
+          margin-top: 15px;
+          font-size: 27px;
+        }
+        .step-text {
+          min-height: 0;
+          margin-bottom: 15px;
+        }
+        .mission-side {
+          grid-template-columns: 1fr 1fr;
+          gap: 9px;
+        }
+        .side-card {
+          min-width: 0;
+          padding: 12px;
+          border-radius: 15px;
+        }
+        .side-card.ingredients-card {
+          grid-column: 1 / -1;
+        }
+        .side-head h4 {
+          font-size: 11px;
+        }
+        .ingredient-list label,
+        .helper-row {
+          font-size: 11px;
+        }
+        .bottom-story {
+          grid-template-columns: 1fr;
+          gap: 20px;
+          padding: 50px 0 56px;
+        }
+        .quote-mark {
+          padding-block: 4px;
+        }
+      }
+
+      @media (max-width: 370px) {
+        .page {
+          width: calc(100% - 24px);
+        }
+        .panel-top {
+          gap: 8px;
+          padding-inline: 15px;
+        }
+        .panel-top h3 {
+          font-size: 21px;
+        }
+        .panel-body {
+          padding-inline: 15px;
+        }
+        .recipe-card {
+          grid-template-columns: 78px minmax(0, 1fr);
+        }
+        .recipe-card img {
+          width: 78px;
+          height: 82px;
+        }
+        .recipe-copy h4 {
+          font-size: 16px;
+        }
+        .workflow-status {
+          max-width: 54px;
+        }
+        .mission-side {
+          grid-template-columns: 1fr;
+        }
+        .side-card.ingredients-card {
+          grid-column: auto;
+        }
+        .timer-row {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <a class="brand" href="../../README.md" aria-label="Mealie Atelier repository home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M19.8 4.2C11 4.1 5.2 7.3 5.2 13.1a5.6 5.6 0 0 0 5.7 5.7c5.8 0 8.9-5.9 8.9-14.6Z"
+              />
+              <path d="M3.7 20.2c2-5 5.3-8.4 10.3-11.1" />
+            </svg>
+          </span>
+          <span>Mealie Atelier</span>
+        </a>
+        <div class="top-actions">
+          <a
+            class="support-link"
+            href="https://alles-automatisch.de/"
+            target="_blank"
+            rel="noreferrer"
+            data-copy="site"
+            >Alles Automatisch</a
+          >
+          <div class="language-switch" role="group" aria-label="Language">
+            <button type="button" data-language="de" aria-pressed="true">DE</button>
+            <button type="button" data-language="en" aria-pressed="false">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <div>
+            <p class="eyebrow" data-copy="eyebrow">Ein fiktiver Küchenabend</p>
+            <h1 id="hero-title" data-copy="heroTitle">Ein Abend.<br />Ein besserer Küchenflow.</h1>
+            <p class="hero-copy" data-copy="heroCopy">
+              Dasselbe Rezept, dieselben vier Portionen. Sieh dir an, wie aus einzelnen Handgriffen
+              eine ruhige, gemeinsame Kochmission wird.
+            </p>
+          </div>
+          <aside class="hero-note">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 3v3m0 12v3M4.2 4.2l2.1 2.1m11.4 11.4 2.1 2.1M3 12h3m12 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
+              />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+            <div>
+              <strong data-copy="noteTitle">Ein Rezept. Ein gemeinsamer Plan.</strong>
+              <span data-copy="noteText"
+                >Fiktive Demo-Daten, keine Verbindung zu Mealie oder Home Assistant.</span
+              >
+            </div>
+          </aside>
+        </section>
+
+        <section aria-labelledby="comparison-title">
+          <div class="comparison-head">
+            <h2 id="comparison-title" data-copy="comparisonTitle">
+              Der Unterschied liegt im Flow.
+            </h2>
+            <span class="fiction-label">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3 2.7 19.2a1 1 0 0 0 .9 1.5h16.8a1 1 0 0 0 .9-1.5L12 3Z" />
+                <path d="M12 9v4m0 3h.01" />
+              </svg>
+              <span data-copy="fictionLabel">Fiktive Demo · keine Live-Daten</span>
+            </span>
+          </div>
+
+          <div class="mobile-tabs" role="group" aria-label="Ansicht wählen" data-label="viewLabel">
+            <button type="button" data-focus="before" aria-pressed="false" data-copy="tabBefore">
+              Ohne Atelier
+            </button>
+            <button type="button" data-focus="after" aria-pressed="true" data-copy="tabAfter">
+              Mit Atelier
+            </button>
+          </div>
+
+          <div class="panels" id="comparison-panels" data-focus="after">
+            <article class="panel before" aria-labelledby="before-title">
+              <header class="panel-top">
+                <div>
+                  <p class="panel-kicker" data-copy="beforeKicker">Der Abend, wie er oft läuft</p>
+                  <h3 id="before-title" data-copy="beforeTitle">Alles im Kopf.</h3>
+                </div>
+                <span class="panel-step" data-copy="manualTag">Manuell</span>
+              </header>
+              <div class="panel-body">
+                <div class="recipe-card">
+                  <img
+                    src="./food/gnocchi.webp"
+                    width="108"
+                    height="102"
+                    alt="Fiktive Süßkartoffel-Gnocchi mit Salbei"
+                    data-copy-alt="recipeAlt"
+                  />
+                  <div class="recipe-copy">
+                    <h4 data-copy="recipeTitle">Süßkartoffel-Gnocchi mit Salbei</h4>
+                    <p data-copy="recipeDescription">
+                      Wärmend, frisch und bereit für einen gemeinsamen Abend.
+                    </p>
+                    <div class="facts" aria-label="Rezeptdetails">
+                      <span class="fact"
+                        ><svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          aria-hidden="true"
+                        >
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 7v5l3 2" /></svg
+                        ><span data-copy="timeFact">35 Min.</span></span
+                      >
+                      <span class="fact"
+                        ><svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          aria-hidden="true"
+                        >
+                          <circle cx="9" cy="8" r="3" />
+                          <path
+                            d="M3 20v-1a6 6 0 0 1 12 0v1m2-11a3 3 0 1 1 0 6m1 2a5 5 0 0 1 3 4v1"
+                          /></svg
+                        ><span data-copy="servingFact">4 Portionen</span></span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <ul class="workflow-list" aria-label="Manuelle Vorbereitung">
+                  <li class="workflow-item">
+                    <span class="workflow-icon" aria-hidden="true"
+                      ><svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M4 5h16M4 12h16M4 19h10" />
+                        <circle cx="18" cy="19" r="2" /></svg
+                    ></span>
+                    <span class="workflow-copy"
+                      ><strong data-copy="manualOneTitle">Menge umrechnen</strong
+                      ><span data-copy="manualOneText"
+                        >Zutaten für vier Personen im Rezept anpassen.</span
+                      ></span
+                    >
+                    <span class="workflow-status" data-copy="manualOneStatus">Rezept öffnen</span>
+                  </li>
+                  <li class="workflow-item">
+                    <span class="workflow-icon" aria-hidden="true"
+                      ><svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M3 4h2l2.1 11.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 9H6" />
+                        <circle cx="10" cy="21" r="1" />
+                        <circle cx="18" cy="21" r="1" /></svg
+                    ></span>
+                    <span class="workflow-copy"
+                      ><strong data-copy="manualTwoTitle">Einkauf abgleichen</strong
+                      ><span data-copy="manualTwoText"
+                        >Fehlende Zutaten zusammensuchen und notieren.</span
+                      ></span
+                    >
+                    <span class="workflow-status" data-copy="manualTwoStatus">Liste wechseln</span>
+                  </li>
+                  <li class="workflow-item">
+                    <span class="workflow-icon" aria-hidden="true"
+                      ><svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M4 5h16v14H4zM8 9h8M8 13h5" /></svg
+                    ></span>
+                    <span class="workflow-copy"
+                      ><strong data-copy="manualThreeTitle">Schritte im Blick behalten</strong
+                      ><span data-copy="manualThreeText"
+                        >Zwischen Rezepttext, Helferaufgabe und Timer wechseln.</span
+                      ></span
+                    >
+                    <span class="workflow-status" data-copy="manualThreeStatus">Selbst merken</span>
+                  </li>
+                </ul>
+                <p class="quiet-note" data-copy="baselineNote">
+                  Eine illustrative Alltagsroutine – kein Screenshot und keine Bewertung der
+                  Mealie-Oberfläche.
+                </p>
+              </div>
+            </article>
+
+            <article class="panel after" aria-labelledby="after-title">
+              <header class="panel-top">
+                <div>
+                  <p class="panel-kicker" data-copy="afterKicker">Mit Atelier im Küchenmodus</p>
+                  <h3 id="after-title" data-copy="afterTitle">Zusammen im Takt.</h3>
+                </div>
+                <span class="panel-step" id="mission-badge">01 / 03</span>
+              </header>
+              <div class="panel-body">
+                <div class="recipe-card">
+                  <img
+                    src="./food/gnocchi.webp"
+                    width="108"
+                    height="102"
+                    alt="Fiktive Süßkartoffel-Gnocchi mit Salbei"
+                    data-copy-alt="recipeAlt"
+                  />
+                  <div class="recipe-copy">
+                    <h4 data-copy="recipeTitle">Süßkartoffel-Gnocchi mit Salbei</h4>
+                    <p data-copy="recipeDescription">
+                      Wärmend, frisch und bereit für einen gemeinsamen Abend.
+                    </p>
+                    <div class="facts">
+                      <span class="fact"
+                        ><svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          aria-hidden="true"
+                        >
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 7v5l3 2" /></svg
+                        ><span data-copy="timeFact">35 Min.</span></span
+                      >
+                      <span class="fact"
+                        ><svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          aria-hidden="true"
+                        >
+                          <circle cx="9" cy="8" r="3" />
+                          <path
+                            d="M3 20v-1a6 6 0 0 1 12 0v1m2-11a3 3 0 1 1 0 6m1 2a5 5 0 0 1 3 4v1"
+                          /></svg
+                        ><span id="serving-summary">4 Portionen</span></span
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="after-content">
+                  <section class="mission-main" aria-labelledby="step-title">
+                    <div class="step-counter">
+                      <span data-copy="missionLabel">KOCHMISSION</span>
+                      <span id="step-count">Schritt 1 von 3</span>
+                    </div>
+                    <div class="progress-track" aria-hidden="true">
+                      <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <h4 class="step-title" id="step-title">Zusammen vorbereiten.</h4>
+                    <p class="step-text" id="step-text" aria-live="polite">
+                      Wascht die Süßkartoffeln und legt Salbei, Mehl und Olivenöl bereit.
+                    </p>
+                    <div class="step-nav">
+                      <button type="button" class="btn" id="previous-step" disabled>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m15 18-6-6 6-6" />
+                        </svg>
+                        <span data-copy="backButton">Zurück</span>
+                      </button>
+                      <button type="button" class="btn primary" id="next-step">
+                        <span data-copy="nextButton">Weiter</span>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M5 12h14m-6-6 6 6-6 6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </section>
+
+                  <aside
+                    class="mission-side"
+                    aria-label="Küchenaufgaben"
+                    data-copy-aria="kitchenTasks"
+                  >
+                    <section class="side-card ingredients-card">
+                      <div class="side-head">
+                        <h4 data-copy="ingredientTitle">Das kommt auf den Tisch</h4>
+                        <label class="sr-only" for="servings" data-copy="servingsLabel"
+                          >Portionen auswählen</label
+                        >
+                        <select class="servings-select" id="servings" aria-label="Portionen">
+                          <option value="2">2 Portionen</option>
+                          <option value="4" selected>4 Portionen</option>
+                          <option value="6">6 Portionen</option>
+                        </select>
+                      </div>
+                      <ul class="ingredient-list">
+                        <li>
+                          <label
+                            ><input type="checkbox" />
+                            <span id="ingredient-potato">1 kg Süßkartoffeln</span></label
+                          >
+                        </li>
+                        <li>
+                          <label
+                            ><input type="checkbox" />
+                            <span id="ingredient-flour">400 g Mehl</span></label
+                          >
+                        </li>
+                        <li>
+                          <label
+                            ><input type="checkbox" />
+                            <span data-copy="ingredientSage">Salbei und Olivenöl</span></label
+                          >
+                        </li>
+                      </ul>
+                    </section>
+
+                    <section class="side-card">
+                      <div class="side-head">
+                        <h4 data-copy="helperTitle">Kleine Küchenmission</h4>
+                      </div>
+                      <label class="helper-row helper-check">
+                        <span class="helper-avatar" aria-hidden="true">L</span>
+                        <input type="checkbox" id="helper-task" />
+                        <span data-copy="helperTask">Salbei abzupfen</span>
+                      </label>
+                    </section>
+
+                    <section class="side-card">
+                      <div class="timer-row">
+                        <span class="timer-copy">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <circle cx="12" cy="13" r="8" />
+                            <path d="M12 9v4l3 2M9 2h6M12 2v3" />
+                          </svg>
+                          <span data-copy="timerTitle">Küchentimer</span>
+                        </span>
+                        <button type="button" class="btn" id="timer-button">
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M12 5v14m-7-7h14" />
+                          </svg>
+                          <span data-copy="timerStart">10 Min. starten</span>
+                        </button>
+                      </div>
+                      <p
+                        class="timer-state"
+                        id="timer-state"
+                        aria-live="polite"
+                        data-copy="timerIdle"
+                      >
+                        Noch kein Timer gestartet.
+                      </p>
+                    </section>
+                  </aside>
+                </div>
+                <p class="quiet-note" data-copy="atelierNote">
+                  Die Demo speichert nichts und sendet keine Daten. Verfügbare Funktionen hängen vom
+                  gewählten Atelier-Provider ab.
+                </p>
+              </div>
+            </article>
+          </div>
+          <p class="sr-only" id="demo-announcer" aria-live="polite"></p>
+        </section>
+
+        <section class="bottom-story" aria-labelledby="story-title">
+          <div>
+            <p class="eyebrow" data-copy="storyEyebrow">Mehr Ruhe. Mehr miteinander.</p>
+            <h2 id="story-title" data-copy="storyTitle">Das Rezept bleibt. Der Kopf wird frei.</h2>
+            <p data-copy="storyText">
+              Atelier verbindet Rezept, Vorbereitung und Kochschritte in einer Oberfläche, die sich
+              an euren Küchenmoment anpasst. Die Demo zeigt eine mögliche Routine – keine
+              Live-Integration und kein Versprechen für jeden Provider.
+            </p>
+          </div>
+          <p class="quote-mark" data-copy="quote">
+            „Was kommt als Nächstes?“ wird zu „Alles bereit. Wir kochen.“
+          </p>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span data-copy="footerCredit">Mit Liebe gebaut von</span>
+        <span
+          ><a href="https://alles-automatisch.de/" target="_blank" rel="noreferrer"
+            >alles-automatisch.de</a
+          ></span
+        >
+        <a
+          href="https://ko-fi.com/allesautomatisch"
+          target="_blank"
+          rel="noreferrer"
+          data-copy="footerSupport"
+          >Projekt unterstützen</a
+        >
+      </footer>
+    </div>
+
+    <script type="module">
+      const copy = {
+        de: {
+          title: "Ein Abend. Ein besserer Küchenflow. · Mealie Atelier",
+          recipeAlt: "Fiktive Süßkartoffel-Gnocchi mit Salbei",
+          kitchenTasks: "Küchenaufgaben",
+          langLabel: "Sprache wählen",
+          site: "Alles Automatisch",
+          eyebrow: "Ein fiktiver Küchenabend",
+          heroTitle: "Ein Abend.<br />Ein besserer Küchenflow.",
+          heroCopy:
+            "Dasselbe Rezept, dieselben vier Portionen. Sieh dir an, wie aus einzelnen Handgriffen eine ruhige, gemeinsame Kochmission wird.",
+          noteTitle: "Ein Rezept. Ein gemeinsamer Plan.",
+          noteText: "Fiktive Demo-Daten, keine Verbindung zu Mealie oder Home Assistant.",
+          comparisonTitle: "Der Unterschied liegt im Flow.",
+          fictionLabel: "Fiktive Demo · keine Live-Daten",
+          viewLabel: "Ansicht wählen",
+          tabBefore: "Ohne Atelier",
+          tabAfter: "Mit Atelier",
+          beforeKicker: "Der Abend, wie er oft läuft",
+          beforeTitle: "Alles im Kopf.",
+          manualTag: "Manuell",
+          afterKicker: "Mit Atelier im Küchenmodus",
+          afterTitle: "Zusammen im Takt.",
+          recipeTitle: "Süßkartoffel-Gnocchi mit Salbei",
+          recipeDescription: "Wärmend, frisch und bereit für einen gemeinsamen Abend.",
+          timeFact: "35 Min.",
+          servingFact: "4 Portionen",
+          recipeFacts: "Rezeptdetails",
+          manualList: "Manuelle Vorbereitung",
+          manualOneTitle: "Menge umrechnen",
+          manualOneText: "Zutaten für vier Personen im Rezept anpassen.",
+          manualOneStatus: "Rezept öffnen",
+          manualTwoTitle: "Einkauf abgleichen",
+          manualTwoText: "Fehlende Zutaten zusammensuchen und notieren.",
+          manualTwoStatus: "Liste wechseln",
+          manualThreeTitle: "Schritte im Blick behalten",
+          manualThreeText: "Zwischen Rezepttext, Helferaufgabe und Timer wechseln.",
+          manualThreeStatus: "Selbst merken",
+          baselineNote:
+            "Eine illustrative Alltagsroutine – kein Screenshot und keine Bewertung der Mealie-Oberfläche.",
+          missionLabel: "KOCHMISSION",
+          backButton: "Zurück",
+          nextButton: "Weiter",
+          doneButton: "Fertig",
+          ingredientTitle: "Das kommt auf den Tisch",
+          servingsLabel: "Portionen auswählen",
+          servingsAria: "Portionen",
+          servingsOption: "{count} Portionen",
+          ingredientPotatoes: "Süßkartoffeln",
+          ingredientSage: "Salbei und Olivenöl",
+          helperTitle: "Kleine Küchenmission",
+          helperTask: "Salbei abzupfen",
+          timerTitle: "Küchentimer",
+          timerStart: "Demo-Timer starten",
+          timerIdle: "Noch kein Timer gestartet.",
+          timerRunning: "Demo-Timer läuft · Schnelllauf",
+          timerStarted: "Demo-Küchentimer gestartet.",
+          stepCount: "Schritt {step} von 3",
+          badge: "{step} / 03",
+          stepTitles: [
+            "Zusammen vorbereiten.",
+            "Gnocchi in Form bringen.",
+            "In Salbei schwenken & genießen.",
+          ],
+          stepTexts: [
+            "Wascht die Süßkartoffeln und legt Salbei, Mehl und Olivenöl bereit.",
+            "Gart die Kartoffeln, zerdrückt sie und knetet mit Mehl einen weichen Teig.",
+            "Formt die Gnocchi, gart sie portionsweise und schwenkt sie in Salbeiöl.",
+          ],
+          ingredientPotatoAmount: {
+            2: "500 g Süßkartoffeln",
+            4: "1 kg Süßkartoffeln",
+            6: "1,5 kg Süßkartoffeln",
+          },
+          ingredientFlourAmount: { 2: "200 g Mehl", 4: "400 g Mehl", 6: "600 g Mehl" },
+          timerDone: "Demo-Timer beendet.",
+          helperDone: "Salbei ist bereit – stark geholfen!",
+          helperPending: "Salbei abzupfen",
+          atelierNote:
+            "Die Demo speichert nichts und sendet keine Daten. Verfügbare Funktionen hängen vom gewählten Atelier-Provider ab.",
+          storyEyebrow: "Mehr Ruhe. Mehr miteinander.",
+          storyTitle: "Das Rezept bleibt. Der Kopf wird frei.",
+          storyText:
+            "Atelier verbindet Rezept, Vorbereitung und Kochschritte in einer Oberfläche, die sich an euren Küchenmoment anpasst. Die Demo zeigt eine mögliche Routine – keine Live-Integration und kein Versprechen für jeden Provider.",
+          quote: "„Was kommt als Nächstes?“ wird zu „Alles bereit. Wir kochen.“",
+          footerCredit: "Mit Liebe gebaut von",
+          footerSupport: "Projekt unterstützen",
+          lang: "de",
+        },
+        en: {
+          title: "One evening. A better kitchen flow. · Mealie Atelier",
+          recipeAlt: "Fictional sweet potato gnocchi with sage",
+          kitchenTasks: "Kitchen tasks",
+          langLabel: "Choose language",
+          site: "Alles Automatisch",
+          eyebrow: "A fictional evening in the kitchen",
+          heroTitle: "One evening.<br />A better kitchen flow.",
+          heroCopy:
+            "Same recipe, same four servings. See how scattered tasks can become a calm cooking mission you share.",
+          noteTitle: "One recipe. One shared plan.",
+          noteText: "Fictional demo data, with no Mealie or Home Assistant connection.",
+          comparisonTitle: "The difference is in the flow.",
+          fictionLabel: "Fictional demo · no live data",
+          viewLabel: "Choose a view",
+          tabBefore: "Without Atelier",
+          tabAfter: "With Atelier",
+          beforeKicker: "An evening that can get busy",
+          beforeTitle: "Keep it all in mind.",
+          manualTag: "Manual",
+          afterKicker: "Atelier kitchen mode",
+          afterTitle: "Cook in sync.",
+          recipeTitle: "Sweet potato gnocchi with sage",
+          recipeDescription: "Cozy, fresh, and ready for an evening together.",
+          timeFact: "35 min",
+          servingFact: "4 servings",
+          recipeFacts: "Recipe details",
+          manualList: "Manual prep",
+          manualOneTitle: "Scale the recipe",
+          manualOneText: "Adjust the ingredients for four in the recipe.",
+          manualOneStatus: "Open recipe",
+          manualTwoTitle: "Check the shopping",
+          manualTwoText: "Find missing ingredients and write them down.",
+          manualTwoStatus: "Switch lists",
+          manualThreeTitle: "Keep the steps in mind",
+          manualThreeText: "Move between the recipe, helper task, and timer.",
+          manualThreeStatus: "Remember it",
+          baselineNote:
+            "An illustrative everyday routine—not a screenshot or critique of Mealie's interface.",
+          missionLabel: "COOKING MISSION",
+          backButton: "Back",
+          nextButton: "Next step",
+          doneButton: "Done",
+          ingredientTitle: "On the counter",
+          servingsLabel: "Choose servings",
+          servingsAria: "Servings",
+          servingsOption: "{count} servings",
+          ingredientPotatoes: "Sweet potatoes",
+          ingredientSage: "Sage and olive oil",
+          helperTitle: "A little kitchen mission",
+          helperTask: "Pick the sage leaves",
+          timerTitle: "Kitchen timer",
+          timerStart: "Start demo timer",
+          timerIdle: "No timer started yet.",
+          timerRunning: "Demo timer running · fast demo",
+          timerStarted: "Demo kitchen timer started.",
+          stepCount: "Step {step} of 3",
+          badge: "{step} / 03",
+          stepTitles: ["Get ready together.", "Shape the gnocchi.", "Toss with sage and enjoy."],
+          stepTexts: [
+            "Wash the sweet potatoes and set out the sage, flour, and olive oil.",
+            "Cook and mash the potatoes, then knead in the flour to make a soft dough.",
+            "Shape the gnocchi, cook in batches, and toss with fragrant sage oil.",
+          ],
+          ingredientPotatoAmount: {
+            2: "500 g sweet potatoes",
+            4: "1 kg sweet potatoes",
+            6: "1.5 kg sweet potatoes",
+          },
+          ingredientFlourAmount: { 2: "200 g flour", 4: "400 g flour", 6: "600 g flour" },
+          timerDone: "Demo timer finished.",
+          helperDone: "Sage is ready—nice helping!",
+          helperPending: "Pick the sage leaves",
+          atelierNote:
+            "This demo stores nothing and sends no data. Available features depend on the Atelier provider you choose.",
+          storyEyebrow: "More calm. More together.",
+          storyTitle: "Keep the recipe. Free your mind.",
+          storyText:
+            "Atelier brings the recipe, prep, and cooking steps into one surface that fits the moment in your kitchen. This demo shows one possible routine—not a live integration or a promise for every provider.",
+          quote: "“What comes next?” becomes “Everything is ready. Let’s cook.”",
+          footerCredit: "Made with love by",
+          footerSupport: "Support the project",
+          lang: "en",
+        },
+      };
+
+      const nodes = [...document.querySelectorAll("[data-copy]")];
+      const languageButtons = [...document.querySelectorAll("[data-language]")];
+      const servings = document.querySelector("#servings");
+      const potato = document.querySelector("#ingredient-potato");
+      const flour = document.querySelector("#ingredient-flour");
+      const helperCheckbox = document.querySelector("#helper-task");
+      const helperLabel = document.querySelector(".helper-check span:last-child");
+      const stepTitle = document.querySelector("#step-title");
+      const stepText = document.querySelector("#step-text");
+      const stepCount = document.querySelector("#step-count");
+      const missionBadge = document.querySelector("#mission-badge");
+      const progressFill = document.querySelector("#progress-fill");
+      const previousButton = document.querySelector("#previous-step");
+      const nextButton = document.querySelector("#next-step");
+      const timerButton = document.querySelector("#timer-button");
+      const timerState = document.querySelector("#timer-state");
+      const announcer = document.querySelector("#demo-announcer");
+      const panels = document.querySelector("#comparison-panels");
+      let locale = "de";
+      let activeStep = 0;
+      let timerTimeout;
+
+      function format(template, values) {
+        return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
+      }
+
+      function updateLanguage(nextLocale) {
+        locale = copy[nextLocale] ? nextLocale : "de";
+        const words = copy[locale];
+        document.documentElement.lang = words.lang;
+        document.title = words.title;
+        document.querySelector(".language-switch").setAttribute("aria-label", words.langLabel);
+        document.querySelector(".mobile-tabs").setAttribute("aria-label", words.viewLabel);
+        document.querySelector(".support-link").textContent = words.site;
+        nodes.forEach((node) => {
+          const value = words[node.dataset.copy];
+          if (typeof value === "string") node.innerHTML = value;
+        });
+        languageButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.language === locale));
+        });
+        const select = document.querySelector("#servings");
+        select.setAttribute("aria-label", words.servingsAria);
+        [...select.options].forEach((option) => {
+          option.textContent = format(words.servingsOption, { count: option.value });
+        });
+        document.querySelectorAll(".facts").forEach((facts) => {
+          facts.setAttribute("aria-label", words.recipeFacts);
+        });
+        document.querySelector(".workflow-list").setAttribute("aria-label", words.manualList);
+        document.querySelector(".mission-side").setAttribute("aria-label", words.kitchenTasks);
+        document.querySelectorAll("[data-copy-alt]").forEach((image) => {
+          image.alt = words[image.dataset.copyAlt];
+        });
+        renderMission();
+        renderServings();
+        if (timerTimeout) timerState.textContent = words.timerRunning;
+      }
+
+      function renderMission() {
+        const words = copy[locale];
+        stepTitle.textContent = words.stepTitles[activeStep];
+        stepText.textContent = words.stepTexts[activeStep];
+        stepCount.textContent = format(words.stepCount, { step: activeStep + 1 });
+        missionBadge.textContent = format(words.badge, {
+          step: String(activeStep + 1).padStart(2, "0"),
+        });
+        progressFill.style.width = `${((activeStep + 1) / 3) * 100}%`;
+        previousButton.disabled = activeStep === 0;
+        nextButton.disabled = activeStep === 2;
+        nextButton.querySelector("span").textContent =
+          activeStep === 2 ? words.doneButton : words.nextButton;
+        document.querySelector(".step-title").classList.remove("state-change");
+        requestAnimationFrame(() =>
+          document.querySelector(".step-title").classList.add("state-change"),
+        );
+      }
+
+      function renderServings() {
+        const words = copy[locale];
+        const count = Number(servings.value);
+        potato.textContent = words.ingredientPotatoAmount[count];
+        flour.textContent = words.ingredientFlourAmount[count];
+        document.querySelector("#serving-summary").textContent = format(words.servingsOption, {
+          count,
+        });
+      }
+
+      languageButtons.forEach((button) => {
+        button.addEventListener("click", () => updateLanguage(button.dataset.language));
+      });
+
+      document.querySelectorAll("[data-focus]").forEach((button) => {
+        button.addEventListener("click", () => {
+          panels.dataset.focus = button.dataset.focus;
+          document.querySelectorAll(".mobile-tabs [data-focus]").forEach((tab) => {
+            tab.setAttribute("aria-pressed", String(tab === button));
+          });
+        });
+      });
+
+      previousButton.addEventListener("click", () => {
+        activeStep = Math.max(0, activeStep - 1);
+        renderMission();
+        announcer.textContent = `${copy[locale].stepCount.replace("{step}", activeStep + 1)}: ${copy[locale].stepTitles[activeStep]}`;
+      });
+
+      nextButton.addEventListener("click", () => {
+        activeStep = Math.min(2, activeStep + 1);
+        renderMission();
+        announcer.textContent = `${copy[locale].stepCount.replace("{step}", activeStep + 1)}: ${copy[locale].stepTitles[activeStep]}`;
+      });
+
+      servings.addEventListener("change", renderServings);
+      helperCheckbox.addEventListener("change", () => {
+        helperLabel.textContent = helperCheckbox.checked
+          ? copy[locale].helperDone
+          : copy[locale].helperPending;
+        announcer.textContent = helperLabel.textContent;
+      });
+
+      timerButton.addEventListener("click", () => {
+        clearTimeout(timerTimeout);
+        timerState.textContent = copy[locale].timerRunning;
+        announcer.textContent = copy[locale].timerStarted;
+        timerTimeout = window.setTimeout(() => {
+          timerState.textContent = copy[locale].timerDone;
+          announcer.textContent = copy[locale].timerDone;
+          timerTimeout = undefined;
+        }, 8000);
+      });
+
+      updateLanguage("de");
+    </script>
+  </body>
+</html>

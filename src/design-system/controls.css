@@ -1,0 +1,499 @@
+/* Control primitives v0.9.1: one visual contract for all interactive states. */
+:host {
+  --ds-check-size: 22px;
+  --ds-check-target: 44px;
+  --ds-check-ink: #12251b;
+}
+.atelier {
+  --ds-control-strong: color-mix(in srgb, var(--ds-muted) 76%, var(--ds-border));
+  --ds-control-hover: color-mix(in srgb, var(--ds-brand) 75%, var(--ds-border));
+  --ds-control-focus: color-mix(in srgb, var(--ds-brand) 17%, transparent);
+  --ds-negative: #e1a18d;
+  color-scheme: dark;
+}
+.atelier.light {
+  color-scheme: light;
+}
+
+/* Never allow legacy generic input selectors to size a checkbox as a text field. */
+.atelier input[type="checkbox"],
+.atelier input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  inline-size: var(--ds-check-size);
+  block-size: var(--ds-check-size);
+  min-inline-size: var(--ds-check-size);
+  min-block-size: var(--ds-check-size);
+  width: var(--ds-check-size);
+  height: var(--ds-check-size);
+  min-height: var(--ds-check-size);
+  max-height: var(--ds-check-size);
+  margin: 0;
+  padding: 0;
+  flex: 0 0 var(--ds-check-size);
+  display: inline-grid;
+  place-content: center;
+  border: 1.5px solid var(--ds-control-strong);
+  border-radius: 6px;
+  background: var(--ds-background);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.13);
+  color: var(--ds-check-ink);
+  cursor: pointer;
+  vertical-align: middle;
+  transition:
+    background-color var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease),
+    box-shadow var(--ds-motion-fast) var(--ds-motion-ease),
+    transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier input[type="checkbox"]::after {
+  content: "";
+  box-sizing: border-box;
+  width: 11px;
+  height: 7px;
+  border: solid var(--ds-check-ink);
+  border-width: 0 0 2.5px 2.5px;
+  transform: translateY(-1px) rotate(-45deg) scale(0);
+  opacity: 0;
+  transition:
+    transform var(--ds-motion-fast) var(--ds-motion-spring),
+    opacity var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier input[type="checkbox"]:checked {
+  background: var(--ds-brand);
+  border-color: var(--ds-brand);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ds-brand) 16%, transparent);
+}
+.atelier input[type="checkbox"]:checked::after {
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+  opacity: 1;
+}
+.atelier input[type="checkbox"]:indeterminate {
+  background: var(--ds-brand);
+  border-color: var(--ds-brand);
+}
+.atelier input[type="checkbox"]:indeterminate::after {
+  width: 11px;
+  height: 0;
+  border-width: 0 0 2.5px;
+  transform: none;
+  opacity: 1;
+}
+.atelier input[type="radio"] {
+  border-radius: 50%;
+}
+.atelier input[type="radio"]::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ds-check-ink);
+  transform: scale(0);
+  transition: transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier input[type="radio"]:checked {
+  background: var(--ds-brand);
+  border-color: var(--ds-brand);
+}
+.atelier input[type="radio"]:checked::after {
+  transform: scale(1);
+}
+.atelier input:is([type="checkbox"], [type="radio"]):hover:not(:disabled) {
+  border-color: var(--ds-control-hover);
+}
+.atelier input:is([type="checkbox"], [type="radio"]):focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px var(--ds-control-focus);
+}
+.atelier input:is([type="checkbox"], [type="radio"]):disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Text-wrapped label rows are the click target, not a tiny input alone. */
+.atelier :is(.studio-book-row, .studio-inline, .editor-check, .ingredient, .ds-check-row) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-block-size: var(--ds-check-target);
+  min-inline-size: 0;
+  cursor: pointer;
+  color: var(--ds-text);
+  font-size: var(--ds-font-md);
+  font-weight: 550;
+  line-height: 1.5;
+}
+.atelier
+  :is(.studio-book-row, .studio-inline, .editor-check, .ingredient, .ds-check-row)
+  > input:is([type="checkbox"], [type="radio"]) {
+  align-self: center;
+}
+.atelier :is(.studio-book-row, .studio-inline, .editor-check, .ingredient, .ds-check-row) > span {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.atelier .studio-book-row {
+  padding: var(--ds-space-3) var(--ds-space-2);
+  border-bottom: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+}
+.atelier .studio-book-row:hover,
+.atelier .ingredient:hover {
+  background: color-mix(in srgb, var(--ds-brand) 5%, transparent);
+}
+.atelier .studio-book-row:has(input:checked),
+.atelier .ingredient:has(input:checked) {
+  background: color-mix(in srgb, var(--ds-brand) 9%, transparent);
+}
+.atelier .studio-book-row:focus-within {
+  outline: none;
+}
+.atelier .studio-book-row:has(input:focus-visible),
+.atelier .ingredient:has(input:focus-visible),
+.atelier .editor-check:has(input:focus-visible) {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 2px;
+}
+.atelier .editor-check {
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+}
+.atelier .studio-form > label.studio-inline,
+.atelier .studio-formline > label.studio-inline {
+  display: flex;
+  font-size: var(--ds-font-md);
+  font-weight: 550;
+  color: var(--ds-text);
+}
+.atelier .ingredient {
+  align-items: start;
+  padding: var(--ds-space-3) var(--ds-space-2);
+}
+.atelier .ingredient > input[type="checkbox"] {
+  margin: 1px 0 0;
+}
+.atelier .ingredient:has(input:checked) > span {
+  text-decoration: line-through;
+  text-decoration-color: var(--ds-muted);
+  color: var(--ds-muted);
+}
+.atelier .field > span:has(> input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-block-size: var(--ds-check-target);
+  font-size: var(--ds-font-md);
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* Shopping and family task checkboxes are buttons with explicit checkbox semantics. */
+.atelier button:is(.check-ui, .studio-check) {
+  position: relative;
+  box-sizing: border-box;
+  width: var(--ds-check-target);
+  height: var(--ds-check-target);
+  min-width: var(--ds-check-target);
+  min-height: var(--ds-check-target);
+  flex: 0 0 var(--ds-check-target);
+  padding: 0;
+  margin: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-fast) var(--ds-motion-ease),
+    transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier button:is(.check-ui, .studio-check)::before {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  width: var(--ds-check-size);
+  height: var(--ds-check-size);
+  border-radius: 6px;
+  border: 1.5px solid var(--ds-control-strong);
+  background: var(--ds-background);
+  transition:
+    background-color var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier button:is(.check-ui, .studio-check) svg {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  color: var(--ds-check-ink);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--ds-motion-fast) var(--ds-motion-ease),
+    transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier button:is(.check-ui, .studio-check):is([aria-checked="true"], .done),
+.atelier .shopping-row.checked button.check-ui {
+  background: transparent;
+  border: 0;
+  color: transparent;
+}
+.atelier button:is(.check-ui, .studio-check):is([aria-checked="true"], .done)::before,
+.atelier .shopping-row.checked button.check-ui::before {
+  background: var(--ds-brand);
+  border-color: var(--ds-brand);
+}
+.atelier button:is(.check-ui, .studio-check):is([aria-checked="true"], .done) svg,
+.atelier .shopping-row.checked button.check-ui svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.atelier button:is(.check-ui, .studio-check):hover:not(:disabled) {
+  background: var(--ds-control-focus);
+}
+.atelier button:is(.check-ui, .studio-check):focus-visible {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 2px;
+}
+.atelier button:is(.check-ui, .studio-check):disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.atelier .studio-task {
+  justify-content: flex-start;
+}
+.atelier .studio-task > span {
+  flex: 1;
+}
+
+/* Inputs and pickers: consistent height, text, focus and field validation. */
+.atelier :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--ds-text);
+}
+.atelier select {
+  padding-right: 38px;
+  cursor: pointer;
+}
+.atelier :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  background: var(--ds-surface-raised);
+}
+.atelier
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea)[aria-invalid="true"] {
+  border-color: var(--ds-negative);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-negative) 14%, transparent);
+}
+.atelier .ds-field:has([aria-invalid="true"]) > span:first-child {
+  color: var(--ds-negative);
+}
+.atelier :is(.btn, button):focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier input:is([type="checkbox"], [type="radio"]),
+  .atelier input:is([type="checkbox"], [type="radio"])::after,
+  .atelier button:is(.check-ui, .studio-check),
+  .atelier button:is(.check-ui, .studio-check) svg {
+    transition: none;
+    animation: none;
+  }
+}
+@media (forced-colors: active) {
+  .atelier input:is([type="checkbox"], [type="radio"]):checked,
+  .atelier button:is(.check-ui, .studio-check)[aria-checked="true"]::before {
+    background: Highlight;
+    border-color: Highlight;
+  }
+  .atelier input:is([type="checkbox"], [type="radio"]):checked::after,
+  .atelier button:is(.check-ui, .studio-check)[aria-checked="true"] svg {
+    filter: invert(1);
+  }
+}
+/* Selection controls are consistent with checkboxes and usable on touch. */
+.atelier .swatches {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.atelier button.swatch {
+  position: relative;
+  box-sizing: border-box;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  border: 2px solid var(--ds-surface);
+  border-radius: 14px;
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--ds-border),
+    inset 0 0 0 1px #ffffff55;
+  transition:
+    transform var(--ds-motion-fast) var(--ds-motion-ease),
+    box-shadow var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier button.swatch[aria-pressed="true"] {
+  outline: 2px solid var(--ds-text);
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 1px var(--ds-surface),
+    inset 0 0 0 1px #ffffff66;
+}
+.atelier button.swatch[aria-pressed="true"]::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 13px;
+  left: 16px;
+  width: 11px;
+  height: 7px;
+  border: solid #15281e;
+  border-width: 0 0 2.5px 2.5px;
+  transform: rotate(-45deg);
+}
+.atelier button.swatch:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.atelier button.swatch:focus-visible {
+  outline: 3px solid var(--ds-ring);
+  outline-offset: 4px;
+}
+.atelier .range {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .range button[aria-pressed="true"] {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-brand) 40%, transparent);
+}
+.atelier .range button {
+  min-width: 0;
+}
+.atelier button.print-option {
+  min-height: 65px;
+  padding: 12px 15px;
+  gap: 14px;
+}
+.atelier button.print-option[aria-pressed="true"] {
+  border-color: var(--ds-brand);
+  background: color-mix(in srgb, var(--ds-brand) 14%, var(--ds-surface));
+}
+.atelier button.print-option[aria-pressed="true"]::after {
+  content: "";
+  height: 9px;
+  width: 9px;
+  border-radius: 50%;
+  background: var(--ds-brand);
+  margin-left: auto;
+  flex: none;
+}
+.atelier button.print-option > div:nth-child(2) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.atelier button.print-option:focus-visible {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 3px;
+}
+.atelier button:disabled,
+.atelier .btn:disabled {
+  opacity: 1;
+  background: color-mix(in srgb, var(--ds-surface-raised) 75%, var(--ds-surface));
+  border-color: var(--ds-border);
+  color: var(--ds-muted);
+  filter: none;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+/* Disabled check buttons intentionally keep their own distinct checked state. */
+.atelier button:is(.check-ui, .studio-check):disabled {
+  background: transparent;
+  opacity: 0.5;
+}
+/* Do not scale the actual touch target during the satisfying check animation. */
+.atelier .shopping-row.checked button.check-ui,
+.atelier button.studio-check.done {
+  animation: none;
+}
+.atelier .shopping-row.checked button.check-ui::before,
+.atelier button.studio-check.done::before {
+  animation: at-check-pop var(--ds-motion-enter) var(--ds-motion-ease) both;
+}
+/* Even compact inline actions remain tappable at home-assistant card widths. */
+.atelier button.btn.tiny,
+.atelier .today-panel button,
+.atelier .shopping-card button,
+.atelier .mealplan button,
+.atelier .studio-panel button,
+.atelier .studio-pantry-row button,
+.atelier .day button {
+  min-block-size: 44px;
+}
+.atelier .btn.plain {
+  padding-block: 9px;
+}
+@container atelier-card (max-width: 760px) {
+  .atelier button:not(.check-ui):not(.studio-check) {
+    min-block-size: 44px;
+  }
+  .atelier .studio-actions .btn {
+    min-block-size: 48px;
+  }
+}
+/* One clear focus indication per interactive row, no nested double rings. */
+.atelier :is(.studio-book-row, .ingredient) > input[type="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.atelier :is(.studio-book-row, .ingredient):has(> input[type="checkbox"]:focus-visible) {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier button.swatch,
+  .atelier button.print-option,
+  .atelier .shopping-row.checked button.check-ui::before,
+  .atelier button.studio-check.done::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* Hit areas do not shrink for secondary or icon-only actions. */
+.atelier button:is(.btn.plain, .btn.tiny, .command-launch),
+.atelier .heading .toolbar button.btn,
+.atelier .studio-family-actions button.btn {
+  min-height: var(--ds-touch-height);
+}
+.atelier .command-launch {
+  min-height: 46px;
+}
+/* Native validation after the user interacts, not alarming red on first render. */
+.atelier :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):user-invalid {
+  border-color: var(--ds-negative);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-negative) 14%, transparent);
+}
+.atelier :is(input, textarea, select):read-only:not(:disabled) {
+  cursor: default;
+}
+.atelier :is(.btn, button)[aria-busy="true"] {
+  cursor: progress;
+  pointer-events: none;
+}

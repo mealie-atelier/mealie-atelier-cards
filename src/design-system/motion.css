@@ -1,0 +1,1546 @@
+/* Atelier 0.7 — a purposeful motion language, premium surfaces, responsive interaction.
+   Animations use opacity/transform; no infinite page animation and no motion when reduced. */
+:host {
+  color-scheme: dark;
+  --at-ease: var(--ds-motion-ease);
+  --at-spring: var(--ds-motion-spring);
+  --at-fast: var(--ds-motion-fast);
+  --at-medium: var(--ds-motion-enter);
+  --at-slow: var(--ds-motion-slow);
+}
+.atelier.light {
+  --at-focus: color-mix(in srgb, var(--at-accent) 76%, #2b2028);
+}
+.atelier {
+  --at-focus: color-mix(in srgb, var(--at-accent) 65%, white);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background-image:
+    radial-gradient(
+      ellipse 75% 28% at 76% 0%,
+      color-mix(in srgb, var(--at-accent) 4%, transparent),
+      transparent
+    ),
+    linear-gradient(180deg, var(--at-surface), var(--at-surface));
+}
+.atelier .main {
+  position: relative;
+}
+.atelier .view-stage {
+  min-width: 0;
+  min-height: 240px;
+  position: relative;
+  isolation: isolate;
+}
+.atelier .view-stage.is-entering {
+  animation: at-view-enter var(--ds-motion-slow) var(--at-ease) both;
+}
+.atelier .view-stage.is-theme-entering {
+  animation: at-theme-enter var(--ds-motion-enter) var(--at-ease) both;
+}
+@keyframes at-theme-enter {
+  from {
+    opacity: 0.35;
+    filter: blur(1px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@keyframes at-view-enter {
+  from {
+    opacity: 0.35;
+    transform: translate3d(0, 15px, 0);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+@keyframes at-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.973);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes at-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes at-toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 15px, 0) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes at-check-pop {
+  0% {
+    transform: scale(0.65);
+  }
+  65% {
+    transform: scale(1.13);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes at-shimmer {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -130% 0;
+  }
+}
+@keyframes at-celebrate {
+  0% {
+    transform: translateY(9px) scale(0.92);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px) scale(1.12);
+    opacity: 0;
+  }
+}
+/* Native-feeling control interaction and tactile focus states. */
+.atelier button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.atelier button,
+.atelier a,
+.atelier input,
+.atelier textarea,
+.atelier select {
+  transition-duration: var(--at-fast);
+  transition-timing-function: var(--at-ease);
+}
+.atelier button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+.atelier button:focus-visible,
+.atelier a:focus-visible,
+.atelier input:focus-visible,
+.atelier select:focus-visible,
+.atelier textarea:focus-visible {
+  outline: 2px solid var(--at-focus);
+  outline-offset: 3px;
+}
+.atelier .btn {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--at-fast) var(--at-ease),
+    background var(--at-fast),
+    border-color var(--at-fast),
+    box-shadow var(--at-medium),
+    color var(--at-fast);
+  font-size: 13px;
+  letter-spacing: 0.05px;
+}
+.atelier .btn.primary {
+  box-shadow: 0 7px 24px color-mix(in srgb, var(--at-accent) 15%, transparent);
+}
+.atelier .btn.primary:hover:not(:disabled) {
+  box-shadow: 0 11px 28px color-mix(in srgb, var(--at-accent) 27%, transparent);
+  filter: brightness(1.055);
+  transform: translateY(-2px);
+}
+.atelier .btn.ghost:hover:not(:disabled),
+.atelier .btn:not(.primary):hover:not(:disabled) {
+  box-shadow: 0 7px 25px rgba(0, 0, 0, 0.11);
+}
+.atelier .icon-btn {
+  transition:
+    background var(--at-fast),
+    transform var(--at-fast),
+    border-color var(--at-fast),
+    color var(--at-fast);
+}
+.atelier .icon-btn:hover {
+  color: var(--ds-brand);
+  border-color: color-mix(in srgb, var(--at-accent) 42%, var(--at-line));
+}
+.atelier .icon-btn:active {
+  transform: scale(0.92);
+}
+.atelier .nav button {
+  position: relative;
+  transition:
+    color var(--at-fast),
+    background var(--at-fast),
+    transform var(--at-medium) var(--at-ease),
+    box-shadow var(--at-medium);
+}
+.atelier .nav button.active {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--at-accent) 22%, transparent),
+    color-mix(in srgb, var(--at-accent) 8%, transparent)
+  );
+  box-shadow:
+    inset 2px 0 0 var(--at-accent),
+    0 8px 20px rgba(1, 14, 9, 0.12);
+}
+.atelier .nav button.active svg {
+  color: var(--ds-brand);
+}
+.atelier .nav button:hover:not(.active) {
+  transform: translateX(3px);
+}
+.atelier .sidebar {
+  background-image:
+    radial-gradient(ellipse 120% 32% at 45% -3%, rgba(150, 200, 167, 0.095), transparent),
+    linear-gradient(180deg, #131c17, #101715 72%, #0d1512);
+}
+.atelier.light .sidebar {
+  background-image: linear-gradient(180deg, var(--ds-sidebar-start), var(--ds-sidebar-end));
+}
+.atelier .identity .logo {
+  position: relative;
+  isolation: isolate;
+}
+.atelier .identity .logo:after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 1px solid color-mix(in srgb, var(--at-accent) 26%, transparent);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.atelier .topbar {
+  position: relative;
+  z-index: 2;
+}
+.atelier .command-launch {
+  width: auto;
+  min-width: 122px;
+  height: 38px;
+  border: 1px solid var(--at-line);
+  border-radius: 999px;
+  background: var(--at-panel);
+  color: var(--at-sub);
+  font-size: 11px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 11px 0 14px;
+  transition: all var(--at-fast);
+}
+.atelier .command-launch:hover {
+  color: var(--at-ink);
+  border-color: color-mix(in srgb, var(--at-accent) 32%, var(--at-line));
+  background: var(--at-panel2);
+}
+.atelier .shortcut {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  padding: 3px 6px;
+  background: var(--at-panel2);
+  border: 1px solid var(--at-line);
+  border-radius: 6px;
+  white-space: nowrap;
+  color: var(--at-sub);
+}
+.atelier .intro h1,
+.atelier .studio-top h1 {
+  max-width: 940px;
+  text-wrap: balance;
+}
+.atelier .studio-top {
+  position: relative;
+  isolation: isolate;
+}
+.atelier .studio-top:before {
+  content: "";
+  position: absolute;
+  left: -30px;
+  top: -28px;
+  width: 270px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--at-accent) 9%, transparent),
+    transparent 71%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+.atelier .studio-top p {
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 750px;
+}
+.atelier .studio-daily {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.055);
+}
+.atelier .studio-daily:after {
+  content: "";
+  position: absolute;
+  inset: -60% -25% auto auto;
+  width: 320px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--at-accent) 14%, transparent),
+    transparent 65%
+  );
+  pointer-events: none;
+}
+.atelier .studio-daily h2 {
+  font-size: clamp(26px, 3.2vw, 38px);
+}
+.atelier .studio-panel,
+.atelier .today-panel,
+.atelier .shopping-card,
+.atelier .editor-card,
+.atelier .nutri-row,
+.atelier .manage-card {
+  position: relative;
+  transition:
+    border-color var(--at-medium),
+    background var(--at-medium),
+    box-shadow var(--at-medium),
+    transform var(--at-medium) var(--at-ease);
+  border-color: color-mix(in srgb, var(--at-line) 90%, transparent);
+}
+.atelier .studio-panel {
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--at-panel) 96%, var(--at-accent)),
+    var(--at-panel) 70%
+  );
+  box-shadow: 0 15px 32px rgba(0, 0, 0, 0.047);
+  border-radius: 25px;
+}
+.atelier .studio-panel:before {
+  content: "";
+  position: absolute;
+  inset: 0 18px auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--at-accent) 14%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+.atelier .studio-suggestion {
+  transition:
+    background var(--at-fast),
+    padding var(--at-fast),
+    border-radius var(--at-fast);
+  border-radius: 12px;
+}
+.atelier .studio-suggestion:hover {
+  background: color-mix(in srgb, var(--at-accent) 6%, transparent);
+  padding-inline: 8px;
+}
+.atelier .studio-suggestion-photo {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.13);
+}
+.atelier .studio-suggestion-photo img {
+  transition:
+    transform var(--at-slow) var(--at-ease),
+    filter var(--at-slow);
+}
+.atelier .studio-suggestion:hover img {
+  transform: scale(1.07);
+  filter: saturate(1.1);
+}
+.atelier .studio-suggestion-copy small {
+  font-size: 11px;
+  line-height: 1.45;
+}
+.atelier .studio-suggestion-copy p {
+  font-size: 11px;
+  line-height: 1.55;
+}
+.atelier .studio-suggestion-copy strong {
+  font-size: clamp(19px, 1.65vw, 23px);
+}
+.atelier .studio-panel p,
+.atelier .studio-muted {
+  font-size: 13px;
+  line-height: 1.68;
+}
+.atelier .studio-form > label,
+.atelier .studio-formline > label,
+.atelier .field > span {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.atelier input:not([type="checkbox"]),
+.atelier select,
+.atelier textarea {
+  border-color: color-mix(in srgb, var(--at-line) 90%, transparent);
+  transition:
+    border-color var(--at-fast),
+    background var(--at-fast),
+    box-shadow var(--at-fast),
+    transform var(--at-fast);
+}
+.atelier input:not([type="checkbox"]):hover,
+.atelier select:hover,
+.atelier textarea:hover {
+  border-color: color-mix(in srgb, var(--at-accent) 35%, var(--at-line));
+}
+.atelier input:not([type="checkbox"]):focus,
+.atelier select:focus,
+.atelier textarea:focus {
+  border-color: color-mix(in srgb, var(--at-accent) 65%, var(--at-line));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--at-accent) 12%, transparent);
+}
+.atelier input::placeholder,
+.atelier textarea::placeholder {
+  color: color-mix(in srgb, var(--at-sub) 85%, transparent);
+}
+.atelier .hero {
+  transition: box-shadow var(--at-medium);
+  box-shadow: 0 16px 48px rgba(3, 12, 8, 0.22);
+}
+.atelier .hero:focus-within,
+.atelier .hero:hover {
+  box-shadow: 0 24px 65px rgba(3, 12, 8, 0.3);
+}
+.atelier .hero .hero-food {
+  transition:
+    transform var(--ds-motion-image-long) var(--at-ease),
+    filter var(--at-slow);
+}
+.atelier .hero:hover .hero-food {
+  transform: scale(1.035);
+  filter: saturate(1.06);
+}
+.atelier .hero .hero-copy > * {
+  position: relative;
+}
+.atelier .recipe-tile {
+  transition:
+    transform var(--at-medium) var(--at-ease),
+    filter var(--at-medium),
+    box-shadow var(--at-medium);
+}
+.atelier .recipe-tile:hover {
+  transform: translateY(-6px);
+}
+.atelier .recipe-tile:hover .tile-image {
+  box-shadow: 0 15px 37px rgba(0, 0, 0, 0.24);
+}
+.atelier .tile-image {
+  transition: box-shadow var(--at-medium);
+  background: #26382e;
+}
+.atelier .tile-image:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 55%, rgba(7, 16, 13, 0.23));
+}
+.atelier .tile-image img {
+  transition:
+    transform var(--ds-motion-image) var(--at-ease),
+    filter var(--ds-motion-image) var(--at-ease);
+}
+.atelier .recipe-tile:hover .tile-image img {
+  transform: scale(1.075);
+  filter: saturate(1.11);
+}
+.atelier .tile-body h3 {
+  line-height: 1.19;
+}
+.atelier .tile-open {
+  transition:
+    transform var(--at-medium) var(--at-ease),
+    background var(--at-fast);
+}
+.atelier .recipe-tile:hover .tile-open {
+  transform: translateX(3px);
+}
+.atelier .week-grid {
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.atelier .week-grid > .day {
+  scroll-snap-align: start;
+  transition:
+    transform var(--at-medium),
+    border-color var(--at-medium),
+    background var(--at-medium);
+}
+.atelier .week-grid > .day:hover {
+  border-color: color-mix(in srgb, var(--at-accent) 33%, var(--at-line));
+  transform: translateY(-2px);
+}
+.atelier .day-meal {
+  transition:
+    background var(--at-fast),
+    transform var(--at-fast);
+}
+.atelier .day-meal:hover {
+  background: color-mix(in srgb, var(--at-accent) 12%, var(--at-panel));
+}
+.atelier .shopping-row {
+  transition:
+    background var(--at-fast),
+    opacity var(--at-fast);
+}
+.atelier .shopping-row:hover {
+  background: color-mix(in srgb, var(--at-accent) 6%, transparent);
+}
+.atelier .shopping-row.checked {
+  opacity: 0.68;
+}
+.atelier .shopping-row.checked .shopping-name {
+  text-decoration: line-through;
+  text-decoration-color: var(--at-sub);
+  text-decoration-thickness: 1px;
+}
+.atelier .modal-backdrop {
+  background: rgba(5, 13, 10, 0.74);
+  backdrop-filter: blur(12px) saturate(0.78);
+  animation: at-backdrop-in var(--ds-motion-base) var(--at-ease) both;
+}
+.atelier .modal {
+  animation: at-dialog-enter var(--ds-motion-enter) var(--at-spring) both;
+  box-shadow: var(--ds-shadow-dialog);
+}
+.atelier .modal-close {
+  z-index: 5;
+}
+.atelier .modal .cook-layout {
+  min-height: min(780px, 82vh);
+}
+.atelier .cook-stage h2 {
+  animation: at-view-enter var(--ds-motion-enter) var(--at-ease) both;
+  text-wrap: pretty;
+}
+.atelier .cook-fill {
+  transition: width var(--ds-motion-slow) var(--at-ease);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--at-accent) 35%, transparent);
+}
+.atelier .cook-visual img {
+  transition: transform var(--ds-motion-image-long) var(--at-ease);
+}
+.atelier .cook-visual:hover img {
+  transform: scale(1.04);
+}
+.atelier .nutri-row:hover,
+.atelier .editor-card:focus-within {
+  border-color: color-mix(in srgb, var(--at-accent) 30%, var(--at-line));
+}
+.atelier .nutri-row .nutri-state.matched {
+  animation: at-check-pop var(--ds-motion-enter) var(--at-spring);
+}
+.atelier .toast {
+  animation: at-toast-in var(--ds-motion-enter) var(--at-spring) both;
+  border: 1px solid color-mix(in srgb, var(--at-accent) 40%, var(--at-line));
+  box-shadow: 0 13px 35px rgba(0, 0, 0, 0.22);
+  max-width: min(440px, calc(100% - 28px));
+  line-height: 1.5;
+}
+.atelier .toast.at-toast-exit {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--ds-motion-base),
+    transform var(--ds-motion-base);
+}
+.atelier .notice.error {
+  border-color: color-mix(in srgb, #e5a77d 35%, var(--at-line));
+}
+.atelier .skeleton {
+  min-height: 100px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+.atelier .skeleton-hero,
+.atelier .skeleton-tile {
+  border-radius: 20px;
+  background: linear-gradient(
+    110deg,
+    var(--at-panel) 8%,
+    color-mix(in srgb, var(--at-panel) 72%, var(--at-panel2)) 22%,
+    var(--at-panel) 38%
+  );
+  background-size: 200% 100%;
+  animation: at-shimmer var(--ds-motion-loading) var(--ds-motion-linear) infinite;
+}
+.atelier .skeleton-hero {
+  height: 210px;
+}
+.atelier .skeleton-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.atelier .skeleton-tile {
+  height: 145px;
+}
+/* Command palette: truly keyboard usable, with categories rather than another settings screen. */
+.atelier .modal.command {
+  width: min(620px, calc(100vw - 38px));
+  max-height: min(80vh, 760px);
+  border-radius: 23px;
+  padding: 0;
+  overflow: hidden;
+}
+.atelier .command-content {
+  padding: 22px;
+}
+.atelier .command-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 46px 15px 0;
+  gap: 12px;
+  font:
+    normal 25px/1.2 Georgia,
+    serif;
+}
+.atelier .command-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--at-panel2);
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+  padding: 8px 13px;
+  transition: border-color var(--at-fast);
+}
+.atelier .command-search:focus-within {
+  border-color: var(--ds-brand);
+}
+.atelier .command-search input {
+  padding: 9px 0;
+  outline: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  width: 100%;
+  min-height: 30px;
+  font-size: 16px;
+}
+.atelier .command-search input:focus {
+  outline: 0;
+  box-shadow: none;
+  border: 0;
+}
+.atelier .command-hint {
+  margin: 9px 3px 0;
+  color: var(--at-sub);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.atelier .command-example {
+  display: inline-block;
+  margin-left: 5px;
+  color: var(--ds-brand);
+  font-weight: 700;
+}
+.atelier .command-conversion {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 18px 20px;
+  border: 1px solid color-mix(in srgb, var(--ds-brand) 30%, var(--at-line));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ds-brand) 6%, var(--at-panel));
+  animation: at-view-enter var(--ds-motion-enter) var(--ds-motion-ease) both;
+}
+.atelier .command-conversion-label {
+  color: var(--ds-brand);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.atelier .command-conversion strong {
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 620;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+.atelier .command-conversion p {
+  margin: 0;
+  color: var(--at-sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.atelier .command-shortcuts[hidden],
+.atelier .command-hint[hidden] {
+  display: none !important;
+}
+.atelier .command-section {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--ds-brand);
+  margin: 22px 8px 8px;
+  font-weight: 800;
+}
+.atelier .command-list {
+  max-height: min(50vh, 440px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.atelier .command-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: 11px;
+  text-align: left;
+  padding: 11px 12px;
+  color: var(--at-ink);
+  background: transparent;
+  min-height: 47px;
+  font-size: 13px;
+  transition:
+    background var(--at-fast),
+    transform var(--at-fast);
+}
+.atelier .command-item:hover,
+.atelier .command-item:focus-visible {
+  background: color-mix(in srgb, var(--at-accent) 13%, var(--at-panel));
+  transform: translateX(3px);
+}
+.atelier .command-item svg {
+  color: var(--ds-brand);
+}
+.atelier .command-item .command-arrow {
+  margin-left: auto;
+  color: var(--at-sub);
+}
+.atelier .command-item[hidden] {
+  display: none !important;
+}
+.atelier .command-footer {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 11px;
+  border-top: 1px solid var(--at-line);
+  padding-top: 13px;
+  margin-top: 12px;
+  color: var(--at-sub);
+}
+.atelier .command-empty {
+  display: none;
+  padding: 24px 10px;
+  color: var(--at-sub);
+  text-align: center;
+  font-size: 13px;
+}
+.atelier .command-empty.visible {
+  display: block;
+}
+.atelier .command-live {
+  max-height: min(58vh, 500px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.atelier .command-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 21px 8px 8px;
+  color: var(--at-sub);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+.atelier .command-results-heading span + span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.atelier .command-results-list {
+  display: grid;
+  gap: 5px;
+}
+.atelier .command-item.command-recipe {
+  gap: 11px;
+  min-height: 66px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  transform: none;
+}
+.atelier .command-item.command-recipe:hover,
+.atelier .command-item.command-recipe:focus-visible {
+  border-color: color-mix(in srgb, var(--at-accent) 26%, var(--at-line));
+  transform: translateY(-1px);
+}
+.atelier .command-recipe-image {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--at-accent) 20%, var(--at-panel2)),
+    var(--at-panel2)
+  );
+  color: var(--ds-brand);
+}
+.atelier .command-recipe-image:empty::before {
+  content: "✦";
+  font-size: 18px;
+}
+.atelier .command-recipe-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .command-recipe-copy {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  flex: 1;
+}
+.atelier .command-recipe-copy strong {
+  overflow: hidden;
+  color: var(--at-ink);
+  font-size: 13px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atelier .command-recipe-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--at-sub);
+  font-size: 11px;
+}
+.atelier .command-recipe-meta svg {
+  flex: none;
+  color: var(--ds-brand);
+}
+.atelier .command-match {
+  flex: none;
+  padding: 5px 8px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--at-accent) 11%, var(--at-panel));
+  color: var(--at-sub);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.atelier .command-match-ingredient,
+.atelier .command-match-mixed {
+  background: color-mix(in srgb, var(--at-accent) 18%, var(--at-panel));
+  color: var(--ds-brand);
+}
+.atelier .command-all-results {
+  margin-top: 7px;
+  border-top: 1px solid var(--at-line);
+  border-radius: 0;
+  padding-top: 13px;
+  color: var(--ds-brand);
+}
+.atelier .command-state,
+.atelier .command-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 76px;
+  margin: 7px 0 0;
+  color: var(--at-sub);
+  font-size: 13px;
+  text-align: center;
+}
+.atelier .command-loading {
+  justify-content: flex-start;
+  padding: 0 12px;
+}
+.atelier .command-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in srgb, var(--at-accent) 25%, transparent);
+  border-top-color: var(--ds-brand);
+  border-radius: 50%;
+  animation: command-spin var(--ds-motion-fast) var(--ds-motion-linear) infinite;
+}
+.atelier .command-no-results {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 26px 12px 21px;
+  color: var(--at-sub);
+  font-size: 12px;
+  text-align: center;
+}
+.atelier .command-no-results strong {
+  color: var(--at-ink);
+  font-size: 14px;
+}
+.atelier .command-no-results-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 3px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--at-accent) 12%, var(--at-panel));
+  color: var(--ds-brand);
+}
+@keyframes command-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.atelier.motion-off * {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.atelier.motion-balanced .view-stage.is-entering {
+  animation-duration: var(--ds-motion-enter);
+}
+.atelier.motion-balanced .modal {
+  animation-duration: var(--ds-motion-enter);
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .atelier-credit-heart {
+    animation: none !important;
+  }
+  .atelier .view-stage.is-entering {
+    animation: none !important;
+  }
+}
+@media (max-width: 1080px) {
+  .atelier .command-launch {
+    min-width: 0;
+    width: 39px;
+    justify-content: center;
+    padding: 0;
+  }
+  .atelier .command-launch .command-caption,
+  .atelier .command-launch .shortcut {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .atelier .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid var(--at-line);
+    background: color-mix(in srgb, var(--at-surface) 94%, transparent) !important;
+    backdrop-filter: blur(16px);
+    padding: 9px 12px;
+  }
+  .atelier .sidebar .nav {
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .atelier .sidebar .nav::-webkit-scrollbar {
+    display: none;
+  }
+  .atelier .nav button {
+    scroll-snap-align: center;
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .atelier .nav button:hover:not(.active) {
+    transform: none;
+  }
+  .atelier .nav button.active {
+    box-shadow: inset 0 -2px 0 var(--at-accent);
+  }
+  .atelier .main {
+    padding: 20px 20px 56px;
+  }
+  .atelier .topbar {
+    padding-bottom: 13px;
+    margin-bottom: 24px;
+  }
+  .atelier .studio-panel {
+    padding: 23px 20px;
+  }
+  .atelier .studio-form input:not([type="checkbox"]),
+  .atelier .studio-form select {
+    min-height: 46px;
+    font-size: 14px;
+  }
+  .atelier .studio-suggestion-copy strong {
+    font-size: 18px;
+  }
+  .atelier .studio-daily {
+    padding: 21px;
+  }
+  .atelier .studio-top h1 {
+    font-size: clamp(36px, 8vw, 48px);
+  }
+  .atelier .recipe-tile:hover {
+    transform: none;
+  }
+  .atelier .recipe-grid.is-featured {
+    scroll-snap-type: x mandatory;
+  }
+  .atelier .recipe-grid.is-featured > .recipe-tile {
+    scroll-snap-align: start;
+  }
+  .atelier .modal.command {
+    width: calc(100vw - 18px);
+    max-height: 86dvh;
+  }
+  .atelier .modal.command .command-content {
+    padding: 19px 16px;
+  }
+  .atelier .command-launch {
+    min-width: 40px;
+    height: 40px;
+  }
+  .atelier .skeleton-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .atelier .skeleton-row > .skeleton-tile:last-child {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .atelier .modal.command {
+    width: min(100vw - 20px, 620px);
+    max-height: min(86vh, 760px);
+    border-radius: 19px;
+  }
+  .atelier .command-content {
+    padding: 17px 14px;
+  }
+  .atelier .command-heading {
+    font-size: 21px;
+    margin-right: 34px;
+  }
+  .atelier .command-item.command-recipe {
+    gap: 8px;
+    padding-inline: 5px;
+  }
+  .atelier .command-recipe-image {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+  .atelier .command-match {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+  .atelier .command-recipe-copy strong {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .command-spinner {
+    animation: none !important;
+    border-top-color: var(--ds-brand);
+  }
+}
+@media (max-width: 420px) {
+  .atelier .main {
+    padding: 19px 15px 45px;
+  }
+  .atelier .hero h2 {
+    font-size: clamp(30px, 8.2vw, 39px);
+  }
+  .atelier .studio-formline {
+    grid-template-columns: 1fr;
+  }
+  .atelier .studio-daily h2 {
+    font-size: 29px;
+  }
+  .atelier .studio-panel {
+    padding: 19px 17px;
+  }
+  .atelier .studio-panel h2 {
+    font-size: 25px;
+  }
+  .atelier .command-footer {
+    font-size: 10px;
+  }
+}
+@media (hover: none) {
+  .atelier .recipe-tile:hover,
+  .atelier .week-grid > .day:hover,
+  .atelier .nav button:hover,
+  .atelier .btn:hover {
+    transform: none !important;
+  }
+  .atelier .studio-suggestion:hover {
+    padding-inline: 0;
+    background: none;
+  }
+  .atelier .hero:hover .hero-food,
+  .atelier .cook-visual:hover img {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier *,
+  .atelier *::before,
+  .atelier *::after {
+    animation-duration: var(--ds-motion-reduced) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--ds-motion-reduced) !important;
+    scroll-behavior: auto !important;
+    filter: none !important;
+  }
+  .atelier .view-stage.is-entering {
+    animation: none !important;
+  }
+}
+@media (prefers-contrast: more) {
+  .atelier {
+    --at-line: color-mix(in srgb, var(--at-ink) 38%, transparent);
+  }
+  .atelier .btn,
+  .atelier input,
+  .atelier select,
+  .atelier textarea {
+    border-width: 2px;
+  }
+  .atelier .muted,
+  .atelier .studio-muted {
+    color: var(--at-ink);
+  }
+}
+
+.atelier .modal.modal-stable {
+  animation: none !important;
+}
+/* The navigation rail must never compress labels on narrow viewports. */
+@media (max-width: 760px) {
+  .atelier .sidebar .nav {
+    display: flex !important;
+    flex-flow: row nowrap !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    align-items: center;
+    gap: 7px;
+    scroll-padding-inline: 10px;
+    overscroll-behavior-x: contain;
+  }
+  .atelier .sidebar .nav > button {
+    flex: 0 0 auto !important;
+    display: inline-flex !important;
+    white-space: nowrap !important;
+    min-width: max-content !important;
+    width: auto !important;
+    min-height: 44px;
+    gap: 7px;
+    padding: 10px 13px !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+  .atelier .sidebar .nav > button span {
+    display: inline !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+    max-width: none !important;
+  }
+  .atelier .sidebar .nav > button svg {
+    flex: 0 0 auto !important;
+  }
+}
+
+.atelier .detail-cols .step {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  color: var(--at-ink);
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  min-height: 60px;
+  transition:
+    background-color var(--ds-motion-base) var(--at-ease),
+    border-color var(--ds-motion-base) var(--at-ease),
+    box-shadow var(--ds-motion-base) var(--at-ease),
+    transform var(--ds-motion-fast) var(--at-spring);
+}
+.atelier .detail-cols .step:active {
+  transform: scale(0.992);
+}
+.atelier .detail-cols .step:hover {
+  border-color: color-mix(in srgb, var(--at-accent) 43%, var(--at-line));
+  background: color-mix(in srgb, var(--at-accent) 9%, var(--at-panel));
+}
+.atelier .detail-cols .step.active {
+  background: color-mix(in srgb, var(--at-accent) 14%, var(--at-panel));
+  border-color: var(--ds-brand);
+  animation: at-step-select var(--ds-motion-enter) var(--at-spring) both;
+}
+@keyframes at-step-select {
+  from {
+    opacity: 0.78;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.atelier .cook-stage {
+  touch-action: pan-y;
+}
+.atelier .cook-stage:after {
+  content: "← wischen →";
+  font:
+    500 10px/1.2 ui-sans-serif,
+    system-ui,
+    sans-serif;
+  letter-spacing: 1px;
+  color: var(--at-sub);
+  margin-top: 12px;
+  opacity: 0.7;
+}
+@media (hover: hover) {
+  .atelier .cook-stage:after {
+    display: none;
+  }
+}
+/* Mobile-friendly planning and one-handed cooking. The next step is more
+   important than supplementary timers, so controls appear before utilities. */
+.atelier .week-swipe-hint {
+  display: none;
+}
+@media (max-width: 760px) {
+  .atelier .view-stage[data-view="mealplan"] .heading {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading h2 {
+    font-size: clamp(29px, 7vw, 38px);
+    line-height: 1.05;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+    gap: 8px;
+    scrollbar-width: none;
+    padding: 3px 0 7px;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn {
+    flex: 0 0 auto;
+    min-height: 42px;
+    white-space: nowrap;
+  }
+  .atelier .week-swipe-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--at-sub);
+    margin: 9px 0 14px;
+    letter-spacing: 0.2px;
+  }
+  .atelier .week-swipe-hint:before {
+    content: "↔";
+    color: var(--ds-brand);
+    font-size: 21px;
+    line-height: 1;
+  }
+  .atelier .cook-visual {
+    min-height: 170px;
+    height: 170px;
+  }
+  .atelier .cook-content {
+    padding: 24px 24px 32px;
+    gap: 15px;
+    justify-content: start;
+  }
+  .atelier .cook-topline {
+    order: 0;
+  }
+  .atelier .cook-track {
+    order: 1;
+  }
+  .atelier .cook-stage {
+    order: 2;
+    min-height: 0;
+    padding: 20px 0 6px;
+    gap: 11px;
+  }
+  .atelier .cook-stage h2 {
+    font-size: clamp(27px, 6.9vw, 32px);
+  }
+  .atelier .cook-actions {
+    order: 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 5px 0 13px;
+  }
+  .atelier .cook-actions .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    justify-content: center;
+  }
+  .atelier .cook-utility {
+    order: 4;
+  }
+  .atelier .cook-footnote {
+    order: 5;
+  }
+}
+/* Use composited opacity/position on low-power tablets instead of full-surface blur. */
+@keyframes at-view-enter-mobile {
+  from {
+    opacity: 0.5;
+    transform: translate3d(0, 9px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+@media (max-width: 760px) {
+  .atelier .view-stage.is-entering {
+    animation-name: at-view-enter-mobile;
+    animation-duration: var(--ds-motion-enter);
+  }
+}
+
+/* System checks reuse the shared dialog motion without implying success before verification. */
+.atelier .studio-diagnostics {
+  margin-top: 25px;
+}
+.atelier .studio-diagnostic-grid {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+}
+.atelier .studio-diagnostic-row {
+  display: grid;
+  grid-template-columns: minmax(95px, 1fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 2px;
+  border: 1px solid var(--at-line);
+  border-radius: 13px;
+  background: var(--at-panel2);
+  padding: 13px 15px;
+  font-size: 13px;
+}
+.atelier .studio-diagnostic-row > span:first-child {
+  font-weight: 680;
+}
+.atelier .studio-diagnostic-row small {
+  grid-column: 1 / -1;
+  color: var(--at-sub);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.atelier .studio-diagnostic-status {
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 50px;
+  padding: 5px 10px;
+}
+.atelier .studio-diagnostic-status.ok {
+  background: color-mix(in srgb, var(--at-accent) 17%, transparent);
+  color: var(--ds-brand);
+}
+.atelier .studio-diagnostic-status.fail {
+  background: color-mix(in srgb, #e5a77d 22%, transparent);
+  color: #d5a27d;
+}
+@media (max-width: 760px) {
+  .atelier .studio-diagnostics .studio-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .atelier .studio-diagnostics .studio-actions .btn {
+    min-height: 47px;
+    justify-content: center;
+  }
+}
+
+/* A first-class, accessible replacement for browser alerts, prompts and confirms. */
+.at-premium-dialog {
+  border: 1px solid var(--at-line, #4c6254);
+  border-radius: 23px;
+  color: var(--at-ink, #f5f2ea);
+  background: var(--at-surface, #121c17);
+  box-shadow: 0 30px 110px rgba(0, 0, 0, 0.48);
+  width: min(490px, calc(100vw - 30px));
+  max-height: min(85dvh, 680px);
+  padding: 0;
+  overflow: auto;
+  animation: at-dialog-enter var(--ds-motion-enter) var(--ds-motion-spring) both;
+}
+.at-premium-dialog::backdrop {
+  background: rgba(3, 10, 7, 0.7);
+  backdrop-filter: blur(5px);
+}
+.at-premium-dialog .at-dialog-panel {
+  padding: 28px;
+  display: grid;
+  gap: 13px;
+}
+.at-premium-dialog .eyebrow {
+  color: var(--at-accent, #a2cdb3);
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+.at-premium-dialog h2 {
+  font:
+    normal clamp(25px, 5vw, 34px) / 1.15 Georgia,
+    serif;
+  margin: 0;
+}
+.at-premium-dialog p {
+  color: var(--at-sub, #b5c6bd);
+  line-height: 1.6;
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.at-premium-dialog .at-prompt-label {
+  display: grid;
+  gap: 8px;
+  color: var(--at-ink, #f5f2ea);
+  font-size: 12px;
+  font-weight: 650;
+  margin-top: 8px;
+}
+.at-premium-dialog .at-prompt-input {
+  border: 1px solid var(--at-line, #4c6254);
+  border-radius: 12px;
+  min-height: 48px;
+  width: 100%;
+  background: var(--at-panel, #20332a);
+  color: inherit;
+  padding: 11px 13px;
+  font-size: 16px;
+}
+.at-premium-dialog .at-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 17px;
+  flex-wrap: wrap;
+}
+.at-premium-dialog button {
+  min-height: 46px;
+}
+.at-premium-dialog button:focus-visible,
+.at-premium-dialog input:focus-visible {
+  outline: 3px solid var(--at-accent, #a2cdb3);
+  outline-offset: 3px;
+}
+@media (max-width: 500px) {
+  .at-premium-dialog .at-dialog-panel {
+    padding: 23px 19px;
+  }
+  .at-premium-dialog .at-dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .at-premium-dialog .at-dialog-actions .btn {
+    min-width: 0;
+    justify-content: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .at-premium-dialog {
+    animation: none !important;
+  }
+  .at-premium-dialog::backdrop {
+    backdrop-filter: none !important;
+  }
+}
+
+.at-premium-dialog {
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+.at-premium-dialog .btn {
+  appearance: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  min-height: 46px;
+  border: 1px solid var(--at-line, #385849);
+  background: var(--at-panel, #24382e);
+  border-radius: 30px;
+  color: var(--at-ink, #f5f2ea);
+  padding: 12px 19px;
+  cursor: pointer;
+  transition:
+    transform var(--ds-motion-base) var(--ds-motion-ease),
+    background var(--ds-motion-base) var(--ds-motion-ease);
+}
+.at-premium-dialog .btn.primary {
+  background: var(--at-accent, #a2cdb3);
+  border-color: var(--at-accent, #a2cdb3);
+  color: #101c15;
+}
+.at-premium-dialog .btn:hover {
+  transform: translateY(-1px);
+}
+.at-premium-dialog .btn:active {
+  transform: scale(0.98);
+}
+@media (hover: none) {
+  .at-premium-dialog .btn:hover {
+    transform: none;
+  }
+}

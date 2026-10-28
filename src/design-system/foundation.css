@@ -1,0 +1,1599 @@
+:host {
+  display: block;
+  --at-surface: #111a1d;
+  --at-ink: #eaf0eb;
+  --at-sub: #96a5a3;
+  --at-panel: #1c2728;
+  --at-panel2: #222d2d;
+  --at-line: rgba(235, 247, 238, 0.1);
+  --at-shadow: 0 22px 70px rgba(4, 12, 17, 0.28);
+  --at-radius: 23px;
+  --at-accent: #9dcbb2;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: var(--at-ink);
+}
+:host * {
+  box-sizing: border-box;
+}
+:host button,
+:host input,
+:host textarea,
+:host select {
+  font: inherit;
+}
+:host button {
+  cursor: pointer;
+}
+:host button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+:host button:focus-visible,
+:host input:focus-visible,
+:host select:focus-visible,
+:host textarea:focus-visible {
+  outline: 3px solid var(--at-accent);
+  outline-offset: 3px;
+}
+ha-card {
+  display: block !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  overflow: visible !important;
+  color: inherit !important;
+}
+.atelier {
+  background: var(--at-surface);
+  color: var(--at-ink);
+  border: 1px solid var(--at-line);
+  border-radius: calc(var(--at-radius) + 9px);
+  min-height: 430px;
+  overflow: hidden;
+  isolation: isolate;
+  position: relative;
+  box-shadow: var(--at-shadow);
+  line-height: 1.4;
+}
+.atelier.compact {
+  --at-gap: 13px;
+  --at-pad: 20px;
+}
+.atelier.comfortable {
+  --at-gap: 19px;
+  --at-pad: 30px;
+}
+.atelier .shell {
+  display: grid;
+  grid-template-columns: 214px minmax(0, 1fr);
+}
+.atelier .shell.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+.atelier .sidebar {
+  background: rgba(6, 12, 15, 0.23);
+  border-right: 1px solid var(--at-line);
+  padding: 27px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 780px;
+}
+.atelier.light .sidebar {
+  background: color-mix(in srgb, var(--at-panel) 42%, transparent);
+}
+.atelier .identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 11px 33px;
+  min-width: 0;
+}
+.atelier .logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--at-accent);
+  color: #14211b;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 8px 23px color-mix(in srgb, var(--at-accent) 23%, transparent);
+}
+.atelier .identity strong {
+  font-size: 14px;
+  letter-spacing: -0.5px;
+  display: block;
+  line-height: 1.1;
+}
+.atelier .identity span {
+  display: block;
+  font-size: 10px;
+  color: var(--at-sub);
+  letter-spacing: 1.7px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+.atelier .nav-label {
+  font-size: 10px;
+  letter-spacing: 1.8px;
+  color: var(--at-sub);
+  padding: 0 15px 10px;
+  font-weight: 800;
+}
+.atelier .nav {
+  display: grid;
+  gap: 5px;
+}
+.atelier .nav button {
+  border: 0;
+  background: none;
+  color: var(--at-sub);
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 14px;
+  font-size: 13px;
+  text-align: left;
+  font-weight: 650;
+  transition:
+    background var(--ds-motion-fast),
+    color var(--ds-motion-fast);
+}
+.atelier .nav button:hover {
+  color: var(--at-ink);
+  background: var(--at-panel2);
+}
+.atelier .nav button.active {
+  color: var(--ds-brand);
+  background: color-mix(in srgb, var(--at-accent) 13%, transparent);
+}
+.atelier .nav button.active:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 23px;
+  border-radius: 5px;
+  background: var(--at-accent);
+}
+.atelier .sidebar-footer {
+  margin-top: auto;
+  padding: 23px 9px 0;
+  color: var(--at-sub);
+  font-size: 11px;
+}
+.atelier .sidebar-footer .tiny-leaf {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--at-line);
+  border-radius: 9px;
+  margin-bottom: 10px;
+  color: var(--ds-brand);
+}
+.atelier .main {
+  min-width: 0;
+  padding: var(--at-pad);
+}
+.atelier .topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 46px;
+  margin-bottom: 26px;
+}
+.atelier .breadcrumb {
+  color: var(--at-sub);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.atelier .breadcrumb strong {
+  color: var(--at-ink);
+  font-weight: 650;
+}
+.atelier .toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.atelier .icon-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--at-line);
+  display: inline-grid;
+  place-items: center;
+  color: var(--at-ink);
+  background: var(--at-panel);
+  border-radius: 13px;
+  transition:
+    background var(--ds-motion-base),
+    transform var(--ds-motion-base);
+}
+.atelier .icon-btn:hover {
+  background: var(--at-panel2);
+  transform: translateY(-1px);
+}
+.atelier h1,
+.atelier h2,
+.atelier h3,
+.atelier p {
+  margin: 0;
+}
+.atelier h1 {
+  font-size: clamp(29px, 3vw, 49px);
+  font-weight: 760;
+  letter-spacing: -2.2px;
+  line-height: 1.08;
+}
+.atelier h1 em {
+  font-weight: 550;
+  font-style: normal;
+  color: var(--ds-brand);
+}
+.atelier h2 {
+  font-size: 21px;
+  letter-spacing: -0.7px;
+  font-weight: 720;
+}
+.atelier h3 {
+  font-size: 16px;
+  letter-spacing: -0.4px;
+}
+.atelier .muted {
+  color: var(--at-sub);
+}
+.atelier .eyebrow {
+  font-size: 10px;
+  letter-spacing: 2.2px;
+  font-weight: 850;
+  color: var(--ds-brand);
+}
+.atelier .heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 14px;
+  margin: 0 0 16px;
+}
+.atelier .heading p {
+  color: var(--at-sub);
+  font-size: 12px;
+  margin-top: 5px;
+}
+.atelier .intro {
+  margin: 11px 0 27px;
+}
+.atelier .intro .muted {
+  font-size: 14px;
+  margin-top: 10px;
+}
+.atelier .btn {
+  border: 1px solid var(--at-line);
+  color: var(--at-ink);
+  background: var(--at-panel);
+  border-radius: 13px;
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-weight: 720;
+  font-size: 12px;
+  line-height: 1.2;
+  min-height: 40px;
+  transition:
+    filter var(--ds-motion-fast),
+    transform var(--ds-motion-fast);
+}
+.atelier .btn:hover {
+  filter: brightness(1.13);
+  transform: translateY(-1px);
+}
+.atelier .btn.primary {
+  background: var(--at-accent);
+  border-color: var(--ds-brand);
+  color: #12221b;
+}
+.atelier .btn.ghost {
+  background: transparent;
+}
+.atelier .btn.tiny {
+  min-height: 32px;
+  padding: 7px 11px;
+  font-size: 11px;
+}
+.atelier .btn.plain {
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  min-height: 0;
+  color: var(--ds-brand);
+}
+.atelier .hero {
+  border-radius: var(--at-radius);
+  background:
+    radial-gradient(
+      circle at 82% 24%,
+      color-mix(in srgb, var(--at-accent) 27%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(123deg, #243a34, #172927 66%, #12231e);
+  padding: 27px 28px;
+  min-height: 228px;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #edf5ee;
+}
+.atelier .hero .hero-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 58%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 11px;
+}
+.atelier .hero .eyebrow {
+  color: #b2d9c0;
+}
+.atelier .hero h2 {
+  font-size: clamp(22px, 2.7vw, 35px);
+  max-width: 420px;
+  letter-spacing: -1.25px;
+  line-height: 1.12;
+}
+.atelier .hero p {
+  color: #bccfc7;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.atelier .hero .hero-art {
+  position: absolute;
+  right: -34px;
+  top: -30px;
+  width: 47%;
+  height: calc(100% + 60px);
+  display: grid;
+  place-items: center;
+  opacity: 0.95;
+}
+.atelier .hero .plate {
+  position: relative;
+  border-radius: 50%;
+  width: min(230px, 94%);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle at 34% 32%,
+    #f3f1df,
+    #d9ddc8 68%,
+    #acc0b0 70%,
+    #e1e3cf 73%,
+    #8b9d8c 76%,
+    transparent 77%
+  );
+  box-shadow:
+    20px 25px 30px #08120d5c,
+    inset 0 4px 8px #fff8;
+  transform: rotate(-21deg);
+}
+.atelier .hero .plate:after {
+  content: "✿";
+  position: absolute;
+  inset: 24%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 72px;
+  color: #658d66;
+  background: radial-gradient(
+    circle,
+    #cb9d63 0 16%,
+    #92a970 17% 38%,
+    #d2bf79 39% 45%,
+    #64845b 46% 52%,
+    transparent 53%
+  );
+  text-shadow: 1px 3px #ffffff26;
+}
+.atelier .hero .hero-food {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.62;
+  mask-image: linear-gradient(90deg, transparent 1%, #000 42%);
+}
+.atelier .hero:has(.hero-food) .hero-art {
+  display: none;
+}
+.atelier .statline {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--at-gap);
+  margin: 17px 0 31px;
+}
+.atelier .stat {
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 18px;
+  min-height: 86px;
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.atelier .stat-icon {
+  height: 42px;
+  width: 42px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--at-accent) 14%, transparent);
+  color: var(--ds-brand);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.atelier .stat strong {
+  font-size: 23px;
+  font-weight: 760;
+  display: block;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.atelier .stat span {
+  font-size: 11px;
+  color: var(--at-sub);
+  display: block;
+  margin-top: 6px;
+}
+.atelier .section {
+  margin-top: 25px;
+}
+.atelier .recipe-tools {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: 15px 0 16px;
+}
+.atelier .search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 13px;
+  padding: 0 13px;
+  min-width: 180px;
+  flex: 1;
+  max-width: 350px;
+  color: var(--at-sub);
+}
+.atelier input,
+.atelier textarea,
+.atelier select {
+  background: var(--at-panel);
+  color: var(--at-ink);
+  border: 1px solid var(--at-line);
+  border-radius: 12px;
+  padding: 12px 13px;
+  min-width: 0;
+  width: 100%;
+  font-size: 13px;
+}
+.atelier input[type="date"] {
+  color-scheme: dark;
+}
+.atelier.light input[type="date"] {
+  color-scheme: light;
+}
+.atelier .search input {
+  border: 0;
+  background: none;
+  outline: 0;
+  width: 100%;
+  padding: 12px 0;
+}
+.atelier .search input:focus-visible {
+  outline: 0;
+}
+.atelier .recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--at-cols), minmax(0, 1fr));
+  gap: var(--at-gap);
+}
+.atelier .recipe-tile {
+  position: relative;
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 18px;
+  overflow: hidden;
+  min-width: 0;
+  transition:
+    transform var(--ds-motion-fast),
+    border-color var(--ds-motion-fast);
+  text-align: left;
+  color: var(--at-ink);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  width: 100%;
+}
+.atelier .recipe-tile:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--at-accent) 45%, transparent);
+}
+.atelier .tile-image {
+  height: 150px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(120deg, #415b50, #6e7b59);
+}
+.atelier .tile-image.tint1 {
+  background: linear-gradient(115deg, #7b625d, #b2806c);
+}
+.atelier .tile-image.tint2 {
+  background: linear-gradient(115deg, #556273, #86939c);
+}
+.atelier .tile-image.tint3 {
+  background: linear-gradient(115deg, #5b6f54, #b0aa76);
+}
+.atelier .tile-image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  transition: transform var(--ds-motion-image);
+  position: absolute;
+  inset: 0;
+}
+.atelier .recipe-tile:hover .tile-image img {
+  transform: scale(1.08);
+}
+.atelier .tile-image .placeholder {
+  font-size: 56px;
+  color: #fff8;
+  filter: drop-shadow(0 10px 20px #0002);
+}
+.atelier .tile-body {
+  padding: 13px 15px 16px;
+  flex: 1;
+}
+.atelier .tile-body small {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 850;
+  color: var(--ds-brand);
+  display: block;
+  margin-bottom: 7px;
+}
+.atelier .tile-body h3 {
+  font-size: 13px;
+  font-weight: 710;
+  line-height: 1.3;
+  min-height: 34px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.atelier .tile-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--at-sub);
+  font-size: 10px;
+  margin-top: 9px;
+}
+.atelier .pill {
+  font-size: 10px;
+  font-weight: 760;
+  color: var(--ds-brand);
+  background: color-mix(in srgb, var(--at-accent) 13%, transparent);
+  padding: 7px 11px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.atelier .float-pill {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  background: #112019cc;
+  color: #d8ecd9;
+  backdrop-filter: blur(8px);
+}
+.atelier .week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  overflow: auto;
+}
+.atelier .day {
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 15px;
+  padding: 12px 10px;
+  min-height: 142px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  min-width: 0;
+}
+.atelier .day.today {
+  border-color: color-mix(in srgb, var(--at-accent) 58%, transparent);
+}
+.atelier .day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.atelier .day-head span {
+  font-size: 10px;
+  color: var(--at-sub);
+  font-weight: 700;
+}
+.atelier .day-head b {
+  font-size: 14px;
+}
+.atelier .day.today .day-head b {
+  color: var(--ds-brand);
+}
+.atelier .day-meal {
+  display: block;
+  text-align: left;
+  width: 100%;
+  color: var(--at-ink);
+  background: var(--at-panel2);
+  border: 0;
+  padding: 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.25;
+  min-height: 49px;
+}
+.atelier .day-meal small {
+  display: block;
+  font-size: 9px;
+  color: var(--ds-brand);
+  margin-bottom: 4px;
+}
+.atelier .day-empty {
+  color: var(--at-sub);
+  font-size: 10px;
+  line-height: 1.35;
+}
+.atelier .day-add {
+  margin-top: auto;
+  border: 1px dashed var(--at-line);
+  border-radius: 9px;
+  color: var(--at-sub);
+  background: none;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 30px;
+}
+.atelier .shopping-card,
+.atelier .manage-card {
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 19px;
+  padding: 20px;
+}
+.atelier .shopping-list {
+  display: grid;
+  margin-top: 8px;
+}
+.atelier .shopping-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--at-line);
+}
+.atelier .shopping-row:last-child {
+  border-bottom: 0;
+}
+.atelier .shopping-row.checked .shopping-name {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+.atelier .shopping-name {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+.atelier .shopping-qty {
+  font-size: 11px;
+  color: var(--at-sub);
+}
+.atelier .shopping-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 17px;
+}
+.atelier .shopping-form input {
+  flex: 1;
+}
+.atelier .manage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--at-gap);
+}
+.atelier .manage-card {
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.atelier .manage-card p {
+  font-size: 12px;
+  color: var(--at-sub);
+  max-width: 330px;
+}
+.atelier .pager {
+  display: flex;
+  gap: 9px;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0 0;
+  font-size: 11px;
+  color: var(--at-sub);
+}
+.atelier .notice {
+  padding: 15px 19px;
+  border: 1px solid var(--at-line);
+  border-radius: 16px;
+  background: var(--at-panel);
+  color: var(--at-sub);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.atelier .notice.error {
+  color: #f6b6a4;
+  border-color: #e7a79466;
+}
+.atelier .toast {
+  position: sticky;
+  bottom: 20px;
+  width: fit-content;
+  margin: 10px auto;
+  z-index: 8;
+  background: var(--at-accent);
+  color: #17271f;
+  border-radius: 11px;
+  padding: 11px 16px;
+  font-size: 12px;
+  font-weight: 770;
+  box-shadow: var(--at-shadow);
+}
+.atelier .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #080d0cbd;
+  z-index: 80;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 17px;
+  backdrop-filter: blur(9px);
+}
+.atelier .modal {
+  background: var(--at-surface);
+  color: var(--at-ink);
+  border: 1px solid var(--at-line);
+  border-radius: 24px;
+  width: min(720px, 100%);
+  max-height: min(90vh, 940px);
+  overflow-y: auto;
+  box-shadow: 0 32px 110px #0009;
+  position: relative;
+}
+.atelier .modal.large {
+  width: min(890px, 100%);
+}
+.atelier .modal-content {
+  padding: 25px;
+}
+.atelier .modal-close {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  z-index: 2;
+}
+.atelier .modal-hero {
+  height: 230px;
+  background: linear-gradient(120deg, #304d40, #788f66);
+  display: grid;
+  place-items: center;
+  font-size: 82px;
+  color: #fff7;
+}
+.atelier .modal-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .modal h2 {
+  font-size: 27px;
+  line-height: 1.1;
+  letter-spacing: -1.1px;
+}
+.atelier .modal .description {
+  font-size: 13px;
+  color: var(--at-sub);
+  line-height: 1.65;
+  margin: 11px 0 18px;
+}
+.atelier .detail-cols {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 25px;
+  margin: 23px 0;
+}
+.atelier .detail-cols h3 {
+  font-size: 14px;
+  margin-bottom: 13px;
+}
+.atelier .ingredient {
+  display: flex;
+  align-items: start;
+  gap: 9px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--at-line);
+  padding: 11px 0;
+  line-height: 1.45;
+}
+.atelier .step {
+  display: flex;
+  gap: 12px;
+  border: 1px solid var(--at-line);
+  padding: 13px;
+  border-radius: 12px;
+  margin-bottom: 9px;
+  font-size: 12px;
+  line-height: 1.65;
+  cursor: pointer;
+}
+.atelier .step.active {
+  border-color: var(--ds-brand);
+  background: color-mix(in srgb, var(--at-accent) 8%, transparent);
+}
+.atelier .step-number {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--at-panel2);
+  color: var(--ds-brand);
+  font-weight: 750;
+  flex-shrink: 0;
+}
+.atelier .cook-stage {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 290px;
+  padding: 25px;
+}
+.atelier .cook-stage .step-count {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--ds-brand);
+}
+.atelier .cook-stage h2 {
+  font-size: clamp(24px, 3.5vw, 37px);
+  line-height: 1.32;
+  max-width: 590px;
+}
+.atelier .cook-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 19px 0;
+}
+.atelier .field {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 720;
+  margin: 0 0 15px;
+}
+.atelier .field span {
+  color: var(--at-sub);
+}
+.atelier .form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+.atelier .form-error {
+  color: #f6b6a4;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+.atelier .range {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.atelier .range button {
+  flex: 1;
+}
+.atelier .swatches {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.atelier .swatch {
+  width: 33px;
+  height: 33px;
+  border-radius: 11px;
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px #fff4;
+}
+.atelier .swatch.chosen {
+  outline: 2px solid var(--at-ink);
+  outline-offset: 3px;
+}
+.atelier .settings-group {
+  padding: 17px 0;
+  border-bottom: 1px solid var(--at-line);
+}
+.atelier .settings-group h3 {
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+.atelier .settings-hint {
+  color: var(--at-sub);
+  font-size: 11px;
+  margin-top: 17px;
+  line-height: 1.55;
+}
+.atelier .skeleton {
+  min-height: 200px;
+  display: grid;
+  place-items: center;
+  color: var(--at-sub);
+  font-size: 13px;
+}
+.atelier .today-board {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: var(--at-gap);
+}
+.atelier .today-panel {
+  background: var(--at-panel);
+  border: 1px solid var(--at-line);
+  border-radius: 20px;
+  padding: 21px;
+  min-width: 0;
+}
+.atelier .today-panel h3 {
+  margin: 4px 0 14px;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+}
+.atelier .today-meal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--at-line);
+}
+.atelier .today-meal:last-of-type {
+  border-bottom: 0;
+}
+.atelier .today-meal .meal-badge {
+  color: var(--ds-brand);
+  background: var(--at-panel2);
+  padding: 9px;
+  border-radius: 11px;
+  flex-shrink: 0;
+}
+.atelier .today-meal .meal-details {
+  flex: 1;
+  min-width: 0;
+}
+.atelier .today-meal .meal-details small {
+  display: block;
+  color: var(--at-sub);
+  font-size: 10px;
+  margin-bottom: 4px;
+}
+.atelier .today-meal .meal-details strong {
+  font-size: 13px;
+  line-height: 1.35;
+  display: block;
+}
+.atelier .mini-shopping {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--at-line);
+  padding: 10px 0;
+  font-size: 12px;
+  gap: 10px;
+}
+.atelier .mini-shopping:last-child {
+  border: 0;
+}
+.atelier .mini-shopping button {
+  border: 0;
+  background: none;
+  color: var(--at-ink);
+  text-align: left;
+  padding: 5px 0;
+  flex: 1;
+}
+.atelier .mini-shopping button:hover {
+  color: var(--ds-brand);
+}
+.atelier .editing-hint {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--at-sub);
+  background: var(--at-panel2);
+  border: 1px solid var(--at-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.atelier .subform {
+  display: grid;
+  gap: 8px;
+  background: var(--at-panel2);
+  padding: 13px;
+  border-radius: 13px;
+  margin: 14px 0;
+}
+.atelier .subform .field {
+  margin: 0;
+}
+.atelier .field input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--ds-brand);
+}
+.atelier .modal textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 95px;
+}
+.atelier button:focus-visible,
+.atelier input:focus-visible,
+.atelier select:focus-visible,
+.atelier textarea:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+.atelier .modal .btn.primary {
+  color: #17271f;
+}
+@media (max-width: 780px) {
+  .atelier .today-board {
+    grid-template-columns: 1fr;
+  }
+}
+:host([hidden]) {
+  display: none;
+}
+@media (min-width: 1500px) {
+  .atelier .main {
+    max-width: 1550px;
+    margin-inline: auto;
+  }
+  .atelier .recipe-tile .tile-image {
+    height: 180px;
+  }
+}
+@media (max-width: 1080px) {
+  .atelier .shell {
+    grid-template-columns: 170px minmax(0, 1fr);
+  }
+  .atelier .sidebar {
+    padding: 24px 10px;
+  }
+  .atelier .identity {
+    padding: 0 5px 25px;
+  }
+  .atelier .stat {
+    gap: 9px;
+    padding: 12px;
+  }
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, minmax(93px, 1fr));
+  }
+  .atelier .recipe-grid {
+    grid-template-columns: repeat(min(var(--at-cols), 3), minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .atelier .shell {
+    display: block;
+  }
+  .atelier .sidebar {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--at-line);
+    padding: 10px 12px;
+  }
+  .atelier .sidebar .identity,
+  .atelier .sidebar .nav-label,
+  .atelier .sidebar-footer {
+    display: none;
+  }
+  .atelier .nav {
+    display: flex;
+    overflow: auto;
+    gap: 5px;
+  }
+  .atelier .nav button {
+    padding: 10px 10px;
+    white-space: nowrap;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .atelier .nav button.active:before {
+    display: none;
+  }
+  .atelier .main {
+    padding: 20px;
+  }
+  .atelier .topbar {
+    margin-bottom: 18px;
+  }
+  .atelier .hero {
+    padding: 21px;
+    min-height: 220px;
+  }
+  .atelier .hero .hero-copy {
+    max-width: 70%;
+  }
+  .atelier .statline {
+    gap: 7px;
+  }
+  .atelier .stat {
+    min-height: 70px;
+    padding: 11px;
+  }
+  .atelier .stat-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .atelier .stat strong {
+    font-size: 18px;
+  }
+  .atelier .stat span {
+    font-size: 9px;
+  }
+  .atelier .recipe-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .atelier .tile-image {
+    height: 142px;
+  }
+  .atelier .detail-cols {
+    grid-template-columns: 1fr;
+  }
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, 110px);
+  }
+  .atelier .manage-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  .atelier .main {
+    padding: 15px;
+  }
+  .atelier .stat-icon {
+    display: none;
+  }
+  .atelier .hero {
+    min-height: 195px;
+  }
+  .atelier .hero-art {
+    right: -70px;
+  }
+  .atelier .hero h2 {
+    font-size: 25px;
+  }
+  .atelier .hero .hero-copy {
+    max-width: 95%;
+    position: relative;
+    z-index: 2;
+  }
+  .atelier .hero .hero-art {
+    right: -95px;
+    opacity: 0.2;
+  }
+  .atelier .hero h2 {
+    font-size: 24px;
+  }
+  .atelier .tile-image {
+    height: 113px;
+  }
+  .atelier .recipe-tile h3 {
+    font-size: 12px;
+  }
+  .atelier .modal-content {
+    padding: 18px;
+  }
+  .atelier .modal-hero {
+    height: 175px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Atelier 0.3: grounded editorial forms, not a generic settings dialog. */
+.atelier .editor-lead {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 24px;
+  padding-right: 64px;
+}
+.atelier .editor-lead h2 {
+  font-size: clamp(26px, 3vw, 35px);
+  letter-spacing: -1.3px;
+  line-height: 1.15;
+  margin: 8px 0;
+}
+.atelier .editor-lead p {
+  font-size: 13px;
+  color: var(--at-sub);
+  line-height: 1.65;
+  max-width: 550px;
+}
+.atelier .editor-stamp {
+  width: 58px;
+  height: 58px;
+  border: 1px solid var(--at-line);
+  border-radius: 18px;
+  background: var(--at-panel2);
+  display: grid;
+  place-items: center;
+  color: var(--ds-brand);
+  flex-shrink: 0;
+}
+.atelier .editor-form {
+  display: grid;
+  gap: 15px;
+}
+.atelier .editor-card {
+  border-radius: 20px;
+  border: 1px solid var(--at-line);
+  background: var(--at-panel);
+  padding: 23px;
+}
+.atelier .editor-card .eyebrow {
+  margin: 0 0 11px;
+}
+.atelier .editor-card h3 {
+  font-size: 19px;
+  letter-spacing: -0.65px;
+  margin-bottom: 6px;
+}
+.atelier .editor-card .editor-sub {
+  color: var(--at-sub);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 0 0 17px;
+}
+.atelier .editor-columns {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
+}
+.atelier .editor-card .field {
+  margin-bottom: 14px;
+}
+.atelier .editor-card .field span {
+  font-size: 11px;
+  letter-spacing: 0.35px;
+}
+.atelier .editor-card input,
+.atelier .editor-card textarea {
+  background: var(--at-surface);
+  border: 1px solid var(--at-line);
+  border-radius: 13px;
+  font-size: 14px;
+  padding: 13px 14px;
+}
+.atelier .editor-card input:focus,
+.atelier .editor-card textarea:focus {
+  border-color: var(--ds-brand);
+}
+.atelier .editor-card textarea {
+  min-height: 102px;
+  line-height: 1.65;
+  resize: vertical;
+}
+.atelier .editor-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--at-ink);
+  padding: 13px 14px;
+  background: var(--at-panel2);
+  border-radius: 11px;
+  margin-bottom: 12px;
+}
+
+.atelier .editor-steps {
+  display: grid;
+  gap: 11px;
+}
+.atelier .editor-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+  background: var(--at-surface);
+}
+.atelier .editor-step .step-count {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ds-brand);
+  padding-top: 13px;
+  text-align: center;
+}
+.atelier .editor-step textarea {
+  min-height: 78px;
+  border: 0;
+  background: transparent;
+  resize: vertical;
+  padding: 8px 4px;
+}
+.atelier .editor-step .step-buttons {
+  display: flex;
+  gap: 3px;
+  flex-direction: column;
+}
+.atelier .editor-step .step-buttons button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--at-line);
+  border-radius: 9px;
+  color: var(--at-sub);
+  background: var(--at-panel2);
+  font-size: 15px;
+  cursor: pointer;
+}
+.atelier .editor-step .step-buttons button:hover {
+  color: var(--at-ink);
+  border-color: var(--ds-brand);
+}
+.atelier .editor-add-step {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px dashed var(--at-line);
+  border-radius: 13px;
+  padding: 13px;
+  background: var(--at-panel2);
+  color: var(--ds-brand);
+  font-weight: 700;
+  text-align: center;
+}
+.atelier .editor-readonly {
+  padding: 12px 15px;
+  border: 1px solid var(--at-line);
+  border-radius: 12px;
+  background: var(--at-surface);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 12px;
+  margin-bottom: 15px;
+}
+.atelier .editor-readonly span {
+  color: var(--at-sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.atelier .editor-footer {
+  position: sticky;
+  bottom: -24px;
+  z-index: 2;
+  margin: 0 -23px -23px;
+  padding: 16px 23px;
+  background: var(--at-panel);
+  border-top: 1px solid var(--at-line);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  border-radius: 0 0 20px 20px;
+}
+.atelier .editor-footer small {
+  font-size: 11px;
+  color: var(--at-sub);
+  line-height: 1.45;
+}
+.atelier .print-setup {
+  display: grid;
+  grid-template-columns: 1.06fr 0.94fr;
+  gap: 20px;
+  align-items: start;
+}
+.atelier .print-option {
+  width: 100%;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  background: var(--at-panel);
+  color: var(--at-ink);
+  border: 1px solid var(--at-line);
+  border-radius: 14px;
+  padding: 13px 14px;
+  margin-bottom: 9px;
+  cursor: pointer;
+}
+.atelier .print-option.active {
+  border-color: var(--ds-brand);
+  background: color-mix(in srgb, var(--at-accent) 13%, var(--at-panel));
+}
+.atelier .print-option strong {
+  display: block;
+  font-size: 12px;
+}
+.atelier .print-option span {
+  display: block;
+  font-size: 11px;
+  color: var(--at-sub);
+  margin-top: 3px;
+}
+.atelier .print-option .print-symbol {
+  border-radius: 9px;
+  background: var(--at-panel2);
+  padding: 10px;
+  font-size: 20px;
+}
+.atelier .print-paper {
+  background: #fffefb;
+  box-shadow: 0 12px 30px #0004;
+  border-radius: 3px;
+  aspect-ratio: 210/297;
+  padding: 23px 21px;
+  color: #23392c;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  position: relative;
+}
+.atelier .print-paper.landscape {
+  aspect-ratio: 297/210;
+}
+.atelier .print-paper .paper-kicker {
+  color: #789785;
+  letter-spacing: 2px;
+  font-weight: 850;
+  font-size: 8px;
+}
+.atelier .print-paper h3 {
+  font-family: Georgia, serif;
+  font-size: 22px;
+  color: #23392c;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+.atelier .print-paper p {
+  color: #53685c;
+  font-size: 8px;
+  line-height: 1.8;
+}
+.atelier .print-paper .paper-line {
+  height: 1px;
+  background: #d2dacc;
+}
+.atelier .print-paper .paper-cols {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 10px;
+  flex: 1;
+}
+.atelier .print-paper .paper-col {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.atelier .print-paper .paper-col span {
+  background: #edf2eb;
+  border-radius: 3px;
+  height: 6px;
+  width: 100%;
+}
+.atelier .print-paper .paper-col span:nth-child(2n) {
+  width: 72%;
+}
+.atelier .print-paper .paper-label {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #648071;
+}
+.atelier .print-paper .paper-foot {
+  margin-top: auto;
+  border-top: 1px solid #d2dacc;
+  padding-top: 8px;
+  color: #8b9a8b;
+  font-size: 7px;
+  letter-spacing: 1.4px;
+}
+.atelier .print-guide {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--at-sub);
+  margin-top: 8px;
+}
+@media (max-width: 760px) {
+  .atelier .editor-columns {
+    grid-template-columns: 1fr;
+  }
+  .atelier .editor-card {
+    padding: 18px;
+  }
+  .atelier .editor-footer {
+    margin: 0 -18px -18px;
+    bottom: -18px;
+    padding: 15px 18px;
+  }
+  .atelier .editor-step {
+    grid-template-columns: 23px minmax(0, 1fr) 30px;
+    gap: 7px;
+  }
+  .atelier .editor-readonly {
+    grid-template-columns: 1fr;
+  }
+  .atelier .print-setup {
+    grid-template-columns: 1fr;
+  }
+  .atelier .print-paper {
+    max-width: 310px;
+    margin: auto;
+    width: 100%;
+  }
+}

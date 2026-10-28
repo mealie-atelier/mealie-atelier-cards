@@ -1,0 +1,15 @@
+services:
+  mealie-atelier:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3008:3000"
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    cap_drop: [ALL]
+    volumes:
+      - atelier_data:/app/data
+volumes:
+  atelier_data:

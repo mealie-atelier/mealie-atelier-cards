@@ -1,0 +1,262 @@
+.pwa-install-trigger {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 13px;
+  border: 1px solid color-mix(in srgb, var(--shell-accent) 28%, var(--shell-line));
+  border-radius: 999px;
+  color: var(--shell-ink);
+  background: var(--shell-panel);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0;
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease),
+    transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.pwa-install-trigger svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pwa-install-trigger:hover {
+  background: var(--shell-button);
+  border-color: var(--shell-accent);
+}
+.pwa-install-trigger:active {
+  transform: scale(0.98);
+}
+.pwa-install-trigger:focus-visible,
+.pwa-install-dialog button:focus-visible {
+  outline: 2px solid var(--shell-accent);
+  outline-offset: 3px;
+}
+.pwa-install-dialog {
+  width: min(440px, calc(100vw - 28px));
+  max-width: none;
+  max-height: min(88dvh, 680px);
+  padding: 0;
+  overflow: auto;
+  color: var(--shell-ink);
+  background: var(--shell-panel);
+  border: 1px solid var(--shell-line);
+  border-radius: 24px;
+  box-shadow: 0 28px 100px rgba(0, 0, 0, 0.52);
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity var(--ds-motion-enter) var(--ds-motion-ease),
+    transform var(--ds-motion-enter) var(--ds-motion-ease),
+    overlay var(--ds-motion-enter) allow-discrete,
+    display var(--ds-motion-enter) allow-discrete;
+}
+.pwa-install-dialog:not([open]) {
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+}
+@starting-style {
+  .pwa-install-dialog[open] {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+}
+.pwa-install-dialog::backdrop {
+  opacity: 1;
+  background: rgba(5, 10, 8, 0.68);
+  backdrop-filter: blur(8px);
+  transition:
+    opacity var(--ds-motion-base) var(--ds-motion-ease),
+    backdrop-filter var(--ds-motion-base) var(--ds-motion-ease);
+}
+.pwa-install-dialog:not([open])::backdrop {
+  opacity: 0;
+  backdrop-filter: blur(0);
+}
+@starting-style {
+  .pwa-install-dialog[open]::backdrop {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+.pwa-install-panel {
+  padding: clamp(20px, 5vw, 30px);
+}
+.pwa-install-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.pwa-install-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--shell-accent) 28%, var(--shell-line));
+  border-radius: 16px;
+  color: var(--shell-accent);
+  background: color-mix(in srgb, var(--shell-accent) 10%, transparent);
+}
+.pwa-install-mark svg {
+  width: 30px;
+  height: 30px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pwa-install-mark svg path:first-of-type {
+  fill: currentColor;
+  stroke: none;
+}
+.pwa-install-close {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--shell-line);
+  border-radius: 50%;
+  color: var(--shell-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.pwa-install-close:hover {
+  color: var(--shell-ink);
+  background: var(--shell-hover);
+}
+.pwa-install-close svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+.pwa-install-dialog h2 {
+  margin: 0 0 10px;
+  max-width: 15ch;
+  font-size: clamp(24px, 6vw, 30px);
+  line-height: 1.13;
+  letter-spacing: -0.035em;
+}
+.pwa-install-intro,
+.pwa-install-note {
+  margin: 0;
+  color: var(--shell-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.pwa-install-steps {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 22px 0;
+  list-style: none;
+  counter-reset: install-step;
+}
+.pwa-install-steps li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: start;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--shell-soft);
+  color: var(--shell-ink);
+  font-size: 13px;
+  line-height: 1.5;
+  counter-increment: install-step;
+}
+.pwa-install-steps li::before {
+  content: counter(install-step);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: var(--shell-accent);
+  background: color-mix(in srgb, var(--shell-accent) 12%, transparent);
+  font-size: 12px;
+  font-weight: 750;
+}
+.pwa-install-note {
+  padding: 11px 13px;
+  border-left: 2px solid color-mix(in srgb, var(--shell-accent) 58%, transparent);
+  background: color-mix(in srgb, var(--shell-accent) 6%, transparent);
+  font-size: 12px;
+}
+.pwa-install-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+.pwa-install-actions button {
+  min-height: 46px;
+  padding: 10px 17px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease),
+    transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.pwa-install-primary {
+  color: #14231b;
+  background: var(--shell-accent);
+}
+.pwa-install-primary:hover {
+  background: color-mix(in srgb, var(--shell-accent) 82%, white);
+}
+.pwa-install-secondary {
+  color: var(--shell-ink);
+  background: transparent;
+  border-color: var(--shell-line) !important;
+}
+.pwa-install-secondary:hover {
+  background: var(--shell-hover);
+}
+.pwa-install-actions button:active {
+  transform: scale(0.98);
+}
+@media (max-width: 700px) {
+  .pwa-install-dialog {
+    align-self: end;
+    margin: 0 auto max(12px, env(safe-area-inset-bottom));
+    border-radius: 24px;
+  }
+  .pwa-install-actions {
+    flex-direction: column-reverse;
+  }
+  .pwa-install-actions button {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pwa-install-trigger,
+  .pwa-install-dialog,
+  .pwa-install-actions button {
+    transition-duration: var(--ds-motion-reduced) !important;
+  }
+  .pwa-install-dialog::backdrop {
+    backdrop-filter: none;
+  }
+}
