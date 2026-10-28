@@ -137,7 +137,7 @@
       if (!current || !["pending", "sending"].includes(current.state)) continue;
       try {
         await updateOp(current.id, { state: "sending" });
-        await bridge("mealie_atelier/shopping_sync", {
+        await bridge("mealie_atelier/offline_replay", {
           operation: { id: current.id, action: current.action, payload: current.payload },
         });
         await deleteOp(current.id);

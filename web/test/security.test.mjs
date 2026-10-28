@@ -440,7 +440,7 @@ test("role permissions and the command matrix follow the contract", () => {
     "approving through a toggle-shaped payload with extra keys is admin",
   );
   assert.equal(level("alarm_create"), "personal");
-  assert.equal(level("shopping_sync"), "write");
+  assert.equal(level("offline_replay"), "write");
   assert.equal(level("sync_run"), "write");
   assert.equal(level("sync_run", { confirm_first_batch: true }), "admin");
   assert.equal(level("nutrition_save"), "admin");

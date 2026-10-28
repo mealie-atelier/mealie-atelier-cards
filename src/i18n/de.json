@@ -1063,5 +1063,16 @@
   "pickerFavoritesHint": "Favoriten des verbundenen Mealie-Kontos",
   "pickerSort": "Sortierung",
   "pickerSortName": "Name",
-  "pickerSortRecent": "Zuletzt geändert"
+  "pickerSortRecent": "Zuletzt geändert",
+  "offlineWaiting": "Wartet auf Verbindung",
+  "offlineQueued.one": "1 Änderung wartet",
+  "offlineQueued.other": "{count} Änderungen warten",
+  "offlineSendNow": "Jetzt senden",
+  "offlineDiscard": "Verwerfen",
+  "offlineSaved": "Keine Verbindung. Deine Änderung ist auf diesem Gerät gespeichert und wird später gesendet.",
+  "offlineDropped": "Eine vorgemerkte Änderung wurde verworfen, weil dein Konto diese Küche nicht mehr ändern darf.",
+  "offlineConflictItem": "{item}: {error}",
+  "errOfflineOpReused": "Diese vorgemerkte Änderung kollidiert mit einer früheren. Verwirf sie und mache die Änderung neu.",
+  "errOfflineConflict": "Dieser Eintrag wurde zwischenzeitlich anderswo geändert. Verwirf deine Änderung und prüfe die Liste.",
+  "errOfflineAddUncertain": "Dieser Eintrag steht womöglich schon auf der Liste. Prüfe die Liste und verwirf dann diesen Eintrag."
 }

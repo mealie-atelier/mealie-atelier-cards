@@ -1063,5 +1063,16 @@
   "pickerFavoritesHint": "Favourites of the connected Mealie account",
   "pickerSort": "Sort",
   "pickerSortName": "Name",
-  "pickerSortRecent": "Recently changed"
+  "pickerSortRecent": "Recently changed",
+  "offlineWaiting": "Waiting for connection",
+  "offlineQueued.one": "1 change waiting",
+  "offlineQueued.other": "{count} changes waiting",
+  "offlineSendNow": "Send now",
+  "offlineDiscard": "Discard",
+  "offlineSaved": "No connection. Your change is saved on this device and will be sent later.",
+  "offlineDropped": "A queued change was dropped because your user may no longer change this kitchen.",
+  "offlineConflictItem": "{item}: {error}",
+  "errOfflineOpReused": "This queued change clashes with an earlier one. Discard it and make the change again.",
+  "errOfflineConflict": "This item was changed elsewhere in the meantime. Discard your change and check the list.",
+  "errOfflineAddUncertain": "This item may already be on the list. Check the list, then discard this entry."
 }

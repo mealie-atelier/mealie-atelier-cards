@@ -652,6 +652,7 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
     assert.equal(admin.can_manage, true);
     assert.equal(admin.features.structured_ingredients, true);
     assert.equal(admin.features.shopping_sync, false);
+    assert.equal(admin.features.offline_queue, true);
     assert.equal(admin.can_edit_ingredients, true);
     const shared = await statusOf("atelier", legacy);
     assert.equal(shared.permissions.can_admin, true, "the shared password stays admin");
@@ -665,7 +666,7 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
     assert.equal((await blocked.json()).code, "write_not_permitted");
     for (const [type, extra] of [
       ["mealie_atelier/mutate", { action: "mealplan_delete", payload: { entry_id: "meal-1" } }],
-      ["mealie_atelier/shopping_sync", { operation: {} }],
+      ["mealie_atelier/offline_replay", { operation: {} }],
       ["mealie_atelier/studio_update", { action: "pantry_put", payload: {} }],
     ]) {
       const res = await call("rea", passwords.rea, type, extra);

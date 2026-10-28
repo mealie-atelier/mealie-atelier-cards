@@ -1,0 +1,223 @@
+/** Offline queue for shopping edits (ticks and added notes) in the Home Assistant card. */
+const OFFLINE_CAP = 100;
+const OFFLINE_ACTIONS = ["shopping_toggle", "shopping_add"];
+const OFFLINE_CONFLICT_CODES = ["offline_conflict", "offline_add_uncertain", "offline_op_reused"];
+
+export const offlineQueueMethods = {
+  /** Active only when no host owns a queue, the Bridge can replay and the user may write. */
+  _offlineActive() {
+    return (
+      this._providerActive !== "home_assistant" &&
+      this._hass?.atelierOfflineHost !== true &&
+      this._permissions.features.offline_queue === true &&
+      this._permissions.can_write === true
+    );
+  },
+  _offlineKey() {
+    const user = String(this._hass?.user?.id || "anonymous");
+    const entry = String(this._config.entry_id || this._statusEntry?.entry_id || "default");
+    return `mealie-atelier-offline-v1:${user}:${entry}`;
+  },
+  /** Stored operations; any storage or parse failure reads as an empty queue. */
+  _offlineLoad() {
+    try {
+      const raw = localStorage.getItem(this._offlineKey());
+      const list = raw ? JSON.parse(raw) : [];
+      return (Array.isArray(list) ? list : [])
+        .filter(
+          (op) =>
+            op &&
+            typeof op.id === "string" &&
+            OFFLINE_ACTIONS.includes(op.action) &&
+            op.payload &&
+            typeof op.payload === "object",
+        )
+        .slice(0, OFFLINE_CAP);
+    } catch {
+      return [];
+    }
+  },
+  _offlineSave(ops) {
+    try {
+      localStorage.setItem(this._offlineKey(), JSON.stringify(ops.slice(0, OFFLINE_CAP)));
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  _offlineQueue() {
+    return this._offlineActive() ? this._offlineLoad() : [];
+  },
+  _offlineIsConnectivityError(err) {
+    if (this._hass?.connected === false) return true;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return true;
+    if (err?.code === 3 || err?.code === "connection_lost") return true;
+    return /connection lost|not connected/i.test(String(err?.message || ""));
+  },
+  /** A tick on an item with a waiting tick only takes that tick back: no network call, no conflict. */
+  _offlineCollapse(action, payload) {
+    if (action !== "shopping_toggle" || !this._offlineActive()) return false;
+    const ops = this._offlineLoad();
+    const index = ops.findIndex(
+      (op) =>
+        op.state !== "conflict" &&
+        op.action === "shopping_toggle" &&
+        op.payload.item_id === payload.item_id &&
+        op.payload.expected_checked === payload.checked,
+    );
+    if (index < 0) return false;
+    ops.splice(index, 1);
+    if (!this._offlineSave(ops)) return false;
+    this._render();
+    return true;
+  },
+  /** Called with a failed write (after its optimistic change was undone). True when it was queued. */
+  _offlineHandleFailure(action, payload, err) {
+    if (!OFFLINE_ACTIONS.includes(action) || !this._offlineActive()) return false;
+    if (!this._offlineIsConnectivityError(err)) return false;
+    const ops = this._offlineLoad();
+    if (
+      ops.length >= OFFLINE_CAP ||
+      typeof crypto === "undefined" ||
+      typeof crypto.randomUUID !== "function"
+    )
+      return false;
+    const item = asArray(this._data.shopping?.items).find(
+      (x) => String(x.id) === String(payload.item_id),
+    );
+    const entry =
+      action === "shopping_toggle"
+        ? {
+            item_id: String(payload.item_id),
+            checked: payload.checked === true,
+            expected_checked: typeof item?.checked === "boolean" ? item.checked : !payload.checked,
+          }
+        : { list_id: String(payload.list_id), note: String(payload.note) };
+    const label = action === "shopping_add" ? entry.note : this._offlineItemName(item);
+    ops.push({
+      id: crypto.randomUUID(),
+      action,
+      payload: entry,
+      label,
+      state: "pending",
+      created_at: Date.now(),
+    });
+    if (!this._offlineSave(ops)) return false;
+    this._error = "";
+    this._flash(this.t("offlineSaved"));
+    return true;
+  },
+  _offlineItemName(item) {
+    return String(item?.display || item?.note || item?.food?.name || this.t("itemFallback"));
+  },
+  /** Shopping items as the user expects them: waiting ticks applied, waiting adds appended. */
+  _offlineItems(items) {
+    const ops = this._offlineQueue().filter((op) => op.state !== "conflict");
+    if (!ops.length) return items;
+    const ticks = new Map(
+      ops.filter((op) => op.action === "shopping_toggle").map((op) => [op.payload.item_id, op]),
+    );
+    const view = items.map((item) =>
+      ticks.has(String(item.id))
+        ? { ...item, checked: ticks.get(String(item.id)).payload.checked }
+        : item,
+    );
+    for (const op of ops)
+      if (op.action === "shopping_add")
+        view.push({
+          id: `local-${op.id}`,
+          shoppingListId: op.payload.list_id,
+          note: op.payload.note,
+          checked: false,
+          offlineWaiting: true,
+        });
+    return view;
+  },
+  /** Status line and conflict list for the shopping view. */
+  _offlineBar() {
+    const ops = this._offlineQueue();
+    if (!ops.length) return "";
+    const waiting = ops.filter((op) => op.state !== "conflict");
+    const conflicts = ops.filter((op) => op.state === "conflict");
+    const line = waiting.length
+      ? `<div class="notice is-spaced offline-queue" role="status">${icon("cart", 16)} <strong>${esc(this.tp("offlineQueued", waiting.length))}</strong> <button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
+      : "";
+    const rows = conflicts
+      .map(
+        (op) =>
+          `<div class="notice is-spaced offline-conflict" role="status">${icon("leaf", 16)} <span>${esc(this.t("offlineConflictItem", { item: op.label || this.t("itemFallback"), error: this._errorText({ code: op.reason }) }))}</span> <button class="btn tiny" data-action="offline-discard" data-value="${esc(op.id)}">${esc(this.t("offlineDiscard"))}</button></div>`,
+      )
+      .join("");
+    return line + rows;
+  },
+  _offlineDiscard(id) {
+    this._offlineSave(this._offlineLoad().filter((op) => op.id !== id));
+    this._render();
+  },
+  async _offlineClick(action, value) {
+    if (action === "offline-send") await this._offlineReplay();
+    else this._offlineDiscard(value);
+  },
+  /** Send waiting operations in order, one at a time; stop at the first connectivity failure. */
+  async _offlineReplay() {
+    if (this._offlineBusy || !this._offlineActive()) return;
+    if (
+      this._hass?.connected === false ||
+      (typeof navigator !== "undefined" && navigator.onLine === false)
+    )
+      return;
+    this._offlineBusy = true;
+    let sent = 0;
+    let dropped = 0;
+    try {
+      for (const op of this._offlineLoad()) {
+        if (op.state === "conflict") continue;
+        try {
+          await this._ws("offline_replay", {
+            operation: { id: op.id, action: op.action, payload: op.payload },
+          });
+          this._offlineSave(this._offlineLoad().filter((x) => x.id !== op.id));
+          sent++;
+        } catch (err) {
+          if (err?.code === "write_not_permitted") {
+            this._offlineSave(this._offlineLoad().filter((x) => x.id !== op.id));
+            dropped++;
+            await this._recoverPermissions(err);
+            break;
+          }
+          if (OFFLINE_CONFLICT_CODES.includes(err?.code)) {
+            this._offlineSave(
+              this._offlineLoad().map((x) =>
+                x.id === op.id ? { ...x, state: "conflict", reason: err.code } : x,
+              ),
+            );
+            continue;
+          }
+          break;
+        }
+      }
+    } finally {
+      this._offlineBusy = false;
+    }
+    if (sent) await this._loadShopping();
+    else this._render();
+    if (dropped) this._flash(this.t("offlineDropped"), "error");
+  },
+  /** `hass.connected` going from false to true replays the queue. */
+  _offlineOnHass(next) {
+    const was = this._hass?.connected;
+    if (was === false && next?.connected !== false) this._offlineReplayLater();
+  },
+  _offlineReplayLater() {
+    Promise.resolve().then(() => this._offlineReplay());
+  },
+  _offlineAttach() {
+    this._boundOffline ||= () => this._offlineReplayLater();
+    if (typeof window !== "undefined") window.addEventListener?.("online", this._boundOffline);
+    this._offlineReplayLater();
+  },
+  _offlineDetach() {
+    if (typeof window !== "undefined" && this._boundOffline)
+      window.removeEventListener?.("online", this._boundOffline);
+  },
+};

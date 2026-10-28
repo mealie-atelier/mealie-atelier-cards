@@ -76,12 +76,12 @@ export const viewMethods = {
   },
   _shopping() {
     const lists = asArray(this._data.shopping?.lists);
-    const all = asArray(this._data.shopping?.items);
+    const all = this._offlineItems(asArray(this._data.shopping?.items));
     const selected = this._activeList || String(lists[0]?.id || "");
     const filtered = all.filter((i) => String(i.shoppingListId) === selected);
     const done = filtered.filter((i) => i.checked).length;
     return `<div class="shopping-card"><div class="toolbar shopping-toolbar"><button class="btn tiny" data-action="print-list">${icon("print", 14)} ${this.t("uiPrintPDF")}</button>${this._syncEntryButton()}${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
-      <div class="shopping-list">${filtered.map((item) => `<div class="shopping-row ${item.checked ? "checked" : ""}"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(item.id)}" data-checked="${item.checked ? "true" : "false"}" role="checkbox" aria-checked="${item.checked ? "true" : "false"}" ${!this._permissions.can_write || String(item.id).startsWith("pending-") ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(String(item.id).startsWith("pending-") ? this.t("uiSaving") : this.t(item.checked ? "uiMarkShoppingOpen" : "uiMarkShoppingComplete", { item: item.display || item.note || item.food?.name || this.t("itemFallback") }))}">${icon("check", 14)}</button><span class="shopping-name">${esc(item.display || item.note || item.food?.name || this.t("itemFallback"))}</span><span class="shopping-qty">${esc(item.quantity && item.quantity !== 1 ? item.quantity : "")}</span></div>`).join("")}
+      ${this._offlineBar()}<div class="shopping-list">${filtered.map((item) => `<div class="shopping-row ${item.checked ? "checked" : ""}"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(item.id)}" data-checked="${item.checked ? "true" : "false"}" role="checkbox" aria-checked="${item.checked ? "true" : "false"}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(item.id)) ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(String(item.id).startsWith("local-") ? this.t("offlineWaiting") : String(item.id).startsWith("pending-") ? this.t("uiSaving") : this.t(item.checked ? "uiMarkShoppingOpen" : "uiMarkShoppingComplete", { item: item.display || item.note || item.food?.name || this.t("itemFallback") }))}">${icon("check", 14)}</button><span class="shopping-name">${esc(item.display || item.note || item.food?.name || this.t("itemFallback"))}</span><span class="shopping-qty">${esc(item.offlineWaiting ? this.t("offlineWaiting") : item.quantity && item.quantity !== 1 ? item.quantity : "")}</span></div>`).join("")}
       ${!filtered.length ? `<div class="notice">${icon("cart")} ${esc(lists.length ? this.t("noShopping") : this.t("addListFirst"))}</div>` : ""}</div>
       ${lists.length && this._permissions.can_write ? `<form class="shopping-form" data-form="shopping-add"><input name="note" required maxlength="250" placeholder="${esc(this.t("addItem"))}" aria-label="${esc(this.t("addItem"))}"><button class="btn primary" type="submit">${icon("plus", 14)} ${esc(this.t("add"))}</button></form>` : ""}</div>`;
   },
@@ -90,7 +90,7 @@ export const viewMethods = {
     const meals = asArray(this._data.mealplan).filter((m) => m.date === today);
     const lists = asArray(this._data.shopping?.lists);
     const selected = this._activeList || String(lists[0]?.id || "");
-    const open = asArray(this._data.shopping?.items).filter(
+    const open = this._offlineItems(asArray(this._data.shopping?.items)).filter(
       (x) => String(x.shoppingListId) === selected && !x.checked,
     );
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
@@ -104,7 +104,7 @@ export const viewMethods = {
             .slice(0, 6)
             .map(
               (x) =>
-                `<div class="mini-shopping"><span>${icon("cart", 15)}</span><button data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" aria-label="${esc(String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + (x.display || x.note || x.food?.name || this.t("itemFallback")))}" ${!this._permissions.can_write || String(x.id).startsWith("pending-") ? 'disabled aria-disabled="true"' : ""}>${esc(x.display || x.note || x.food?.name || "")}</button></div>`,
+                `<div class="mini-shopping"><span>${icon("cart", 15)}</span><button data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" aria-label="${esc(String(x.id).startsWith("local-") ? this.t("offlineWaiting") : String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + (x.display || x.note || x.food?.name || this.t("itemFallback")))}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(x.id)) ? 'disabled aria-disabled="true"' : ""}>${esc(x.display || x.note || x.food?.name || "")}</button></div>`,
             )
             .join("")
         : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`

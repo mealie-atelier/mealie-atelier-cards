@@ -6,7 +6,8 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const ID = /^[a-zA-Z0-9_-]{1,150}$/;
-const err = (status, message) => Object.assign(new Error(message), { status });
+const err = (status, message, atelierCode) =>
+  Object.assign(new Error(message), { status, ...(atelierCode ? { atelierCode } : {}) });
 const MAX_AGE = 30 * 86400e3;
 export function validateOperation(operation) {
   if (
@@ -74,12 +75,20 @@ export class OfflineLedger {
       if (value.updatedAt < now - MAX_AGE && value.state === "completed") delete data[key];
     let record = data[op.id];
     if (record && JSON.stringify(record.operation) !== JSON.stringify(op))
-      throw err(409, "Operation ID reused with different content");
+      throw err(409, "Operation ID reused with different content", "offline_op_reused");
     if (record?.state === "completed") return { ...record.result, replayed: true };
     if (record?.state === "conflict")
-      throw err(409, record.message || "A newer edit exists. Resolve on this device");
+      throw err(
+        409,
+        record.message || "A newer edit exists. Resolve on this device",
+        "offline_conflict",
+      );
     if (record?.state === "uncertain" && op.action === "shopping_add")
-      throw err(409, "An earlier add may have succeeded. Inspect the Mealie list before retrying.");
+      throw err(
+        409,
+        "An earlier add may have succeeded. Inspect the Mealie list before retrying.",
+        "offline_add_uncertain",
+      );
     if (!record) {
       data[op.id] = record = { operation: op, state: "checking", updatedAt: now };
       await this.save(data);
@@ -107,10 +116,14 @@ export class OfflineLedger {
         await set("conflict", {
           message: "This item was changed on another device. Review both values.",
         });
-        throw err(409, record.message);
+        throw err(409, record.message, "offline_conflict");
       }
     } else if (record.state === "uncertain" || record.state === "sending") {
-      throw err(409, "Earlier add may have reached Mealie. Check the list to avoid a duplicate.");
+      throw err(
+        409,
+        "Earlier add may have reached Mealie. Check the list to avoid a duplicate.",
+        "offline_add_uncertain",
+      );
     }
     // Persist the sending marker BEFORE touching Mealie. A process crash cannot cause a blind add replay.
     await set("sending");

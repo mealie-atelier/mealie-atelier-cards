@@ -389,7 +389,7 @@ const COMMAND_LEVELS = {
     "ingredient_catalog",
     "push_unregister",
   ],
-  write: ["shopping_sync", "sync_run", "sync_pause", "sync_resume", "sync_retry", "sync_resolve"],
+  write: ["offline_replay", "sync_run", "sync_pause", "sync_resume", "sync_retry", "sync_resolve"],
   admin: [
     "nutrition_save",
     "food_create",

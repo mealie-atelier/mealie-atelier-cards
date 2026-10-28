@@ -187,6 +187,7 @@
         if (cached) card._status = cached;
       }
       card.hass = {
+        atelierOfflineHost: true,
         language: navigator.language || "de",
         callWS: async (message) => {
           if (message.type === "mealie_atelier/shopping")

@@ -257,6 +257,9 @@ class MealieAtelierCard extends HTMLElement {
     if (this.isConnected) this._render();
   }
   set hass(value) {
+    // BEGIN feature H: offline queue reconnect
+    this._offlineOnHass(value);
+    // END feature H
     this._hass = value;
     if (this.isConnected && !this._didLoad) {
       this._didLoad = true;
@@ -279,12 +282,18 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
     this._render();
     this._timerHandle = setInterval(() => this._tickTimers(), 1000);
+    // BEGIN feature H: offline queue replay on connect
+    this._offlineAttach();
+    // END feature H
     if (this._hass && !this._didLoad) {
       this._didLoad = true;
       this._refresh();
     }
   }
   disconnectedCallback() {
+    // BEGIN feature H: offline queue listener
+    this._offlineDetach();
+    // END feature H
     this.shadowRoot.removeEventListener("click", this._boundClick);
     this.shadowRoot.removeEventListener("submit", this._boundSubmit);
     this.shadowRoot.removeEventListener("input", this._boundInput);
@@ -581,6 +590,9 @@ class MealieAtelierCard extends HTMLElement {
     } finally {
       this._busy = false;
       this._render();
+      // BEGIN feature H: offline queue replay after status is known
+      this._offlineReplayLater();
+      // END feature H
     }
   }
   async _searchRecipes() {
@@ -1020,6 +1032,9 @@ class MealieAtelierCard extends HTMLElement {
       this._render();
       return false;
     }
+    // BEGIN feature H: offline queue takes back a waiting tick
+    if (this._offlineCollapse(action, payload)) return true;
+    // END feature H
     const rollback = optimistic ? optimistic() : null;
     if (rollback) this._render();
     try {
@@ -1035,6 +1050,9 @@ class MealieAtelierCard extends HTMLElement {
       return true;
     } catch (err) {
       if (rollback) rollback();
+      // BEGIN feature H: offline queue keeps connectivity failures
+      if (this._offlineHandleFailure(action, payload, err)) return true;
+      // END feature H
       this._error = "";
       this._flash(this.t("uiMutationFailed", { error: this._errorText(err) }), "error");
       await this._recoverPermissions(err);
@@ -1179,6 +1197,9 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature D: recipe picker actions
     if (action.startsWith("picker-")) return this._pickerClick(action, v);
     // END feature D
+    // BEGIN feature H: offline queue actions
+    if (action.startsWith("offline-")) return this._offlineClick(action, v);
+    // END feature H
     if (action === "nav" && MODES.includes(v)) {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);

@@ -503,6 +503,7 @@ async function bridge(req) {
             permissions,
             features: {
               shopping_sync: false,
+              offline_queue: true,
               structured_ingredients: structured,
               uploads: true,
               recipe_filters: true,
@@ -533,7 +534,7 @@ async function bridge(req) {
         { status: 501, code: "sync_not_supported" },
       );
     // END shopping sync (feature A)
-    case "mealie_atelier/shopping_sync":
+    case "mealie_atelier/offline_replay":
       return offlineLedger.process(msg.operation);
     case "mealie_atelier/alarm_capabilities":
       return {

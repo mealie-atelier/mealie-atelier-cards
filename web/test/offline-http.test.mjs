@@ -77,9 +77,9 @@ test("HTTP two devices: sync, idempotency, conflicts, offline app assets and tim
       action: "shopping_toggle",
       payload: { item_id: "item-a", expected_checked: false, checked: true },
     };
-    const result = await bridge(api, "mealie_atelier/shopping_sync", { operation: op });
+    const result = await bridge(api, "mealie_atelier/offline_replay", { operation: op });
     assert.equal(result.status, 200, JSON.stringify(result.body));
-    const replay = await bridge(api, "mealie_atelier/shopping_sync", { operation: op });
+    const replay = await bridge(api, "mealie_atelier/offline_replay", { operation: op });
     assert.equal(replay.body.replayed, true);
     const updated = await bridge(api, "mealie_atelier/shopping");
     assert.equal(updated.body.items[0].checked, true);
@@ -89,17 +89,17 @@ test("HTTP two devices: sync, idempotency, conflicts, offline app assets and tim
       payload: { list_id: "list-a", note: "Milch" },
     };
     assert.equal(
-      (await bridge(api, "mealie_atelier/shopping_sync", { operation: add })).status,
+      (await bridge(api, "mealie_atelier/offline_replay", { operation: add })).status,
       200,
     );
     assert.equal(
-      (await bridge(api, "mealie_atelier/shopping_sync", { operation: add })).body.replayed,
+      (await bridge(api, "mealie_atelier/offline_replay", { operation: add })).body.replayed,
       true,
     );
     const stats = await (await fetch(`http://127.0.0.1:${mock.port}/events`)).json();
     assert.equal(stats.writes, 1);
     assert.equal(stats.adds, 1);
-    const bad = await bridge(api, "mealie_atelier/shopping_sync", {
+    const bad = await bridge(api, "mealie_atelier/offline_replay", {
       operation: {
         id: randomUUID(),
         action: "shopping_toggle",
@@ -107,6 +107,7 @@ test("HTTP two devices: sync, idempotency, conflicts, offline app assets and tim
       },
     });
     assert.equal(bad.status, 409);
+    assert.equal(bad.body.code, "offline_conflict");
     for (const asset of [
       "/",
       "/sw.js",
