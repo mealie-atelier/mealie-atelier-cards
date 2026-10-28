@@ -30,15 +30,15 @@ Alle zehn Views bleiben erhalten: Übersicht, Heute, Entdecken, Rezepte, Wochenp
 
 ## Teststand
 
-| Prüfung | Ergebnis | Was sie beweist |
-|---|---|---|
-| Python/Bridge-Unit-Tests | 12 von 12 bestanden | Request-Validierung, Nährwertlogik und Studio-Datenmodelle isoliert |
-| Node/Web-Tests | 9 von 9 bestanden | HTTP-/Persistenzlogik mit simulierten Mealie-Diensten |
-| Node/Card- und Logiktests | 12 von 12 bestanden | Zehn Custom Cards, UI-Verträge und Planungslogik |
-| Chromium UI-Rundgang | 1510 px, 820 px, 390 px bestanden | Zehn Ansichten, Schnellzugriff, Motion-Modi, reduzierte Animationen, keine unbehandelten JS-Exceptions |
-| Chromium Interaktionstest | 1510 px und 390 px bestanden | Einkauf ändern, Vorrat anlegen, Familie erweitern, Wochenplan vorschlagen, Journal speichern, Timer, Wischen/Pfeiltasten, Druck-/Motion-Dialog |
-| Bewegte Vorschau | Echte Browserframes als GIF | Tatsächliche Seiten-/Dialogübergänge mit anonymisierten Beispieldaten |
-| Eigenständige Offline-HTML-Demo | Playwright bestanden | Eingebettete Bilder, globaler Schnellzugriff, Escape und Wochenplan ohne Netzverbindung |
+| Prüfung                         | Ergebnis                          | Was sie beweist                                                                                                                                |
+| ------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python/Bridge-Unit-Tests        | 12 von 12 bestanden               | Request-Validierung, Nährwertlogik und Studio-Datenmodelle isoliert                                                                            |
+| Node/Web-Tests                  | 9 von 9 bestanden                 | HTTP-/Persistenzlogik mit simulierten Mealie-Diensten                                                                                          |
+| Node/Card- und Logiktests       | 12 von 12 bestanden               | Zehn Custom Cards, UI-Verträge und Planungslogik                                                                                               |
+| Chromium UI-Rundgang            | 1510 px, 820 px, 390 px bestanden | Zehn Ansichten, Schnellzugriff, Motion-Modi, reduzierte Animationen, keine unbehandelten JS-Exceptions                                         |
+| Chromium Interaktionstest       | 1510 px und 390 px bestanden      | Einkauf ändern, Vorrat anlegen, Familie erweitern, Wochenplan vorschlagen, Journal speichern, Timer, Wischen/Pfeiltasten, Druck-/Motion-Dialog |
+| Bewegte Vorschau                | Echte Browserframes als GIF       | Tatsächliche Seiten-/Dialogübergänge mit anonymisierten Beispieldaten                                                                          |
+| Eigenständige Offline-HTML-Demo | Playwright bestanden              | Eingebettete Bilder, globaler Schnellzugriff, Escape und Wochenplan ohne Netzverbindung                                                        |
 
 **Nicht geprüft:** ein echter Home-Assistant-Core, die produktive Mealie-API inkl. Schreibzugriff, externe USDA-/OpenAI-Calls, iOS/Safari, physische Tablet-Kiosk-Hardware sowie tatsächliche Drucker dieser Version. Alte A4-PDF-Tests aus v0.6 bleiben erhalten; das Drucklayout wurde in v0.7 nicht funktional verändert.
 

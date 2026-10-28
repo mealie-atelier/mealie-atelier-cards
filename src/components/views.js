@@ -39,7 +39,8 @@ export const viewMethods = {
           recipe.recipeCategory?.[0]?.name || recipe.recipeCategory?.[0] || this.t("featured");
         const image = this._design.show_images !== false;
         const timeLabel =
-          AtelierStudio.formatTime(recipe.totalTime, this._language) || this.t("uiMealieRecipeFallback");
+          AtelierStudio.formatTime(recipe.totalTime, this._language) ||
+          this.t("uiMealieRecipeFallback");
         return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${image ? recipeImage(recipe) : ""}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div><div class="placeholder">${esc(recipe.name)}</div></div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon("clock", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(

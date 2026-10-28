@@ -1,0 +1,17 @@
+#!/bin/sh
+# Local quality gate. GitHub Actions are intentionally disabled for this organization.
+set -e
+if git diff --cached --name-only | grep -qiE '(^|/)(CLAUDE(\.local)?\.md|\.claude/|\.mcp\.json|AGENTS\.md)'; then
+  echo 'AI assistant files must not be committed.' >&2
+  exit 1
+fi
+npx --no-install prettier --check . >/dev/null
+npm run build >/dev/null
+cmp -s dist/mealie-atelier-cards.js web/public/mealie-atelier-cards.js
+git diff --quiet -- dist web/public/mealie-atelier-cards.js || {
+  echo 'Bundle is stale: run npm run build and stage dist/ and web/public/.' >&2
+  exit 1
+}
+npm run check >/dev/null
+npm test >/dev/null
+node --test web/test/*.test.mjs >/dev/null

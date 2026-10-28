@@ -2,18 +2,18 @@
 
 This matrix describes the checked-in implementation, not a stable-release promise. “Local/mock” means exercised against automated fixtures or the browser demo; it does not imply a live service acceptance test.
 
-| Capability | Atelier Bridge + Cards | Home Assistant Core Mealie + Cards | Standalone Web |
-|---|---|---|---|
-| Recipe catalog and ingredient search | Yes; bridge paging | Read-only; requests up to 500 matches in one response and locally pages loaded matches in sets of 24 | Yes; server proxy paging |
-| Recipe detail and cooking steps | Yes | Read-only via Core response actions | Yes |
-| Recipe/step photos | Authenticated signed image routes | Hidden unless an authenticated trusted proxy is configured | Server-side image proxy |
-| Meal planning and shopping | Read/write subject to server settings and Mealie token | Not provided by the Atelier Core fallback | Read/write subject to server settings and Mealie token |
-| Cookbooks and kitchen metadata | Yes | Not exposed by this fallback | Yes |
-| Recipe create/import/edit | Available with HA admin checks; schema limits apply | Not available | Available to authenticated app user; schema limits apply |
-| Discover wizard, pantry helpers, family view | Yes; household state stored by provider | Local recipe browsing only | Yes; stored by companion server |
-| Timers and recipe journal | Server-managed shared-session alarms with Home Assistant notifications; HA user-scoped journal | Browser-local timers and notes; no server alarm delivery | Server-managed shared-session alarms with optional Web Push; app data where supported |
-| USDA / optional AI helpers | Optional backend keys and explicit action | Not available | Optional backend keys and explicit action |
-| Works without Home Assistant | No | No | Yes |
+| Capability                                   | Atelier Bridge + Cards                                                                         | Home Assistant Core Mealie + Cards                                                                   | Standalone Web                                                                        |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Recipe catalog and ingredient search         | Yes; bridge paging                                                                             | Read-only; requests up to 500 matches in one response and locally pages loaded matches in sets of 24 | Yes; server proxy paging                                                              |
+| Recipe detail and cooking steps              | Yes                                                                                            | Read-only via Core response actions                                                                  | Yes                                                                                   |
+| Recipe/step photos                           | Authenticated signed image routes                                                              | Hidden unless an authenticated trusted proxy is configured                                           | Server-side image proxy                                                               |
+| Meal planning and shopping                   | Read/write subject to server settings and Mealie token                                         | Not provided by the Atelier Core fallback                                                            | Read/write subject to server settings and Mealie token                                |
+| Cookbooks and kitchen metadata               | Yes                                                                                            | Not exposed by this fallback                                                                         | Yes                                                                                   |
+| Recipe create/import/edit                    | Available with HA admin checks; schema limits apply                                            | Not available                                                                                        | Available to authenticated app user; schema limits apply                              |
+| Discover wizard, pantry helpers, family view | Yes; household state stored by provider                                                        | Local recipe browsing only                                                                           | Yes; stored by companion server                                                       |
+| Timers and recipe journal                    | Server-managed shared-session alarms with Home Assistant notifications; HA user-scoped journal | Browser-local timers and notes; no server alarm delivery                                             | Server-managed shared-session alarms with optional Web Push; app data where supported |
+| USDA / optional AI helpers                   | Optional backend keys and explicit action                                                      | Not available                                                                                        | Optional backend keys and explicit action                                             |
+| Works without Home Assistant                 | No                                                                                             | No                                                                                                   | Yes                                                                                   |
 
 ## Known limits
 

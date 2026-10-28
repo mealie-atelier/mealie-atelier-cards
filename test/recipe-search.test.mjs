@@ -3,7 +3,9 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { searchDemoRecipes } from "../demo/recipe-search.js";
 
-const data = JSON.parse(await readFile(new URL("../demo/data/recipes.json", import.meta.url), "utf8"));
+const data = JSON.parse(
+  await readFile(new URL("../demo/data/recipes.json", import.meta.url), "utf8"),
+);
 function catalog(locale) {
   const recipes = data.recipes.map((recipe, index) => ({
     id: `recipe-${index + 1}`,
@@ -33,7 +35,10 @@ function catalog(locale) {
 test("demo recipe search finds ingredient matches, not only titles", () => {
   const { recipes, details } = catalog("en");
   const matches = searchDemoRecipes(recipes, details, "shiitake");
-  assert.deepEqual(matches.map((recipe) => recipe.slug), ["ramen-mit-haehnchen-und-gemuese"]);
+  assert.deepEqual(
+    matches.map((recipe) => recipe.slug),
+    ["ramen-mit-haehnchen-und-gemuese"],
+  );
 });
 
 test("localized demo routes can discover ingredients using the alternate language", () => {
@@ -41,14 +46,19 @@ test("localized demo routes can discover ingredients using the alternate languag
     const { recipes, details } = catalog(locale);
     const alternateIngredient = locale === "de" ? "kale" : "grünkohl";
     const matches = searchDemoRecipes(recipes, details, alternateIngredient);
-    assert.ok(matches.some((recipe) => recipe.slug === "zitronen-pasta-mit-gruenkohl-und-walnuessen"));
+    assert.ok(
+      matches.some((recipe) => recipe.slug === "zitronen-pasta-mit-gruenkohl-und-walnuessen"),
+    );
   }
 });
 
 test("demo query transforms apply dietary, time, serving, and ingredient filters", () => {
   const { recipes, details } = catalog("en");
   const matches = searchDemoRecipes(recipes, details, "vegan ingredient:kale under 30 min for 4");
-  assert.deepEqual(matches.map((recipe) => recipe.slug), ["zitronen-pasta-mit-gruenkohl-und-walnuessen"]);
+  assert.deepEqual(
+    matches.map((recipe) => recipe.slug),
+    ["zitronen-pasta-mit-gruenkohl-und-walnuessen"],
+  );
 });
 
 test("demo recipe search handles German diacritics and exclusions", () => {
@@ -56,7 +66,11 @@ test("demo recipe search handles German diacritics and exclusions", () => {
   const matches = searchDemoRecipes(recipes, details, "vegetarisch ohne Sahne");
   assert.ok(matches.length > 0);
   assert.ok(!matches.some((recipe) => recipe.slug === "paneer-curry-mit-basmatireis"));
-  assert.ok(searchDemoRecipes(recipes, details, "ingredient:Zitrone").some((recipe) => recipe.slug === "zitronen-pasta-mit-gruenkohl-und-walnuessen"));
+  assert.ok(
+    searchDemoRecipes(recipes, details, "ingredient:Zitrone").some(
+      (recipe) => recipe.slug === "zitronen-pasta-mit-gruenkohl-und-walnuessen",
+    ),
+  );
 });
 
 test("demo catalog remains exactly ten complete bilingual recipes with photo credits", () => {
@@ -64,7 +78,9 @@ test("demo catalog remains exactly ten complete bilingual recipes with photo cre
   assert.equal(new Set(data.recipes.map((recipe) => recipe.slug)).size, 10);
   for (const recipe of data.recipes) {
     assert.ok(recipe.image.url.startsWith("https://images.unsplash.com/photo-"));
-    assert.ok(recipe.image.photographer && recipe.image.sourceUrl.startsWith("https://unsplash.com/"));
+    assert.ok(
+      recipe.image.photographer && recipe.image.sourceUrl.startsWith("https://unsplash.com/"),
+    );
     for (const locale of ["de", "en"]) {
       assert.ok(recipe.title[locale]);
       assert.ok(recipe.description[locale]);

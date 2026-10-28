@@ -289,7 +289,9 @@ const AtelierStudio = (() => {
   function convertMeasurementQuery(query) {
     const match = String(query || "")
       .trim()
-      .match(/^([+-]?(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?))\s*(fl[ -]?oz|[\p{L}°-]+)\s*(?:to|in|into|nach|→)\s*(fl[ -]?oz|[\p{L}°-]+)$/iu);
+      .match(
+        /^([+-]?(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?))\s*(fl[ -]?oz|[\p{L}°-]+)\s*(?:to|in|into|nach|→)\s*(fl[ -]?oz|[\p{L}°-]+)$/iu,
+      );
     if (!match) return null;
     const parseAmount = (value) => {
       const mixed = value.match(/^([+-]?\d+)\s+(\d+)\/(\d+)$/);
@@ -347,13 +349,22 @@ const AtelierStudio = (() => {
       "°f": { family: "temperature", label: "°F" },
       fahrenheit: { family: "temperature", label: "°F" },
     };
-    const source = units[sourceUnit], target = units[targetUnit];
+    const source = units[sourceUnit],
+      target = units[targetUnit];
     if (!source || !target) return null;
     const amount = parseAmount(match[1]);
     if (source.family !== target.family) {
-      if ([source.family, target.family].includes("mass") && [source.family, target.family].includes("volume"))
+      if (
+        [source.family, target.family].includes("mass") &&
+        [source.family, target.family].includes("volume")
+      )
         return Number.isFinite(amount) && amount >= 0 && amount <= 1_000_000
-          ? { amount, sourceUnit: source.label, targetUnit: target.label, unsupported: "density-required" }
+          ? {
+              amount,
+              sourceUnit: source.label,
+              targetUnit: target.label,
+              unsupported: "density-required",
+            }
           : null;
       return null;
     }
@@ -362,11 +373,12 @@ const AtelierStudio = (() => {
     if (source.family === "temperature") {
       const sourceIsCelsius = source.label === "°C";
       const targetIsCelsius = target.label === "°C";
-      converted = sourceIsCelsius === targetIsCelsius
-        ? amount
-        : sourceIsCelsius
-          ? amount * (9 / 5) + 32
-          : (amount - 32) * (5 / 9);
+      converted =
+        sourceIsCelsius === targetIsCelsius
+          ? amount
+          : sourceIsCelsius
+            ? amount * (9 / 5) + 32
+            : (amount - 32) * (5 / 9);
     } else {
       converted = (amount * source.factor) / target.factor;
     }
@@ -488,7 +500,10 @@ const AtelierStudio = (() => {
       profile.usePantry === false
         ? null
         : available.length
-          ? { key: "studioReasonPantryCovered", values: { covered: available.length, total: rows.length } }
+          ? {
+              key: "studioReasonPantryCovered",
+              values: { covered: available.length, total: rows.length },
+            }
           : { key: "studioReasonPantryUnchecked" },
       unknown ? { key: "studioReasonAmountsUnclear", values: { count: unknown } } : null,
       profile.kidFriendly && kidTags ? { key: "studioReasonFamilyFriendly" } : null,

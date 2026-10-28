@@ -77,10 +77,19 @@ test("dark and neutral stone-light palettes share central tokens and theme trans
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--at-surface:\s*#f4f1eb/s);
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--at-panel:\s*#fffdfa/s);
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*#fffdfa/s);
-  assert.match(tokens, /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8a7a2, #806877\)/s);
+  assert.match(
+    tokens,
+    /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8a7a2, #806877\)/s,
+  );
   assert.match(file("src/design-system/editorial.css"), /background:\s*var\(--ds-photo-fallback/);
-  assert.match(template, /configuredAccent\.toLowerCase\(\) === DEFAULTS\.accent[\s\S]*?\? "#75465d"/);
-  assert.match(file("src/design-system/polish.css"), /\.atelier\.light \.hero:after[\s\S]*rgb\(42 31 39 \/ 94%\)/);
+  assert.match(
+    template,
+    /configuredAccent\.toLowerCase\(\) === DEFAULTS\.accent[\s\S]*?\? "#75465d"/,
+  );
+  assert.match(
+    file("src/design-system/polish.css"),
+    /\.atelier\.light \.hero:after[\s\S]*rgb\(42 31 39 \/ 94%\)/,
+  );
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*color-scheme:\s*light/s);
   assert.match(motion, /\.view-stage\.is-theme-entering/);
   assert.match(template, /mealie-atelier-theme-change/);

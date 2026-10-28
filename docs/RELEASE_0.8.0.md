@@ -35,20 +35,20 @@ Das Ziel dieser Version ist zuverlaessige Bedienung und Datenintegritaet, nicht 
 
 ### 5. Drucken ohne dunkle Tintenflaechen
 
-- Das Kochbuch-Cover ist in der Druckausgabe auf weissem Papier mit gut lesbaren dunkelgruenen Texten ausgelegt, auch wenn der Browser *Hintergrundgrafiken drucken* deaktiviert hat.
+- Das Kochbuch-Cover ist in der Druckausgabe auf weissem Papier mit gut lesbaren dunkelgruenen Texten ausgelegt, auch wenn der Browser _Hintergrundgrafiken drucken_ deaktiviert hat.
 - Die Bildschirmvorschau behaelt die dunkle Premium-Covergestaltung. Die bisherige Rezept-, Einkaufslisten- und Wochenplan-Druckgestaltung bleibt erhalten.
 
 ## Welche Tests wurden durchgefuehrt?
 
-| Bereich | Ergebnis | Grenzen |
-|---|---|---|
-| HA-Bridge Python-Tests | 14/14 bestanden | isolierte Mock-Tests, kein Home Assistant Core |
-| Standalone-Backend Node-Tests | 11/11 bestanden | simulierte Mealie-API |
-| Cards/Domain-Logik Node-Tests | 18/18 bestanden | keine reale Mealie-Datenbank |
-| Dialoge, Systemcheck, Export, responsives Layout | Chromium 390, 820, 1510 px bestanden | synthetische Beispieldaten |
-| Einkaufs-, Vorrats-, Familien-, Koch- und Planungsablauf | Chromium 390 und 1510 px bestanden | simulierte Dienste |
-| Gedrucktes Kochbuch mit ausgeschalteten Hintergrundgrafiken | 10 A4-Seiten als PDF erzeugt, Cover gerendert und visuell geprueft | keine physische Druckerprobe |
-| Offline-HTML-Demo | Bilder und App-Funktionen im Chromium-Smoke-Test | nur lokale Beispieldaten |
+| Bereich                                                     | Ergebnis                                                           | Grenzen                                        |
+| ----------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
+| HA-Bridge Python-Tests                                      | 14/14 bestanden                                                    | isolierte Mock-Tests, kein Home Assistant Core |
+| Standalone-Backend Node-Tests                               | 11/11 bestanden                                                    | simulierte Mealie-API                          |
+| Cards/Domain-Logik Node-Tests                               | 18/18 bestanden                                                    | keine reale Mealie-Datenbank                   |
+| Dialoge, Systemcheck, Export, responsives Layout            | Chromium 390, 820, 1510 px bestanden                               | synthetische Beispieldaten                     |
+| Einkaufs-, Vorrats-, Familien-, Koch- und Planungsablauf    | Chromium 390 und 1510 px bestanden                                 | simulierte Dienste                             |
+| Gedrucktes Kochbuch mit ausgeschalteten Hintergrundgrafiken | 10 A4-Seiten als PDF erzeugt, Cover gerendert und visuell geprueft | keine physische Druckerprobe                   |
+| Offline-HTML-Demo                                           | Bilder und App-Funktionen im Chromium-Smoke-Test                   | nur lokale Beispieldaten                       |
 
 **Gesamt: 43/43 automatisierte Python- und Node-Tests bestanden.** Die genannten Browserchecks kommen hinzu. Die Tests belegen den geprueften Codepfad und sind kein Beweis fuer Fehlerfreiheit in jeder Konfiguration.
 

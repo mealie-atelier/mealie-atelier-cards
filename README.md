@@ -41,25 +41,25 @@ This developer-preview archive is not published in the catalog yet. For temporar
 
 ## Ten card types
 
-| Dashboard card type | Purpose |
-|---|---|
-| `custom:mealie-atelier-card` | Full kitchen overview with navigation and every feature |
-| `custom:mealie-atelier-today` | Today overview: meals and outstanding groceries on one screen |
-| `custom:mealie-atelier-recipes` | Recipe catalog, search, details and cooking mode |
-| `custom:mealie-atelier-mealplan` | Weekly planner + add/delete meals |
-| `custom:mealie-atelier-shopping` | Interactive Mealie shopping list + item check/add |
-| `custom:mealie-atelier-manage` | Create/import recipes and edit name, description, servings, steps and ingredient text |
-| `custom:mealie-atelier-discover` | Personal recommendations and proposed seven-day menu |
-| `custom:mealie-atelier-pantry` | Pantry-light and grocery calculations |
-| `custom:mealie-atelier-family` | Shared cooking sessions and adult-approved helper tasks |
-| `custom:mealie-atelier-cookbook` | Print-ready A4 recipe collection |
+| Dashboard card type              | Purpose                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| `custom:mealie-atelier-card`     | Full kitchen overview with navigation and every feature                               |
+| `custom:mealie-atelier-today`    | Today overview: meals and outstanding groceries on one screen                         |
+| `custom:mealie-atelier-recipes`  | Recipe catalog, search, details and cooking mode                                      |
+| `custom:mealie-atelier-mealplan` | Weekly planner + add/delete meals                                                     |
+| `custom:mealie-atelier-shopping` | Interactive Mealie shopping list + item check/add                                     |
+| `custom:mealie-atelier-manage`   | Create/import recipes and edit name, description, servings, steps and ingredient text |
+| `custom:mealie-atelier-discover` | Personal recommendations and proposed seven-day menu                                  |
+| `custom:mealie-atelier-pantry`   | Pantry-light and grocery calculations                                                 |
+| `custom:mealie-atelier-family`   | Shared cooking sessions and adult-approved helper tasks                               |
+| `custom:mealie-atelier-cookbook` | Print-ready A4 recipe collection                                                      |
 
 ```yaml
 type: custom:mealie-atelier-card
 mode: dashboard
 language: de
 theme: dark
-accent: '#9dcbb2'
+accent: "#9dcbb2"
 columns: 3
 show_images: true
 ```
@@ -109,7 +109,6 @@ The current recommendation engine is a deterministic heuristic, not a culinary/a
 ## Support
 
 Mealie Atelier is an independent community project. If it makes your kitchen easier, you can optionally [say thanks on Ko-fi](https://ko-fi.com/allesautomatisch). The card offers the same voluntary link in Design Studio; it never interrupts cooking or gates features.
-
 
 ## Standalone Web app, demo, and documentation
 

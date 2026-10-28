@@ -4,11 +4,11 @@ Mealie Atelier uses one GitHub organization and two product repositories. The st
 
 ## Repositories
 
-| Repository | What lives there | Release channel |
-| --- | --- | --- |
-| [`.github`](https://github.com/mealie-atelier/.github) | Organization profile, shared community/security guidance, brand masters and credits | Profile and brand assets only |
-| [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards) | HACS dashboard cards at the root, standalone Web app in `web/`, bilingual demo in `demo/`, product docs in `docs/` | Cards, Web, and demo are versioned and released manually as independent products |
-| [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge) | Home Assistant integration under `custom_components/mealie_atelier/`, API proxy, state, and tests | Independent, manually prepared HACS integration release |
+| Repository                                                                         | What lives there                                                                                                   | Release channel                                                                  |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| [`.github`](https://github.com/mealie-atelier/.github)                             | Organization profile, shared community/security guidance, brand masters and credits                                | Profile and brand assets only                                                    |
+| [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards)   | HACS dashboard cards at the root, standalone Web app in `web/`, bilingual demo in `demo/`, product docs in `docs/` | Cards, Web, and demo are versioned and released manually as independent products |
+| [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge) | Home Assistant integration under `custom_components/mealie_atelier/`, API proxy, state, and tests                  | Independent, manually prepared HACS integration release                          |
 
 ## Boundaries
 

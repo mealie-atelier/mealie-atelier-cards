@@ -37,24 +37,24 @@ npm start
 
 All settings are environment variables (see `.env.example`).
 
-| Variable | Default | Required | Purpose |
-| --- | --- | --- | --- |
-| `MEALIE_URL` | none | yes | Mealie server URL (http or https, no credentials or query). |
-| `MEALIE_API_TOKEN` | none | yes | Mealie API token; use a dedicated least-privilege token. |
-| `ATELIER_PASSWORD` | none | yes | Basic auth password, at least 12 characters. |
-| `ATELIER_USERNAME` | `atelier` | no | Basic auth user name. |
-| `PORT` | `3000` | no | Listen port. Compose forces `3000`; use `ATELIER_HOST_PORT` (default `3008`) for the published port. |
-| `HOST` | `0.0.0.0` | no | Listen address. |
-| `ATELIER_TRUSTED_PROXIES` | none | no | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`. |
-| `ATELIER_READ_ONLY` | `false` | no | `1`, `true` or `yes` rejects all writes on the server. |
-| `ATELIER_DATA_DIR` | `./data` | no | Persistent state directory. Compose and the image use `/app/data`. |
-| `ATELIER_EXPERIMENTAL_INGREDIENTS` | `false` | no | Experimental ingredient replacement; back up Mealie first. |
-| `ATELIER_STRUCTURED_EDITS` | `false` | no | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x. |
-| `USDA_FDC_API_KEY` | empty | no | Enables USDA matching in the Nutrition Lab. |
-| `OPENAI_API_KEY` | empty | no | Enables opt-in AI suggestions, substitutes and recipe checks. |
-| `ATELIER_ALARM_CHANNEL` | `both` | no | Timer notification channel: `both`, `push` or `ha`. |
-| `ATELIER_VAPID_PUBLIC_KEY`, `ATELIER_VAPID_PRIVATE_KEY`, `ATELIER_VAPID_SUBJECT` | empty | no | Web Push for timers; all three together, subject is `mailto:` or `https://`. |
-| `ATELIER_HA_URL`, `ATELIER_HA_TOKEN`, `ATELIER_HA_NOTIFY_SERVICE` | empty | no | Home Assistant timer notifications; all three together, service like `notify.mobile_app_phone`. |
+| Variable                                                                         | Default   | Required | Purpose                                                                                                                                                          |
+| -------------------------------------------------------------------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MEALIE_URL`                                                                     | none      | yes      | Mealie server URL (http or https, no credentials or query).                                                                                                      |
+| `MEALIE_API_TOKEN`                                                               | none      | yes      | Mealie API token; use a dedicated least-privilege token.                                                                                                         |
+| `ATELIER_PASSWORD`                                                               | none      | yes      | Basic auth password, at least 12 characters.                                                                                                                     |
+| `ATELIER_USERNAME`                                                               | `atelier` | no       | Basic auth user name.                                                                                                                                            |
+| `PORT`                                                                           | `3000`    | no       | Listen port. Compose forces `3000`; use `ATELIER_HOST_PORT` (default `3008`) for the published port.                                                             |
+| `HOST`                                                                           | `0.0.0.0` | no       | Listen address.                                                                                                                                                  |
+| `ATELIER_TRUSTED_PROXIES`                                                        | none      | no       | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`. |
+| `ATELIER_READ_ONLY`                                                              | `false`   | no       | `1`, `true` or `yes` rejects all writes on the server.                                                                                                           |
+| `ATELIER_DATA_DIR`                                                               | `./data`  | no       | Persistent state directory. Compose and the image use `/app/data`.                                                                                               |
+| `ATELIER_EXPERIMENTAL_INGREDIENTS`                                               | `false`   | no       | Experimental ingredient replacement; back up Mealie first.                                                                                                       |
+| `ATELIER_STRUCTURED_EDITS`                                                       | `false`   | no       | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x.                                                                                |
+| `USDA_FDC_API_KEY`                                                               | empty     | no       | Enables USDA matching in the Nutrition Lab.                                                                                                                      |
+| `OPENAI_API_KEY`                                                                 | empty     | no       | Enables opt-in AI suggestions, substitutes and recipe checks.                                                                                                    |
+| `ATELIER_ALARM_CHANNEL`                                                          | `both`    | no       | Timer notification channel: `both`, `push` or `ha`.                                                                                                              |
+| `ATELIER_VAPID_PUBLIC_KEY`, `ATELIER_VAPID_PRIVATE_KEY`, `ATELIER_VAPID_SUBJECT` | empty     | no       | Web Push for timers; all three together, subject is `mailto:` or `https://`.                                                                                     |
+| `ATELIER_HA_URL`, `ATELIER_HA_TOKEN`, `ATELIER_HA_NOTIFY_SERVICE`                | empty     | no       | Home Assistant timer notifications; all three together, service like `notify.mobile_app_phone`.                                                                  |
 
 Generate the Web Push keys with `npm run vapid` and paste the three printed lines into `.env`. Keep the private key stable, secret and backed up.
 

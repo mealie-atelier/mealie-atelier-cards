@@ -4,7 +4,11 @@ import { runInNewContext } from "node:vm";
 const bundle = readFileSync(new URL("../../dist/mealie-atelier-cards.js", import.meta.url), "utf8");
 
 /** Evaluate the built bundle against minimal DOM stubs and return its card classes. */
-export function loadCards({ navigator: nav = { language: "en-US" }, document: doc, window = {} } = {}) {
+export function loadCards({
+  navigator: nav = { language: "en-US" },
+  document: doc,
+  window = {},
+} = {}) {
   const listeners = new Map();
   const document = doc || {
     visibilityState: "visible",
@@ -80,12 +84,18 @@ export function loadCards({ navigator: nav = { language: "en-US" }, document: do
     CustomEvent: class {},
   };
   context.globalThis = context;
-  runInNewContext(`${bundle}\nglobalThis.__cards = { MealieAtelierCard, AtelierWakeLock };`, context);
+  runInNewContext(
+    `${bundle}\nglobalThis.__cards = { MealieAtelierCard, AtelierWakeLock };`,
+    context,
+  );
   return { ...context.__cards, registry, listeners, document };
 }
 
 /** Create a connected card; the last rendered markup lands in `cards.document.markup`. */
-export function makeCard(cards, { hass, permissions = { can_write: true, can_manage: true } } = {}) {
+export function makeCard(
+  cards,
+  { hass, permissions = { can_write: true, can_manage: true } } = {},
+) {
   const card = new (cards.registry.get("mealie-atelier-card"))();
   card.setConfig({ type: "custom:mealie-atelier-card" });
   Object.defineProperty(card, "isConnected", { value: true });

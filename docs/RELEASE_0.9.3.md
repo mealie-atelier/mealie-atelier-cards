@@ -9,7 +9,7 @@ Die bestehenden zehn Premium-Ansichten aus v0.9.2 bleiben bewusst erhalten. Die 
 ## Migration ohne Design-Rückschritt
 
 - Die vier separaten Alt-CSS-Quellen sind aus dem Build entfernt und in `src/design-system/foundation.css`, `editorial.css`, `kitchen.css` und `motion.css` aufgegangen. Ihre CSS-Regeln und Reihenfolge bleiben erhalten.
-- Die zuvor zur Build-Zeit erzeugten responsiven Kopien stehen jetzt explizit in `design-system/adaptive.css`. Diese Regeln berücksichtigen weiterhin die *Card-Breite*, nicht allein die Browserbreite.
+- Die zuvor zur Build-Zeit erzeugten responsiven Kopien stehen jetzt explizit in `design-system/adaptive.css`. Diese Regeln berücksichtigen weiterhin die _Card-Breite_, nicht allein die Browserbreite.
 - Hauptansichten, Dialoge, Nutrition-/Journal-Anzeigen, Druckrenderer und grafischer Home-Assistant-Editor wurden in `src/components/` ausgelagert. Der verbleibende Card-Kern übernimmt die Web-Component-Integration und das Routing.
 - `scripts/build-design-system.mjs` fügt die Source-Module deterministisch zusammen. Es baut ein und dasselbe Bundle nach `dist/` und `web/public/`.
 - Die Design-Tokens, vorhandenen Komponenten und die Premium-Art-Direction sind unverändert; die Migration ersetzt keine bewährten Elemente durch generische Widgets.
@@ -22,19 +22,19 @@ Die bestehenden zehn Premium-Ansichten aus v0.9.2 bleiben bewusst erhalten. Die 
 - Zutaten-Workflow: Vorschau, strukturiertes Update, Bestätigung, optimistic locking, Abbruch bei zwischenzeitlichen Änderungen, Erhalt der bestehenden `food`-/`unit`-Verknüpfungen und lokales Original-Backup.
 - Rezeptbilder: tatsächlicher Multipart-Upload via HTTP, vorherige Bildsicherung, Dateisignatur-Prüfung, Revisionskonflikt, Schreibschutz und Fehlerfall bei fehlender Originaldatei.
 - Schreibgrenzen: Nur-Lesen-Modus, Pfadvalidierung und Blockieren ungeeigneter Eingaben.
-- Browser-Kette: Chromium steuert zehn Ansichten mit einem *realen* Companion-Server und lokalem Mealie-Testserver. Rezeptdetail und Einkaufslistenänderung gehen über HTTP bis ins Test-Backend. Prüfung bei 390 und 1440 Pixeln ohne JS-Fehler oder horizontale Seitenüberläufe.
+- Browser-Kette: Chromium steuert zehn Ansichten mit einem _realen_ Companion-Server und lokalem Mealie-Testserver. Rezeptdetail und Einkaufslistenänderung gehen über HTTP bis ins Test-Backend. Prüfung bei 390 und 1440 Pixeln ohne JS-Fehler oder horizontale Seitenüberläufe.
 - Home Assistant: Die echten WebSocket-Handler werden unter einem minimalen HA-API-Testadapter aufgerufen. 16 Handlerregistrierungen, Rollenrechte, Nur-Lesen-Modus, freigegebene Rezeptbilder, geschützte Studio-Revisionen und Trennung persönlicher Notizen sind geprüft. **Dies ist kein gestarteter Home-Assistant-Core.**
 
 ## Gemessener Teststand
 
-| Testgruppe | Ergebnis |
-|---|---:|
-| Cards/Designsystem (Node) | 26/26 |
-| Web-Backend und HTTP-Vertragstests (Node) | 19/19 |
-| Home-Assistant-Bridge und WebSocket-Verträge (Python) | 22/22 |
-| Gesamt automatisiert | **67/67** |
-| Chromium-Browser mit realem lokalen HTTP-Companion | 2/2 Bildschirmbreiten; 10/10 Ansichten je Breite |
-| Visuelle Regression gegen v0.9.2 | **40/40 ohne Pixelabweichung** |
+| Testgruppe                                            |                                         Ergebnis |
+| ----------------------------------------------------- | -----------------------------------------------: |
+| Cards/Designsystem (Node)                             |                                            26/26 |
+| Web-Backend und HTTP-Vertragstests (Node)             |                                            19/19 |
+| Home-Assistant-Bridge und WebSocket-Verträge (Python) |                                            22/22 |
+| Gesamt automatisiert                                  |                                        **67/67** |
+| Chromium-Browser mit realem lokalen HTTP-Companion    | 2/2 Bildschirmbreiten; 10/10 Ansichten je Breite |
+| Visuelle Regression gegen v0.9.2                      |                   **40/40 ohne Pixelabweichung** |
 
 Die lokalen HTTP-Tests verwenden ein strukturell Mealie-kompatibles Test-Backend mit künstlichen Rezepten. Sie sind **keine Abnahme auf einem echten Mealie-Server**.
 

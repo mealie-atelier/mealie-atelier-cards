@@ -17,7 +17,9 @@ function shoppingCard(language, callWS) {
       { id: "i2", shoppingListId: "l1", note: "Eggs", checked: true },
     ],
   };
-  card._data.mealplan = [{ id: "m1", date: "2030-01-02", entryType: "dinner", recipe: { name: "Soup" } }];
+  card._data.mealplan = [
+    { id: "m1", date: "2030-01-02", entryType: "dinner", recipe: { name: "Soup" } },
+  ];
   return { cards, card };
 }
 
@@ -28,7 +30,9 @@ const click = (card, dataset) => {
 };
 
 function toastOf(cards) {
-  return cards.document.markup.match(/<div class="toast[^"]*" role="(\w+)" aria-live="(\w+)">(.*?)<\/div>/s);
+  return cards.document.markup.match(
+    /<div class="toast[^"]*" role="(\w+)" aria-live="(\w+)">(.*?)<\/div>/s,
+  );
 }
 
 test("failed shopping toggle rolls back the checkbox and raises an accessible localized alert", async () => {
@@ -60,16 +64,10 @@ test("successful shopping toggle keeps the optimistic state and uses a polite st
 
 test("failed shopping add removes the pending row again", async () => {
   const { cards, card } = shoppingCard("en", failing("Boom"));
-  await card._mutate(
-    "shopping_add",
-    { list_id: "l1", note: "Bread" },
-    "shopping",
-    () => card._optimisticAdd("shopping", { id: "pending-1", shoppingListId: "l1", note: "Bread" }),
+  await card._mutate("shopping_add", { list_id: "l1", note: "Bread" }, "shopping", () =>
+    card._optimisticAdd("shopping", { id: "pending-1", shoppingListId: "l1", note: "Bread" }),
   );
-  assert.deepEqual(
-    [...card._data.shopping.items.map((x) => x.id)],
-    ["i1", "i2"],
-  );
+  assert.deepEqual([...card._data.shopping.items.map((x) => x.id)], ["i1", "i2"]);
   assert.equal(toastOf(cards)[1], "alert");
   assert.match(toastOf(cards)[3], /Could not save: Boom/);
 });
@@ -79,8 +77,11 @@ test("failed meal plan delete restores the entry, failed add removes the pending
   await click(card, { action: "remove-meal", value: "m1" });
   assert.deepEqual([...card._data.mealplan.map((x) => x.id)], ["m1"]);
   assert.equal(toastOf(cards)[1], "alert");
-  await card._mutate("mealplan_add", { date: "2030-01-03", meal_type: "lunch", recipe_id: "r1" }, "mealplan", () =>
-    card._optimisticAdd("mealplan", { id: "pending-2", date: "2030-01-03" }),
+  await card._mutate(
+    "mealplan_add",
+    { date: "2030-01-03", meal_type: "lunch", recipe_id: "r1" },
+    "mealplan",
+    () => card._optimisticAdd("mealplan", { id: "pending-2", date: "2030-01-03" }),
   );
   assert.deepEqual([...card._data.mealplan.map((x) => x.id)], ["m1"]);
 });
@@ -94,7 +95,12 @@ test("a skipped recipe fetch in the cookbook print is surfaced and the rest is s
       language: "en",
       callWS: async (message) => {
         if (message.slug === "broken") throw new Error("gone");
-        return { slug: message.slug, name: `Recipe ${message.slug}`, recipeIngredient: [], recipeInstructions: [] };
+        return {
+          slug: message.slug,
+          name: `Recipe ${message.slug}`,
+          recipeIngredient: [],
+          recipeInstructions: [],
+        };
       },
     },
   });
@@ -118,7 +124,8 @@ test("hitting the Home Assistant provider limit shows a localized incompleteness
     const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
     card._providerActive = "home_assistant";
     card._view = "recipes";
-    const rows = (count) => Array.from({ length: count }, (_, i) => ({ slug: `r${i}`, name: `R${i}` }));
+    const rows = (count) =>
+      Array.from({ length: count }, (_, i) => ({ slug: `r${i}`, name: `R${i}` }));
     card._nativeAction = async () => ({ recipes: rows(500) });
     card._data.recipes = await card._nativeRecipes("");
     assert.equal(card._providerTruncated, true);
@@ -134,7 +141,8 @@ test("hitting the Home Assistant provider limit shows a localized incompleteness
 
 test("a failing write rolls back only its own change when another write succeeded meanwhile", async () => {
   const { card } = shoppingCard("en", async (message) => {
-    if (message.type === "mealie_atelier/mutate" && message.action === "shopping_add") throw new Error("boom");
+    if (message.type === "mealie_atelier/mutate" && message.action === "shopping_add")
+      throw new Error("boom");
     return {};
   });
   let releaseA;
@@ -150,12 +158,18 @@ test("a failing write rolls back only its own change when another write succeede
     card._optimisticAdd("shopping", { id: "pending-a", note: "A" }),
   );
   await card._mutate("shopping_toggle", {}, "shopping", () => card._optimisticToggle("i1", true));
-  card._data.shopping = { ...card._data.shopping, items: [...card._data.shopping.items, { id: "b", note: "B", shoppingListId: "l1" }] };
+  card._data.shopping = {
+    ...card._data.shopping,
+    items: [...card._data.shopping.items, { id: "b", note: "B", shoppingListId: "l1" }],
+  };
   releaseA();
   assert.equal(await a, false);
   const items = card._data.shopping.items;
   assert.equal(items.find((x) => x.id === "i1").checked, true, "B's toggle survives A's rollback");
-  assert.ok(items.some((x) => x.id === "b"), "B's row survives");
+  assert.ok(
+    items.some((x) => x.id === "b"),
+    "B's row survives",
+  );
   assert.ok(!items.some((x) => x.id === "pending-a"), "A's pending row is gone");
 });
 
@@ -173,7 +187,12 @@ test("a failed meal removal re-inserts the entry only when it is missing", () =>
 
 test("pending rows render disabled controls with the saving label", () => {
   const { cards, card } = shoppingCard("en", async () => ({}));
-  card._optimisticAdd("shopping", { id: "pending-1", shoppingListId: "l1", note: "Bread", checked: false });
+  card._optimisticAdd("shopping", {
+    id: "pending-1",
+    shoppingListId: "l1",
+    note: "Bread",
+    checked: false,
+  });
   card._view = "shopping";
   card._render();
   const html = cards.document.markup;

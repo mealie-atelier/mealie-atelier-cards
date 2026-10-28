@@ -16,31 +16,74 @@
     <title>__SEO_TITLE__</title>
     <link rel="icon" type="image/png" href="__FAVICON__" />
     <link rel="stylesheet" href="./live-demo.css" />
-    <script type="application/ld+json">__JSON_LD__</script>
+    <script type="application/ld+json">
+      __JSON_LD__
+    </script>
   </head>
   <body>
     <div class="wrap">
       <header class="demo-header">
-        <a class="demo-brand" href="__DEMO_HOME__" aria-label="Mealie Atelier"><span class="demo-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z"/><path d="M5 20c2-4 5-7 10-10"/></svg></span><span>Mealie Atelier</span></a>
-        <nav class="demo-language" aria-label="__LANGUAGE_LABEL__"><a href="__GERMAN_URL__" data-language="de">DE</a><a href="__ENGLISH_URL__" data-language="en">EN</a></nav>
+        <a class="demo-brand" href="__DEMO_HOME__" aria-label="Mealie Atelier"
+          ><span class="demo-brand-mark" aria-hidden="true"
+            ><svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.7"
+              stroke-linecap="round"
+            >
+              <path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z" />
+              <path d="M5 20c2-4 5-7 10-10" /></svg></span
+          ><span>Mealie Atelier</span></a
+        >
+        <nav class="demo-language" aria-label="__LANGUAGE_LABEL__">
+          <a href="__GERMAN_URL__" data-language="de">DE</a
+          ><a href="__ENGLISH_URL__" data-language="en">EN</a>
+        </nav>
       </header>
       <section class="demo-hero">
-        <div><p class="demo-eyebrow">__HERO_EYEBROW__</p><h1>__HERO_TITLE__</h1><p>__HERO_COPY__</p></div>
+        <div>
+          <p class="demo-eyebrow">__HERO_EYEBROW__</p>
+          <h1>__HERO_TITLE__</h1>
+          <p>__HERO_COPY__</p>
+        </div>
         <aside class="demo-promise"><strong>__LOCAL_TITLE__</strong>__LOCAL_COPY__</aside>
       </section>
-      <p class="demo-local-note"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M7 8h6M7 11h4"/></svg><span>__LOCAL_NOTICE__</span></p>
+      <p class="demo-local-note">
+        <svg
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          aria-hidden="true"
+        >
+          <rect x="3" y="4" width="14" height="12" rx="2" />
+          <path d="M7 8h6M7 11h4" /></svg
+        ><span>__LOCAL_NOTICE__</span>
+      </p>
       <mealie-atelier-card></mealie-atelier-card>
-      <section class="demo-directory" aria-labelledby="demo-directory-title"><h2 id="demo-directory-title">__DIRECTORY_TITLE__</h2><p class="demo-directory-intro">__DIRECTORY_COPY__</p><div class="demo-recipe-list">__SEO_RECIPE_DIRECTORY__</div></section>
-      <footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/" rel="me">Daniel</a> · __UNSPLASH_COPY__</span><a href="https://alles-automatisch.de/">__DOCS_LINK__</a></footer>
+      <section class="demo-directory" aria-labelledby="demo-directory-title">
+        <h2 id="demo-directory-title">__DIRECTORY_TITLE__</h2>
+        <p class="demo-directory-intro">__DIRECTORY_COPY__</p>
+        <div class="demo-recipe-list">__SEO_RECIPE_DIRECTORY__</div>
+      </section>
+      <footer class="demo-footer">
+        <span
+          >Made with love by <a href="https://alles-automatisch.de/" rel="me">Daniel</a> ·
+          __UNSPLASH_COPY__</span
+        ><a href="https://alles-automatisch.de/">__DOCS_LINK__</a>
+      </footer>
     </div>
     <script type="module">
       import "../dist/mealie-atelier-cards.js";
       import { searchDemoRecipes } from "./recipe-search.js";
-      const demoLanguage = new URLSearchParams(window.location.search).get("lang") === "en" ? "en" : "de";
+      const demoLanguage =
+        new URLSearchParams(window.location.search).get("lang") === "en" ? "en" : "de";
       const catalogResponse = await fetch("./data/recipes.json");
       if (!catalogResponse.ok) throw new Error("Could not load the demo recipe catalog");
       const catalog = await catalogResponse.json();
-      if (catalog.recipes?.length !== 10) throw new Error("The public demo requires exactly ten recipes");
+      if (catalog.recipes?.length !== 10)
+        throw new Error("The public demo requires exactly ten recipes");
       const localize = (value) => {
         if (value && typeof value === "object" && !Array.isArray(value)) {
           return value[demoLanguage] ?? value;
@@ -54,12 +97,24 @@
         name: localize(item.title),
         searchTerms: [
           ...(item.searchTerms || []),
-          ...(item.title?.[demoLanguage === "de" ? "en" : "de"] ? [item.title[demoLanguage === "de" ? "en" : "de"]] : []),
-          ...(item.description?.[demoLanguage === "de" ? "en" : "de"] ? [item.description[demoLanguage === "de" ? "en" : "de"]] : []),
-          ...(item.category?.[demoLanguage === "de" ? "en" : "de"] ? [item.category[demoLanguage === "de" ? "en" : "de"]] : []),
-          ...(item.cuisine?.[demoLanguage === "de" ? "en" : "de"] ? [item.cuisine[demoLanguage === "de" ? "en" : "de"]] : []),
+          ...(item.title?.[demoLanguage === "de" ? "en" : "de"]
+            ? [item.title[demoLanguage === "de" ? "en" : "de"]]
+            : []),
+          ...(item.description?.[demoLanguage === "de" ? "en" : "de"]
+            ? [item.description[demoLanguage === "de" ? "en" : "de"]]
+            : []),
+          ...(item.category?.[demoLanguage === "de" ? "en" : "de"]
+            ? [item.category[demoLanguage === "de" ? "en" : "de"]]
+            : []),
+          ...(item.cuisine?.[demoLanguage === "de" ? "en" : "de"]
+            ? [item.cuisine[demoLanguage === "de" ? "en" : "de"]]
+            : []),
           ...(item.ingredients?.[demoLanguage === "de" ? "en" : "de"] || []),
-          ...((item.steps?.[demoLanguage === "de" ? "en" : "de"] || []).flatMap((step) => [step.title, step.summary, step.text])),
+          ...(item.steps?.[demoLanguage === "de" ? "en" : "de"] || []).flatMap((step) => [
+            step.title,
+            step.summary,
+            step.text,
+          ]),
         ],
         imageUrl: item.image.url,
         totalTime: item.prepMinutes + item.cookMinutes,
@@ -109,16 +164,17 @@
         .flatMap((story) => story.ingredients)
         .slice(0, 5)
         .map((note, i) => ({
-        id: "sh-" + i,
-        shoppingListId: "list-1",
-        note,
-        checked: i === 2,
-        quantity: i === 0 ? 2 : 1,
-      }));
+          id: "sh-" + i,
+          shoppingListId: "list-1",
+          note,
+          checked: i === 2,
+          quantity: i === 0 ? 2 : 1,
+        }));
       const details = recipes.map((recipe, index) => ({
         ...recipe,
         description: recipeStories[index].description,
-        recipeYield: recipeStories[index].servings + (demoLanguage === "de" ? " Portionen" : " servings"),
+        recipeYield:
+          recipeStories[index].servings + (demoLanguage === "de" ? " Portionen" : " servings"),
         recipeServings: recipeStories[index].servings,
         recipeIngredient: recipeStories[index].ingredients.map((display) => ({ display })),
         recipeInstructions: recipeStories[index].steps.map(([title, summary, text], stepIndex) => ({
@@ -126,7 +182,10 @@
           title,
           summary,
           text,
-          imageUrls: stepIndex === recipeStories[index].steps.length - 1 ? [recipeStories[index].imageUrl] : [],
+          imageUrls:
+            stepIndex === recipeStories[index].steps.length - 1
+              ? [recipeStories[index].imageUrl]
+              : [],
         })),
       }));
 
@@ -143,20 +202,41 @@
             expires: dateAdd(2),
             staple: false,
           },
-          { id: "p-2", name: demoLanguage === "de" ? "Zwiebeln" : "Onions", amount: 2, unit: "stück", expires: "", staple: false },
-          { id: "p-3", name: demoLanguage === "de" ? "Olivenöl" : "Olive oil", amount: 500, unit: "ml", expires: "", staple: true },
+          {
+            id: "p-2",
+            name: demoLanguage === "de" ? "Zwiebeln" : "Onions",
+            amount: 2,
+            unit: "stück",
+            expires: "",
+            staple: false,
+          },
+          {
+            id: "p-3",
+            name: demoLanguage === "de" ? "Olivenöl" : "Olive oil",
+            amount: 500,
+            unit: "ml",
+            expires: "",
+            staple: true,
+          },
         ],
         journal: {
           "shakshuka-mit-paprika": {
             rating: 5,
-            note: demoLanguage === "de" ? "Beim nächsten Mal mehr Paprika." : "Add a little more pepper next time.",
+            note:
+              demoLanguage === "de"
+                ? "Beim nächsten Mal mehr Paprika."
+                : "Add a little more pepper next time.",
             favorite: true,
           },
         },
         family: {
           members: [
             { id: "adult-1", name: demoLanguage === "de" ? "Alex" : "Alex", child: false },
-            { id: "child-1", name: demoLanguage === "de" ? "Küchenhelfer" : "Little helper", child: true },
+            {
+              id: "child-1",
+              name: demoLanguage === "de" ? "Küchenhelfer" : "Little helper",
+              child: true,
+            },
           ],
           session: null,
         },

@@ -13,11 +13,11 @@ Mealie Atelier ist ein unabhängiges Community-Projekt und wird nicht von Mealie
 
 ## Welche Variante passt?
 
-| Variante | Voraussetzungen | Umfang |
-|---|---|---|
-| Karten mit Mealie aus Home Assistant | Home-Assistant-Mealie-Integration | Rezeptsuche, Rezeptdetails und Kochen; schreibgeschützt, begrenzte Ergebniszahl |
-| Karten mit Atelier Bridge | Home Assistant, Bridge und Mealie | Voller Kartenumfang, Bilder und je nach Berechtigungen Planer, Einkauf und Verwaltung |
-| Eigenständige Web-App | Mealie und privater Node-/Docker-Host | Atelier ohne Home Assistant; eigener Proxy und passwortgeschützter Zugriff |
+| Variante                             | Voraussetzungen                       | Umfang                                                                                |
+| ------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------- |
+| Karten mit Mealie aus Home Assistant | Home-Assistant-Mealie-Integration     | Rezeptsuche, Rezeptdetails und Kochen; schreibgeschützt, begrenzte Ergebniszahl       |
+| Karten mit Atelier Bridge            | Home Assistant, Bridge und Mealie     | Voller Kartenumfang, Bilder und je nach Berechtigungen Planer, Einkauf und Verwaltung |
+| Eigenständige Web-App                | Mealie und privater Node-/Docker-Host | Atelier ohne Home Assistant; eigener Proxy und passwortgeschützter Zugriff            |
 
 ## Sicherheit vor dem Einrichten
 

@@ -120,7 +120,11 @@ function parseIp(text) {
   if (last.includes(".")) {
     const n = v4(last);
     if (n === null) return null;
-    value = value.slice(0, value.lastIndexOf(":") + 1) + ((n >> 16n) & 0xffffn).toString(16) + ":" + (n & 0xffffn).toString(16);
+    value =
+      value.slice(0, value.lastIndexOf(":") + 1) +
+      ((n >> 16n) & 0xffffn).toString(16) +
+      ":" +
+      (n & 0xffffn).toString(16);
   }
   const halves = value.split("::");
   if (halves.length > 2) return null;
@@ -140,7 +144,8 @@ function parseIp(text) {
 
 /** IPv4-mapped IPv6 (::ffff:a.b.c.d) is treated as the plain IPv4 address. */
 function normalizeIp(ip) {
-  if (ip && ip.bits === 128 && ip.value >> 32n === 0xffffn) return { bits: 32, value: ip.value & 0xffffffffn };
+  if (ip && ip.bits === 128 && ip.value >> 32n === 0xffffn)
+    return { bits: 32, value: ip.value & 0xffffffffn };
   return ip;
 }
 
@@ -152,14 +157,17 @@ export function parseTrustedProxies(text) {
     if (!entry) continue;
     const [addr, prefix, ...rest] = entry.split("/");
     const ip = normalizeIp(parseIp(addr));
-    if (!ip || rest.length) throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
+    if (!ip || rest.length)
+      throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
     let length = ip.bits;
     if (prefix !== undefined) {
-      if (!/^\d{1,3}$/.test(prefix)) throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
+      if (!/^\d{1,3}$/.test(prefix))
+        throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
       length = Number(prefix);
       // A mapped IPv6 prefix such as ::ffff:10.0.0.0/104 shrinks to its IPv4 equivalent.
       if (parseIp(addr).bits === 128 && ip.bits === 32) length -= 96;
-      if (length < 0 || length > ip.bits) throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
+      if (length < 0 || length > ip.bits)
+        throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
     }
     rules.push({ bits: ip.bits, value: ip.value, length });
   }
@@ -185,9 +193,7 @@ export function throttleKey(address) {
     return [24n, 16n, 8n, 0n].map((s) => (v >> s) & 255n).join(".");
   }
   const prefix = ip.value >> 64n;
-  return (
-    [48n, 32n, 16n, 0n].map((s) => ((prefix >> s) & 0xffffn).toString(16)).join(":") + "::/64"
-  );
+  return [48n, 32n, 16n, 0n].map((s) => ((prefix >> s) & 0xffffn).toString(16)).join(":") + "::/64";
 }
 
 /**

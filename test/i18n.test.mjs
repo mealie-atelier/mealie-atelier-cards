@@ -162,7 +162,10 @@ test("family, cookbook, print, device actions, and speech use the shared locale 
 
 test("print dialog copy comes from shared locale resources instead of inline language branches", () => {
   const dialogs = readFileSync(new URL("../src/components/dialogs.js", import.meta.url), "utf8");
-  const printDialog = dialogs.slice(dialogs.indexOf('if (this._modal === "print")'), dialogs.indexOf('if (this._modal === "settings")'));
+  const printDialog = dialogs.slice(
+    dialogs.indexOf('if (this._modal === "print")'),
+    dialogs.indexOf('if (this._modal === "settings")'),
+  );
   assert.doesNotMatch(printDialog, /this\._language|\ben\s*\?/);
   for (const key of [
     "uiPrintHeroTitle",
@@ -189,7 +192,11 @@ test("print dialog copy comes from shared locale resources instead of inline lan
     "uiPrintPreparationNotes",
     "uiPrintDesignedForPaper",
   ]) {
-    assert.match(printDialog, new RegExp(`this\\.t\\([\"']${key}[\"']\\)`), `${key} must be used by the print dialog`);
+    assert.match(
+      printDialog,
+      new RegExp(`this\\.t\\([\"']${key}[\"']\\)`),
+      `${key} must be used by the print dialog`,
+    );
     for (const [locale, resource] of Object.entries(locales))
       assert.ok(key in resource, `${locale}.${key} is required by the print dialog`);
   }
@@ -219,8 +226,14 @@ test("dialog section labels use shared locale resources", () => {
 });
 
 test("print document copy uses the same expandable locale resources as the card", () => {
-  const printDocument = readFileSync(new URL("../src/components/print-document.js", import.meta.url), "utf8");
-  const printActions = readFileSync(new URL("../src/components/print-actions.js", import.meta.url), "utf8");
+  const printDocument = readFileSync(
+    new URL("../src/components/print-document.js", import.meta.url),
+    "utf8",
+  );
+  const printActions = readFileSync(
+    new URL("../src/components/print-actions.js", import.meta.url),
+    "utf8",
+  );
   assert.match(printActions, /translate:\s*\(key, values\) => this\.t\(key, values\)/);
   assert.match(printDocument, /const t = \(key, values\) =>/);
   assert.doesNotMatch(printDocument, /const german\s*=|german\s*\?/);

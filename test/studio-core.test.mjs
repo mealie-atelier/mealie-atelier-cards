@@ -140,7 +140,11 @@ test("Kochinspo filters by meal style, child-friendly heat, and ranks portions/p
   );
   const pantryRanked = Studio.suggest([vegan, meat], { people: 4, usePantry: false }, [], {});
   assert.equal(pantryRanked[0].servings, 4);
-  assert.ok(pantryRanked.every((x) => !x.reasons.some((reason) => reason.key === "studioReasonPantryUnchecked")));
+  assert.ok(
+    pantryRanked.every(
+      (x) => !x.reasons.some((reason) => reason.key === "studioReasonPantryUnchecked"),
+    ),
+  );
 });
 test("Kochinspo filters against exact Mealie cookbook tag and category IDs", () => {
   const tagBook = {

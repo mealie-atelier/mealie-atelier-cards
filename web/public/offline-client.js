@@ -91,8 +91,7 @@ export class AtelierOfflineClient {
     throw offlineError("offlineNoSnapshot");
   }
   async enqueue(action, payload) {
-    if (!this.enabled)
-      throw offlineError("offlineNotEnabled");
+    if (!this.enabled) throw offlineError("offlineNotEnabled");
     if (!this.snapshot) throw offlineError("offlineListNeedsRefresh");
     if (!["shopping_toggle", "shopping_add"].includes(action))
       throw offlineError("offlineRequiresConnection");
@@ -126,7 +125,7 @@ export class AtelierOfflineClient {
         data.note.length > 250 ||
         !this.snapshot.lists.some((l) => String(l.id) === String(data.list_id))
       )
-      throw offlineError("offlineInvalidItem");
+        throw offlineError("offlineInvalidItem");
     }
     this.operations.push({ id, action, payload: data, state: "pending", createdAt: Date.now() });
     await store.putOp(this.operations[this.operations.length - 1]);
@@ -213,8 +212,7 @@ export class AtelierAlarmClient {
     return true;
   }
   async create(timer) {
-    if (!navigator.onLine)
-      throw offlineError("offlineAlarmRequiresServer");
+    if (!navigator.onLine) throw offlineError("offlineAlarmRequiresServer");
     const result = await store.bridge("mealie_atelier/alarm_create", { timer });
     this.alarms.push(result);
     this.onChange();

@@ -4,10 +4,10 @@ This guide keeps setup in Home Assistant's UI. You do not need YAML for the reco
 
 ## Choose your setup
 
-| You want… | Install | What works |
-|---|---|---|
-| Recipe search, details, and cooking steps with the fewest moving parts | Home Assistant's built-in **Mealie** integration + Atelier Cards | Read-only recipe browsing and cooking. No Atelier Bridge or extra Mealie token is needed in the card. |
-| The complete kitchen studio | **Mealie Atelier Bridge** + Atelier Cards | Recipe photos and the Atelier planning, shopping, kitchen, and recipe tools, subject to Mealie permissions and the enabled options. |
+| You want…                                                              | Install                                                          | What works                                                                                                                          |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Recipe search, details, and cooking steps with the fewest moving parts | Home Assistant's built-in **Mealie** integration + Atelier Cards | Read-only recipe browsing and cooking. No Atelier Bridge or extra Mealie token is needed in the card.                               |
+| The complete kitchen studio                                            | **Mealie Atelier Bridge** + Atelier Cards                        | Recipe photos and the Atelier planning, shopping, kitchen, and recipe tools, subject to Mealie permissions and the enabled options. |
 
 The card wizard detects a single existing Mealie connection and selects it for you. It never needs a Mealie password or API token in a dashboard card.
 
@@ -55,14 +55,14 @@ This path is intentionally limited: recipe search, recipe details, and cooking s
 
 ## If something does not connect
 
-| What you see | Check this first |
-|---|---|
-| Connection refused or timed out | Open the same Mealie base address from the Home Assistant host/network. Container service names only work when both services share that network. |
-| Authentication failed | Create a fresh Mealie API token and paste it into the Bridge flow. Never place it in card YAML or screenshots. |
-| Not found / HTML login page | Replace the ingress, login, or deep link with the direct Mealie base URL and port. |
-| Certificate error | Use a valid trusted certificate. Only disable certificate verification for a self-signed certificate on a trusted local network. |
-| Card type not found | Confirm the JavaScript module resource is loaded. With HACS/Marketplace-managed resources, reload the browser. For manual UI setup, confirm the resource URL and `JavaScript module` type. |
-| No recipes in the card | Open the Bridge integration and check its connection status; for the native provider, confirm that Home Assistant's Mealie integration and recipe actions are available. Then reopen the visual editor and retry. |
+| What you see                    | Check this first                                                                                                                                                                                                  |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connection refused or timed out | Open the same Mealie base address from the Home Assistant host/network. Container service names only work when both services share that network.                                                                  |
+| Authentication failed           | Create a fresh Mealie API token and paste it into the Bridge flow. Never place it in card YAML or screenshots.                                                                                                    |
+| Not found / HTML login page     | Replace the ingress, login, or deep link with the direct Mealie base URL and port.                                                                                                                                |
+| Certificate error               | Use a valid trusted certificate. Only disable certificate verification for a self-signed certificate on a trusted local network.                                                                                  |
+| Card type not found             | Confirm the JavaScript module resource is loaded. With HACS/Marketplace-managed resources, reload the browser. For manual UI setup, confirm the resource URL and `JavaScript module` type.                        |
+| No recipes in the card          | Open the Bridge integration and check its connection status; for the native provider, confirm that Home Assistant's Mealie integration and recipe actions are available. Then reopen the visual editor and retry. |
 
 If the fix is not clear, collect the Home Assistant integration diagnostics and logs, redact tokens and private recipe content, then report the issue. Do not remove a working dashboard or delete the integration as a first troubleshooting step.
 

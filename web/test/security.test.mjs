@@ -135,7 +135,10 @@ test("service worker cache name follows the package version", async () => {
   assert.doesNotMatch(source, /shell-v\d{3}\b/, "no hand-maintained cache suffix");
   const version = packageVersion(await readFile(join(ROOT, "package.json"), "utf8"));
   const rendered = renderServiceWorker(source, version);
-  assert.match(rendered, new RegExp(`CACHE = "mealie-atelier-shell-v${version.replace(/\./g, "\\.")}"`));
+  assert.match(
+    rendered,
+    new RegExp(`CACHE = "mealie-atelier-shell-v${version.replace(/\./g, "\\.")}"`),
+  );
   assert.doesNotMatch(rendered, /__ATELIER_VERSION__/);
   assert.notEqual(
     renderServiceWorker(source, "9.9.9").match(/CACHE = "[^"]+"/)[0],
@@ -152,7 +155,10 @@ test("server serves the service worker with the rendered cache name", async () =
     const res = await fetch(`http://127.0.0.1:${port}/sw.js`, {
       headers: { Authorization: basic(PASSWORD) },
     });
-    assert.match(await res.text(), new RegExp(`mealie-atelier-shell-v${version.replace(/\./g, "\\.")}"`));
+    assert.match(
+      await res.text(),
+      new RegExp(`mealie-atelier-shell-v${version.replace(/\./g, "\\.")}"`),
+    );
   } finally {
     child.kill();
   }
@@ -177,7 +183,10 @@ test("AI disclaimers are localized", async () => {
     }),
   });
   try {
-    for (const [locale, word] of [["en", /Check/], ["de", /prüfen/]]) {
+    for (const [locale, word] of [
+      ["en", /Check/],
+      ["de", /prüfen/],
+    ]) {
       globalThis.fetch = async (_url, init) => {
         assert.match(JSON.parse(init.body).instructions, locale === "en" ? /English/ : /German/);
         return body(
@@ -224,7 +233,10 @@ test("a trusted proxy yields independent keys per forwarded client", () => {
 });
 
 test("IPv6 clients are grouped by their /64 prefix", () => {
-  assert.equal(throttleKey("2001:db8:1:2:aaaa::1"), throttleKey("2001:db8:1:2:bbbb:cccc:dddd:eeee"));
+  assert.equal(
+    throttleKey("2001:db8:1:2:aaaa::1"),
+    throttleKey("2001:db8:1:2:bbbb:cccc:dddd:eeee"),
+  );
   assert.notEqual(throttleKey("2001:db8:1:2::1"), throttleKey("2001:db8:1:3::1"));
   assert.equal(throttleKey("::ffff:192.0.2.1"), "192.0.2.1");
   const rules = parseTrustedProxies("10.0.0.1");

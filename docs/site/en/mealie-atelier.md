@@ -6,11 +6,11 @@ Mealie Atelier is an independent community project. It is not made, endorsed, or
 
 ## Choose the setup that fits your home
 
-| Setup | What you need | What it provides |
-|---|---|---|
-| Atelier cards with Home Assistant's Mealie integration | Home Assistant and its built-in Mealie integration | Read-only recipe search, recipe details, and cooking steps through documented Home Assistant actions. Results are limited to one response; large catalogs may be incomplete. |
-| Atelier cards with Atelier Bridge | Home Assistant, Mealie, the Bridge integration, and the cards | The full card feature set, authenticated recipe and step photos, and planning, shopping, and other writes according to Mealie permissions and Bridge settings. |
-| Standalone Atelier Web | Mealie and a private Node.js/Docker host | The Atelier web experience without Home Assistant. The server proxies Mealie requests and requires app credentials. |
+| Setup                                                  | What you need                                                 | What it provides                                                                                                                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Atelier cards with Home Assistant's Mealie integration | Home Assistant and its built-in Mealie integration            | Read-only recipe search, recipe details, and cooking steps through documented Home Assistant actions. Results are limited to one response; large catalogs may be incomplete. |
+| Atelier cards with Atelier Bridge                      | Home Assistant, Mealie, the Bridge integration, and the cards | The full card feature set, authenticated recipe and step photos, and planning, shopping, and other writes according to Mealie permissions and Bridge settings.               |
+| Standalone Atelier Web                                 | Mealie and a private Node.js/Docker host                      | The Atelier web experience without Home Assistant. The server proxies Mealie requests and requires app credentials.                                                          |
 
 See the repository's current [installation guide](../../INSTALLATION_0.9.5.md), [feature matrix](../../FEATURE_MATRIX_0.9.5.md), and package READMEs for the exact preview behavior. Do not use historical version guides as current setup instructions.
 

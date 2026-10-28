@@ -960,10 +960,7 @@ class MealieAtelierCard extends HTMLElement {
     } catch (err) {
       if (rollback) rollback();
       this._error = "";
-      this._flash(
-        this.t("uiMutationFailed", { error: err?.message || this.t("error") }),
-        "error",
-      );
+      this._flash(this.t("uiMutationFailed", { error: err?.message || this.t("error") }), "error");
       // Resync with the server: overlapping writes may have changed the collection meanwhile.
       try {
         if (refresh === "shopping") await this._loadShopping();
@@ -1215,9 +1212,7 @@ class MealieAtelierCard extends HTMLElement {
         this._render();
         this._flash(this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"));
       } catch (error) {
-        this._flash(
-          this.t("uiBackgroundTimerError", { error: error.message || String(error) }),
-        );
+        this._flash(this.t("uiBackgroundTimerError", { error: error.message || String(error) }));
       }
       return;
     }

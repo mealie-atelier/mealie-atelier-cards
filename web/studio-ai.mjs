@@ -17,11 +17,12 @@ const LANGUAGE_NAMES = { de: "German", en: "English" };
  */
 export function resolveLocale(acceptLanguage, explicit) {
   const pick = (tag) => {
-    const base = String(tag || "").toLowerCase().split("-", 1)[0];
+    const base = String(tag || "")
+      .toLowerCase()
+      .split("-", 1)[0];
     return base === "de" || base === "en" ? base : "";
   };
-  if (typeof explicit === "string" && explicit.trim())
-    return pick(explicit.trim()) || "en";
+  if (typeof explicit === "string" && explicit.trim()) return pick(explicit.trim()) || "en";
   if (typeof acceptLanguage !== "string" || !acceptLanguage.trim()) return "de";
   const ranked = acceptLanguage
     .split(",")

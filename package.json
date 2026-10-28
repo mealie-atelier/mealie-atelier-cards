@@ -1,13 +1,43 @@
 {
   "name": "mealie-atelier-cards",
   "version": "0.9.5",
+  "description": "Mealie recipes, meal plans and shopping lists as polished Home Assistant Lovelace cards and a standalone web app",
   "type": "module",
   "private": true,
-  "description": "Premium Home Assistant custom cards for Mealie",
+  "license": "MIT",
+  "author": "Daniel Boberg",
+  "homepage": "https://mealie.alles-automatisch.de",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mealie-atelier/mealie-atelier-cards.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mealie-atelier/mealie-atelier-cards/issues"
+  },
+  "funding": "https://ko-fi.com/allesautomatisch",
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "custom-card",
+    "mealie",
+    "meal-planning",
+    "recipes",
+    "shopping-list",
+    "hacs"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "node scripts/build-design-system.mjs",
     "build:demo": "npm run build && node scripts/generate-demo-site.mjs",
     "check": "node --check dist/mealie-atelier-cards.js",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:web": "node --test web/test/*.test.mjs"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
   }
 }

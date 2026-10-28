@@ -10475,8 +10475,7 @@ function buildPrintDocument(
   kind,
   { recipe, shopping, mealplan, activeList, weekStart, locale, settings, translate },
 ) {
-  const t = (key, values) =>
-    typeof translate === "function" ? translate(key, values) : key;
+  const t = (key, values) => (typeof translate === "function" ? translate(key, values) : key);
   const words = {
     recipe: t("printDocRecipe"),
     shopping: t("printDocShoppingList"),
@@ -11518,10 +11517,7 @@ class MealieAtelierCard extends HTMLElement {
     } catch (err) {
       if (rollback) rollback();
       this._error = "";
-      this._flash(
-        this.t("uiMutationFailed", { error: err?.message || this.t("error") }),
-        "error",
-      );
+      this._flash(this.t("uiMutationFailed", { error: err?.message || this.t("error") }), "error");
       // Resync with the server: overlapping writes may have changed the collection meanwhile.
       try {
         if (refresh === "shopping") await this._loadShopping();
@@ -11773,9 +11769,7 @@ class MealieAtelierCard extends HTMLElement {
         this._render();
         this._flash(this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"));
       } catch (error) {
-        this._flash(
-          this.t("uiBackgroundTimerError", { error: error.message || String(error) }),
-        );
+        this._flash(this.t("uiBackgroundTimerError", { error: error.message || String(error) }));
       }
       return;
     }
@@ -12398,7 +12392,8 @@ const viewMethods = {
           recipe.recipeCategory?.[0]?.name || recipe.recipeCategory?.[0] || this.t("featured");
         const image = this._design.show_images !== false;
         const timeLabel =
-          AtelierStudio.formatTime(recipe.totalTime, this._language) || this.t("uiMealieRecipeFallback");
+          AtelierStudio.formatTime(recipe.totalTime, this._language) ||
+          this.t("uiMealieRecipeFallback");
         return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${image ? recipeImage(recipe) : ""}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div><div class="placeholder">${esc(recipe.name)}</div></div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon("clock", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(
@@ -12867,21 +12862,9 @@ const dialogMethods = {
       <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
       <div class="print-setup"><div><div class="eyebrow">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
-        [
-          "editorial",
-          this.t("uiPrintEditorial"),
-          this.t("uiPrintEditorialDescription"),
-        ],
-        [
-          "compact",
-          this.t("uiPrintCompact"),
-          this.t("uiPrintCompactDescription"),
-        ],
-        [
-          "minimal",
-          this.t("uiPrintInkSaver"),
-          this.t("uiPrintInkSaverDescription"),
-        ],
+        ["editorial", this.t("uiPrintEditorial"), this.t("uiPrintEditorialDescription")],
+        ["compact", this.t("uiPrintCompact"), this.t("uiPrintCompactDescription")],
+        ["minimal", this.t("uiPrintInkSaver"), this.t("uiPrintInkSaverDescription")],
       ]
         .map(
           ([v, title, description]) =>
@@ -13403,7 +13386,9 @@ const AtelierStudio = (() => {
   function convertMeasurementQuery(query) {
     const match = String(query || "")
       .trim()
-      .match(/^([+-]?(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?))\s*(fl[ -]?oz|[\p{L}°-]+)\s*(?:to|in|into|nach|→)\s*(fl[ -]?oz|[\p{L}°-]+)$/iu);
+      .match(
+        /^([+-]?(?:\d+\s+\d+\/\d+|\d+\/\d+|\d+(?:[.,]\d+)?))\s*(fl[ -]?oz|[\p{L}°-]+)\s*(?:to|in|into|nach|→)\s*(fl[ -]?oz|[\p{L}°-]+)$/iu,
+      );
     if (!match) return null;
     const parseAmount = (value) => {
       const mixed = value.match(/^([+-]?\d+)\s+(\d+)\/(\d+)$/);
@@ -13461,13 +13446,22 @@ const AtelierStudio = (() => {
       "°f": { family: "temperature", label: "°F" },
       fahrenheit: { family: "temperature", label: "°F" },
     };
-    const source = units[sourceUnit], target = units[targetUnit];
+    const source = units[sourceUnit],
+      target = units[targetUnit];
     if (!source || !target) return null;
     const amount = parseAmount(match[1]);
     if (source.family !== target.family) {
-      if ([source.family, target.family].includes("mass") && [source.family, target.family].includes("volume"))
+      if (
+        [source.family, target.family].includes("mass") &&
+        [source.family, target.family].includes("volume")
+      )
         return Number.isFinite(amount) && amount >= 0 && amount <= 1_000_000
-          ? { amount, sourceUnit: source.label, targetUnit: target.label, unsupported: "density-required" }
+          ? {
+              amount,
+              sourceUnit: source.label,
+              targetUnit: target.label,
+              unsupported: "density-required",
+            }
           : null;
       return null;
     }
@@ -13476,11 +13470,12 @@ const AtelierStudio = (() => {
     if (source.family === "temperature") {
       const sourceIsCelsius = source.label === "°C";
       const targetIsCelsius = target.label === "°C";
-      converted = sourceIsCelsius === targetIsCelsius
-        ? amount
-        : sourceIsCelsius
-          ? amount * (9 / 5) + 32
-          : (amount - 32) * (5 / 9);
+      converted =
+        sourceIsCelsius === targetIsCelsius
+          ? amount
+          : sourceIsCelsius
+            ? amount * (9 / 5) + 32
+            : (amount - 32) * (5 / 9);
     } else {
       converted = (amount * source.factor) / target.factor;
     }
@@ -13602,7 +13597,10 @@ const AtelierStudio = (() => {
       profile.usePantry === false
         ? null
         : available.length
-          ? { key: "studioReasonPantryCovered", values: { covered: available.length, total: rows.length } }
+          ? {
+              key: "studioReasonPantryCovered",
+              values: { covered: available.length, total: rows.length },
+            }
           : { key: "studioReasonPantryUnchecked" },
       unknown ? { key: "studioReasonAmountsUnclear", values: { count: unknown } } : null,
       profile.kidFriendly && kidTags ? { key: "studioReasonFamilyFriendly" } : null,
@@ -14365,7 +14363,12 @@ Object.assign(MealieAtelierCard.prototype, {
           : `${AtelierUI.surfaceStart()}<div class="studio-discover-result-head"><div><span class="eyebrow">${this.t("studioDiscoverResult")}</span><h2>${this.t("studioDiscoverResultTitle")}</h2></div><button class="btn tiny" data-action="studio-discover-edit">${icon("edit", 14)} ${this.t("studioDiscoverEdit")}</button></div>
       ${
         hero
-          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}<span class="studio-discover-photo-label">${hero.timeLabel || this.t("studioDiscoverTimeOpen")} <i>·</i> ${hero.people} ${hero.people === 1 ? this.t("studioDiscoverPerson") : this.t("studioDiscoverPeoplePlural")}</span></div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.t("studioDiscoverRecipeBase", { servings: hero.servings }) : this.t("studioDiscoverForPeople", { people: hero.people })}</span></div><p>${esc(hero.reasons.slice(0, 3).map((r) => this.t(r.key, r.values)).join(" · ") || this.t("studioDiscoverGoodIdea"))}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
+          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}<span class="studio-discover-photo-label">${hero.timeLabel || this.t("studioDiscoverTimeOpen")} <i>·</i> ${hero.people} ${hero.people === 1 ? this.t("studioDiscoverPerson") : this.t("studioDiscoverPeoplePlural")}</span></div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.t("studioDiscoverRecipeBase", { servings: hero.servings }) : this.t("studioDiscoverForPeople", { people: hero.people })}</span></div><p>${esc(
+              hero.reasons
+                .slice(0, 3)
+                .map((r) => this.t(r.key, r.values))
+                .join(" · ") || this.t("studioDiscoverGoodIdea"),
+            )}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
       ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.t("studioDiscoverMoreIdeas", { count: alternatives.length })}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.t("servings")}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
           : `<div class="studio-discover-empty"><span>✦</span><h3>${this.t("studioDiscoverEmptyTitle")}</h3><p>${this.t("studioDiscoverEmpty")}</p><button class="btn" data-action="studio-discover-edit">${this.t("studioDiscoverAdjust")}</button><button class="btn" data-action="studio-analyze" ${this._catalogLoading ? "disabled" : ""}>${icon("refresh", 14)} ${this.t("studioDiscoverReload")}</button></div>`
       }</section>`
@@ -14675,8 +14678,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
     }
   }
   if (this._modal === "journal" && this._detail)
-    html = html
-      .replace(this.t("studioJournalLocal"), this.t("studioJournalShared"));
+    html = html.replace(this.t("studioJournalLocal"), this.t("studioJournalShared"));
   if (this._modal === "recipe" && this._detail) {
     const audit = AtelierStudio.audit(this._detail);
     html = html.replace(
@@ -15087,7 +15089,9 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       });
       if (!raw) return;
       const found = AtelierStudio.substitutions(raw);
-      let output = found.map((x) => `${x.from}: ${this.t(x.to)} (${this.t(x.warning)})`).join(" · ");
+      let output = found
+        .map((x) => `${x.from}: ${this.t(x.to)} (${this.t(x.warning)})`)
+        .join(" · ");
       if (!output) {
         try {
           const answer = await this._ws("studio_substitute", {
@@ -15133,7 +15137,8 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         kind: "info",
         title: this.t("studioAuditTitle", { score: r.score }),
         body:
-          (r.problems.map((x) => "• " + atMessage(this.t.bind(this), x)).join("\n") || this.t("studioAuditNone")) +
+          (r.problems.map((x) => "• " + atMessage(this.t.bind(this), x)).join("\n") ||
+            this.t("studioAuditNone")) +
           "\n\n" +
           this.t("studioAuditDisclaimer"),
       });

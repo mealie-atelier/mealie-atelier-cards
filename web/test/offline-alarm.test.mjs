@@ -167,12 +167,7 @@ test("offline companion UI uses shared locale resources for all visible shell co
   const start = source.indexOf("export function attachOfflineUi");
   const ui = source.slice(start);
   const locales = ["de", "en"].map((locale) =>
-    JSON.parse(
-      readFileSync(
-        new URL(`../../src/i18n/${locale}.json`, import.meta.url),
-        "utf8",
-      ),
-    ),
+    JSON.parse(readFileSync(new URL(`../../src/i18n/${locale}.json`, import.meta.url), "utf8")),
   );
   assert.match(ui, /const t = \(key, values\) => card\?\.t\?\./);
   for (const key of [
@@ -186,7 +181,11 @@ test("offline companion UI uses shared locale resources for all visible shell co
     "offlineDeleteConfirmTitle",
     "offlineNoAlarmChannel",
   ])
-    assert.match(ui, new RegExp(`t\\([\"']${key}[\"']`), `${key} must use the shared locale resolver`);
+    assert.match(
+      ui,
+      new RegExp(`t\\([\"']${key}[\"']`),
+      `${key} must use the shared locale resolver`,
+    );
   for (const key of [
     "offlineNoSnapshot",
     "offlineNotEnabled",
@@ -201,10 +200,16 @@ test("offline companion UI uses shared locale resources for all visible shell co
     "offlineUnexpectedError",
   ])
     for (const resource of locales) assert.ok(key in resource, `${key} must be translated`);
-  assert.doesNotMatch(ui, /Synchronisierung &amp; Küchentimer|Offline-Einkauf ist ausgeschaltet|Hintergrund-Timer/);
+  assert.doesNotMatch(
+    ui,
+    /Synchronisierung &amp; Küchentimer|Offline-Einkauf ist ausgeschaltet|Hintergrund-Timer/,
+  );
   assert.match(source, /offlineError\("offlineNoSnapshot"\)/);
   assert.match(source, /localizedError\(e\)/);
-  assert.doesNotMatch(source, /Noch keine Offline-Kopie|Einkaufsliste muss zuerst online geladen werden|Benachrichtigungen wurden nicht erlaubt/);
+  assert.doesNotMatch(
+    source,
+    /Noch keine Offline-Kopie|Einkaufsliste muss zuerst online geladen werden|Benachrichtigungen wurden nicht erlaubt/,
+  );
 });
 test("alarm retry on delivery failure and cancellation before deadline", () =>
   temp(async (dir) => {

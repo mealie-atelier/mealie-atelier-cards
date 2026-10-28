@@ -3,8 +3,7 @@ function buildPrintDocument(
   kind,
   { recipe, shopping, mealplan, activeList, weekStart, locale, settings, translate },
 ) {
-  const t = (key, values) =>
-    typeof translate === "function" ? translate(key, values) : key;
+  const t = (key, values) => (typeof translate === "function" ? translate(key, values) : key);
   const words = {
     recipe: t("printDocRecipe"),
     shopping: t("printDocShoppingList"),

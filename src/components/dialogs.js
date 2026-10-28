@@ -260,21 +260,9 @@ export const dialogMethods = {
       <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
       <div class="print-setup"><div><div class="eyebrow">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
-        [
-          "editorial",
-          this.t("uiPrintEditorial"),
-          this.t("uiPrintEditorialDescription"),
-        ],
-        [
-          "compact",
-          this.t("uiPrintCompact"),
-          this.t("uiPrintCompactDescription"),
-        ],
-        [
-          "minimal",
-          this.t("uiPrintInkSaver"),
-          this.t("uiPrintInkSaverDescription"),
-        ],
+        ["editorial", this.t("uiPrintEditorial"), this.t("uiPrintEditorialDescription")],
+        ["compact", this.t("uiPrintCompact"), this.t("uiPrintCompactDescription")],
+        ["minimal", this.t("uiPrintInkSaver"), this.t("uiPrintInkSaverDescription")],
       ]
         .map(
           ([v, title, description]) =>
