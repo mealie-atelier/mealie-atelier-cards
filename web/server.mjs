@@ -39,6 +39,7 @@ import {
   parseUsers,
   rolePermissions,
   parseTrustedProxies,
+  isPrivateAddress,
   clientAddress,
   inlineScriptHashes,
   packageVersion,
@@ -119,14 +120,30 @@ const credentials = createCredentialVerifier({
   users: USERS,
   legacy: PASSWORD ? { name: USER, password: PASSWORD } : null,
 });
-async function isAuthorized(req) {
+let warnedProxy = false;
+/** Warns once when a private peer forwards a client address but no proxy is trusted. */
+function warnUntrustedProxy(req) {
+  if (warnedProxy || TRUSTED_PROXIES.length || !req.headers["x-forwarded-for"]) return;
+  if (!isPrivateAddress(req.socket.remoteAddress)) return;
+  warnedProxy = true;
+  console.warn(
+    "WARNING: a request from a private address carries X-Forwarded-For but ATELIER_TRUSTED_PROXIES is empty. " +
+      "Behind a reverse proxy all users share one sign-in throttle counter. Set ATELIER_TRUSTED_PROXIES to the proxy address.",
+  );
+}
+const alarmAccess = (req) => ({
+  name: req.atelierUser?.name || "",
+  admin: req.atelierUser?.role === "admin",
+});
+async function isAuthorized(req, throttled = false) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Basic ")) return false;
   // Only attempts that carry credentials count; the browser's first anonymous request does not.
   const client = throttleClient(req);
   const who = await credentials.verify(header);
   if (who) {
-    authThrottle.succeed(client);
+    // A shared (proxy) address keeps its failure count until the lockout runs out.
+    if (!throttled) authThrottle.succeed(client);
     req.atelierUser = who;
   } else authThrottle.fail(client);
   return !!who;
@@ -545,7 +562,7 @@ async function bridge(req) {
         secureContextRequired: true,
       };
     case "mealie_atelier/alarms":
-      return alarmStore.list();
+      return alarmStore.list(alarmAccess(req));
     case "mealie_atelier/alarm_create": {
       if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
       const mode = process.env.ATELIER_ALARM_CHANNEL || "both";
@@ -560,11 +577,11 @@ async function bridge(req) {
           ),
           { status: 409 },
         );
-      return alarmStore.create(msg.timer || {});
+      return alarmStore.create(msg.timer || {}, req.atelierUser?.name);
     }
     case "mealie_atelier/alarm_cancel": {
       if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
-      return alarmStore.cancel(msg.timer_id);
+      return alarmStore.cancel(msg.timer_id, alarmAccess(req));
     }
     case "mealie_atelier/push_register": {
       if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
@@ -619,7 +636,10 @@ async function bridge(req) {
         const errors = [];
         for (const timer of created) {
           try {
-            await alarmStore.create({ id: timer.id, label: timer.name, deadline: timer.deadline });
+            await alarmStore.create(
+              { id: timer.id, label: timer.name, deadline: timer.deadline },
+              req.atelierUser?.name,
+            );
           } catch (e) {
             errors.push(e.message);
           }
@@ -912,14 +932,17 @@ const FILES = {
   "/offline-client.js": ["offline-client.js", "text/javascript; charset=utf-8"],
 };
 const server = createServer(async (req, res) => {
-  const retryMs = authThrottle.retryAfterMs(throttleClient(req));
-  if (retryMs > 0) {
-    reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
-      "Retry-After": String(Math.ceil(retryMs / 1000)),
-    });
-    return;
-  }
-  if (!(await isAuthorized(req))) {
+  warnUntrustedProxy(req);
+  const throttled = authThrottle.retryAfterMs(throttleClient(req)) > 0;
+  // A throttled address still gets its credentials checked: correct ones pass, wrong ones count.
+  if (!(await isAuthorized(req, throttled))) {
+    const retryMs = authThrottle.retryAfterMs(throttleClient(req));
+    if (throttled && retryMs > 0) {
+      reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
+        "Retry-After": String(Math.ceil(retryMs / 1000)),
+      });
+      return;
+    }
     reply(res, 401, { error: "Sign in to Mealie Atelier" }, "application/json; charset=utf-8", {
       "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"',
     });

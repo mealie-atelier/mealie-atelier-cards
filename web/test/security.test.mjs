@@ -13,6 +13,7 @@ import {
   commandLevel,
   createCredentialVerifier,
   denial,
+  isPrivateAddress,
   hashPassword,
   parseScryptHash,
   parseUsers,
@@ -121,8 +122,12 @@ test("server locks out a client after repeated wrong passwords and sets hardenin
     const sixth = await fetch(url, { headers: { Authorization: basic("wrong-password-x") } });
     assert.equal(sixth.status, 401);
     const locked = await fetch(url, { headers: { Authorization: basic(PASSWORD) } });
-    assert.equal(locked.status, 429, "even the correct password waits out the lockout");
-    assert.ok(Number(locked.headers.get("retry-after")) >= 1);
+    assert.equal(locked.status, 200, "correct credentials pass while the address is throttled");
+    const stillLocked = await fetch(url, { headers: { Authorization: basic("wrong-password-y") } });
+    assert.equal(stillLocked.status, 429, "wrong credentials from a throttled address get 429");
+    assert.ok(Number(stillLocked.headers.get("retry-after")) >= 1);
+    const anonymousLocked = await fetch(url);
+    assert.equal(anonymousLocked.status, 429, "anonymous requests from a throttled address wait");
   } finally {
     child.kill();
   }
@@ -413,8 +418,8 @@ test("role permissions and the command matrix follow the contract", () => {
   assert.equal(level("studio_update", { action: "pantry_put" }), "write");
   assert.equal(
     level("studio_update", { action: "journal_set" }),
-    "personal",
-    "journal is personal (C.3)",
+    "write",
+    "the journal is shared state, so it needs the write level",
   );
   assert.equal(level("studio_update", { action: "family_member" }), "admin");
   assert.equal(level("studio_update", { action: "session_task", payload: { text: "x" } }), "admin");
@@ -498,4 +503,40 @@ test("hash-password reads stdin and prints a hash that verifies", async () => {
   });
   short.stdin.end("short\n");
   assert.equal(await new Promise((resolve) => short.on("exit", resolve)), 1);
+});
+
+test("server warns once about an untrusted proxy and stays quiet when proxies are trusted", async () => {
+  for (const [env, expected] of [
+    [{}, 1],
+    [{ ATELIER_TRUSTED_PROXIES: "127.0.0.1" }, 0],
+  ]) {
+    const { child, ready } = start({ ATELIER_PASSWORD: PASSWORD, ...env });
+    let logged = "";
+    child.stderr.on("data", (c) => (logged += c));
+    child.stdout.on("data", (c) => (logged += c));
+    try {
+      const port = await ready;
+      const headers = { Authorization: basic(PASSWORD), "X-Forwarded-For": "198.51.100.7" };
+      for (let i = 0; i < 3; i++) await fetch(`http://127.0.0.1:${port}/`, { headers });
+      await new Promise((r) => setTimeout(r, 100));
+      assert.equal(logged.match(/ATELIER_TRUSTED_PROXIES is empty/g)?.length ?? 0, expected);
+    } finally {
+      child.kill();
+    }
+  }
+});
+
+test("isPrivateAddress recognises loopback and private ranges only", () => {
+  for (const a of [
+    "127.0.0.1",
+    "10.1.2.3",
+    "172.18.0.5",
+    "192.168.1.9",
+    "::1",
+    "fd00::1",
+    "::ffff:10.0.0.1",
+  ])
+    assert.equal(isPrivateAddress(a), true, a);
+  for (const a of ["8.8.8.8", "172.32.0.1", "2001:db8::1", "unknown"])
+    assert.equal(isPrivateAddress(a), false, a);
 });

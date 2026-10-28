@@ -18,6 +18,12 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Cook mode keeps the screen awake while you cook.
 - Opt-in `ATELIER_TRUSTED_PROXIES` so the sign-in throttle sees the real client behind a reverse proxy.
 
+### Fixed
+
+- Security: timers in the standalone app now belong to the person who created them. Listing shows only your own timers and cancelling needs the owner or an admin (admins see all; timers stored without an owner are admin only).
+- Security: `journal_set` now needs the write level in the standalone app, because the journal is one shared object that a reader could overwrite.
+- Sign-in throttle behind a reverse proxy: correct credentials now pass while an address is throttled (failures still count), and the server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty.
+
 ### Changed
 
 - Demo photos are self-hosted as WebP files in `demo/photos` instead of being loaded from an external CDN. Photographer credits are kept, and absolute `og:image` and JSON-LD URLs are emitted when a base URL is set.

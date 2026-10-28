@@ -149,6 +149,25 @@ function normalizeIp(ip) {
   return ip;
 }
 
+/** True for loopback, private (RFC 1918), link-local and unique-local addresses. */
+export function isPrivateAddress(address) {
+  const ip = normalizeIp(parseIp(address));
+  if (!ip) return false;
+  const inside = (base, length) => {
+    const shift = BigInt(ip.bits - length);
+    return ip.value >> shift === base >> shift;
+  };
+  if (ip.bits === 32)
+    return [
+      [0x7f000000n, 8],
+      [0x0a000000n, 8],
+      [0xac100000n, 12],
+      [0xc0a80000n, 16],
+      [0xa9fe0000n, 16],
+    ].some(([base, length]) => inside(base, length));
+  return ip.value === 1n || inside(0xfc00n << 112n, 7) || inside(0xfe80n << 112n, 10);
+}
+
 /** Parses "ip" or "ip/prefix" lists (comma separated) into matchers; invalid entries throw. */
 export function parseTrustedProxies(text) {
   const rules = [];
@@ -421,13 +440,12 @@ const MUTATE_LEVELS = {
 };
 
 /**
- * Level of a studio_update action. journal_set is personal (contract C.3): read-only blocks it,
- * a missing write grant does not. Family members and helper
+ * Level of a studio_update action. The journal is one shared object, so journal_set needs the
+ * write level like any other shared state. Family members and helper
  * task create, edit or approve are admin only, as on the Bridge (contract C.3); only toggling
  * a task's done flag is a plain write.
  */
 function studioUpdateLevel(msg) {
-  if (msg.action === "journal_set") return "personal";
   if (msg.action === "family_member") return "admin";
   if (msg.action === "session_task") {
     const p = msg.payload;

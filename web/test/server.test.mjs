@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -597,6 +598,29 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
     users.push(`${name}:${roles[name]}:${await hashPassword(pass)}`);
   const legacy = "shared-legacy-password";
   const dataDir = await mkdtemp(join(tmpdir(), "atelier-accounts-"));
+  const timer = (id, owner, extra = {}) => ({
+    id,
+    label: "Timer " + id.slice(0, 4),
+    locale: "en",
+    deadline: Date.now() + 3600e3,
+    status: "scheduled",
+    attempts: 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    nextAttemptAt: Date.now() + 3600e3,
+    channels: [],
+    message: "",
+    ...(owner ? { owner } : {}),
+    ...extra,
+  });
+  const timerIds = { ada: randomUUID(), wim: randomUUID(), legacy: randomUUID() };
+  await writeFile(
+    join(dataDir, "alarms.json"),
+    JSON.stringify({
+      alarms: [timer(timerIds.ada, "ada"), timer(timerIds.wim, "wim"), timer(timerIds.legacy, "")],
+      subscriptions: [],
+    }),
+  );
   const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
     env: {
       ...process.env,
@@ -677,7 +701,10 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
     const sessionTask = { action: "session_task", payload: { session_id: "s", text: "Chop" } };
     const member = { action: "family_member", payload: { name: "Kim" } };
     const readerJournal = await call("rea", passwords.rea, "mealie_atelier/studio_update", journal);
-    assert.equal(readerJournal.status, 200, "a reader may still save a journal entry");
+    assert.equal(readerJournal.status, 403, "the journal is shared, so a reader cannot change it");
+    assert.equal((await readerJournal.json()).code, "write_not_permitted");
+    const writerJournal = await call("wim", passwords.wim, "mealie_atelier/studio_update", journal);
+    assert.equal(writerJournal.status, 200, "a writer can save a journal entry");
     for (const extra of [member, sessionTask]) {
       const res = await call("wim", passwords.wim, "mealie_atelier/studio_update", extra);
       assert.equal(res.status, 403, `a writer cannot ${extra.action}`);
@@ -693,6 +720,33 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
     assert.equal(upload.status, 403);
     assert.equal((await upload.json()).code, "write_not_permitted");
     assert.equal(remote.reads(), before, "refused writes never reach Mealie");
+
+    const idsFor = async (name) =>
+      (await (await call(name, passwords[name], "mealie_atelier/alarms")).json()).alarms
+        .map((a) => a.id)
+        .sort();
+    assert.deepEqual(await idsFor("rea"), [], "a reader sees no timers of others");
+    assert.deepEqual(await idsFor("wim"), [timerIds.wim]);
+    assert.deepEqual(await idsFor("ada"), Object.values(timerIds).sort(), "an admin sees all");
+    for (const [name, id] of [
+      ["rea", timerIds.ada],
+      ["wim", timerIds.ada],
+      ["wim", timerIds.legacy],
+    ]) {
+      const res = await call(name, passwords[name], "mealie_atelier/alarm_cancel", {
+        timer_id: id,
+      });
+      assert.equal(res.status, 403, `${name} cannot cancel ${id}`);
+      assert.equal((await res.json()).code, "unauthorized");
+    }
+    const own = await call("wim", passwords.wim, "mealie_atelier/alarm_cancel", {
+      timer_id: timerIds.wim,
+    });
+    assert.equal(own.status, 200, "an owner can cancel their own timer");
+    const legacyByAdmin = await call("ada", passwords.ada, "mealie_atelier/alarm_cancel", {
+      timer_id: timerIds.legacy,
+    });
+    assert.equal(legacyByAdmin.status, 200, "an admin can cancel a timer without owner");
 
     const readerRead = await call("rea", passwords.rea, "mealie_atelier/recipes");
     assert.equal(readerRead.status, 200, "readers can still read");

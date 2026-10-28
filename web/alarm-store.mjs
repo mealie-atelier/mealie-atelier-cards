@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { validateSubscription, subscriptionId } from "./web-push.mjs";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const err = (status, message) => Object.assign(new Error(message), { status });
+const mayAccess = (alarm, access) =>
+  !access || access.admin === true || (!!alarm.owner && alarm.owner === access.name);
 const initial = () => ({ alarms: [], subscriptions: [] });
 export class AlarmStore {
   constructor({ dir, deliver, clock = () => Date.now(), interval = 1000 }) {
@@ -44,15 +46,20 @@ export class AlarmStore {
     this.lock = task.catch(() => {});
     return task;
   }
-  list() {
+  /**
+   * `access` is `{ name, admin }` for a signed-in caller. Admins see every timer, others only
+   * their own; timers stored without an owner are admin only. Without `access` (internal use)
+   * nothing is filtered.
+   */
+  list(access) {
     return this.load().then((d) => ({
       alarms: d.alarms
-        .filter((x) => x.createdAt > this.clock() - 7 * 86400000)
+        .filter((x) => x.createdAt > this.clock() - 7 * 86400000 && mayAccess(x, access))
         .map((x) => ({ ...x })),
       pushSubscribers: d.subscriptions.length,
     }));
   }
-  async create({ id, label, deadline, locale = "de" }) {
+  async create({ id, label, deadline, locale = "de" }, owner = "") {
     if (!UUID.test(id || "") || typeof label !== "string" || !label.trim() || label.length > 100)
       throw err(400, "Invalid timer");
     if (!["de", "en"].includes(locale)) throw err(400, "Invalid timer locale");
@@ -64,6 +71,8 @@ export class AlarmStore {
       if (d.alarms.length > 300) throw err(429, "Too many stored timers");
       const same = d.alarms.find((x) => x.id === id);
       if (same) {
+        if (same.owner && owner && same.owner !== owner)
+          throw err(409, "Timer ID was already used");
         if (same.deadline !== time || same.label !== label.trim() || same.locale !== locale)
           throw err(409, "Timer ID was already used");
         return same;
@@ -73,6 +82,7 @@ export class AlarmStore {
         label: label.trim(),
         locale,
         deadline: time,
+        owner: String(owner || ""),
         status: "scheduled",
         attempts: 0,
         createdAt: now,
@@ -85,11 +95,15 @@ export class AlarmStore {
       return record;
     });
   }
-  async cancel(id) {
+  async cancel(id, access) {
     if (!UUID.test(id || "")) throw err(400, "Invalid timer ID");
     return this.atomic(async (d) => {
       const a = d.alarms.find((x) => x.id === id);
       if (!a) throw err(404, "Timer not found");
+      if (!mayAccess(a, access))
+        throw Object.assign(err(403, "Only the owner or an admin can cancel this timer"), {
+          code: "unauthorized",
+        });
       if (a.status === "sent" || a.status === "sending")
         throw err(409, "Timer has already been dispatched");
       a.status = "cancelled";

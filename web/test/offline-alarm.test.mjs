@@ -249,6 +249,25 @@ test("alarm retry on delivery failure and cancellation before deadline", () =>
     await store.tick();
     assert.equal(calls, 2);
   }));
+test("timers belong to their owner: list and cancel are limited to owner and admins", () =>
+  temp(async (dir) => {
+    const now = 30_000_000;
+    const store = new AlarmStore({ dir, clock: () => now, deliver: async () => ({}) });
+    const mine = randomUUID(),
+      theirs = randomUUID();
+    await store.create({ id: mine, label: "Mine", deadline: now + 60_000 }, "rea");
+    await store.create({ id: theirs, label: "Theirs", deadline: now + 60_000 }, "ada");
+    const reader = { name: "rea", admin: false },
+      admin = { name: "ada", admin: true };
+    assert.deepEqual(
+      (await store.list(reader)).alarms.map((a) => a.id),
+      [mine],
+    );
+    assert.equal((await store.list(admin)).alarms.length, 2);
+    await assert.rejects(store.cancel(theirs, reader), { status: 403, code: "unauthorized" });
+    assert.equal((await store.cancel(mine, reader)).status, "cancelled");
+    assert.equal((await store.cancel(theirs, admin)).status, "cancelled");
+  }));
 test("Web Push encryption decrypts under RFC8291 and VAPID JWT verifies under RFC8292", () => {
   const receiver = createECDH("prime256v1");
   receiver.generateKeys();
