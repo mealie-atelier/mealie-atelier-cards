@@ -291,3 +291,19 @@ test("recipe steps render structured headings and safe proxied photos without in
     "Mobile cooking content must stay ahead of timer utilities",
   );
 });
+
+test("the hero eyebrow stays readable on the dark light-theme hero", () => {
+  const css = compactCss(file("src/design-system/polish.css"));
+  const color = css.match(/\.atelier\.light \.hero \.eyebrow\{color:(#[0-9a-f]{6})/)?.[1];
+  assert.ok(color, "light hero eyebrow has its own color");
+  const luminance = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  // Lightest point the copy sits on: the 86% band of the hero gradient over the photo.
+  const ratio = (luminance(color) + 0.05) / (luminance("#392732") + 0.05);
+  assert.ok(ratio >= 4.5, `contrast ${ratio.toFixed(2)} is below 4.5`);
+});

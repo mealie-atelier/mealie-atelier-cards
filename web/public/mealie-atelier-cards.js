@@ -8477,6 +8477,10 @@ ha-card {
 .atelier.light .hero p {
   color: #f2e8ec;
 }
+/* The light theme paints eyebrows in the brand plum, which vanishes on the dark hero. */
+.atelier.light .hero .eyebrow {
+  color: #f3c9da;
+}
 .atelier .hero h2 {
   font-size: clamp(33px, 4.1cqi, 53px);
   line-height: 1.07;
