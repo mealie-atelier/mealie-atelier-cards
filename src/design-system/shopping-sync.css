@@ -1,0 +1,116 @@
+/* Smart Shopping Sync: status panel, setup wizard and review list. No motion of its own. */
+.atelier .sync-open {
+  gap: var(--ds-space-2);
+}
+.atelier .sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  margin-inline-start: var(--ds-space-2);
+  padding: 2px var(--ds-space-2);
+  border: 1px solid currentColor;
+  border-radius: var(--ds-radius-sm);
+  font-size: var(--ds-font-xs);
+  font-weight: 700;
+}
+.atelier .sync-panel .editor-card > h3 {
+  margin: 0 0 var(--ds-space-2);
+}
+.atelier .sync-panel p {
+  margin: var(--ds-space-1) 0;
+}
+.atelier .sync-state,
+.atelier .sync-last,
+.atelier .sync-issues,
+.atelier .sync-result,
+.atelier .sync-capability,
+.atelier .sync-explain {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+.atelier .sync-muted {
+  color: var(--ds-muted);
+}
+.atelier .sync-live:empty {
+  display: none;
+}
+.atelier .sync-actions {
+  flex-wrap: wrap;
+}
+.atelier .sync-actions button[aria-disabled="true"],
+.atelier .sync-record-actions button[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.atelier .sync-list {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.atelier .sync-record {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+.atelier .sync-record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+}
+.atelier .sync-record-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-font-sm);
+}
+.atelier .sync-fieldset {
+  display: grid;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.atelier .sync-fieldset > legend {
+  padding: 0;
+  margin-block-end: var(--ds-space-2);
+  font-weight: 650;
+}
+.atelier .sync-radio-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ds-space-3);
+  min-block-size: 44px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-raised);
+  cursor: pointer;
+}
+.atelier .sync-radio-card:has(input:checked) {
+  border-color: var(--ds-ring);
+  border-width: 2px;
+}
+.atelier .sync-radio-card:has(input:focus-visible) {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 2px;
+}
+.atelier .sync-radio-card input {
+  inline-size: 24px;
+  block-size: 24px;
+  margin: 0;
+}
+.atelier .sync-radio-card small {
+  display: block;
+  color: var(--ds-muted);
+  font-weight: 400;
+}
+.atelier .sync-field-error {
+  font-weight: 650;
+}

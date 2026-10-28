@@ -1877,6 +1877,37 @@ class MealieAtelierCard extends HTMLElement {
 
 /* ATELIER_COMPONENT_METHODS */
 
+/* BEGIN shopping sync routing: modal, click, input and lifecycle hooks for shoppingSyncMethods */
+const _syncBaseModalHtml = MealieAtelierCard.prototype._modalHtml;
+const _syncBaseClick = MealieAtelierCard.prototype._handleClick;
+const _syncBaseInput = MealieAtelierCard.prototype._handleInput;
+const _syncBaseRender = MealieAtelierCard.prototype._render;
+const _syncBaseDisconnected = MealieAtelierCard.prototype.disconnectedCallback;
+MealieAtelierCard.prototype._modalHtml = function () {
+  return this._syncModalHtml() || _syncBaseModalHtml.call(this);
+};
+MealieAtelierCard.prototype._handleClick = async function (event) {
+  const el = event.target?.closest?.("[data-action]");
+  if (el?.dataset?.action?.startsWith("sync-")) {
+    this._toast = "";
+    if (await this._syncHandleClick(el)) return;
+  }
+  return _syncBaseClick.call(this, event);
+};
+MealieAtelierCard.prototype._handleInput = function (event) {
+  if (this._syncHandleInput(event.target || {})) return;
+  return _syncBaseInput.call(this, event);
+};
+MealieAtelierCard.prototype._render = function () {
+  _syncBaseRender.call(this);
+  this._syncAfterRender();
+};
+MealieAtelierCard.prototype.disconnectedCallback = function () {
+  this._syncPollStop();
+  return _syncBaseDisconnected.call(this);
+};
+/* END shopping sync routing */
+
 class AtelierTodayCard extends MealieAtelierCard {
   static getStubConfig() {
     return { mode: "today", title: "Mealie Atelier · Today" };

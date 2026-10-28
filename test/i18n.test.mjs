@@ -312,3 +312,95 @@ test("new notices resolve in every locale with matching placeholders", () => {
     for (const [locale, resource] of Object.entries(locales))
       assert.ok(resource[key], `${locale}.${key}`);
 });
+
+test("shopping sync keys from the contract exist in English and German with real umlauts", () => {
+  const required = [
+    "syncTitle",
+    "syncOpen",
+    "syncBadgeIssues",
+    "syncSetup",
+    "syncSource",
+    "syncDestination",
+    "syncSupportsNotes",
+    "syncModeCopy",
+    "syncModeCopyHint",
+    "syncModeMove",
+    "syncModeMoveHint",
+    "syncTriggerAfterAdd",
+    "syncTriggerWatch",
+    "syncTriggerWatchHint",
+    "syncDebounce",
+    "syncPollMinutes",
+    "syncDuplicates",
+    "syncDuplicateSkipExact",
+    "syncDuplicateMerge",
+    "syncDuplicateNone",
+    "syncPreview",
+    "syncPreviewEmpty",
+    "syncActionSend",
+    "syncActionSkipDuplicate",
+    "syncActionMerge",
+    "syncActionSkipEmpty",
+    "syncConfirmSend",
+    "syncSaveOnly",
+    "syncStateActive",
+    "syncStatePaused",
+    "syncStateNotActivated",
+    "syncRunNow",
+    "syncPause",
+    "syncResume",
+    "syncRetryFailed",
+    "syncReview",
+    "syncDismiss",
+    "syncResend",
+    "syncDelete",
+    "syncDeleteConfirm",
+    "syncLastRun",
+    "syncOutcomeSent",
+    "syncOutcomePartial",
+    "syncOutcomeFailed",
+    "syncOutcomeDestinationUnavailable",
+    "syncOutcomeSourceUnavailable",
+    "syncOutcomeNothing",
+    "syncOutcomeReconciled",
+    "syncErrorDestinationUnavailable",
+    "syncNeedsWrite",
+    "syncStandaloneExplain",
+    "errSyncRuleNotFound",
+    "errSyncDestinationUnsupported",
+    "errSyncSourceTaken",
+    "errSyncTooManyRules",
+    "errSyncNotActivated",
+    "errSyncNotSupported",
+    ...[
+      "pending",
+      "sending",
+      "sent",
+      "source_completed",
+      "failed",
+      "needs_reconciliation",
+      "changed_after_send",
+      "removed_after_send",
+    ].map((state) => `syncRecordState_${state}`),
+  ];
+  const plural = ["syncConfirmSend", "syncErrorDestinationUnavailable"];
+  const pluralKeys = [
+    ...plural,
+    "syncReconcileHint",
+    "syncAuditEntry",
+    "syncPending",
+    "syncPreviewTotal",
+    "syncTriggerWatchHint",
+  ];
+  for (const locale of ["en", "de"])
+    for (const key of required)
+      if (pluralKeys.includes(key)) {
+        assert.ok(locales[locale][`${key}.one`], `${locale}.${key}.one`);
+        assert.ok(locales[locale][`${key}.other`], `${locale}.${key}.other`);
+      } else assert.ok(locales[locale][key], `${locale}.${key}`);
+  const german = Object.entries(locales.de).filter(([key]) => /^(sync|errSync)/.test(key));
+  for (const [key, value] of german) {
+    assert.doesNotMatch(value, /[—–]/, `${key} must not use dash punctuation`);
+  }
+  assert.match(locales.de.syncBadgeIssues, /prüfen/);
+});

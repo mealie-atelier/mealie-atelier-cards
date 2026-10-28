@@ -507,6 +507,23 @@ async function bridge(req) {
         version: VERSION,
       };
     }
+    // BEGIN shopping sync (feature A): the standalone app never sends shopping data to third parties
+    case "mealie_atelier/sync_state":
+    case "mealie_atelier/sync_destinations":
+    case "mealie_atelier/sync_preview":
+    case "mealie_atelier/sync_rule_save":
+    case "mealie_atelier/sync_rule_delete":
+    case "mealie_atelier/sync_run":
+    case "mealie_atelier/sync_pause":
+    case "mealie_atelier/sync_resume":
+    case "mealie_atelier/sync_retry":
+    case "mealie_atelier/sync_resolve":
+    case "mealie_atelier/sync_records":
+      throw Object.assign(
+        new Error("Shopping sync needs Home Assistant with the Mealie Atelier Bridge."),
+        { status: 501, code: "sync_not_supported" },
+      );
+    // END shopping sync (feature A)
     case "mealie_atelier/shopping_sync":
       return offlineLedger.process(msg.operation);
     case "mealie_atelier/alarm_capabilities":
