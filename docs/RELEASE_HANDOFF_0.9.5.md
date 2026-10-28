@@ -4,7 +4,7 @@ The source baseline is imported into the existing public repositories; existing 
 
 ## Product repositories
 
-- [Cards, standalone Web app/PWA, and demo](https://github.com/mealie-atelier/mealie-atelier-cards) — root card package, `web/`, and `demo/`; separate CI jobs and release boundaries.
+- [Cards, standalone Web app/PWA, and demo](https://github.com/mealie-atelier/mealie-atelier-cards) — root card package, `web/`, and `demo/`; separate manual validation and release boundaries.
 - [Bridge integration](https://github.com/mealie-atelier/mealie-atelier-bridge) — optional Home Assistant integration, its tests, and HACS package metadata.
 - [Organization profile and brand assets](https://github.com/mealie-atelier/.github) — shared profile/community information and brand source.
 
@@ -18,11 +18,11 @@ The source baseline is imported into the existing public repositories; existing 
 
 ## Do before stable release
 
-1. Review the pushed GitHub Actions runs. HACS and Hassfest must pass on the exact final commits.
+1. Run and record the package checks manually on the exact release commit. Complete HACS and Hassfest validation as separate manual release gates; this organization has no GitHub Actions or automated update PRs.
 2. Complete the live Home Assistant + disposable Mealie first-run, read-only, write, image, pagination, and recovery checks listed in [`RELEASE_READINESS_0.9.5.md`](RELEASE_READINESS_0.9.5.md).
 3. Complete physical iPhone Duo/Safari, HA embedded-card, accessibility, and printer checks. Do not treat emulated screenshots as hardware acceptance.
 4. Build and publish the standalone Web app, fictional-data demo, Cards, and Bridge separately only after their relevant release gates pass. The Web app and demo must not require Home Assistant.
-5. Confirm the exact alles-automatisch.de docs/demo route and hosting/deploy workflow. Generate canonical/sitemap metadata with that real URL, then verify the deployed pages in both languages.
+5. Confirm the exact alles-automatisch.de docs/demo route and hosting and manual deployment steps. Generate canonical/sitemap metadata with that real URL, then verify the deployed pages in both languages.
 6. Publish DE/EN guides and showcase with actual package links, limitations, and update/rollback instructions. Do not claim Bring shopping sync: it is specified but not implemented.
 7. Create a fresh release ZIP only from the verified, published source revision; include a manifest, checksum, installation steps, and remaining work. Exclude credentials, personal data, caches, and QA-only browser profiles.
 

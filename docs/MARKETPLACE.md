@@ -11,7 +11,7 @@ The standalone Web app and fictional-data demo live in the Cards repository unde
 
 ## Release checklist
 
-- [ ] Run the package's GitHub Actions, HACS validation, and (for Bridge) Hassfest on the exact release commit.
+- [ ] Run the documented package checks locally. Complete HACS and Hassfest validation manually on the exact release commit; no GitHub Actions are enabled.
 - [ ] Test against the supported Home Assistant and Mealie versions; record real provider behavior and limitations.
 - [ ] Review manifest, `hacs.json`, code owners, issue/security links, license, icons, README, and changelog.
 - [ ] Create a GitHub release with a version matching the package manifest and include compatibility notes.

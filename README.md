@@ -2,7 +2,7 @@
 
 **A warmer, more useful kitchen companion for Mealie.** Home Assistant cards, an optional standalone Web app, and a bilingual demo live together here; the Bridge integration has its own repository.
 
-![Mealie Atelier Cards app icon](brand/icon-512.png)
+<img align="right" width="132" alt="Mealie Atelier Cards app icon with pasta and tomatoes" src="brand/icon-512.png">
 
 ## Home Assistant Cards
 
@@ -96,14 +96,14 @@ Mealie Atelier is an independent community project. If it makes your kitchen eas
 
 ## Standalone Web app, demo, and documentation
 
-- The independent [Web app](web/README.md) runs without Home Assistant and keeps the Mealie token on its server. Its Docker image and tests use a separate workflow from HACS card releases.
+- The independent [Web app](web/README.md) runs without Home Assistant and keeps the Mealie token on its server. Its Docker image and tests are released independently from HACS card packages; all build, test, and publication steps are manual.
 - The [bilingual live-demo source](docs/DELIVERY_CHECKLIST_2026-10-28.md) builds from ten fictional recipes. Visitor changes remain in the browser and never reach Mealie or Home Assistant. It has not been deployed to a public URL yet.
 - German and English documentation sources live in [`docs/site/de/`](docs/site/de/) and [`docs/site/en/`](docs/site/en/); the hosting route still needs final confirmation.
 - Repository layout and publication boundaries: [`docs/REPOSITORY_MAP.md`](docs/REPOSITORY_MAP.md).
 
 ## Development
 
-From this repository root, run `npm run build && npm test && npm run check`. Run the standalone Web tests with `cd web && node --test test/*.test.mjs`. The Bridge package has its own tests and release workflow in [its repository](https://github.com/mealie-atelier/mealie-atelier-bridge).
+From this repository root, run `npm run build && npm test && npm run check`. Run the standalone Web tests with `cd web && node --test test/*.test.mjs`. The Bridge package has its own tests and release boundary in [its repository](https://github.com/mealie-atelier/mealie-atelier-bridge). Run and review each package’s checks manually before publishing.
 
 ## Made with love
 

@@ -1,16 +1,18 @@
 # Cards brand assets
 
-The Cards icon uses the shared Mealie Atelier pasta photograph inside a recipe-card mark. The same aubergine, cream, pasta-gold and tomato-red palette is used by the organization identity and Bridge icon.
+Cards uses an original pasta-and-tomato photograph with an editorial wordmark. The square, full-bleed icon uses straight edges and a clean aubergine footer; the matching GitHub preview pairs warm typography with the food photograph.
 
-- `icon.svg` is the editable source; its photo dependency is included beside it.
+- `icon.svg` is the self-contained master; its source photo is embedded so common SVG renderers produce the same result.
 - `icon-192.png`, `icon-512.png` and `icon-1024.png` are ready-to-use exports.
-- `social-preview.svg` and `social-preview.png` are the GitHub repository preview artwork.
+- `social-preview.svg` is the editable artwork; `social-preview.png` is the 1280 × 640 export, and `social-preview.jpg` is the optimized GitHub upload (under 1 MB).
 - `CREDITS.md` records the photograph attribution and source license.
 
-Regenerate the icon exports from this directory with `rsvg-convert`:
+Regenerate the square icon exports on macOS with the built-in `sips` tool:
 
 ```sh
-rsvg-convert -w 192 -h 192 icon.svg > icon-192.png
-rsvg-convert -w 512 -h 512 icon.svg > icon-512.png
-rsvg-convert -w 1024 -h 1024 icon.svg > icon-1024.png
+for size in 192 512 1024; do
+  sips -s format png -z "$size" "$size" icon.svg --out "icon-$size.png"
+done
+sips -s format png social-preview.svg --out social-preview.png
+sips -s format jpeg -s formatOptions 86 social-preview.png --out social-preview.jpg
 ```

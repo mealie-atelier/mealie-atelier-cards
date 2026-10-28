@@ -25,7 +25,7 @@ Exact commands are in the root `CONTRIBUTING.md` and the Bridge repository's `CO
 
 ## Release gates still open
 
-1. Run the committed HACS and Hassfest workflows on GitHub; verify package metadata and validators on the actual remote revisions.
+1. Run HACS and Hassfest validation manually against the release candidate; verify package metadata and validator results on the actual remote revision.
 2. Run a first-time setup with a real, disposable Home Assistant instance, including native Mealie read-only, Bridge URL/token setup, invalid-credential recovery, UI-managed card resource, and add-card flow.
 3. Test live Mealie reads and writes on a disposable, backed-up instance: pagination/catalog completeness, recipe detail/step images, shopping, meal planning, recipe import/edit, permissions, and supported batch shopping endpoint behavior.
 4. Test Bring and another HA To-do provider before supporting or advertising the planned Smart Shopping Sync. The Bridge does **not** yet implement this capability. See [`docs/SMART_SHOPPING_SYNC.md`](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md) for the safety contract.
@@ -56,6 +56,8 @@ Do not publish with the example URL. Demo edits remain browser-local and never c
 
 ## Corrections log
 
-- 2026-10-28 — Imported the checksummed v0.9.5 source archive into the existing Cards and Bridge repositories without replacing their Git histories; moved the standalone app under `web/` and established independent CI/release validation boundaries.
+- 2026-10-28 — Imported the checksummed v0.9.5 source archive into the existing Cards and Bridge repositories without replacing their Git histories; moved the standalone app under `web/` and established independent package/release validation boundaries.
 - 2026-10-28 — Corrected build and test scripts that still assumed the original nested archive layout; excluded opt-in live smoke tests from default local suite discovery.
-- 2026-10-28 — Re-ran local checks: Cards 60, Web 35, Bridge 26; build outputs are byte-identical. HACS/Hassfest CI and all live/device gates remain outstanding until their remote/device runs complete.
+- 2026-10-28 — Re-ran local checks: Cards 60, Web 35, Bridge 26; build outputs are byte-identical. Manual HACS/Hassfest and all live/device gates remain outstanding until individually completed and recorded.
+
+- 2026-10-28 — Removed GitHub Actions and Dependabot version-update configuration after the owner asked to keep repository checks and releases manual; disabled Actions across the organization and automatic security-update PRs for the product repositories in GitHub settings.

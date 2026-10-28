@@ -5,7 +5,7 @@ The implementation baseline is `Mealie-Atelier-v0.9.5-polish-2026-10-28.zip`, SH
 ## Import mapping
 
 - `mealie-atelier-cards/` became the root of [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards), preserving the HACS root contract (`hacs.json`, `dist/mealie-atelier-cards.js`, source, tests and demo).
-- `mealie-atelier-web/` became `web/` inside the Cards repository. It has its own Dockerfile, runtime, and tests; root-level CI gives it a separate validation/release boundary, and it does not depend on Home Assistant.
+- `mealie-atelier-web/` became `web/` inside the Cards repository. It has its own Dockerfile, runtime, and tests; it has a separate validation/release boundary, and it does not depend on Home Assistant.
 - `mealie-atelier-bridge/` became the root of [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge), preserving its HACS integration layout under `custom_components/mealie_atelier/`.
 - The `.github` repository remains the organization profile, shared security/support guidance and canonical brand-asset source.
 

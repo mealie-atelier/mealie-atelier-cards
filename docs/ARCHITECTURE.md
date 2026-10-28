@@ -65,7 +65,7 @@ Standalone: Node.js 22+ HTTP server with zero npm dependencies and a read-only f
 3. Shopping list creation and recipe-to-list import have mock API tests; **real Mealie 3.x** compatibility testing is still necessary. Recipe transfer uses the current batch endpoint first and falls back to the legacy single-recipe route only when the batch route is unavailable (HTTP 404/405).
 4. Meal planner selects recipes from currently loaded recipe page, not the entire catalog; add remote search/picker.
 5. Cooking-step text is editable while Mealie step metadata and embedded photos are preserved by stable step ID. Step-photo upload/replacement is not implemented. Plain-text ingredient replacement is experimentally opt-in, only for unlinked ingredients; schema-aware food/unit links and quantity editing still need dedicated forms.
-6. No frontend automated CI test yet; include Playwright screenshot and accessibility/a11y validation before public release.
+6. No automated CI is used by project policy. Run frontend tests, Playwright screenshots, and accessibility checks manually before each release.
 7. Read-only mode is available; per-user grants, diagnostics and separate read-vs-write credentials still need work.
 8. Token rotation and reauthentication should be added to HA Config Flow.
 9. Basic auth for optional web app is suitable only behind a trusted HTTPS reverse proxy or on private networks; public SSO and stronger auth remain a planned feature.
