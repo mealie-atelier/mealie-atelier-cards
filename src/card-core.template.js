@@ -336,6 +336,17 @@ class MealieAtelierCard extends HTMLElement {
   tp(key, count, values) {
     return translatePluralLabel(this._language, key, count, values);
   }
+  /* BEGIN error text (feature C contract 0.1) */
+  _errorText(err) {
+    const stem = String(err?.code || "")
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join("");
+    const key = `err${stem}`;
+    const mapped = stem ? this.t(key) : key;
+    return mapped !== key ? mapped : err?.message || this.t("error");
+  }
+  /* END error text */
   get _design() {
     return { ...this._config, ...this._local };
   }
@@ -808,6 +819,9 @@ class MealieAtelierCard extends HTMLElement {
       this.shadowRoot.innerHTML = STYLE;
       this._styleReady = true;
     }
+    // BEGIN feature D: recipe picker lifecycle
+    if (modalChanged) this._pickerSync();
+    // END feature D
     const modalMarkup = this._modalHtml();
     const displayedModal = modalChanged
       ? modalMarkup
@@ -917,6 +931,9 @@ class MealieAtelierCard extends HTMLElement {
       this._render();
       return;
     }
+    // BEGIN feature D: recipe picker keyboard
+    if (this._pickerKeydown(event)) return;
+    // END feature D
     if (event.key === "Escape" && this._modal) {
       event.preventDefault();
       if (this._modal === "command") {
@@ -1170,6 +1187,9 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     // END feature B
+    // BEGIN feature D: recipe picker actions
+    if (action.startsWith("picker-")) return this._pickerClick(action, v);
+    // END feature D
     if (action === "nav" && MODES.includes(v)) {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
@@ -1586,6 +1606,9 @@ class MealieAtelierCard extends HTMLElement {
     // END feature B
     const el = event.target;
     const type = el?.dataset?.input;
+    // BEGIN feature D: recipe picker inputs
+    if (type?.startsWith("picker-")) return this._pickerInput(el, type);
+    // END feature D
     if (el?.hasAttribute("data-nutri-replace") && this._nutrition) {
       this._nutrition.replaceExisting = el.checked;
       this._nutrition.report = null;
@@ -1838,9 +1861,11 @@ class MealieAtelierCard extends HTMLElement {
                 id: `pending-${Date.now()}-${(this._pendingSeq = (this._pendingSeq || 0) + 1)}`,
                 date: values.date,
                 entryType: values.meal_type,
-                recipe: asArray(this._data.recipes?.items).find(
-                  (x) => String(x.id) === String(values.recipe_id),
-                ),
+                recipe:
+                  this._pickerChosen(values.recipe_id) ||
+                  asArray(this._data.recipes?.items).find(
+                    (x) => String(x.id) === String(values.recipe_id),
+                  ),
               }),
           );
         break;

@@ -333,7 +333,7 @@ export const recipeEditorMethods = {
   },
   _editorComboHtml(field, row, i, label) {
     return `<div class="ed-cell ed-combo" data-ed-combo="${field}" data-ed-row="${i}"><span>${esc(this.t(field === "unit" ? "editorUnit" : "editorFood"))}</span>
-      ${this._comboboxMarkup({
+      ${this._editorComboMarkup({
         id: `ed-${field}-${i}`,
         label,
         value: row[`${field}Text`],
@@ -460,7 +460,7 @@ export const recipeEditorMethods = {
       const open = Boolean(
         combo && combo.field === box.dataset.edCombo && String(combo.row) === box.dataset.edRow,
       );
-      this._comboboxPaint({
+      this._editorComboPaint({
         root: box,
         open,
         html: open ? this._editorOptionsHtml() : "",
@@ -527,21 +527,25 @@ export const recipeEditorMethods = {
     const combo = this._ed.combo;
     const row = Number(event.target.dataset.edRow);
     const mine = Boolean(combo && combo.field === field && combo.row === row);
-    const nav = {
-      open: mine,
-      count: mine ? this._editorComboOptions().length : 0,
-      active: mine ? combo.active : -1,
-    };
-    const action = this._comboboxKeydown(event, nav);
-    if (action === "open") this._editorComboOpen(field, row, event.target.value);
-    else if (action === "move") {
-      combo.active = nav.active;
-      this._editorPaintCombo();
-    } else if (action === "close") {
-      this._ed.combo = null;
-      this._editorPaintCombo();
+    if (!mine) {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return false;
+      event.preventDefault();
+      this._editorComboOpen(field, row, event.target.value);
+      return true;
     }
-    return action === "open" || action === "move" || (action === "close" && event.key === "Escape");
+    const nav = {
+      id: `ed-${field}-${row}`,
+      open: true,
+      active: combo.active,
+      items: this._editorComboOptions(),
+      hasMore: false,
+      loading: combo.loading,
+    };
+    const handled = this._comboboxKeydown(event, nav);
+    if (nav.open) combo.active = nav.active;
+    else this._ed.combo = null;
+    this._editorPaintCombo();
+    return handled;
   },
   _editorInput(event) {
     const el = event.target;
@@ -1136,47 +1140,24 @@ export const recipeEditorMethods = {
     }
   },
 
-  // BEGIN feature D: shared combobox helpers (provided by B until D merges; D's version replaces this block)
+  // Editor rows render their options on demand inside the grid, so markup and painting are the
+  // editor's own; the keyboard model is the shared one from the recipe picker (contract D.2).
   /** Combobox input plus its listbox. `attrs` is appended to the input, ids derive from `id`. */
-  _comboboxMarkup({ id, label, value = "", placeholder = "", attrs = "", listClass = "", listId }) {
+  _editorComboMarkup({
+    id,
+    label,
+    value = "",
+    placeholder = "",
+    attrs = "",
+    listClass = "",
+    listId,
+  }) {
     const list = listId || `${id}-list`;
     return `<input role="combobox" id="${esc(id)}" aria-autocomplete="list" aria-expanded="false" aria-haspopup="listbox" aria-controls="${esc(list)}" ${attrs} autocomplete="off" maxlength="120" value="${esc(value)}" ${placeholder ? `placeholder="${esc(placeholder)}"` : ""} aria-label="${esc(label)}">
       <ul${listClass ? ` class="${esc(listClass)}"` : ""} role="listbox" id="${esc(list)}" hidden aria-label="${esc(label)}"></ul>`;
   },
-  /**
-   * Keyboard model on `state = {open, count, active}`; moves `state.active` and returns what the caller
-   * must do: "open", "move", "select", "close" or "" (not handled).
-   */
-  _comboboxKeydown(event, state) {
-    const { key } = event;
-    if (key === "Enter") {
-      event.preventDefault();
-      return state.open && state.active >= 0 ? "select" : "";
-    }
-    if (key === "Tab") return state.open ? "close" : "";
-    if (key === "Escape") {
-      if (!state.open) return "";
-      event.preventDefault();
-      return "close";
-    }
-    if (key === "ArrowDown" || key === "ArrowUp") {
-      event.preventDefault();
-      if (!state.open) return "open";
-    } else if (!state.open || !["Home", "End", "PageDown", "PageUp"].includes(key)) return "";
-    else event.preventDefault();
-    const { count } = state;
-    if (!count) return "move";
-    const last = count - 1;
-    if (key === "ArrowDown") state.active = (state.active + 1) % count;
-    else if (key === "ArrowUp") state.active = (state.active - 1 + count) % count;
-    else if (key === "Home") state.active = 0;
-    else if (key === "End") state.active = last;
-    else if (key === "PageDown") state.active = Math.min(last, Math.max(0, state.active) + 10);
-    else state.active = Math.max(0, state.active - 10);
-    return "move";
-  },
   /** Paints one combobox: `state = {root, open, html, active, optionPrefix}`. */
-  _comboboxPaint(state) {
+  _editorComboPaint(state) {
     const input = state.root.querySelector("input");
     const list = state.root.querySelector("ul");
     list.hidden = !state.open;
@@ -1187,5 +1168,4 @@ export const recipeEditorMethods = {
       list.querySelector(".is-active")?.scrollIntoView?.({ block: "nearest" });
     } else input.removeAttribute("aria-activedescendant");
   },
-  // END feature D
 };

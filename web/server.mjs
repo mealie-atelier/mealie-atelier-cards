@@ -173,7 +173,7 @@ function int(v, min, max, fallback) {
 }
 function params(data) {
   return new URLSearchParams(
-    Object.entries(data)
+    (Array.isArray(data) ? data : Object.entries(data))
       .filter(([, v]) => v !== undefined)
       .map(([k, v]) => [k, String(v)]),
   );
@@ -666,13 +666,56 @@ async function bridge(req) {
       return { saved: true, report };
     }
     case "mealie_atelier/recipes": {
-      const data = await mealie("GET", "/api/recipes", undefined, {
-        page: int(msg.page, 1, 10000, 1),
-        perPage: int(msg.per_page, 1, 60, 24),
-        orderBy: "name",
-        orderDirection: "asc",
-        search: typeof msg.search === "string" ? msg.search.slice(0, 100) : "",
-      });
+      // BEGIN recipe picker filters (feature D.1)
+      const query = [
+        ["page", int(msg.page, 1, 10000, 1)],
+        ["perPage", int(msg.per_page, 1, 60, 24)],
+        ["orderBy", msg.order === "recent" ? "updatedAt" : "name"],
+        ["orderDirection", msg.order === "recent" ? "desc" : "asc"],
+        ["search", typeof msg.search === "string" ? msg.search.slice(0, 100) : ""],
+      ];
+      if (msg.order !== undefined && !["name", "recent"].includes(msg.order))
+        throw bad("Invalid order");
+      if (msg.favorites_only !== undefined && typeof msg.favorites_only !== "boolean")
+        throw bad("Invalid favorites_only");
+      for (const [field, all] of [
+        ["categories", "requireAllCategories"],
+        ["tags", "requireAllTags"],
+      ]) {
+        const slugs = msg[field];
+        if (slugs === undefined) continue;
+        if (
+          !Array.isArray(slugs) ||
+          slugs.length > 10 ||
+          !slugs.every((x) => typeof x === "string" && VALID_ID.test(x))
+        )
+          throw bad(`Invalid ${field}`);
+        if (!slugs.length) continue;
+        for (const slug of slugs) query.push([field, slug]);
+        query.push([all, "false"]);
+      }
+      if (msg.favorites_only === true) {
+        const favorites = await mealie("GET", "/api/users/self/favorites");
+        const ids = [
+          ...new Set(
+            (Array.isArray(favorites?.ratings) ? favorites.ratings : [])
+              .filter((x) => x?.isFavorite === true && typeof x.recipeId === "string")
+              .map((x) => x.recipeId)
+              .filter((id) => VALID_ID.test(id)),
+          ),
+        ].slice(0, 200);
+        if (!ids.length)
+          return {
+            items: [],
+            total: 0,
+            page: 1,
+            per_page: int(msg.per_page, 1, 60, 24),
+            total_pages: 0,
+          };
+        query.push(["queryFilter", `id IN [${ids.map((id) => `"${id}"`).join(",")}]`]);
+      }
+      const data = await mealie("GET", "/api/recipes", undefined, query);
+      // END recipe picker filters
       return { ...data, items: unwrap(data).map(withImage) };
     }
     case "mealie_atelier/recipe":

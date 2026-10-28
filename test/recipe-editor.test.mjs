@@ -354,34 +354,58 @@ test("the servings stepper label and aria-label follow the previewed count", asy
   assert.equal(input.attrs["aria-label"], "Preview for 5 servings");
 });
 
-test("the shared combobox helpers drive the keyboard model", () => {
-  const { card } = editor();
-  const key = (name) => {
-    const event = {
-      key: name,
-      prevented: false,
-      preventDefault() {
-        this.prevented = true;
-      },
-    };
-    return event;
-  };
-  const state = { open: false, count: 3, active: -1 };
-  assert.equal(card._comboboxKeydown(key("ArrowDown"), state), "open");
-  state.open = true;
-  assert.equal(card._comboboxKeydown(key("ArrowDown"), state), "move");
-  assert.equal(state.active, 0);
-  card._comboboxKeydown(key("End"), state);
-  assert.equal(state.active, 2);
-  card._comboboxKeydown(key("ArrowDown"), state);
-  assert.equal(state.active, 0);
-  card._comboboxKeydown(key("PageDown"), state);
-  assert.equal(state.active, 2);
-  assert.equal(card._comboboxKeydown(key("Enter"), state), "select");
-  assert.equal(card._comboboxKeydown(key("Escape"), state), "close");
-  assert.equal(card._comboboxKeydown(key("Tab"), state), "close");
+test("unit and food fields use the shared combobox keyboard model", async () => {
+  const { card, calls } = editor({
+    callWS: async (message) => {
+      if (message.type.endsWith("ingredients_get")) return structuredClone(PREVIEW);
+      if (message.type.endsWith("/foods"))
+        return {
+          items: [
+            { id: "f1", name: "Basil leaves", pluralName: "" },
+            { id: "f2", name: "Basil oil", pluralName: "" },
+          ],
+          page: 1,
+          total: 2,
+        };
+      return {};
+    },
+  });
+  card._editorOpen();
+  await card._editorLoad();
+  const key = (name) => ({
+    key: name,
+    target: { dataset: { edInput: "food", edRow: "0" }, value: "Basil" },
+    prevented: false,
+    preventDefault() {
+      this.prevented = true;
+    },
+  });
+  const down = key("ArrowDown");
+  assert.equal(card._editorKeyDown(down), true, "ArrowDown opens a closed list");
+  assert.ok(down.prevented);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.equal(calls.filter((c) => c.type.endsWith("/foods")).length, 1);
+  // Two items plus "Create" (admin, no exact match).
+  assert.equal(card._editorComboOptions().length, 3);
+  card._editorKeyDown(key("ArrowDown"));
+  assert.equal(card._ed.combo.active, 0);
+  card._editorKeyDown(key("End"));
+  assert.equal(card._ed.combo.active, 2);
+  card._editorKeyDown(key("ArrowDown"));
+  assert.equal(card._ed.combo.active, 2, "the last option stays active, like in the recipe picker");
+  card._editorKeyDown(key("Home"));
+  assert.equal(card._ed.combo.active, 0);
+  card._editorKeyDown(key("PageDown"));
+  assert.equal(card._ed.combo.active, 2);
+  const tab = key("Tab");
+  assert.equal(card._editorKeyDown(tab), false, "Tab leaves the field");
+  assert.equal(card._ed.combo, null);
+  card._editorKeyDown(key("ArrowDown"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.equal(card._editorKeyDown(key("Escape")), true);
+  assert.equal(card._ed.combo, null);
   assert.match(
-    card._comboboxMarkup({ id: "x", label: "Food", attrs: 'data-a="1"' }),
+    card._editorComboMarkup({ id: "x", label: "Food", attrs: 'data-a="1"' }),
     /role="combobox"[^>]*aria-controls="x-list"[\s\S]*role="listbox" id="x-list"/,
   );
 });

@@ -1,0 +1,158 @@
+/* Searchable recipe picker (combobox) used by the meal plan dialog. */
+.atelier .picker-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.atelier .picker {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+.atelier .picker-filters {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.atelier .picker-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: flex-start;
+}
+.atelier .picker-filter {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .picker-disclosure {
+  min-height: 44px;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+.atelier .picker-options {
+  display: grid;
+  gap: var(--ds-space-1);
+  max-height: 180px;
+  overflow: auto;
+  padding: var(--ds-space-2);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+}
+.atelier .picker-options[hidden],
+.atelier .picker-panel[hidden] {
+  display: none;
+}
+.atelier .picker-options label {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-height: 44px;
+}
+.atelier .picker-hint {
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  line-height: 1.5;
+}
+.atelier .picker-panel {
+  min-height: 156px;
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+}
+.atelier .picker-list {
+  display: grid;
+  margin: 0;
+  padding: var(--ds-space-1);
+  list-style: none;
+}
+.atelier .picker-option {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-height: 52px;
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+}
+.atelier .picker-option:hover {
+  background: color-mix(in srgb, var(--ds-brand) 8%, transparent);
+}
+.atelier .picker-option[data-active] {
+  background: color-mix(in srgb, var(--ds-brand) 14%, transparent);
+  outline: 2px solid var(--ds-ring);
+  outline-offset: -2px;
+}
+.atelier .picker-option[data-chosen] .picker-name {
+  font-weight: 750;
+}
+.atelier .picker-thumb {
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-photo-fallback);
+}
+.atelier .picker-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .picker-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.atelier .picker-time {
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  white-space: nowrap;
+}
+.atelier .picker-skeleton {
+  min-height: 52px;
+  margin: var(--ds-space-1) var(--ds-space-2);
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in srgb, var(--ds-muted) 16%, transparent);
+  animation: picker-pulse var(--ds-motion-loading) ease-in-out infinite alternate;
+}
+.atelier .picker-sentinel {
+  height: 1px;
+}
+.atelier .picker-state {
+  display: grid;
+  justify-items: start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+}
+.atelier .picker-state:empty {
+  display: none;
+}
+.atelier .picker-note {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .picker-note.is-error {
+  color: var(--ds-text);
+}
+@keyframes picker-pulse {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .picker-skeleton {
+    animation: none;
+  }
+}

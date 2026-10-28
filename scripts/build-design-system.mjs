@@ -20,6 +20,7 @@ const cssFiles = [
   "src/design-system/control-refinement.css",
   "src/design-system/recipe-editor.css", // feature B
   "src/design-system/shopping-sync.css",
+  "src/design-system/recipe-picker.css", // feature D
 ];
 const content = cssFiles.map((file) => readFileSync(resolve(folder, file), "utf8").trim());
 const styleBegin = "const STYLE = `<style>\n";
@@ -99,6 +100,7 @@ const componentMethodModules = [
   ["dialogMethods", "src/components/dialogs.js"],
   ["recipeEditorMethods", "src/components/recipe-editor.js"], // feature B
   ["shoppingSyncMethods", "src/components/shopping-sync.js"],
+  ["recipePickerMethods", "src/components/recipe-picker.js"], // feature D
 ];
 const methodDeclarations = componentMethodModules.map(([name, file]) => {
   const moduleSource = readFileSync(resolve(folder, file), "utf8").trim();
