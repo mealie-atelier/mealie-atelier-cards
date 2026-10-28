@@ -16079,6 +16079,16 @@ const OFFLINE_CAP = 100;
 const OFFLINE_ACTIONS = ["shopping_toggle", "shopping_add"];
 const OFFLINE_CONFLICT_CODES = ["offline_conflict", "offline_add_uncertain", "offline_op_reused"];
 
+/** Index of the last waiting tick on an item (no `findLastIndex`: older wall tablets lack it). */
+function lastToggleIndex(ops, itemId) {
+  for (let index = ops.length - 1; index >= 0; index--) {
+    const op = ops[index];
+    if (op.state !== "conflict" && op.action === "shopping_toggle" && op.payload.item_id === itemId)
+      return index;
+  }
+  return -1;
+}
+
 const offlineQueueMethods = {
   /** Active only when no host owns a queue, the Bridge can replay and the user may write. */
   _offlineActive() {
@@ -16137,12 +16147,7 @@ const offlineQueueMethods = {
   _offlineCollapse(action, payload) {
     if (action !== "shopping_toggle" || !this._offlineActive()) return false;
     const ops = this._offlineLoad();
-    const index = ops.findLastIndex(
-      (op) =>
-        op.state !== "conflict" &&
-        op.action === "shopping_toggle" &&
-        op.payload.item_id === payload.item_id,
-    );
+    const index = lastToggleIndex(ops, payload.item_id);
     const waiting = ops[index];
     if (!waiting || waiting.payload.expected_checked !== payload.checked) return false;
     if (!waiting.attempted && waiting.state !== "failed") ops.splice(index, 1);
@@ -16187,12 +16192,7 @@ const offlineQueueMethods = {
       (x) => String(x.id) === String(payload.item_id),
     );
     // The state the user saw: a waiting tick on the same item wins over the last loaded state.
-    const before = ops.findLast(
-      (op) =>
-        op.state !== "conflict" &&
-        op.action === "shopping_toggle" &&
-        op.payload.item_id === String(payload.item_id),
-    );
+    const before = ops[lastToggleIndex(ops, String(payload.item_id))];
     const seen = before ? before.payload.checked : item?.checked;
     const entry =
       action === "shopping_toggle"
@@ -16239,7 +16239,7 @@ const offlineQueueMethods = {
   _offlineBar() {
     const ops = this._offlineQueue();
     if (!ops.length) return "";
-    const waiting = ops.filter((op) => op.state !== "conflict");
+    const waiting = ops.filter((op) => op.state !== "conflict" && op.state !== "failed");
     // Conflicts wait for the user; failed sends are retried but can always be discarded.
     const conflicts = ops.filter((op) => op.state === "conflict" || op.state === "failed");
     const line = waiting.length
@@ -16275,9 +16275,14 @@ const offlineQueueMethods = {
     this._offlineBusy = true;
     let sent = 0;
     let dropped = 0;
+    // Items with a failed tick in this run: later ticks on them wait, so their order holds.
+    const blocked = new Set();
     try {
-      for (const op of this._offlineLoad()) {
-        if (op.state === "conflict") continue;
+      for (const { id } of this._offlineLoad()) {
+        // Re-read each entry: the user may have taken it back or discarded it meanwhile.
+        const op = this._offlineLoad().find((x) => x.id === id);
+        if (!op || op.state === "conflict") continue;
+        if (op.action === "shopping_toggle" && blocked.has(op.payload.item_id)) continue;
         // Once sent, an operation may have reached Mealie: it is never dropped silently again.
         this._offlineSave(
           this._offlineLoad().map((x) => (x.id === op.id ? { ...x, attempted: true } : x)),
@@ -16305,6 +16310,7 @@ const offlineQueueMethods = {
             );
             continue;
           }
+          if (op.action === "shopping_toggle") blocked.add(op.payload.item_id);
           this._offlineSave(
             this._offlineLoad().map((x) =>
               x.id === op.id

@@ -340,3 +340,60 @@ test("taking back a tick that may have been sent queues the reverse behind it", 
   );
   assert.equal(card._offlineItems(card._data.shopping.items)[0].checked, false);
 });
+
+test("an entry taken back while an earlier one is in flight is never sent", async () => {
+  const { card, script, calls } = setup();
+  script.mutate = async () => {
+    throw lostError();
+  };
+  await card._mutate("shopping_add", { list_id: "l1", note: "Eggs" }, "shopping");
+  await toggle(card, "i1", true);
+  script.replay = async (msg) => {
+    if (msg.operation.action === "shopping_add") await toggle(card, "i1", false);
+    return { ok: true };
+  };
+  await card._offlineReplay();
+  const sent = calls.filter((c) => c.type === "mealie_atelier/offline_replay");
+  assert.deepEqual(
+    sent.map((c) => c.operation.action),
+    ["shopping_add"],
+  );
+  assert.deepEqual(queue(card), []);
+});
+
+test("a failed tick holds back later ticks on the same item in that run", async () => {
+  const { card, script, calls } = setup();
+  script.mutate = async () => {
+    throw lostError();
+  };
+  await toggle(card, "i1", true);
+  script.replay = async () => {
+    throw lostError();
+  };
+  await card._offlineReplay();
+  await toggle(card, "i1", false);
+  await card._mutate("shopping_add", { list_id: "l1", note: "Eggs" }, "shopping");
+  script.replay = async (msg) => {
+    if (msg.operation.action === "shopping_toggle")
+      throw Object.assign(new Error("busy"), { code: "mealie_error" });
+    return { ok: true };
+  };
+  const before = calls.length;
+  await card._offlineReplay();
+  const sent = calls.slice(before).filter((c) => c.type === "mealie_atelier/offline_replay");
+  assert.deepEqual(
+    sent.map((c) => [c.operation.action, c.operation.payload.checked]),
+    [
+      ["shopping_toggle", true],
+      ["shopping_add", undefined],
+    ],
+  );
+  assert.deepEqual(
+    queue(card).map((op) => [op.payload.checked, op.state]),
+    [
+      [true, "failed"],
+      [false, "pending"],
+    ],
+  );
+  assert.match(card._offlineBar(), /1 change waiting/);
+});
