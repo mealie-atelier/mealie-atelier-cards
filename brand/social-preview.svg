@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="title">
   <title id="title">Mealie Atelier Cards — your recipes, right where you cook</title>
   <rect width="1280" height="640" fill="#F6EDDD"/>
-  <image href="photographer-davide-ragusa-handmade-pasta.jpg" x="640" y="0" width="640" height="640" preserveAspectRatio="xMidYMid slice"/>
+  <image href="pasta-with-tomatoes.jpg" x="640" y="0" width="640" height="640" preserveAspectRatio="xMidYMid slice"/>
   <rect x="640" width="640" height="640" fill="#302632" opacity=".12"/>
   <image href="mealie-atelier.svg" x="94" y="82" width="58" height="58"/>
   <text x="174" y="119" fill="#302632" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700" letter-spacing="3.2">MEALIE ATELIER</text>
