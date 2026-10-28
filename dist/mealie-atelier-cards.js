@@ -10991,8 +10991,23 @@ ha-card {
   }
 }
 </style>`;
-function recipeImage(recipe, cls = "") {
+// Every fetch signs image URLs anew (a 2 h signature). Reusing the first one per recipe photo keeps
+// re-renders on the browser cache instead of reloading every photo; a new photo changes `image`.
+const IMAGE_SRC_TTL = 90 * 60 * 1000;
+const imageSrcCache = new Map();
+function stableImageSrc(recipe) {
   const src = imageOk(recipe?.imageUrl);
+  if (!src || !recipe?.id) return src;
+  const key = `${recipe.id}:${recipe.image || ""}`;
+  const now = Date.now();
+  const hit = imageSrcCache.get(key);
+  if (hit && now - hit.at < IMAGE_SRC_TTL) return hit.src;
+  if (imageSrcCache.size > 2000) imageSrcCache.clear();
+  imageSrcCache.set(key, { src, at: now });
+  return src;
+}
+function recipeImage(recipe, cls = "") {
+  const src = stableImageSrc(recipe);
   return src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="">` : "";
 }
 function mealName(entry) {
