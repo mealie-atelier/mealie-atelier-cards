@@ -805,6 +805,17 @@ ha-card {
   padding: 17px;
   backdrop-filter: blur(9px);
 }
+/* Undo the browser's popover box so the raised backdrop still covers the whole viewport. */
+.atelier .modal-backdrop[popover] {
+  margin: 0;
+  border: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  color: inherit;
+}
 .atelier .modal {
   background: var(--at-surface);
   color: var(--at-ink);

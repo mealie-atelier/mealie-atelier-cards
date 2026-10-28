@@ -858,6 +858,8 @@ class MealieAtelierCard extends HTMLElement {
     // This fixes accidental form submissions from ingredient controls and dialog actions.
     for (const button of this.shadowRoot.querySelectorAll("button:not([type])"))
       button.type = "button";
+    for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
+      this._raiseModal(backdrop);
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -1014,6 +1016,19 @@ class MealieAtelierCard extends HTMLElement {
         event.preventDefault();
         nodes[0].focus();
       }
+    }
+  }
+  /**
+   * Open dialogs in the top layer (Popover API), above Home Assistant's sidebar and header.
+   * Without the API the backdrop stays fixed inside the dashboard as before.
+   */
+  _raiseModal(backdrop) {
+    if (typeof backdrop.showPopover !== "function") return;
+    try {
+      backdrop.setAttribute("popover", "manual");
+      if (!backdrop.matches(":popover-open")) backdrop.showPopover();
+    } catch {
+      // A detached or already raised element keeps the fixed layout.
     }
   }
   async _openRecipe(slug) {

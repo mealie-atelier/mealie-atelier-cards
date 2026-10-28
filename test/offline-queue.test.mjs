@@ -397,3 +397,19 @@ test("a failed tick holds back later ticks on the same item in that run", async 
   );
   assert.match(card._offlineBar(), /1 change waiting/);
 });
+
+test("only failed entries left still offers sending them again", async () => {
+  const { card, script } = setup();
+  script.mutate = async () => {
+    throw lostError();
+  };
+  await toggle(card);
+  script.replay = async () => {
+    throw Object.assign(new Error("busy"), { code: "mealie_error" });
+  };
+  await card._offlineReplay();
+  const bar = card._offlineBar();
+  assert.doesNotMatch(bar, /changes? waiting/);
+  assert.match(bar, /data-action="offline-send"/);
+  assert.match(bar, /data-action="offline-discard"/);
+});

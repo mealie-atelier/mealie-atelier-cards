@@ -951,6 +951,17 @@ ha-card {
   padding: 17px;
   backdrop-filter: blur(9px);
 }
+/* Undo the browser's popover box so the raised backdrop still covers the whole viewport. */
+.atelier .modal-backdrop[popover] {
+  margin: 0;
+  border: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  color: inherit;
+}
 .atelier .modal {
   background: var(--at-surface);
   color: var(--at-ink);
@@ -11964,6 +11975,8 @@ class MealieAtelierCard extends HTMLElement {
     // This fixes accidental form submissions from ingredient controls and dialog actions.
     for (const button of this.shadowRoot.querySelectorAll("button:not([type])"))
       button.type = "button";
+    for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
+      this._raiseModal(backdrop);
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -12120,6 +12133,19 @@ class MealieAtelierCard extends HTMLElement {
         event.preventDefault();
         nodes[0].focus();
       }
+    }
+  }
+  /**
+   * Open dialogs in the top layer (Popover API), above Home Assistant's sidebar and header.
+   * Without the API the backdrop stays fixed inside the dashboard as before.
+   */
+  _raiseModal(backdrop) {
+    if (typeof backdrop.showPopover !== "function") return;
+    try {
+      backdrop.setAttribute("popover", "manual");
+      if (!backdrop.matches(":popover-open")) backdrop.showPopover();
+    } catch {
+      // A detached or already raised element keeps the fixed layout.
     }
   }
   async _openRecipe(slug) {
@@ -16244,7 +16270,9 @@ const offlineQueueMethods = {
     const conflicts = ops.filter((op) => op.state === "conflict" || op.state === "failed");
     const line = waiting.length
       ? `<div class="notice is-spaced offline-queue" role="status">${icon("cart", 16)} <strong>${esc(this.tp("offlineQueued", waiting.length))}</strong> <button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
-      : "";
+      : conflicts.some((op) => op.state === "failed")
+        ? `<div class="notice is-spaced offline-queue" role="status"><button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
+        : "";
     const rows = conflicts
       .map(
         (op) =>
