@@ -34,3 +34,15 @@ test("a new photo for the same recipe gets its fresh signed URL", () => {
   const changed = render(cards, card, [tile("stew", "bbbb", "two")]);
   assert.deepEqual(changed, ["/api/mealie_atelier/image/e1/stew?authSig=two"]);
 });
+
+test("two entries backed by one Mealie keep their own signed photo URLs", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._view = "recipes";
+  const other = {
+    ...tile("pie", "aaaa", "two"),
+    imageUrl: "/api/mealie_atelier/image/e2/pie?authSig=two",
+  };
+  render(cards, card, [tile("pie", "aaaa", "one")]);
+  assert.deepEqual(render(cards, card, [other]), [other.imageUrl]);
+});

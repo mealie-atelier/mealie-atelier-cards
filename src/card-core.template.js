@@ -115,8 +115,9 @@ const IMAGE_SRC_TTL = 90 * 60 * 1000;
 const imageSrcCache = new Map();
 function stableImageSrc(recipe) {
   const src = imageOk(recipe?.imageUrl);
-  if (!src || !recipe?.id) return src;
-  const key = `${recipe.id}:${recipe.image || ""}`;
+  if (!src || !recipe?.image) return src;
+  // The signed path names the entry and the recipe; the photo hash changes with a new photo.
+  const key = `${src.split("?")[0]}:${recipe.image}`;
   const now = Date.now();
   const hit = imageSrcCache.get(key);
   if (hit && now - hit.at < IMAGE_SRC_TTL) return hit.src;

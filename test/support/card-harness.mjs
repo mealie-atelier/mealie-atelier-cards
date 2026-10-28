@@ -90,7 +90,7 @@ export function loadCards({
     `${bundle}\nglobalThis.__cards = { MealieAtelierCard, AtelierWakeLock };`,
     context,
   );
-  return { ...context.__cards, registry, listeners, document };
+  return { ...context.__cards, registry, listeners, document, storage };
 }
 
 /** Create a connected card; the last rendered markup lands in `cards.document.markup`. */

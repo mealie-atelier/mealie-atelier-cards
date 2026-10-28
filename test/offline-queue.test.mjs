@@ -219,17 +219,21 @@ test("replay sends in order and stops at the first connectivity failure", async 
   );
 });
 
-test("write_not_permitted drops the operation with a notice", async () => {
-  const { card, script } = setup();
+test("write_not_permitted drops every queued operation with a notice", async () => {
+  const { card, script, cards } = setup();
   script.mutate = async () => {
     throw lostError();
   };
   await toggle(card);
+  await card._mutate("shopping_add", { list_id: "l1", note: "Eggs" }, "shopping");
+  // Read storage under the original key: losing the grant reloads the status.
+  const key = card._offlineKey();
+  assert.equal(JSON.parse(cards.storage.get(key)).length, 2);
   script.replay = async () => {
     throw Object.assign(new Error("no"), { code: "write_not_permitted" });
   };
   await card._offlineReplay();
-  assert.deepEqual(queue(card), []);
+  assert.deepEqual(JSON.parse(cards.storage.get(key)), []);
   assert.match(card.flashed.text, /no longer change this kitchen/);
 });
 
@@ -283,4 +287,56 @@ test("a reconnect (connected false to true) triggers the replay", async () => {
   await flush();
   assert.equal(calls.filter((c) => c.type.endsWith("offline_replay")).length, 1);
   assert.deepEqual(queue(card), []);
+});
+
+test("any other failure marks that operation and the rest are still sent", async () => {
+  const { card, script, calls } = setup();
+  script.mutate = async () => {
+    throw lostError();
+  };
+  await toggle(card, "i1", true);
+  await card._mutate("shopping_add", { list_id: "l1", note: "Eggs" }, "shopping");
+  script.replay = async (msg) => {
+    if (msg.operation.action === "shopping_toggle")
+      throw Object.assign(new Error("Item not found"), { code: "mealie_error" });
+    return { ok: true };
+  };
+  await card._offlineReplay();
+  const sent = calls.filter((c) => c.type === "mealie_atelier/offline_replay");
+  assert.deepEqual(
+    sent.map((c) => c.operation.action),
+    ["shopping_toggle", "shopping_add"],
+  );
+  const [op] = queue(card);
+  assert.equal(op.state, "failed");
+  assert.equal(op.reason, "mealie_error");
+  assert.match(card._offlineBar(), /data-action="offline-discard"/);
+  // The next replay retries the failed operation; success clears it.
+  script.replay = async () => ({ ok: true });
+  await card._offlineReplay();
+  assert.deepEqual(queue(card), []);
+});
+
+test("taking back a tick that may have been sent queues the reverse behind it", async () => {
+  const { card, script, calls } = setup();
+  script.mutate = async () => {
+    throw lostError();
+  };
+  await toggle(card, "i1", true);
+  script.replay = async () => {
+    throw lostError();
+  };
+  await card._offlineReplay();
+  assert.equal(queue(card)[0].attempted, true);
+  const before = calls.filter((c) => c.type === "mealie_atelier/mutate").length;
+  assert.equal(await toggle(card, "i1", false), true);
+  assert.equal(calls.filter((c) => c.type === "mealie_atelier/mutate").length, before);
+  assert.deepEqual(
+    queue(card).map((op) => op.payload),
+    [
+      { item_id: "i1", checked: true, expected_checked: false },
+      { item_id: "i1", checked: false, expected_checked: true },
+    ],
+  );
+  assert.equal(card._offlineItems(card._data.shopping.items)[0].checked, false);
 });

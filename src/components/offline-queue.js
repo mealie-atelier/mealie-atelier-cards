@@ -54,21 +54,52 @@ export const offlineQueueMethods = {
     if (err?.code === 3 || err?.code === "connection_lost") return true;
     return /connection lost|not connected/i.test(String(err?.message || ""));
   },
-  /** A tick on an item with a waiting tick only takes that tick back: no network call, no conflict. */
+  /**
+   * A tick on an item with a waiting tick takes that tick back. A tick never sent is dropped
+   * locally; one that may have reached Mealie gets its reverse queued behind it, so order holds.
+   */
   _offlineCollapse(action, payload) {
     if (action !== "shopping_toggle" || !this._offlineActive()) return false;
     const ops = this._offlineLoad();
-    const index = ops.findIndex(
+    const index = ops.findLastIndex(
       (op) =>
         op.state !== "conflict" &&
         op.action === "shopping_toggle" &&
-        op.payload.item_id === payload.item_id &&
-        op.payload.expected_checked === payload.checked,
+        op.payload.item_id === payload.item_id,
     );
-    if (index < 0) return false;
-    ops.splice(index, 1);
+    const waiting = ops[index];
+    if (!waiting || waiting.payload.expected_checked !== payload.checked) return false;
+    if (!waiting.attempted && waiting.state !== "failed") ops.splice(index, 1);
+    else if (
+      !this._offlinePush(
+        ops,
+        action,
+        { ...waiting.payload, checked: payload.checked, expected_checked: waiting.payload.checked },
+        waiting.label,
+      )
+    )
+      return false;
     if (!this._offlineSave(ops)) return false;
     this._render();
+    if (index < ops.length) this._offlineReplayLater();
+    return true;
+  },
+  /** Append one operation with a fresh ID; false when the queue is full or IDs are unavailable. */
+  _offlinePush(ops, action, payload, label) {
+    if (
+      ops.length >= OFFLINE_CAP ||
+      typeof crypto === "undefined" ||
+      typeof crypto.randomUUID !== "function"
+    )
+      return false;
+    ops.push({
+      id: crypto.randomUUID(),
+      action,
+      payload,
+      label,
+      state: "pending",
+      created_at: Date.now(),
+    });
     return true;
   },
   /** Called with a failed write (after its optimistic change was undone). True when it was queued. */
@@ -76,32 +107,27 @@ export const offlineQueueMethods = {
     if (!OFFLINE_ACTIONS.includes(action) || !this._offlineActive()) return false;
     if (!this._offlineIsConnectivityError(err)) return false;
     const ops = this._offlineLoad();
-    if (
-      ops.length >= OFFLINE_CAP ||
-      typeof crypto === "undefined" ||
-      typeof crypto.randomUUID !== "function"
-    )
-      return false;
     const item = asArray(this._data.shopping?.items).find(
       (x) => String(x.id) === String(payload.item_id),
     );
+    // The state the user saw: a waiting tick on the same item wins over the last loaded state.
+    const before = ops.findLast(
+      (op) =>
+        op.state !== "conflict" &&
+        op.action === "shopping_toggle" &&
+        op.payload.item_id === String(payload.item_id),
+    );
+    const seen = before ? before.payload.checked : item?.checked;
     const entry =
       action === "shopping_toggle"
         ? {
             item_id: String(payload.item_id),
             checked: payload.checked === true,
-            expected_checked: typeof item?.checked === "boolean" ? item.checked : !payload.checked,
+            expected_checked: typeof seen === "boolean" ? seen : !payload.checked,
           }
         : { list_id: String(payload.list_id), note: String(payload.note) };
     const label = action === "shopping_add" ? entry.note : this._offlineItemName(item);
-    ops.push({
-      id: crypto.randomUUID(),
-      action,
-      payload: entry,
-      label,
-      state: "pending",
-      created_at: Date.now(),
-    });
+    if (!this._offlinePush(ops, action, entry, label)) return false;
     if (!this._offlineSave(ops)) return false;
     this._error = "";
     this._flash(this.t("offlineSaved"));
@@ -138,14 +164,15 @@ export const offlineQueueMethods = {
     const ops = this._offlineQueue();
     if (!ops.length) return "";
     const waiting = ops.filter((op) => op.state !== "conflict");
-    const conflicts = ops.filter((op) => op.state === "conflict");
+    // Conflicts wait for the user; failed sends are retried but can always be discarded.
+    const conflicts = ops.filter((op) => op.state === "conflict" || op.state === "failed");
     const line = waiting.length
       ? `<div class="notice is-spaced offline-queue" role="status">${icon("cart", 16)} <strong>${esc(this.tp("offlineQueued", waiting.length))}</strong> <button class="btn tiny" data-action="offline-send">${esc(this.t("offlineSendNow"))}</button></div>`
       : "";
     const rows = conflicts
       .map(
         (op) =>
-          `<div class="notice is-spaced offline-conflict" role="status">${icon("leaf", 16)} <span>${esc(this.t("offlineConflictItem", { item: op.label || this.t("itemFallback"), error: this._errorText({ code: op.reason }) }))}</span> <button class="btn tiny" data-action="offline-discard" data-value="${esc(op.id)}">${esc(this.t("offlineDiscard"))}</button></div>`,
+          `<div class="notice is-spaced offline-conflict" role="status">${icon("leaf", 16)} <span>${esc(this.t("offlineConflictItem", { item: op.label || this.t("itemFallback"), error: this._errorText({ code: op.reason, message: op.message }) }))}</span> <button class="btn tiny" data-action="offline-discard" data-value="${esc(op.id)}">${esc(this.t("offlineDiscard"))}</button></div>`,
       )
       .join("");
     return line + rows;
@@ -158,7 +185,10 @@ export const offlineQueueMethods = {
     if (action === "offline-send") await this._offlineReplay();
     else this._offlineDiscard(value);
   },
-  /** Send waiting operations in order, one at a time; stop at the first connectivity failure. */
+  /**
+   * Send waiting operations in order, one at a time; stop at the first connectivity failure.
+   * Any other failure marks that operation and moves on, so one bad entry never blocks the rest.
+   */
   async _offlineReplay() {
     if (this._offlineBusy || !this._offlineActive()) return;
     if (
@@ -172,6 +202,10 @@ export const offlineQueueMethods = {
     try {
       for (const op of this._offlineLoad()) {
         if (op.state === "conflict") continue;
+        // Once sent, an operation may have reached Mealie: it is never dropped silently again.
+        this._offlineSave(
+          this._offlineLoad().map((x) => (x.id === op.id ? { ...x, attempted: true } : x)),
+        );
         try {
           await this._ws("offline_replay", {
             operation: { id: op.id, action: op.action, payload: op.payload },
@@ -179,9 +213,11 @@ export const offlineQueueMethods = {
           this._offlineSave(this._offlineLoad().filter((x) => x.id !== op.id));
           sent++;
         } catch (err) {
+          if (this._offlineIsConnectivityError(err)) break;
           if (err?.code === "write_not_permitted") {
-            this._offlineSave(this._offlineLoad().filter((x) => x.id !== op.id));
-            dropped++;
+            // Nothing in this queue may be written any more, including entries behind this one.
+            dropped = this._offlineLoad().length;
+            this._offlineSave([]);
             await this._recoverPermissions(err);
             break;
           }
@@ -193,7 +229,18 @@ export const offlineQueueMethods = {
             );
             continue;
           }
-          break;
+          this._offlineSave(
+            this._offlineLoad().map((x) =>
+              x.id === op.id
+                ? {
+                    ...x,
+                    state: "failed",
+                    reason: String(err?.code || ""),
+                    message: String(err?.message || "").slice(0, 200),
+                  }
+                : x,
+            ),
+          );
         }
       }
     } finally {
