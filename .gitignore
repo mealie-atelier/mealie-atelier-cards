@@ -19,3 +19,10 @@
 **/node_modules/
 .DS_Store
 **/.DS_Store
+
+# AI assistant files are never committed
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.mcp.json
+AGENTS.md
