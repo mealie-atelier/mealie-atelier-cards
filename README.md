@@ -29,7 +29,9 @@ There is no application to run yet. Development and installation instructions wi
 
 ## Feedback
 
-[Open an issue](https://github.com/mealie-atelier/mealie-atelier-cards/issues/new) to discuss this project or report a repository problem.
+- [Ask a question or share an idea](https://github.com/mealie-atelier/mealie-atelier-cards/discussions)
+- [Report a reproducible repository issue](https://github.com/mealie-atelier/mealie-atelier-cards/issues/new)
+- [Report a security vulnerability privately](https://github.com/mealie-atelier/mealie-atelier-cards/security/advisories/new)
 
 ## License
 
