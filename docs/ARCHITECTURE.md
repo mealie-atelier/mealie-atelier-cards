@@ -62,4 +62,4 @@ Standalone: Node.js 22+ HTTP server with zero npm dependencies and a read-only f
 6. Signed photo URLs last two hours. The card reuses the first URL per recipe photo for 90 minutes so refreshes do not reload every image.
 7. Basic auth for the optional web app is suitable only behind a trusted HTTPS reverse proxy or on private networks. Set `ATELIER_TRUSTED_PROXIES` so the sign-in throttle sees the real client.
 8. The Core Mealie provider is read-only and limited to official search/detail actions. It does not provide signed recipe images, complete catalog pagination, cookbooks, shopping-list mutation, planning writes, recipe administration, nutrition workflows or server-side timer alarms. Those remain Atelier Bridge capabilities unless Core exposes a documented safe equivalent.
-9. Token rotation and reauthentication in the Bridge config flow are not available yet.
+9. A rejected or rotated Mealie token is fixed in Home Assistant: the Bridge asks for reauthentication, and the address or token can be changed later with **Reconfigure**.

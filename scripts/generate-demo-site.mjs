@@ -92,7 +92,7 @@ const copy = {
     eyebrow: "Zehn Rezepte. Ein kompletter Küchenflow.",
     heroTitle: "Gute Rezepte. Mehr Ruhe beim Kochen.",
     heroCopy:
-      "Stöbere in echten, zweisprachigen Rezepten, plane die Woche, suche nach Zutaten und koche Schritt für Schritt – in einer interaktiven Demo des Mealie Ateliers.",
+      "Stöbere in echten, zweisprachigen Rezepten, plane die Woche, suche nach Zutaten und koche Schritt für Schritt. Alles in einer interaktiven Demo des Mealie Ateliers.",
     localTitle: "Deine Demo bleibt deine.",
     localCopy:
       "Änderungen gelten nur in diesem Browser-Tab. Sie werden nicht an Mealie oder Home Assistant gesendet.",
@@ -107,7 +107,6 @@ const copy = {
     servings: "Portionen",
     photographer: "Foto von",
     unsplash: "Fotos von Unsplash, mit Credits zu den Fotograf:innen.",
-    docs: "Dokumentation auf Alles Automatisch",
     ctaEyebrow: "Gefällt dir die Demo?",
     ctaTitle: "Hol dir das Mealie Atelier in deine Küche.",
     ctaCopy:
@@ -157,7 +156,6 @@ const copy = {
     servings: "servings",
     photographer: "Photo by",
     unsplash: "Photography by Unsplash contributors, with credit to each photographer.",
-    docs: "Mealie Atelier documentation",
     ctaEyebrow: "Like the demo?",
     ctaTitle: "Bring Mealie Atelier into your kitchen.",
     ctaCopy:
