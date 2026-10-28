@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { searchDemoRecipes } from "../demo/recipe-search.js";
@@ -77,7 +78,9 @@ test("demo catalog remains exactly ten complete bilingual recipes with photo cre
   assert.equal(data.recipes.length, 10);
   assert.equal(new Set(data.recipes.map((recipe) => recipe.slug)).size, 10);
   for (const recipe of data.recipes) {
-    assert.ok(recipe.image.url.startsWith("https://images.unsplash.com/photo-"));
+    assert.equal(recipe.image.file, `../photos/${recipe.slug}.webp`);
+    assert.equal(recipe.image.url, undefined, "demo photos are self-hosted, never hotlinked");
+    assert.ok(existsSync(new URL(`../demo/photos/${recipe.slug}.webp`, import.meta.url)));
     assert.ok(
       recipe.image.photographer && recipe.image.sourceUrl.startsWith("https://unsplash.com/"),
     );

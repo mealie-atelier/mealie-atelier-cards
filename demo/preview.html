@@ -116,7 +116,7 @@
             step.text,
           ]),
         ],
-        imageUrl: item.image.url,
+        imageUrl: new URL(item.image.file, catalogResponse.url).href,
         totalTime: item.prepMinutes + item.cookMinutes,
         recipeCategory: [{ name: localize(item.category) }],
         recipeCuisine: [{ name: localize(item.cuisine) }],
@@ -126,7 +126,7 @@
         description: localize(item.description),
         ingredients: localize(item.ingredients),
         steps: localize(item.steps).map((step) => [step.title, step.summary, step.text]),
-        imageUrl: item.image.url,
+        imageUrl: new URL(item.image.file, catalogResponse.url).href,
         servings: item.servings,
       }));
 

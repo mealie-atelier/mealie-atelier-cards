@@ -1,5 +1,5 @@
-import { copyFile, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { access, copyFile, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -30,7 +30,16 @@ function assert(condition, message) {
   if (!condition) throw new Error(`Demo catalog validation failed: ${message}`);
 }
 
-function validateCatalog() {
+// Photos are self-hosted: the catalog names a local file relative to recipes.json.
+function photoName(recipe) {
+  return basename(recipe.image.file);
+}
+
+function photoUrl(recipe, prefix) {
+  return `${deploymentBase || prefix}photos/${photoName(recipe)}`;
+}
+
+async function validateCatalog() {
   const rows = catalog?.recipes;
   assert(Array.isArray(rows) && rows.length === 10, "expected exactly ten recipes");
   assert(new Set(rows.map((row) => row.id)).size === 10, "recipe IDs must be unique");
@@ -41,8 +50,11 @@ function validateCatalog() {
     assert(recipe.prepMinutes >= 0 && recipe.cookMinutes >= 0, `${recipe.id} needs valid times`);
     assert(Array.isArray(recipe.tags) && recipe.tags.length, `${recipe.id} needs searchable tags`);
     assert(
-      recipe.image?.url && new URL(recipe.image.url).hostname === "images.unsplash.com",
-      `${recipe.id} needs a direct Unsplash CDN image`,
+      /^\.\.\/photos\/[a-z0-9-]+\.webp$/.test(recipe.image?.file ?? "") && !recipe.image.url,
+      `${recipe.id} needs a self-hosted photo under demo/photos`,
+    );
+    await access(join(demoRoot, "photos", photoName(recipe))).catch(() =>
+      assert(false, `${recipe.id} photo file is missing`),
     );
     assert(
       recipe.image?.sourceUrl && new URL(recipe.image.sourceUrl).hostname === "unsplash.com",
@@ -183,7 +195,7 @@ function localizedData(locale) {
       ingredients: recipe.ingredients[locale],
       steps: recipe.steps[locale],
       image: {
-        url: recipe.image.url,
+        file: `../photos/${photoName(recipe)}`,
         alt: recipe.image.alt[locale],
         photographer: recipe.image.photographer,
         photographerUrl: recipe.image.photographerUrl,
@@ -193,14 +205,14 @@ function localizedData(locale) {
   };
 }
 
-function recipeStructuredData(recipe, locale, url) {
+function recipeStructuredData(recipe, locale, url, prefix) {
   return {
     "@type": "Recipe",
     "@id": url ? `${url}#recipe` : undefined,
     url: url || undefined,
     name: recipe.title[locale],
     description: recipe.description[locale],
-    image: [recipe.image.url],
+    image: [photoUrl(recipe, prefix)],
     author: { "@type": "Organization", name: "Mealie Atelier Test Kitchen" },
     recipeCategory: recipe.category[locale],
     recipeCuisine: recipe.cuisine[locale],
@@ -237,7 +249,7 @@ function renderRecipeDirectory(locale) {
         )
         .join("");
       const time = recipe.prepMinutes + recipe.cookMinutes;
-      return `<article class="demo-recipe"><details><summary><img src="${escapeHtml(recipe.image.url)}" alt="${escapeHtml(recipe.image.alt[locale])}" loading="lazy" decoding="async" width="640" height="600"><span class="demo-recipe-summary-copy"><span class="demo-recipe-meta">${time} ${words.minutes} · ${recipe.servings} ${words.servings}</span><h3>${escapeHtml(recipe.title[locale])}</h3><span class="demo-recipe-meta">${escapeHtml(recipe.category[locale])}</span></span></summary><div class="demo-recipe-body"><p>${escapeHtml(recipe.description[locale])}</p><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol><p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" rel="noopener noreferrer">Unsplash</a> · <a href="${escapeHtml(url)}">${words.recipeLabel}</a></p></div></details></article>`;
+      return `<article class="demo-recipe"><details><summary><img src="${escapeHtml(photoUrl(recipe, "../"))}" alt="${escapeHtml(recipe.image.alt[locale])}" loading="lazy" decoding="async" width="640" height="600"><span class="demo-recipe-summary-copy"><span class="demo-recipe-meta">${time} ${words.minutes} · ${recipe.servings} ${words.servings}</span><h3>${escapeHtml(recipe.title[locale])}</h3><span class="demo-recipe-meta">${escapeHtml(recipe.category[locale])}</span></span></summary><div class="demo-recipe-body"><p>${escapeHtml(recipe.description[locale])}</p><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol><p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" rel="noopener noreferrer">Unsplash</a> · <a href="${escapeHtml(url)}">${words.recipeLabel}</a></p></div></details></article>`;
     })
     .join("\n");
 }
@@ -254,7 +266,7 @@ function renderIndexPage(locale) {
       "@type": "ListItem",
       position: index + 1,
       url: url || undefined,
-      item: recipeStructuredData(recipe, locale, url),
+      item: recipeStructuredData(recipe, locale, url, "../"),
     };
   });
   const jsonLd = safeJson({
@@ -267,7 +279,7 @@ function renderIndexPage(locale) {
   const replacements = {
     __SEO_TITLE__: words.title,
     __SEO_DESCRIPTION__: words.description,
-    __OG_IMAGE__: catalog.recipes[0].image.url,
+    __OG_IMAGE__: photoUrl(catalog.recipes[0], "../"),
     __CANONICAL_URL__: pageUrl,
     __GERMAN_URL__: deUrl,
     __ENGLISH_URL__: enUrl,
@@ -339,7 +351,7 @@ function renderRecipePage(locale, recipe) {
     : `../../../${counterpartPath}`;
   const currentDemoUrl = deploymentBase ? `${deploymentBase}${locale}/` : `../../../${locale}/`;
   const canonical = pageUrl ? `<link rel="canonical" href="${escapeHtml(pageUrl)}">` : "";
-  const image = `<img class="seo-recipe-image" src="${escapeHtml(recipe.image.url)}" alt="${escapeHtml(recipe.image.alt[locale])}" width="1200" height="800" fetchpriority="high">`;
+  const image = `<img class="seo-recipe-image" src="${escapeHtml(photoUrl(recipe, "../../../"))}" alt="${escapeHtml(recipe.image.alt[locale])}" width="1200" height="800" fetchpriority="high">`;
   const ingredients = recipe.ingredients[locale]
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
@@ -351,10 +363,10 @@ function renderRecipePage(locale, recipe) {
     .join("");
   const structured = safeJson({
     "@context": "https://schema.org",
-    ...recipeStructuredData(recipe, locale, pageUrl),
+    ...recipeStructuredData(recipe, locale, pageUrl, "../../../"),
   });
   const metricLabel = `${recipe.prepMinutes} ${words.minutes} prep · ${recipe.cookMinutes} ${words.minutes} cooking · ${recipe.servings} ${words.servings}`;
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(recipe.description[locale])}"><meta name="theme-color" content="#f4f1eb"><meta property="og:type" content="article"><meta property="og:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta property="og:description" content="${escapeHtml(recipe.description[locale])}"><meta property="og:image" content="${escapeHtml(recipe.image.url)}"><link rel="icon" type="image/png" href="../../../assets/${faviconAsset}">${canonical}<link rel="alternate" hreflang="de" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="en" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("en", recipe)}` : counterpartLocale === "en" ? counterpartUrl : currentDemoUrl)}"><link rel="stylesheet" href="../../../assets/live-demo.css"><title>${escapeHtml(recipe.title[locale])} · Mealie Atelier</title><script type="application/ld+json">${structured}</script></head><body class="seo-recipe-body"><main class="seo-recipe-page"><header class="demo-header"><a class="demo-brand" href="${escapeHtml(currentDemoUrl)}"><span class="demo-brand-mark" aria-hidden="true">M</span><span>Mealie Atelier</span></a><a class="seo-back-link" href="${escapeHtml(currentDemoUrl)}">${words.backToDemo}</a></header><article><p class="demo-eyebrow">${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="seo-recipe-description">${escapeHtml(recipe.description[locale])}</p><p class="seo-recipe-meta">${escapeHtml(metricLabel)}</p>${image}<p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" rel="noopener noreferrer">Unsplash</a></p><section><h2>${words.recipeIngredients}</h2><p>${recipe.servings} ${words.servings}</p><ul class="seo-ingredient-list">${ingredients}</ul></section><section><h2>${words.recipeSteps}</h2><ol class="seo-instruction-list">${steps}</ol></section><p><a class="seo-back-link" href="${escapeHtml(counterpartUrl)}">${counterpartLocale.toUpperCase()}</a></p></article><footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/">Daniel</a></span><a href="https://alles-automatisch.de/">${words.docs}</a></footer></main></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(recipe.description[locale])}"><meta name="theme-color" content="#f4f1eb"><meta property="og:type" content="article"><meta property="og:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta property="og:description" content="${escapeHtml(recipe.description[locale])}"><meta property="og:image" content="${escapeHtml(photoUrl(recipe, "../../../"))}"><link rel="icon" type="image/png" href="../../../assets/${faviconAsset}">${canonical}<link rel="alternate" hreflang="de" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="en" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("en", recipe)}` : counterpartLocale === "en" ? counterpartUrl : currentDemoUrl)}"><link rel="stylesheet" href="../../../assets/live-demo.css"><title>${escapeHtml(recipe.title[locale])} · Mealie Atelier</title><script type="application/ld+json">${structured}</script></head><body class="seo-recipe-body"><main class="seo-recipe-page"><header class="demo-header"><a class="demo-brand" href="${escapeHtml(currentDemoUrl)}"><span class="demo-brand-mark" aria-hidden="true">M</span><span>Mealie Atelier</span></a><a class="seo-back-link" href="${escapeHtml(currentDemoUrl)}">${words.backToDemo}</a></header><article><p class="demo-eyebrow">${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="seo-recipe-description">${escapeHtml(recipe.description[locale])}</p><p class="seo-recipe-meta">${escapeHtml(metricLabel)}</p>${image}<p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" rel="noopener noreferrer">Unsplash</a></p><section><h2>${words.recipeIngredients}</h2><p>${recipe.servings} ${words.servings}</p><ul class="seo-ingredient-list">${ingredients}</ul></section><section><h2>${words.recipeSteps}</h2><ol class="seo-instruction-list">${steps}</ol></section><p><a class="seo-back-link" href="${escapeHtml(counterpartUrl)}">${counterpartLocale.toUpperCase()}</a></p></article><footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/">Daniel</a></span><a href="https://alles-automatisch.de/">${words.docs}</a></footer></main></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {
@@ -367,8 +379,15 @@ function rootIndex() {
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><link rel="icon" type="image/png" href="assets/${faviconAsset}"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
 }
 
-validateCatalog();
+await validateCatalog();
 await mkdir(join(siteRoot, "assets"), { recursive: true });
+await mkdir(join(siteRoot, "photos"), { recursive: true });
+for (const recipe of catalog.recipes) {
+  await copyFile(
+    join(demoRoot, "photos", photoName(recipe)),
+    join(siteRoot, "photos", photoName(recipe)),
+  );
+}
 await mkdir(join(siteRoot, "data"), { recursive: true });
 await copyFile(styles, join(siteRoot, "assets/live-demo.css"));
 await copyFile(searchModule, join(siteRoot, "assets/recipe-search.js"));

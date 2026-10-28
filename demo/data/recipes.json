@@ -79,7 +79,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1498602753442-dfa7a49fc9c4?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/shakshuka-mit-paprika.webp",
         "alt": {
           "de": "Shakshuka mit pochierten Eiern in würziger Tomatensauce",
           "en": "Shakshuka with poached eggs in spiced tomato sauce"
@@ -160,7 +160,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1651773550746-b76fea3cfb70?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/gnocchi-alla-sorrentina.webp",
         "alt": {
           "de": "Gnocchi mit Tomatensauce, Mozzarella und Basilikum",
           "en": "Gnocchi with tomato sauce, mozzarella and basil"
@@ -243,7 +243,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1747292718361-c838a9968ec7?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/griechischer-salat-mit-kichererbsen.webp",
         "alt": {
           "de": "Bunte Schüssel mit frischem Salat, Gemüse und Feta",
           "en": "Colorful bowl of fresh salad, vegetables and feta"
@@ -324,7 +324,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1672667509988-baade9ade083?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/haehnchensuppe-mit-gemuese.webp",
         "alt": {
           "de": "Schale Hähnchensuppe mit Gemüse",
           "en": "Bowl of chicken soup with vegetables"
@@ -407,7 +407,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1658171757201-41b9aa2b3651?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/pizza-margherita.webp",
         "alt": {
           "de": "Selbst gebackene Pizza Margherita auf einem Teller",
           "en": "Homemade Margherita pizza on a plate"
@@ -491,7 +491,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1579349443343-73da56a71a20?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/zitronen-pasta-mit-gruenkohl-und-walnuessen.webp",
         "alt": {
           "de": "Pasta mit Grünkohl und Walnüssen in einer hellen Schale",
           "en": "Pasta with kale and walnuts in a white bowl"
@@ -577,7 +577,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/buttermilch-pancakes-mit-beeren.webp",
         "alt": {
           "de": "Stapel fluffiger Pancakes mit frischen Beeren",
           "en": "Stack of fluffy pancakes with fresh berries"
@@ -660,7 +660,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1708793873401-e8c6c153b76a?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/paneer-curry-mit-basmatireis.webp",
         "alt": {
           "de": "Würziges indisches Curry in einer Schale",
           "en": "Spiced Indian curry served in a bowl"
@@ -745,7 +745,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1575972813690-908a1842fc34?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/ramen-mit-haehnchen-und-gemuese.webp",
         "alt": {
           "de": "Ramen mit Nudeln, Pilzen und frischen Toppings",
           "en": "Ramen with noodles, mushrooms and fresh toppings"
@@ -831,7 +831,7 @@
         ]
       },
       "image": {
-        "url": "https://images.unsplash.com/photo-1534441596-341c8d7d0e51?auto=format&fit=crop&w=1200&q=85",
+        "file": "../photos/ofengemuese-mit-linsen-und-kraeuterjoghurt.webp",
         "alt": {
           "de": "Buntes geröstetes Gemüse mit Kräutern",
           "en": "Colorful roasted vegetables with herbs"
