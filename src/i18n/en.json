@@ -850,5 +850,6 @@
   "studioRecipeFetchFailed": "{count} recipes could not be loaded and were skipped: {names}",
   "uiProviderResultsTruncated": "Showing the first {limit} matches. Results may be incomplete. Use the Mealie Atelier Bridge to browse your full library.",
   "uiKeepScreenAwake": "Keep screen awake while cooking",
-  "uiMutationFailed": "Could not save: {error} Your change was undone."
+  "uiMutationFailed": "Could not save: {error} Your change was undone.",
+  "uiSaving": "Saving…"
 }

@@ -27,6 +27,8 @@ import { createDelivery } from "./alarm-delivery.mjs";
 import {
   MIN_PASSWORD_LENGTH,
   createAuthThrottle,
+  parseTrustedProxies,
+  clientAddress,
   inlineScriptHashes,
   packageVersion,
   renderServiceWorker,
@@ -86,6 +88,9 @@ const SECURITY_HEADERS = securityHeaders(
   inlineScriptHashes(readFileSync(join(ROOT, "public", "index.html"), "utf8")),
 );
 const authThrottle = createAuthThrottle();
+const TRUSTED_PROXIES = parseTrustedProxies(process.env.ATELIER_TRUSTED_PROXIES);
+const throttleClient = (req) =>
+  clientAddress(req.socket.remoteAddress, req.headers["x-forwarded-for"], TRUSTED_PROXIES);
 
 const safeEqual = (a, b) => {
   const left = Buffer.from(a),
@@ -96,7 +101,7 @@ function isAuthorized(req) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Basic ")) return false;
   // Only attempts that carry credentials count; the browser's first anonymous request does not.
-  const client = req.socket.remoteAddress || "unknown";
+  const client = throttleClient(req);
   const ok = checkCredentials(header);
   if (ok) authThrottle.succeed(client);
   else authThrottle.fail(client);
@@ -788,7 +793,7 @@ const FILES = {
   "/offline-client.js": ["offline-client.js", "text/javascript; charset=utf-8"],
 };
 const server = createServer(async (req, res) => {
-  const retryMs = authThrottle.retryAfterMs(req.socket.remoteAddress || "unknown");
+  const retryMs = authThrottle.retryAfterMs(throttleClient(req));
   if (retryMs > 0) {
     reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
       "Retry-After": String(Math.ceil(retryMs / 1000)),

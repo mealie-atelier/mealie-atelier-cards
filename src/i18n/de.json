@@ -850,5 +850,6 @@
   "studioRecipeFetchFailed": "{count} Rezepte konnten nicht geladen werden und wurden übersprungen: {names}",
   "uiProviderResultsTruncated": "Es werden die ersten {limit} Treffer angezeigt. Die Ergebnisse sind möglicherweise unvollständig. Mit der Mealie-Atelier-Bridge durchsuchst du deine gesamte Bibliothek.",
   "uiKeepScreenAwake": "Bildschirm beim Kochen anlassen",
-  "uiMutationFailed": "Speichern fehlgeschlagen: {error} Deine Änderung wurde rückgängig gemacht."
+  "uiMutationFailed": "Speichern fehlgeschlagen: {error} Deine Änderung wurde rückgängig gemacht.",
+  "uiSaving": "Wird gespeichert…"
 }

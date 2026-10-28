@@ -964,17 +964,27 @@ class MealieAtelierCard extends HTMLElement {
         this.t("uiMutationFailed", { error: err?.message || this.t("error") }),
         "error",
       );
+      // Resync with the server: overlapping writes may have changed the collection meanwhile.
+      try {
+        if (refresh === "shopping") await this._loadShopping();
+        if (refresh === "mealplan") await this._loadMealplan();
+      } catch {}
       return false;
     }
   }
   // Optimistic local edits for _mutate; each returns its rollback.
+  // Every rollback undoes only its own change against the CURRENT data, so an overlapping
+  // write that succeeded in the meantime is never overwritten with an older snapshot.
   _optimisticToggle(item_id, checked) {
-    const item = asArray(this._data.shopping?.items).find((x) => String(x.id) === String(item_id));
+    const find = () =>
+      asArray(this._data.shopping?.items).find((x) => String(x.id) === String(item_id));
+    const item = find();
     if (!item) return null;
     const before = item.checked;
     item.checked = checked;
     return () => {
-      item.checked = before;
+      const current = find();
+      if (current) current.checked = before;
     };
   }
   _optimisticAdd(key, row) {
@@ -983,14 +993,24 @@ class MealieAtelierCard extends HTMLElement {
     const next = [...rows, row];
     this._data[key] = key === "shopping" ? { ...before, items: next } : next;
     return () => {
-      this._data[key] = before;
+      const data = this._data[key];
+      const current = asArray(key === "shopping" ? data?.items : data);
+      const kept = current.filter((x) => String(x.id) !== String(row.id));
+      this._data[key] = key === "shopping" ? { ...data, items: kept } : kept;
     };
   }
   _optimisticRemoveMeal(entry_id) {
-    const before = this._data.mealplan;
-    this._data.mealplan = asArray(before).filter((x) => String(x.id) !== String(entry_id));
+    const before = asArray(this._data.mealplan);
+    const index = before.findIndex((x) => String(x.id) === String(entry_id));
+    const removed = index >= 0 ? before[index] : null;
+    this._data.mealplan = before.filter((x) => String(x.id) !== String(entry_id));
     return () => {
-      this._data.mealplan = before;
+      if (!removed) return;
+      const current = asArray(this._data.mealplan);
+      if (current.some((x) => String(x.id) === String(entry_id))) return;
+      const next = [...current];
+      next.splice(Math.min(index, next.length), 0, removed);
+      this._data.mealplan = next;
     };
   }
   _setDesign(field, value) {
@@ -1721,7 +1741,7 @@ class MealieAtelierCard extends HTMLElement {
             "shopping",
             () =>
               this._optimisticAdd("shopping", {
-                id: `pending-${Date.now()}`,
+                id: `pending-${Date.now()}-${(this._pendingSeq = (this._pendingSeq || 0) + 1)}`,
                 shoppingListId: this._activeList,
                 note: tidy(values.note),
                 checked: false,
@@ -1736,7 +1756,7 @@ class MealieAtelierCard extends HTMLElement {
             "mealplan",
             () =>
               this._optimisticAdd("mealplan", {
-                id: `pending-${Date.now()}`,
+                id: `pending-${Date.now()}-${(this._pendingSeq = (this._pendingSeq || 0) + 1)}`,
                 date: values.date,
                 entryType: values.meal_type,
                 recipe: asArray(this._data.recipes?.items).find(

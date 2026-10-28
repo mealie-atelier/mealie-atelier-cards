@@ -53,7 +53,7 @@ export function securityHeaders(scriptHashes = []) {
 export function createAuthThrottle({
   freeAttempts = 5,
   baseMs = 1000,
-  maxMs = 15 * 60 * 1000,
+  maxMs = 60 * 1000,
   idleMs = 60 * 60 * 1000,
   maxEntries = 5000,
   now = Date.now,
@@ -98,4 +98,112 @@ export function packageVersion(raw) {
 /** Fills the service worker cache name from the package version, so each release gets a new cache. */
 export function renderServiceWorker(source, version) {
   return source.replaceAll("__ATELIER_VERSION__", version);
+}
+
+/** Expands an IPv4 or IPv6 literal into a BigInt plus its bit width, or null when it is not an IP. */
+function parseIp(text) {
+  let value = String(text || "").trim();
+  if (value.startsWith("[") && value.endsWith("]")) value = value.slice(1, -1);
+  const zone = value.indexOf("%");
+  if (zone >= 0) value = value.slice(0, zone);
+  const v4 = (part) => {
+    const m = part.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (!m) return null;
+    const bytes = m.slice(1).map(Number);
+    return bytes.some((b) => b > 255) ? null : bytes.reduce((n, b) => (n << 8n) | BigInt(b), 0n);
+  };
+  const direct = v4(value);
+  if (direct !== null) return { bits: 32, value: direct };
+  if (!value.includes(":")) return null;
+  let tail = [];
+  const last = value.slice(value.lastIndexOf(":") + 1);
+  if (last.includes(".")) {
+    const n = v4(last);
+    if (n === null) return null;
+    value = value.slice(0, value.lastIndexOf(":") + 1) + ((n >> 16n) & 0xffffn).toString(16) + ":" + (n & 0xffffn).toString(16);
+  }
+  const halves = value.split("::");
+  if (halves.length > 2) return null;
+  const groups = (h) => (h === "" ? [] : h.split(":"));
+  const head = groups(halves[0]);
+  tail = halves.length === 2 ? groups(halves[1]) : [];
+  const missing = 8 - head.length - tail.length;
+  if (halves.length === 1 ? missing !== 0 : missing < 1) return null;
+  const all = [...head, ...Array(halves.length === 2 ? missing : 0).fill("0"), ...tail];
+  let n = 0n;
+  for (const g of all) {
+    if (!/^[0-9a-fA-F]{1,4}$/.test(g)) return null;
+    n = (n << 16n) | BigInt(parseInt(g, 16));
+  }
+  return { bits: 128, value: n };
+}
+
+/** IPv4-mapped IPv6 (::ffff:a.b.c.d) is treated as the plain IPv4 address. */
+function normalizeIp(ip) {
+  if (ip && ip.bits === 128 && ip.value >> 32n === 0xffffn) return { bits: 32, value: ip.value & 0xffffffffn };
+  return ip;
+}
+
+/** Parses "ip" or "ip/prefix" lists (comma separated) into matchers; invalid entries throw. */
+export function parseTrustedProxies(text) {
+  const rules = [];
+  for (const raw of String(text || "").split(",")) {
+    const entry = raw.trim();
+    if (!entry) continue;
+    const [addr, prefix, ...rest] = entry.split("/");
+    const ip = normalizeIp(parseIp(addr));
+    if (!ip || rest.length) throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
+    let length = ip.bits;
+    if (prefix !== undefined) {
+      if (!/^\d{1,3}$/.test(prefix)) throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
+      length = Number(prefix);
+      // A mapped IPv6 prefix such as ::ffff:10.0.0.0/104 shrinks to its IPv4 equivalent.
+      if (parseIp(addr).bits === 128 && ip.bits === 32) length -= 96;
+      if (length < 0 || length > ip.bits) throw new Error(`ATELIER_TRUSTED_PROXIES has an invalid entry: ${entry}`);
+    }
+    rules.push({ bits: ip.bits, value: ip.value, length });
+  }
+  return rules;
+}
+
+export function isTrustedProxy(address, rules) {
+  const ip = normalizeIp(parseIp(address));
+  if (!ip) return false;
+  return rules.some((r) => {
+    if (r.bits !== ip.bits) return false;
+    const shift = BigInt(r.bits - r.length);
+    return ip.value >> shift === r.value >> shift;
+  });
+}
+
+/** Throttle key: IPv4 as is, IPv6 reduced to its /64 prefix so one host cannot rotate addresses. */
+export function throttleKey(address) {
+  const ip = normalizeIp(parseIp(address));
+  if (!ip) return String(address || "unknown");
+  if (ip.bits === 32) {
+    const v = ip.value;
+    return [24n, 16n, 8n, 0n].map((s) => (v >> s) & 255n).join(".");
+  }
+  const prefix = ip.value >> 64n;
+  return (
+    [48n, 32n, 16n, 0n].map((s) => ((prefix >> s) & 0xffffn).toString(16)).join(":") + "::/64"
+  );
+}
+
+/**
+ * Picks the address the throttle counts. X-Forwarded-For is only read when the socket peer is a
+ * trusted proxy; the list is walked from the right and the first non-proxy address wins.
+ */
+export function clientAddress(socketAddress, forwardedFor, rules) {
+  const peer = socketAddress || "unknown";
+  if (!rules.length || !isTrustedProxy(peer, rules)) return throttleKey(peer);
+  const hops = String(Array.isArray(forwardedFor) ? forwardedFor.join(",") : forwardedFor || "")
+    .split(",")
+    .map((h) => h.trim())
+    .filter(Boolean);
+  for (let i = hops.length - 1; i >= 0; i--) {
+    if (!parseIp(hops[i])) return throttleKey(peer);
+    if (!isTrustedProxy(hops[i], rules)) return throttleKey(hops[i]);
+  }
+  return throttleKey(peer);
 }

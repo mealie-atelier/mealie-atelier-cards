@@ -199,3 +199,46 @@ test("AI disclaimers are localized", async () => {
     globalThis.fetch = original;
   }
 });
+
+import { parseTrustedProxies, clientAddress, throttleKey } from "../security.mjs";
+
+test("X-Forwarded-For from an untrusted socket is ignored", () => {
+  const rules = parseTrustedProxies("10.0.0.0/8");
+  assert.equal(clientAddress("203.0.113.9", "1.2.3.4", rules), "203.0.113.9");
+  assert.equal(clientAddress("203.0.113.9", "1.2.3.4", []), "203.0.113.9");
+});
+
+test("a trusted proxy yields independent keys per forwarded client", () => {
+  const rules = parseTrustedProxies("10.0.0.1, fd00::/8");
+  assert.equal(clientAddress("10.0.0.1", "198.51.100.7", rules), "198.51.100.7");
+  assert.equal(clientAddress("10.0.0.1", "198.51.100.8", rules), "198.51.100.8");
+  // Spoofed left entries are skipped: the rightmost non-proxy address wins.
+  assert.equal(clientAddress("10.0.0.1", "6.6.6.6, 198.51.100.7, fd00::5", rules), "198.51.100.7");
+  assert.equal(clientAddress("::ffff:10.0.0.1", "198.51.100.7", rules), "198.51.100.7");
+  assert.equal(clientAddress("10.0.0.1", undefined, rules), "10.0.0.1");
+  assert.equal(clientAddress("10.0.0.1", "garbage", rules), "10.0.0.1");
+  const throttle = createAuthThrottle({ freeAttempts: 0, now: () => 0 });
+  for (let i = 0; i < 3; i++) throttle.fail(clientAddress("10.0.0.1", "198.51.100.7", rules));
+  assert.ok(throttle.retryAfterMs(clientAddress("10.0.0.1", "198.51.100.7", rules)) > 0);
+  assert.equal(throttle.retryAfterMs(clientAddress("10.0.0.1", "198.51.100.8", rules)), 0);
+});
+
+test("IPv6 clients are grouped by their /64 prefix", () => {
+  assert.equal(throttleKey("2001:db8:1:2:aaaa::1"), throttleKey("2001:db8:1:2:bbbb:cccc:dddd:eeee"));
+  assert.notEqual(throttleKey("2001:db8:1:2::1"), throttleKey("2001:db8:1:3::1"));
+  assert.equal(throttleKey("::ffff:192.0.2.1"), "192.0.2.1");
+  const rules = parseTrustedProxies("10.0.0.1");
+  assert.equal(
+    clientAddress("10.0.0.1", "2001:db8::1", rules),
+    clientAddress("10.0.0.1", "2001:db8::2", rules),
+  );
+  assert.throws(() => parseTrustedProxies("10.0.0.0/33"));
+  assert.throws(() => parseTrustedProxies("nope"));
+});
+
+test("default maximum lockout is 60 seconds", () => {
+  let t = 0;
+  const throttle = createAuthThrottle({ freeAttempts: 0, now: () => t });
+  for (let i = 0; i < 30; i++) throttle.fail("a");
+  assert.equal(throttle.retryAfterMs("a"), 60000);
+});

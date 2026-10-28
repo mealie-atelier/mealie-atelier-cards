@@ -20,6 +20,8 @@ Experimental ingredient replacement is disabled by default. Only with a Mealie b
 
 The included `compose.yaml` binds the application to `127.0.0.1` on the host and should not be published on public interfaces. To use from a different device, put a HTTPS reverse proxy with modern authentication in front, or use a trusted private network (e.g. Tailscale). **Do not expose the container directly to the Internet. Basic auth over HTTP is insecure on untrusted networks.**
 
+Behind a reverse proxy every request arrives from the proxy address, so the sign-in throttle would treat all users as one client and a single attacker could lock everybody out. Set `ATELIER_TRUSTED_PROXIES` to the proxy address(es), e.g. `ATELIER_TRUSTED_PROXIES=172.18.0.0/16,::1`. Only when the socket peer is in that list the server reads `X-Forwarded-For`, walks it from the right and uses the first address that is not itself a trusted proxy. From any other peer the header is ignored, so it cannot be spoofed. Make sure your proxy overwrites or appends to `X-Forwarded-For` rather than passing a client-supplied value through unchecked.
+
 ## Node quick start
 
 ```bash
@@ -43,6 +45,7 @@ All settings are environment variables (see `.env.example`).
 | `ATELIER_USERNAME` | `atelier` | no | Basic auth user name. |
 | `PORT` | `3000` | no | Listen port. Compose forces `3000`; use `ATELIER_HOST_PORT` (default `3008`) for the published port. |
 | `HOST` | `0.0.0.0` | no | Listen address. |
+| `ATELIER_TRUSTED_PROXIES` | none | no | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`. |
 | `ATELIER_READ_ONLY` | `false` | no | `1`, `true` or `yes` rejects all writes on the server. |
 | `ATELIER_DATA_DIR` | `./data` | no | Persistent state directory. Compose and the image use `/app/data`. |
 | `ATELIER_EXPERIMENTAL_INGREDIENTS` | `false` | no | Experimental ingredient replacement; back up Mealie first. |
@@ -58,7 +61,7 @@ Generate the Web Push keys with `npm run vapid` and paste the three printed line
 ## Security
 
 - Every response carries a Content-Security-Policy (same-origin only; the single inline module script of `index.html` is allowed by hash, no remote hosts), a Permissions-Policy, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
-- Failed Basic auth attempts are counted per client address in memory. After 5 failures the address is locked out with HTTP 429 and `Retry-After`, doubling from 1 second up to 15 minutes; a correct sign-in clears the counter and a restart resets all counters. Behind a reverse proxy the proxy address is what the server sees, so all users share one counter.
+- Failed Basic auth attempts are counted per client address in memory. After 5 failures the address is locked out with HTTP 429 and `Retry-After`, doubling from 1 second up to 60 seconds; a correct sign-in clears the counter and a restart resets all counters. IPv6 clients are counted by their /64 prefix. Behind a reverse proxy the server only sees the proxy address, so set `ATELIER_TRUSTED_PROXIES` (see below).
 - The AI disclaimer and the language of AI answers follow the request language (`Accept-Language`), German or English.
 - The service worker cache name is derived from the `version` in `package.json`, so each release invalidates the old offline shell.
 
