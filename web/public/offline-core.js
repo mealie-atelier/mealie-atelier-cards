@@ -121,6 +121,7 @@
     if (!response.ok) {
       const e = new Error(payload.error || "Server response " + response.status);
       e.status = response.status;
+      e.code = payload.code;
       throw e;
     }
     return payload;
@@ -129,7 +130,8 @@
     if (!(await get("enabled"))) return { skipped: true };
     const ops = await allOps();
     let completed = 0,
-      conflicts = 0;
+      conflicts = 0,
+      dropped = 0;
     for (const old of ops) {
       const current = await getOp(old.id);
       if (!current || !["pending", "sending"].includes(current.state)) continue;
@@ -141,7 +143,11 @@
         await deleteOp(current.id);
         completed++;
       } catch (e) {
-        if (e.status === 409 || e.status === 403) {
+        if (e.code === "write_not_permitted") {
+          // The account may no longer write: drop the queued edit instead of retrying forever.
+          await deleteOp(current.id);
+          dropped++;
+        } else if (e.status === 409 || e.status === 403) {
           await updateOp(current.id, { state: "conflict", reason: e.message });
           conflicts++;
         } else {
@@ -156,7 +162,7 @@
       } catch {}
     }
     notify();
-    return { completed, conflicts, pending: (await allOps()).length };
+    return { completed, conflicts, dropped, pending: (await allOps()).length };
   }
   scope.AtelierOfflineCore = {
     open,

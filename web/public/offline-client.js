@@ -144,10 +144,11 @@ export class AtelierOfflineClient {
     this.syncing = true;
     this.onChange();
     try {
-      await store.replay({ notify: () => this.notifyOtherTabs() });
+      const replayed = await store.replay({ notify: () => this.notifyOtherTabs() });
       this.snapshot = await store.bridge("mealie_atelier/shopping");
       await store.put("snapshot", this.snapshot);
-      this.lastError = "";
+      // Visible notice when queued edits were dropped because the account has no write grant.
+      this.lastError = replayed?.dropped ? "errWriteNotPermitted" : "";
     } catch (e) {
       this.lastError = e.code || "offlineUnexpectedError";
     } finally {
@@ -341,7 +342,9 @@ export function attachOfflineUi(card, offline, alarms) {
     $("a-sync-now").disabled = offlineNow || offline.syncing;
     $("a-sync-conflicts").hidden = !problems;
     $("a-sync-error").hidden = !offline.lastError;
-    $("a-sync-error").textContent = offline.lastError ? t(offline.lastError) : "";
+    $("a-sync-error").textContent = offline.lastError
+      ? localizedError({ code: offline.lastError })
+      : "";
     const caps = alarms.capabilities;
     const channel = caps?.homeAssistant
       ? t("offlineHomeAssistantActive")

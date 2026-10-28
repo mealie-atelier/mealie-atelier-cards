@@ -176,7 +176,10 @@
           body: JSON.stringify(message),
         });
         const payload = await response.json();
-        if (!response.ok) throw Error(payload.error || `HTTP ${response.status}`);
+        if (!response.ok)
+          throw Object.assign(Error(payload.error || `HTTP ${response.status}`), {
+            code: payload.code,
+          });
         return payload;
       };
       if (!navigator.onLine && offline.enabled) {

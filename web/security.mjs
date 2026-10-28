@@ -1,5 +1,5 @@
 /** Browser hardening headers, Basic auth throttling and shell asset helpers. Zero dependencies. */
-import { createHash } from "node:crypto";
+import { createHash, createHmac, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 
 export const MIN_PASSWORD_LENGTH = 12;
 
@@ -212,4 +212,269 @@ export function clientAddress(socketAddress, forwardedFor, rules) {
     if (!isTrustedProxy(hops[i], rules)) return throttleKey(hops[i]);
   }
   return throttleKey(peer);
+}
+
+// --- Per-person accounts and write grants (feature C) ---------------------------------------
+
+export const ROLES = ["admin", "writer", "reader"];
+const USERNAME = /^[a-z0-9._-]{1,40}$/;
+const B64URL = /^[A-Za-z0-9_-]+$/;
+const SCRYPT_KEY_LENGTH = 32;
+const SCRYPT_MIN_COST = 16384;
+
+const fromB64Url = (text) => Buffer.from(text, "base64url");
+const scryptAsync = (password, salt, length, options) =>
+  new Promise((resolve, reject) =>
+    scrypt(password, salt, length, options, (error, key) => (error ? reject(error) : resolve(key))),
+  );
+const scryptOptions = ({ N, r, p }) => ({ N, r, p, maxmem: 256 * N * r + 128 * r * p + (1 << 20) });
+
+/** Parses `scrypt$N$r$p$salt$key`; returns null for anything malformed or too weak. */
+export function parseScryptHash(text) {
+  const parts = String(text || "").split("$");
+  if (parts.length !== 6 || parts[0] !== "scrypt") return null;
+  const [N, r, p] = parts.slice(1, 4).map((n) => (/^\d{1,8}$/.test(n) ? Number(n) : NaN));
+  if (!Number.isInteger(N) || N < SCRYPT_MIN_COST || N > 1 << 20 || (N & (N - 1)) !== 0)
+    return null;
+  if (!Number.isInteger(r) || r < 1 || r > 16 || !Number.isInteger(p) || p < 1 || p > 16)
+    return null;
+  if (!B64URL.test(parts[4]) || !B64URL.test(parts[5])) return null;
+  const salt = fromB64Url(parts[4]),
+    key = fromB64Url(parts[5]);
+  if (salt.length < 8 || key.length !== SCRYPT_KEY_LENGTH) return null;
+  return { N, r, p, salt, key };
+}
+
+/** Creates a hash string for ATELIER_USERS (used by scripts/hash-password.mjs). */
+export async function hashPassword(password, { N = SCRYPT_MIN_COST, r = 8, p = 1 } = {}) {
+  const salt = randomBytes(16);
+  const key = await scryptAsync(
+    String(password),
+    salt,
+    SCRYPT_KEY_LENGTH,
+    scryptOptions({ N, r, p }),
+  );
+  return ["scrypt", N, r, p, salt.toString("base64url"), key.toString("base64url")].join("$");
+}
+
+/** Checks a password against a parsed hash with the stored parameters and a constant-time compare. */
+export async function verifyScrypt(password, parsedHash) {
+  const key = await scryptAsync(
+    String(password),
+    parsedHash.salt,
+    SCRYPT_KEY_LENGTH,
+    scryptOptions(parsedHash),
+  );
+  return key.length === parsedHash.key.length && timingSafeEqual(key, parsedHash.key);
+}
+
+/**
+ * Parses ATELIER_USERS (`username:role:hash;...`). Errors name the entry position, never the hash.
+ */
+export function parseUsers(text) {
+  const users = [];
+  const entries = String(text || "")
+    .split(";")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  entries.forEach((entry, index) => {
+    const at = `ATELIER_USERS entry ${index + 1}`;
+    const parts = entry.split(":");
+    if (parts.length !== 3) throw new Error(`${at} must look like username:role:hash`);
+    const [name, role, hash] = parts;
+    if (!USERNAME.test(name))
+      throw new Error(`${at} has an invalid username (use a-z, 0-9, dot, dash, underscore)`);
+    if (!ROLES.includes(role)) throw new Error(`${at} has an invalid role (admin, writer, reader)`);
+    const parsed = parseScryptHash(hash);
+    if (!parsed)
+      throw new Error(`${at} has an invalid hash (scrypt with N of at least ${SCRYPT_MIN_COST})`);
+    const first = users.findIndex((u) => u.name === name);
+    if (first >= 0) throw new Error(`${at} repeats the username of entry ${first + 1}`);
+    users.push({ name, role, hash: parsed });
+  });
+  return users;
+}
+
+/** Maps a role to the permissions object of the status payload (contract 0.4). */
+export function rolePermissions(role, readOnly = false) {
+  return {
+    can_read: true,
+    can_write: role !== "reader" && !readOnly,
+    can_admin: role === "admin" && !readOnly,
+  };
+}
+
+/**
+ * Verifies Basic credentials against ATELIER_USERS (scrypt) and the legacy shared password
+ * (role admin). Successes are cached for `ttlMs`, keyed by an HMAC of the Authorization header
+ * with a per-process secret; failures are never cached.
+ */
+export function createCredentialVerifier({
+  users = [],
+  legacy = null,
+  secret = randomBytes(32),
+  ttlMs = 10 * 60 * 1000,
+  maxEntries = 500,
+  now = Date.now,
+  verify = verifyScrypt,
+} = {}) {
+  const byName = new Map(users.map((u) => [u.name, u]));
+  const cache = new Map();
+  const digest = (value) => createHmac("sha256", secret).update(String(value)).digest();
+  const equal = (a, b) => timingSafeEqual(digest(a), digest(b));
+  // Unknown names still pay one scrypt run, so response time does not reveal valid usernames.
+  const decoy = users[0]?.hash || null;
+  return {
+    async verify(header) {
+      if (!String(header || "").startsWith("Basic ")) return null;
+      const cacheKey = digest(header).toString("hex");
+      const hit = cache.get(cacheKey);
+      if (hit && hit.until > now()) return { ...hit.identity };
+      cache.delete(cacheKey);
+      let name, password;
+      try {
+        const credentials = Buffer.from(header.substring(6), "base64").toString("utf8");
+        const i = credentials.indexOf(":");
+        if (i < 0) return null;
+        name = credentials.slice(0, i);
+        password = credentials.slice(i + 1);
+      } catch {
+        return null;
+      }
+      let identity = null;
+      const user = byName.get(name);
+      if (user) {
+        if (await verify(password, user.hash)) identity = { name, role: user.role };
+      } else if (legacy && equal(name, legacy.name)) {
+        if (equal(password, legacy.password)) identity = { name, role: "admin" };
+      } else if (decoy) {
+        await verify(password, decoy).catch(() => false);
+      }
+      if (!identity) return null;
+      cache.set(cacheKey, { identity, until: now() + ttlMs });
+      while (cache.size > maxEntries) cache.delete(cache.keys().next().value);
+      return { ...identity };
+    },
+    cacheSize: () => cache.size,
+  };
+}
+
+/** Permission level of each bridge command; commands that are not listed fall through to 400. */
+const COMMAND_LEVELS = {
+  read: [
+    "status",
+    "recipes",
+    "recipe",
+    "mealplan",
+    "shopping",
+    "metadata",
+    "nutrition_prepare",
+    "nutrition_search",
+    "nutrition_ai",
+    "nutrition_calculate",
+    "studio_state",
+    "studio_substitute",
+    "studio_ai_audit",
+    "alarms",
+    "alarm_capabilities",
+    "foods",
+    "units",
+    "ingredients_get",
+    "recipe_backups",
+    "sync_state",
+    "sync_destinations",
+    "sync_preview",
+    "sync_records",
+    "ingredient_preview",
+    "ingredient_catalog",
+    "push_unregister",
+  ],
+  write: ["shopping_sync", "sync_run", "sync_pause", "sync_resume", "sync_retry", "sync_resolve"],
+  admin: [
+    "nutrition_save",
+    "food_create",
+    "unit_create",
+    "ingredients_save",
+    "ingredient_save",
+    "recipe_restore",
+    "upload_begin",
+    "upload_chunk",
+    "recipe_image_set",
+    "recipe_image_delete",
+    "step_image_add",
+    "step_image_remove",
+    "sync_rule_save",
+    "sync_rule_delete",
+  ],
+  personal: ["alarm_create", "alarm_cancel", "push_register"],
+};
+const MUTATE_LEVELS = {
+  shopping_toggle: "write",
+  shopping_list_create: "write",
+  shopping_from_recipe: "write",
+  shopping_add: "write",
+  mealplan_add: "write",
+  mealplan_delete: "write",
+  recipe_create: "admin",
+  recipe_update: "admin",
+  recipe_import: "admin",
+};
+
+/**
+ * Level of a studio_update action. journal_set is personal (contract C.3): read-only blocks it,
+ * a missing write grant does not. Family members and helper
+ * task create, edit or approve are admin only, as on the Bridge (contract C.3); only toggling
+ * a task's done flag is a plain write.
+ */
+function studioUpdateLevel(msg) {
+  if (msg.action === "journal_set") return "personal";
+  if (msg.action === "family_member") return "admin";
+  if (msg.action === "session_task") {
+    const p = msg.payload;
+    const toggle =
+      p &&
+      typeof p === "object" &&
+      typeof p.done === "boolean" &&
+      Object.keys(p).sort().join(",") === "done,id,session_id";
+    return toggle ? "write" : "admin";
+  }
+  return "write";
+}
+
+/**
+ * Returns "read", "write", "admin" or "personal" for a bridge message, or null for an unknown
+ * command or `mutate` action (the caller answers those with invalid_request, so the denial
+ * never reveals which actions exist).
+ */
+export function commandLevel(msg) {
+  const type = String(msg?.type || "").replace(/^mealie_atelier\//, "");
+  if (type === "mutate")
+    return Object.hasOwn(MUTATE_LEVELS, msg.action) ? MUTATE_LEVELS[msg.action] : null;
+  if (type === "studio_update") return studioUpdateLevel(msg);
+  if (type === "sync_run") return msg.confirm_first_batch === true ? "admin" : "write";
+  for (const [level, names] of Object.entries(COMMAND_LEVELS))
+    if (names.includes(type)) return level;
+  return null;
+}
+
+/**
+ * Decides whether `role` may run a command of `level`. Order: read-only first, then the missing
+ * write grant (a reader), then admin only. Personal commands are blocked by read-only only.
+ * Returns null when allowed, otherwise `{status, code, message}` (contract 0.3).
+ */
+export function denial(role, level, readOnly = false) {
+  if (level === "read") return null;
+  if (readOnly)
+    return { status: 403, code: "read_only", message: "Mealie Atelier is in read-only mode" };
+  if (level === "personal") return null;
+  const permissions = rolePermissions(role, false);
+  if (!permissions.can_write)
+    return {
+      status: 403,
+      code: "write_not_permitted",
+      message: "Your account may view this kitchen but not change it",
+    };
+  if (level === "admin" && !permissions.can_admin)
+    return { status: 403, code: "unauthorized", message: "An administrator account is required" };
+  return null;
 }

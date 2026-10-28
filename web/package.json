@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node --env-file=.env server.mjs",
     "vapid": "node scripts-generate-vapid.mjs",
+    "hash-password": "node scripts/hash-password.mjs",
     "test": "node --test test/*.test.mjs",
     "check": "node --check server.mjs && node --check public/mealie-atelier-cards.js"
   },

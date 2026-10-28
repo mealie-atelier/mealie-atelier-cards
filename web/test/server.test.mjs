@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { hashPassword } from "../security.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 function send(res, code, body, type = "application/json") {
@@ -586,5 +587,150 @@ test("studio state survives requests and server restart, rejects stale revisions
     await stop();
     remote.server.close();
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("per-person accounts: roles gate bridge commands, uploads and the status payload", async () => {
+  const remote = await fixture();
+  const passwords = {
+    ada: "admin-account-passphrase",
+    wim: "writer-account-passphrase",
+    rea: "reader-account-passphrase",
+  };
+  const roles = { ada: "admin", wim: "writer", rea: "reader" };
+  const users = [];
+  for (const [name, pass] of Object.entries(passwords))
+    users.push(`${name}:${roles[name]}:${await hashPassword(pass)}`);
+  const legacy = "shared-legacy-password";
+  const child = spawn(process.execPath, [join(ROOT, "server.mjs")], {
+    env: {
+      ...process.env,
+      MEALIE_URL: `http://127.0.0.1:${remote.port}`,
+      MEALIE_API_TOKEN: "DEMO_MOCK_TOKEN",
+      ATELIER_PASSWORD: legacy,
+      ATELIER_USERNAME: "atelier",
+      ATELIER_USERS: users.join(";"),
+      ATELIER_STRUCTURED_EDITS: "true",
+      PORT: "0",
+      HOST: "127.0.0.1",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  try {
+    const port = await new Promise((resolve, reject) => {
+      let out = "";
+      const timeout = setTimeout(() => reject(Error("App did not start")), 5000);
+      child.stdout.on("data", (chunk) => {
+        out += chunk.toString();
+        const m = out.match(/http:\/\/127\.0\.0\.1:(\d+)/);
+        if (m) {
+          clearTimeout(timeout);
+          resolve(Number(m[1]));
+        }
+      });
+      child.once("exit", (code) => reject(Error("App exited " + code)));
+    });
+    const as = (name, pass) => ({
+      Authorization: "Basic " + Buffer.from(`${name}:${pass}`).toString("base64"),
+      "Content-Type": "application/json",
+      "X-Atelier-Request": "1",
+    });
+    const call = (name, pass, type, other = {}) =>
+      fetch(`http://127.0.0.1:${port}/api/bridge`, {
+        method: "POST",
+        headers: as(name, pass),
+        body: JSON.stringify({ type, ...other }),
+      });
+    const statusOf = async (name, pass) =>
+      (await (await call(name, pass, "mealie_atelier/status")).json()).entries[0];
+
+    const reader = await statusOf("rea", passwords.rea);
+    assert.deepEqual(reader.permissions, { can_read: true, can_write: false, can_admin: false });
+    assert.equal(reader.can_write, false);
+    assert.equal(reader.can_manage, false);
+    assert.equal(reader.can_edit_ingredients, false);
+    const writer = await statusOf("wim", passwords.wim);
+    assert.deepEqual(writer.permissions, { can_read: true, can_write: true, can_admin: false });
+    const admin = await statusOf("ada", passwords.ada);
+    assert.deepEqual(admin.permissions, { can_read: true, can_write: true, can_admin: true });
+    assert.equal(admin.can_manage, true);
+    assert.equal(admin.features.structured_ingredients, true);
+    assert.equal(admin.features.shopping_sync, false);
+    assert.equal(admin.can_edit_ingredients, true);
+    const shared = await statusOf("atelier", legacy);
+    assert.equal(shared.permissions.can_admin, true, "the shared password stays admin");
+
+    const before = remote.reads();
+    const blocked = await call("rea", passwords.rea, "mealie_atelier/mutate", {
+      action: "shopping_add",
+      payload: { list_id: "list-1", note: "Not allowed" },
+    });
+    assert.equal(blocked.status, 403);
+    assert.equal((await blocked.json()).code, "write_not_permitted");
+    for (const [type, extra] of [
+      ["mealie_atelier/mutate", { action: "mealplan_delete", payload: { entry_id: "meal-1" } }],
+      ["mealie_atelier/shopping_sync", { operation: {} }],
+      ["mealie_atelier/studio_update", { action: "pantry_put", payload: {} }],
+    ]) {
+      const res = await call("rea", passwords.rea, type, extra);
+      assert.equal(res.status, 403, type);
+      assert.equal((await res.json()).code, "write_not_permitted", type);
+    }
+    const journal = { action: "journal_set", payload: { slug: "lasagna", note: "x", rating: 5 } };
+    const sessionTask = { action: "session_task", payload: { session_id: "s", text: "Chop" } };
+    const member = { action: "family_member", payload: { name: "Kim" } };
+    const readerJournal = await call("rea", passwords.rea, "mealie_atelier/studio_update", journal);
+    assert.equal(readerJournal.status, 200, "a reader may still save a journal entry");
+    for (const extra of [member, sessionTask]) {
+      const res = await call("wim", passwords.wim, "mealie_atelier/studio_update", extra);
+      assert.equal(res.status, 403, `a writer cannot ${extra.action}`);
+      assert.equal((await res.json()).code, "unauthorized", extra.action);
+    }
+    const adminMember = await call("ada", passwords.ada, "mealie_atelier/studio_update", member);
+    assert.equal(adminMember.status, 200, "an admin can add a family member");
+    const upload = await fetch(`http://127.0.0.1:${port}/api/recipe-image/lasagna`, {
+      method: "POST",
+      headers: { ...as("rea", passwords.rea), "Content-Type": "image/png" },
+      body: Buffer.from([137, 80, 78, 71]),
+    });
+    assert.equal(upload.status, 403);
+    assert.equal((await upload.json()).code, "write_not_permitted");
+    assert.equal(remote.reads(), before, "refused writes never reach Mealie");
+
+    const readerRead = await call("rea", passwords.rea, "mealie_atelier/recipes");
+    assert.equal(readerRead.status, 200, "readers can still read");
+    const written = await call("wim", passwords.wim, "mealie_atelier/mutate", {
+      action: "shopping_add",
+      payload: { list_id: "list-1", note: "Allowed" },
+    });
+    assert.equal(written.status, 200);
+    const edit = await call("wim", passwords.wim, "mealie_atelier/mutate", {
+      action: "recipe_update",
+      payload: { slug: "lasagna", name: "Nope" },
+    });
+    assert.equal(edit.status, 403);
+    assert.equal((await edit.json()).code, "unauthorized");
+    const uploadAsWriter = await fetch(`http://127.0.0.1:${port}/api/recipe-image/lasagna`, {
+      method: "POST",
+      headers: { ...as("wim", passwords.wim), "Content-Type": "image/png" },
+      body: Buffer.from([137, 80, 78, 71]),
+    });
+    assert.equal((await uploadAsWriter.json()).code, "unauthorized");
+    const unknown = await call("rea", passwords.rea, "mealie_atelier/mutate", {
+      action: "nothing_like_this",
+      payload: {},
+    });
+    assert.equal(unknown.status, 400, "unknown actions never leak a permission decision");
+    assert.equal((await unknown.json()).code, "invalid_request");
+    const adminEdit = await call("ada", passwords.ada, "mealie_atelier/mutate", {
+      action: "recipe_update",
+      payload: { slug: "lasagna", name: "Lasagna" },
+    });
+    assert.equal(adminEdit.status, 200);
+    const wrong = await call("ada", "wrong-account-passphrase", "mealie_atelier/status");
+    assert.equal(wrong.status, 401);
+  } finally {
+    child.kill("SIGTERM");
+    remote.server.close();
   }
 });

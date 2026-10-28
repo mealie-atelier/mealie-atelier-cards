@@ -41,8 +41,9 @@ All settings are environment variables (see `.env.example`).
 | -------------------------------------------------------------------------------- | --------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MEALIE_URL`                                                                     | none      | yes      | Mealie server URL (http or https, no credentials or query).                                                                                                      |
 | `MEALIE_API_TOKEN`                                                               | none      | yes      | Mealie API token; use a dedicated least-privilege token.                                                                                                         |
-| `ATELIER_PASSWORD`                                                               | none      | yes      | Basic auth password, at least 12 characters.                                                                                                                     |
+| `ATELIER_PASSWORD`                                                               | none      | no       | Shared Basic auth password (admin), at least 12 characters. Required when `ATELIER_USERS` is not set.                                                            |
 | `ATELIER_USERNAME`                                                               | `atelier` | no       | Basic auth user name.                                                                                                                                            |
+| `ATELIER_USERS`                                                                  | empty     | no       | Per-person accounts `username:role:hash;...` with roles `admin`, `writer`, `reader` (see below). Required when `ATELIER_PASSWORD` is not set.                    |
 | `PORT`                                                                           | `3000`    | no       | Listen port. Compose forces `3000`; use `ATELIER_HOST_PORT` (default `3008`) for the published port.                                                             |
 | `HOST`                                                                           | `0.0.0.0` | no       | Listen address.                                                                                                                                                  |
 | `ATELIER_TRUSTED_PROXIES`                                                        | none      | no       | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`. |
@@ -56,11 +57,38 @@ All settings are environment variables (see `.env.example`).
 | `ATELIER_VAPID_PUBLIC_KEY`, `ATELIER_VAPID_PRIVATE_KEY`, `ATELIER_VAPID_SUBJECT` | empty     | no       | Web Push for timers; all three together, subject is `mailto:` or `https://`.                                                                                     |
 | `ATELIER_HA_URL`, `ATELIER_HA_TOKEN`, `ATELIER_HA_NOTIFY_SERVICE`                | empty     | no       | Home Assistant timer notifications; all three together, service like `notify.mobile_app_phone`.                                                                  |
 
+### Per-person accounts
+
+`ATELIER_USERS` is a semicolon-separated list of `username:role:hash` entries. Usernames match `[a-z0-9._-]{1,40}`. Create each hash on any machine with Node 22 or later; the password is read from stdin (never from the command line) and is not echoed in a terminal:
+
+```bash
+npm run hash-password
+# or, non-interactively: printf '%s' 'a long passphrase' | node scripts/hash-password.mjs
+```
+
+The hash has the form `scrypt$<N>$<r>$<p>$<salt>$<key>` with a 32-byte key and N of at least 16384. Put the entries in `.env` inside single quotes, because the hash contains `$` characters:
+
+```
+ATELIER_USERS='anna:admin:scrypt$16384$8$1$...$...;ben:reader:scrypt$16384$8$1$...$...'
+```
+
+| Role     | May do                                                                                            |
+| -------- | ------------------------------------------------------------------------------------------------- |
+| `admin`  | Everything: recipe create, edit, import, photos, nutrition save, ingredient editing.              |
+| `writer` | Shopping lists, meal plans and kitchen state; no recipe edits, no family members or helper tasks. |
+| `reader` | View only. Personal kitchen timers and the cooking journal still work.                            |
+
+- `ATELIER_USERNAME` with `ATELIER_PASSWORD` keeps working unchanged and signs in as `admin`. You may use both; a name that appears in both is a startup error, as is any malformed entry (the message names the entry position, never the hash).
+- `ATELIER_READ_ONLY` still wins: nobody can write, whatever the role.
+- A refused write answers HTTP 403 with `code` `write_not_permitted` (reader) or `unauthorized` (writer on an admin action); the card hides the matching controls. A shopping edit queued offline by an account that lost its write role is dropped on the next sync, with a visible notice.
+- Successful sign-ins are cached in memory for 10 minutes so each request does not run scrypt; failures are never cached and every one counts for the sign-in throttle described below.
+
 Generate the Web Push keys with `npm run vapid` and paste the three printed lines into `.env`. Keep the private key stable, secret and backed up.
 
 ## Security
 
 - Every response carries a Content-Security-Policy (same-origin only; the single inline module script of `index.html` is allowed by hash, no remote hosts), a Permissions-Policy, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
+- Per-person passwords are stored only as scrypt hashes (`ATELIER_USERS`), verified in constant time. Unknown user names cost the same scrypt run as known ones.
 - Failed Basic auth attempts are counted per client address in memory. After 5 failures the address is locked out with HTTP 429 and `Retry-After`, doubling from 1 second up to 60 seconds; a correct sign-in clears the counter and a restart resets all counters. IPv6 clients are counted by their /64 prefix. Behind a reverse proxy the server only sees the proxy address, so set `ATELIER_TRUSTED_PROXIES` (see below).
 - The AI disclaimer and the language of AI answers follow the request language (`Accept-Language`), German or English.
 - The service worker cache name is derived from the `version` in `package.json`, so each release invalidates the old offline shell.
@@ -85,7 +113,7 @@ The opt-in live read-only smoke check in `test/live-readonly-smoke.mjs` requires
 - User credentials and Mealie tokens remain on the server. Never bake `.env` into your Docker image or expose it in Git.
 - Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos.
 - This is not a HACS-installable integration. The bridge and cards are separate optional HA packages.
-- Currently supports one Mealie token/household per web server; all web logins share its permissions.
+- Currently supports one Mealie token/household per web server; all logins use its Mealie permissions, narrowed by their `ATELIER_USERS` role.
 
 **License:** MIT. Unofficial Mealie companion.
 

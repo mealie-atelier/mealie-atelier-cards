@@ -70,8 +70,10 @@ Object.assign(MealieAtelierCard.prototype, {
     }
   },
   async _studioWrite(action, payload) {
-    if (!this._permissions.can_write) {
-      this._error = this.t("readOnlyHint");
+    // The personal journal needs no write grant; only a read-only kitchen blocks it.
+    const allowed = action === "journal_set" ? this._canJournal : this._permissions.can_write;
+    if (!allowed) {
+      this._error = this._noWriteGrant ? this.t("uiNoWriteGrant") : this.t("readOnlyHint");
       this._render();
       return false;
     }
@@ -87,8 +89,11 @@ Object.assign(MealieAtelierCard.prototype, {
       this._render();
       return true;
     } catch (error) {
-      this._studioError = error?.message || this.t("studioSaveFailed");
+      this._studioError = error?.code
+        ? this._errorText(error)
+        : error?.message || this.t("studioSaveFailed");
       await this._studioRefresh();
+      await this._recoverPermissions(error);
       return false;
     }
   },
@@ -439,7 +444,7 @@ Object.assign(MealieAtelierCard.prototype, {
       </div>`;
     const planner = this._discoverResults
       ? `${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioPlanKicker")}</span><h2>${this.t("studioPlanTitle")}</h2><p>${this.t("studioPlanDescription")}</p></div>
-      <div class="studio-actions"><button class="btn primary" data-action="studio-plan-preview" ${this._catalogLoading ? "disabled" : ""}>${icon("spark", 15)} ${this.t("studioPlanPreview")}</button>${upcoming.length ? `<button class="btn" data-action="studio-plan-commit" ${!this._permissions.can_write ? "disabled" : ""}>${icon("check", 15)} ${this.t("studioPlanCommit")}</button>` : ""}</div>
+      <div class="studio-actions"><button class="btn primary" data-action="studio-plan-preview" ${this._catalogLoading ? "disabled" : ""}>${icon("spark", 15)} ${this.t("studioPlanPreview")}</button>${upcoming.length && this._permissions.can_write ? `<button class="btn" data-action="studio-plan-commit">${icon("check", 15)} ${this.t("studioPlanCommit")}</button>` : ""}</div>
       ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => this.t(r.key, r.values)).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
       : "";
     return this._studioShell(this.t("studioDiscoverTitle"), lead, `${flow}${planner}`);
@@ -452,11 +457,15 @@ Object.assign(MealieAtelierCard.prototype, {
       this.t("studioPantryLead"),
       `
       <div class="studio-grid studio-grid-main ds-grid ds-grid--split">${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioPantryKicker")}</span><h2>${this.t("studioPantryQuestion")}</h2></div>
-      <form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required></label></div>
+      ${
+        !this._permissions.can_write
+          ? ""
+          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required></label></div>
       <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit"><option value="g">${this.t("studioGrams")}</option><option value="ml">${this.t("studioMilliliters")}</option><option value="stück">${this.t("studioPieces")}</option></select></label><label>${this.t("studioBestBefore")}<input type="date" name="expires"></label></div>
       <label class="studio-inline"><input type="checkbox" name="staple"> ${this.t("studioStaple")}</label>
-      <button class="btn primary" type="submit" ${!this._permissions.can_write ? "disabled" : ""}>${icon("plus", 15)} ${this.t("studioAdd")}</button></form>
-      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(x.unit)} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}</small></div><div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" ${!this._permissions.can_write ? "disabled" : ""} aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div></div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
+      <button class="btn primary" type="submit">${icon("plus", 15)} ${this.t("studioAdd")}</button></form>`
+      }
+      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(x.unit)} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
       ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioGroceryKicker")}</span><h2>${this.t("studioGroceryTitle")}</h2><p>${this.t("studioGroceryDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-grocery-build">${icon("refresh", 14)} ${this.t("studioGroceryCalculate")}</button>${needs.length && this._permissions.can_write ? `<button class="btn" data-action="studio-grocery-send">${icon("cart", 14)} ${this.t("studioGrocerySend")}</button>` : ""}</div>
       ${
@@ -488,11 +497,11 @@ Object.assign(MealieAtelierCard.prototype, {
      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("familySession")}</span><h2>${esc(session?.name || this.t("familyNoSession"))}</h2></div>
      ${
        session
-         ? `<p class="studio-step-badge">${this.t("familyStep", { step: session.step + 1, date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next">${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
-     <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${esc(Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000)))} ${this.t("studioMinutesShort")}</b>${!kid ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
-     ${!kid ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
-     <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}">${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small></div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
-     ${!kid && people.length ? `<form class="studio-form" data-form="studio-task"><label>${this.t("familyTask")}<input name="text" maxlength="300" required placeholder="${this.t("familyTaskPlaceholder")}"></label><label>${this.t("familyAssign")}<select name="memberId">${people.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label><label class="studio-inline"><input type="checkbox" name="adultApproved"> ${this.t("familyApproval")}</label><button class="btn" type="submit">${this.t("familyAssignTask")}</button></form>` : ""}
+         ? `<p class="studio-step-badge">${this.t("familyStep", { step: session.step + 1, date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next">${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
+     <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${esc(Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000)))} ${this.t("studioMinutesShort")}</b>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
+     ${!kid && this._permissions.can_write ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
+     <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small></div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
+     ${!kid && this._permissions.can_manage && people.length ? `<form class="studio-form" data-form="studio-task"><label>${this.t("familyTask")}<input name="text" maxlength="300" required placeholder="${this.t("familyTaskPlaceholder")}"></label><label>${this.t("familyAssign")}<select name="memberId">${people.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label><label class="studio-inline"><input type="checkbox" name="adultApproved"> ${this.t("familyApproval")}</label><button class="btn" type="submit">${this.t("familyAssignTask")}</button></form>` : ""}
      <p class="studio-muted">${this.t("familySafety")}</p>`
          : `<p class="studio-muted">${this.t("familyStartHint")}</p><button class="btn primary" data-action="nav" data-value="recipes">${this.t("familyBrowse")}</button>`
      }</section></div>`,
@@ -563,6 +572,7 @@ Object.assign(MealieAtelierCard.prototype, {
       return;
     const proposed = this._weekProposal.slice();
     let success = 0,
+      refused = null,
       failed = [];
     for (const entry of proposed) {
       try {
@@ -572,9 +582,11 @@ Object.assign(MealieAtelierCard.prototype, {
         });
         success++;
       } catch (error) {
-        failed.push(`${entry.date}: ${error.message || this.t("error")}`);
+        failed.push(`${entry.date}: ${this._errorText(error)}`);
+        refused ||= error;
       }
     }
+    await this._recoverPermissions(refused);
     this._weekProposal = failed.length
       ? proposed.filter((x) => failed.some((f) => f.startsWith(x.date + ":")))
       : [];
@@ -599,7 +611,8 @@ Object.assign(MealieAtelierCard.prototype, {
       }))
     )
       return;
-    let count = 0;
+    let count = 0,
+      refused = null;
     const errors = [];
     for (const item of items) {
       const note =
@@ -611,8 +624,10 @@ Object.assign(MealieAtelierCard.prototype, {
         count++;
       } catch (err) {
         errors.push(item.name);
+        refused ||= err;
       }
     }
+    await this._recoverPermissions(refused);
     await this._loadShopping();
     this._flash(
       `${this.t("studioShoppingSuccess", { count })}${errors.length ? " " + this.t("studioShoppingFailure", { items: errors.join(", ") }) : ""}`,
@@ -1235,7 +1250,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       slug = this._detail.slug,
       steps = this._detail.recipeInstructions || [];
     await _atOriginalClick.call(this, event);
-    if (session?.slug === slug)
+    if (session?.slug === slug && this._permissions.can_write)
       await this._studioWrite("session_step", {
         session_id: session.id,
         step: Math.max(0, Math.min(steps.length - 1, this._cookIndex)),
@@ -1246,7 +1261,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     const slug = this._detail.slug,
       previous = this._studio?.journal?.[slug] || {};
     await _atOriginalClick.call(this, event);
-    if (this._permissions.can_write)
+    if (this._canJournal)
       await this._studioWrite("journal_set", {
         slug,
         note: previous.note || "",

@@ -206,6 +206,12 @@ test("offline companion UI uses shared locale resources for all visible shell co
   );
   assert.match(source, /offlineError\("offlineNoSnapshot"\)/);
   assert.match(source, /localizedError\(e\)/);
+  assert.match(
+    source,
+    /localizedError\(\{ code: offline\.lastError \}\)/,
+    "server error codes such as mealie_error must not render as raw keys",
+  );
+  assert.doesNotMatch(source, /t\(offline\.lastError\)/);
   assert.doesNotMatch(
     source,
     /Noch keine Offline-Kopie|Einkaufsliste muss zuerst online geladen werden|Benachrichtigungen wurden nicht erlaubt/,

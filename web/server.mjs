@@ -26,7 +26,12 @@ import { AlarmStore } from "./alarm-store.mjs";
 import { createDelivery } from "./alarm-delivery.mjs";
 import {
   MIN_PASSWORD_LENGTH,
+  commandLevel,
   createAuthThrottle,
+  createCredentialVerifier,
+  denial,
+  parseUsers,
+  rolePermissions,
   parseTrustedProxies,
   clientAddress,
   inlineScriptHashes,
@@ -42,6 +47,13 @@ const MEALIE_URL = (process.env.MEALIE_URL || "").replace(/\/$/, "");
 const MEALIE_API_TOKEN = process.env.MEALIE_API_TOKEN || "";
 const USER = process.env.ATELIER_USERNAME || "atelier";
 const PASSWORD = process.env.ATELIER_PASSWORD || "";
+let USERS = [];
+try {
+  USERS = parseUsers(process.env.ATELIER_USERS);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const READ_ONLY = ["1", "true", "yes"].includes(
   String(process.env.ATELIER_READ_ONLY || "").toLowerCase(),
 );
@@ -63,12 +75,20 @@ const offlineLedger = new OfflineLedger({
   mutate: (action, payload) => mutate(action, payload),
 });
 
-if (!MEALIE_API_TOKEN || !MEALIE_URL || !PASSWORD) {
-  console.error("Configure MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD before starting.");
+if (!MEALIE_API_TOKEN || !MEALIE_URL || (!PASSWORD && !USERS.length)) {
+  console.error(
+    "Configure MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD or ATELIER_USERS before starting.",
+  );
   process.exit(1);
 }
-if (PASSWORD.length < MIN_PASSWORD_LENGTH) {
+if (PASSWORD && PASSWORD.length < MIN_PASSWORD_LENGTH) {
   console.error(`ATELIER_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
+  process.exit(1);
+}
+if (PASSWORD && USERS.some((u) => u.name === USER)) {
+  console.error(
+    "ATELIER_USERS repeats the ATELIER_USERNAME of the shared password. Rename one of them.",
+  );
   process.exit(1);
 }
 const parsed = new URL(MEALIE_URL);
@@ -92,33 +112,21 @@ const TRUSTED_PROXIES = parseTrustedProxies(process.env.ATELIER_TRUSTED_PROXIES)
 const throttleClient = (req) =>
   clientAddress(req.socket.remoteAddress, req.headers["x-forwarded-for"], TRUSTED_PROXIES);
 
-const safeEqual = (a, b) => {
-  const left = Buffer.from(a),
-    right = Buffer.from(b);
-  return left.length === right.length && timingSafeEqual(left, right);
-};
-function isAuthorized(req) {
+const credentials = createCredentialVerifier({
+  users: USERS,
+  legacy: PASSWORD ? { name: USER, password: PASSWORD } : null,
+});
+async function isAuthorized(req) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Basic ")) return false;
   // Only attempts that carry credentials count; the browser's first anonymous request does not.
   const client = throttleClient(req);
-  const ok = checkCredentials(header);
-  if (ok) authThrottle.succeed(client);
-  else authThrottle.fail(client);
-  return ok;
-}
-function checkCredentials(header) {
-  try {
-    const credentials = Buffer.from(header.substring(6), "base64").toString("utf8");
-    const i = credentials.indexOf(":");
-    return (
-      i >= 0 &&
-      safeEqual(credentials.slice(0, i), USER) &&
-      safeEqual(credentials.slice(i + 1), PASSWORD)
-    );
-  } catch {
-    return false;
-  }
+  const who = await credentials.verify(header);
+  if (who) {
+    authThrottle.succeed(client);
+    req.atelierUser = who;
+  } else authThrottle.fail(client);
+  return !!who;
 }
 function reply(res, status, body, contentType = "application/json; charset=utf-8", headers = {}) {
   res.writeHead(status, {
@@ -134,7 +142,12 @@ function reply(res, status, body, contentType = "application/json; charset=utf-8
 function bad(text = "Invalid request") {
   const error = new Error(text);
   error.status = 400;
+  error.code = "invalid_request";
   return error;
+}
+/** Error for a failed permission check, shaped like the contract 0.3 codes. */
+function denied({ status, code, message }) {
+  return Object.assign(new Error(message), { status, code });
 }
 function identifier(v) {
   if (typeof v !== "string" || !VALID_ID.test(v)) throw bad("Invalid identifier");
@@ -438,9 +451,16 @@ async function bridge(req) {
     throw bad("Invalid JSON");
   }
   if (!msg || typeof msg.type !== "string") throw bad("Missing type");
+  const level = commandLevel(msg);
+  if (!level)
+    throw bad(msg.type === "mealie_atelier/mutate" ? "Unknown operation" : "Unknown API command");
+  const refusal = denial(req.atelierUser?.role, level, READ_ONLY);
+  if (refusal) throw denied(refusal);
   const locale = resolveLocale(req.headers["accept-language"], msg.language ?? msg.locale);
   switch (msg.type) {
-    case "mealie_atelier/status":
+    case "mealie_atelier/status": {
+      const permissions = rolePermissions(req.atelierUser?.role, READ_ONLY);
+      const structured = process.env.ATELIER_STRUCTURED_EDITS === "true" && !READ_ONLY;
       return {
         entries: [
           {
@@ -448,16 +468,22 @@ async function bridge(req) {
             name: "Standalone Mealie",
             connected: true,
             read_only: READ_ONLY,
-            can_write: !READ_ONLY,
-            can_manage: !READ_ONLY,
-            can_edit_ingredients:
-              !READ_ONLY &&
-              EXPERIMENTAL_INGREDIENTS &&
-              process.env.ATELIER_STRUCTURED_EDITS === "true",
+            permissions,
+            features: {
+              shopping_sync: false,
+              structured_ingredients: structured,
+              uploads: true,
+              recipe_filters: true,
+            },
+            limits: { upload_max_bytes: 10485760, upload_chunk_bytes: 262144 },
+            can_write: permissions.can_write,
+            can_manage: permissions.can_admin,
+            can_edit_ingredients: permissions.can_admin && structured,
           },
         ],
-        version: "0.9.5",
+        version: VERSION,
       };
+    }
     case "mealie_atelier/shopping_sync":
       return offlineLedger.process(msg.operation);
     case "mealie_atelier/alarm_capabilities":
@@ -800,7 +826,7 @@ const server = createServer(async (req, res) => {
     });
     return;
   }
-  if (!isAuthorized(req)) {
+  if (!(await isAuthorized(req))) {
     reply(res, 401, { error: "Sign in to Mealie Atelier" }, "application/json; charset=utf-8", {
       "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"',
     });
@@ -813,6 +839,8 @@ const server = createServer(async (req, res) => {
         reply(res, 403, { error: "Missing CSRF protection header" });
         return;
       }
+      const refusal = denial(req.atelierUser?.role, "admin", READ_ONLY);
+      if (refusal) throw denied(refusal);
       const result = await uploadRecipeImage(req, pathname.slice("/api/recipe-image/".length));
       reply(res, 200, result);
       return;
@@ -857,6 +885,11 @@ const server = createServer(async (req, res) => {
         code === 502
           ? "Could not reach Mealie"
           : String(err.message || "Invalid request").slice(0, 160),
+      ...(typeof err.code === "string" && /^[a-z_]{1,40}$/.test(err.code)
+        ? { code: err.code }
+        : code === 502
+          ? { code: "mealie_error" }
+          : {}),
     });
   }
 });

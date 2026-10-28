@@ -204,3 +204,223 @@ test("pending rows render disabled controls with the saving label", () => {
   const real = html.match(/<button[^>]*data-id="i1"[^>]*>/)[0];
   assert.doesNotMatch(real, /disabled/);
 });
+
+const grants = (can_read, can_write, can_admin, extra = {}) => ({
+  permissions: { can_read, can_write, can_admin },
+  can_write,
+  can_manage: can_admin,
+  ...extra,
+});
+function permissionCard(permissions, language = "en") {
+  const cards = loadCards();
+  const card = makeCard(cards, { hass: { language, callWS: async () => ({}) }, permissions });
+  card._activeList = "l1";
+  card._data.shopping = {
+    lists: [{ id: "l1", name: "Market" }],
+    items: [{ id: "i1", shoppingListId: "l1", note: "Milk", checked: false }],
+  };
+  card._data.mealplan = [];
+  card._data.recipes = { items: [] };
+  return { cards, card };
+}
+
+test("shopping write controls are hidden and the grant notice shows when can_write is false", () => {
+  const { cards, card } = permissionCard(grants(true, false, false));
+  card._view = "shopping";
+  card._render();
+  const html = cards.document.markup;
+  assert.doesNotMatch(html, /data-form="shopping-add"/);
+  assert.doesNotMatch(html, /data-action="create-list-form"/);
+  assert.match(html, /may view this kitchen but not change it/);
+  assert.match(html, /data-action="shopping-toggle"[^>]*aria-disabled="true"/);
+  const writer = permissionCard(grants(true, true, false));
+  writer.card._view = "shopping";
+  writer.card._render();
+  assert.match(writer.cards.document.markup, /data-form="shopping-add"/);
+  assert.doesNotMatch(writer.cards.document.markup, /may view this kitchen but not change it/);
+});
+
+test("the read-only notice stays for a read-only kitchen instead of the grant notice", () => {
+  const { cards, card } = permissionCard(grants(true, false, false, { read_only: true }));
+  card._view = "shopping";
+  card._render();
+  assert.doesNotMatch(cards.document.markup, /may view this kitchen but not change it/);
+  assert.match(cards.document.markup, /Read-only mode/);
+});
+
+test("recipe management and the editor stay hidden without can_admin", () => {
+  const writer = permissionCard(grants(true, true, false));
+  writer.card._view = "recipes";
+  writer.card._render();
+  assert.doesNotMatch(writer.cards.document.markup, /data-action="create-form"/);
+  assert.doesNotMatch(writer.cards.document.markup, /data-value="manage"/);
+  const admin = permissionCard(grants(true, true, true));
+  admin.card._view = "recipes";
+  admin.card._render();
+  assert.match(admin.cards.document.markup, /data-action="create-form"/);
+  assert.equal(admin.card._permissions.can_manage, true);
+});
+
+test("a legacy status without permissions still drives the card", () => {
+  const { card } = permissionCard({ can_write: true, can_manage: false });
+  assert.equal(card._permissions.can_write, true);
+  assert.equal(card._permissions.can_admin, false);
+  assert.equal(card._noWriteGrant, false);
+  const admin = permissionCard({ can_write: true, can_manage: true, can_edit_ingredients: true });
+  assert.equal(admin.card._permissions.can_admin, true);
+  assert.equal(admin.card._permissions.can_manage, true);
+  assert.equal(admin.card._permissions.can_edit_ingredients, true);
+});
+
+test("_permissions prefers the structured permissions over the legacy mirrors", () => {
+  const { card } = permissionCard({
+    permissions: { can_read: true, can_write: false, can_admin: false },
+    can_write: true,
+    can_manage: true,
+    features: { uploads: true },
+    limits: { upload_max_bytes: 5 },
+  });
+  const p = card._permissions;
+  assert.deepEqual(
+    [p.can_read, p.can_write, p.can_admin, p.can_manage],
+    [true, false, false, false],
+  );
+  assert.equal(p.features.uploads, true);
+  assert.equal(p.limits.upload_max_bytes, 5);
+});
+
+test("_errorText maps every contract code to its err key and falls back to the message", () => {
+  const { card } = permissionCard(grants(true, true, true));
+  assert.equal(
+    card._errorText({ code: "write_not_permitted", message: "raw" }),
+    card.t("errWriteNotPermitted"),
+  );
+  assert.notEqual(card.t("errWriteNotPermitted"), "errWriteNotPermitted");
+  for (const code of [
+    "not_configured",
+    "invalid_request",
+    "mealie_auth",
+    "mealie_error",
+    "read_only",
+    "unauthorized",
+    "write_not_permitted",
+    "conflict",
+    "recipe_changed",
+    "disabled",
+    "use_structured_editor",
+    "write_unverified",
+    "backup_failed",
+    "backup_not_found",
+    "upload_invalid",
+    "upload_expired",
+    "upload_busy",
+    "step_not_found",
+    "sync_rule_not_found",
+    "sync_destination_unsupported",
+    "sync_source_taken",
+    "sync_too_many_rules",
+    "sync_not_activated",
+    "sync_not_supported",
+  ])
+    assert.notEqual(card._errorText({ code, message: "raw" }), "raw", code);
+  assert.equal(card._errorText({ code: "unknown_code", message: "raw" }), "raw");
+  assert.equal(card._errorText(new Error("plain")), "plain");
+  assert.equal(card._errorText(null), card.t("error"));
+  const german = permissionCard(grants(true, true, true), "de");
+  assert.match(german.card._errorText({ code: "unauthorized" }), /Administrator/);
+});
+
+test("a refused write re-reads the status once and drops the write controls", async () => {
+  let statusCalls = 0;
+  const callWS = async (message) => {
+    if (message.type === "mealie_atelier/status") {
+      statusCalls++;
+      return { entries: [{ entry_id: "e1", ...grants(true, false, false) }] };
+    }
+    throw Object.assign(new Error("denied"), { code: "write_not_permitted" });
+  };
+  const { cards, card } = permissionCard(grants(true, true, false));
+  card._hass.callWS = callWS;
+  card._view = "shopping";
+  await card._mutate("shopping_add", { list_id: "l1", note: "Bread" }, "none");
+  assert.equal(statusCalls, 1);
+  assert.equal(card._permissions.can_write, false);
+  assert.match(toastOf(cards)[3], /do not have permission/);
+  assert.doesNotMatch(cards.document.markup, /data-form="shopping-add"/);
+});
+
+test("the personal journal stays writable without a write grant", async () => {
+  const sent = [];
+  const { card } = permissionCard(grants(true, false, false));
+  const studio = { revision: 0, journal: {}, pantry: [], family: { members: [] }, profile: {} };
+  card._studio = studio;
+  card._hass.callWS = async (message) => {
+    sent.push(message.action);
+    return { ...studio, revision: 1 };
+  };
+  assert.equal(await card._studioWrite("journal_set", { slug: "soup" }), true);
+  assert.equal(await card._studioWrite("pantry_put", { name: "Rice" }), false);
+  assert.deepEqual(sent, ["journal_set"]);
+});
+
+function refusingCard(code) {
+  let statusCalls = 0;
+  const { cards, card } = permissionCard(grants(true, true, false));
+  card._hass.callWS = async (message) => {
+    if (message.type === "mealie_atelier/status") {
+      statusCalls++;
+      return { entries: [{ entry_id: "e1", ...grants(true, false, false) }] };
+    }
+    if (message.type === "mealie_atelier/mutate") throw Object.assign(new Error("raw"), { code });
+    return {};
+  };
+  card._atelierDialog = async () => true;
+  card._loadShopping = async () => {};
+  card._loadMealplan = async () => {};
+  return { cards, card, statusCalls: () => statusCalls };
+}
+
+test("sending groceries re-reads the status once after refused writes", async () => {
+  const { card, statusCalls } = refusingCard("write_not_permitted");
+  card._grocery = [{ name: "Rice", needed: 1, unit: "kg" }, { name: "Salt" }];
+  await card._studioSendGroceries();
+  assert.equal(statusCalls(), 1);
+  assert.equal(card._permissions.can_write, false);
+});
+
+test("committing a week plan maps the error code and re-reads the status once", async () => {
+  const { card, statusCalls } = refusingCard("write_not_permitted");
+  card._weekProposal = [
+    { date: "2030-01-01", meal_type: "dinner", recipe_id: "r1" },
+    { date: "2030-01-02", meal_type: "dinner", recipe_id: "r2" },
+  ];
+  await card._studioCommitWeek();
+  assert.equal(statusCalls(), 1);
+  assert.equal(card._weekProposal.length, 2, "refused entries stay proposed");
+});
+
+test("the helper task form needs can_manage, not just can_write", () => {
+  const studio = {
+    revision: 0,
+    journal: {},
+    pantry: [],
+    profile: {},
+    family: {
+      members: [{ id: "m1", name: "Kim" }],
+      session: {
+        id: "s1",
+        name: "Soup",
+        step: 0,
+        started: "2030-01-01T00:00:00Z",
+        tasks: [],
+        timers: [],
+      },
+    },
+  };
+  const writer = permissionCard(grants(true, true, false));
+  writer.card._studio = studio;
+  assert.doesNotMatch(writer.card._studioFamily(), /data-form="studio-task"/);
+  const admin = permissionCard(grants(true, true, true));
+  admin.card._studio = studio;
+  assert.match(admin.card._studioFamily(), /data-form="studio-task"/);
+});

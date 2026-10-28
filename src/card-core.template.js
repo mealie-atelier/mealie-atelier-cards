@@ -326,14 +326,61 @@ class MealieAtelierCard extends HTMLElement {
   get _design() {
     return { ...this._config, ...this._local };
   }
-  get _permissions() {
+  get _statusEntry() {
     const entries = asArray(this._status?.entries);
-    const chosen = entries.find((x) => x.entry_id === this._config.entry_id) || entries[0];
+    return entries.find((x) => x.entry_id === this._config.entry_id) || entries[0];
+  }
+  get _permissions() {
+    const chosen = this._statusEntry;
+    // Prefer the structured permissions; an older Bridge only sends the legacy mirrors.
+    const granted = chosen?.permissions && typeof chosen.permissions === "object";
+    const can_admin = granted ? chosen.permissions.can_admin === true : chosen?.can_manage === true;
     return {
-      can_write: chosen?.can_write === true,
-      can_manage: chosen?.can_manage === true,
+      can_read: granted ? chosen.permissions.can_read === true : Boolean(chosen),
+      can_write: granted ? chosen.permissions.can_write === true : chosen?.can_write === true,
+      can_admin,
+      can_manage: can_admin,
       can_edit_ingredients: chosen?.can_edit_ingredients === true,
+      features: chosen?.features && typeof chosen.features === "object" ? chosen.features : {},
+      limits: chosen?.limits && typeof chosen.limits === "object" ? chosen.limits : {},
     };
+  }
+  /** The user may view the kitchen but holds no write grant (the kitchen itself is not read-only). */
+  get _noWriteGrant() {
+    const p = this._permissions;
+    return (
+      Boolean(this._statusEntry?.permissions) &&
+      p.can_read &&
+      !p.can_write &&
+      this._statusEntry.read_only !== true
+    );
+  }
+  /** Personal journal notes only need a loaded status that is not read-only. */
+  get _canJournal() {
+    return Boolean(this._statusEntry) && this._statusEntry.read_only !== true;
+  }
+  /** Maps a WebSocket or bridge error to its translated `err*` text (contract 0.1). */
+  _errorText(err) {
+    const code = typeof err?.code === "string" ? err.code : "";
+    if (/^[a-z][a-z0-9_]*$/.test(code)) {
+      const key = "err" + code.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase());
+      const text = this.t(key);
+      if (text && text !== key) return text;
+    }
+    return err?.message || this.t("error");
+  }
+  /** After a refused write the grant may have changed: re-read the status once and re-render. */
+  async _recoverPermissions(err) {
+    if (!["write_not_permitted", "unauthorized"].includes(err?.code) || this._recovering) return;
+    this._recovering = true;
+    try {
+      this._status = await this._ws("status");
+    } catch {
+      // Keep the previous status; the error text already told the user what happened.
+    } finally {
+      this._recovering = false;
+    }
+    this._render();
   }
   async _ws(type, opts = {}) {
     if (this._providerActive === "home_assistant") {
@@ -485,7 +532,9 @@ class MealieAtelierCard extends HTMLElement {
             if (keys[i] === "status") this._status = r.value;
             else this._data[keys[i]] = r.value;
           } else {
-            failures.push(r.reason?.message || String(r.reason));
+            failures.push(
+              r.reason?.code ? this._errorText(r.reason) : r.reason?.message || String(r.reason),
+            );
           }
         });
         if (failures.length) this._error = failures[0];
@@ -513,7 +562,7 @@ class MealieAtelierCard extends HTMLElement {
           this._activeList = String(asArray(this._data.shopping?.lists)[0]?.id || "");
       }
     } catch (err) {
-      this._error = err?.message || this.t("offline");
+      this._error = err?.code ? this._errorText(err) : err?.message || this.t("offline");
     } finally {
       this._busy = false;
       this._render();
@@ -532,7 +581,7 @@ class MealieAtelierCard extends HTMLElement {
       }
       this._error = "";
     } catch (err) {
-      this._error = err?.message || this.t("error");
+      this._error = this._errorText(err);
     }
     this._render();
     if (this._focusSearch) {
@@ -549,7 +598,7 @@ class MealieAtelierCard extends HTMLElement {
       this._data.shopping = await this._ws("shopping");
       this._error = "";
     } catch (err) {
-      this._error = err.message || this.t("error");
+      this._error = this._errorText(err);
     }
     this._render();
   }
@@ -561,7 +610,7 @@ class MealieAtelierCard extends HTMLElement {
       });
       this._error = "";
     } catch (err) {
-      this._error = err.message || this.t("error");
+      this._error = this._errorText(err);
     }
     this._render();
   }
@@ -684,7 +733,7 @@ class MealieAtelierCard extends HTMLElement {
       this._error = "";
     } catch (error) {
       this._modal = "recipe";
-      this._error = error?.message || this.t("error");
+      this._error = this._errorText(error);
     }
     this._render();
   }
@@ -748,7 +797,7 @@ class MealieAtelierCard extends HTMLElement {
     const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""}" style="--at-accent:${accent};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
-      ${this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
+      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this.t("uiNoWriteGrant"))}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution()}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
@@ -926,7 +975,7 @@ class MealieAtelierCard extends HTMLElement {
       this._error = "";
     } catch (err) {
       this._modal = null;
-      this._error = err.message || this.t("error");
+      this._error = this._errorText(err);
     }
     this._render();
   }
@@ -940,7 +989,7 @@ class MealieAtelierCard extends HTMLElement {
       !this._permissions.can_write ||
       (action.startsWith("recipe") && !this._permissions.can_manage)
     ) {
-      this._error = this.t("readOnlyHint");
+      this._error = this._noWriteGrant ? this.t("uiNoWriteGrant") : this.t("readOnlyHint");
       this._render();
       return false;
     }
@@ -960,7 +1009,8 @@ class MealieAtelierCard extends HTMLElement {
     } catch (err) {
       if (rollback) rollback();
       this._error = "";
-      this._flash(this.t("uiMutationFailed", { error: err?.message || this.t("error") }), "error");
+      this._flash(this.t("uiMutationFailed", { error: this._errorText(err) }), "error");
+      await this._recoverPermissions(err);
       // Resync with the server: overlapping writes may have changed the collection meanwhile.
       try {
         if (refresh === "shopping") await this._loadShopping();
@@ -1256,7 +1306,8 @@ class MealieAtelierCard extends HTMLElement {
         n.choices = await this._ws("nutrition_search", { query });
       } catch (error) {
         n.choices = [];
-        n.notice = error?.message || this.t("error");
+        n.notice = this._errorText(error);
+        await this._recoverPermissions(error);
       } finally {
         n.busy = false;
         this._render();
