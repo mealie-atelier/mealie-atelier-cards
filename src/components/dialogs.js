@@ -272,7 +272,7 @@ export const dialogMethods = {
       content = from
         ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t("shoppingEditTip"))}</p></div><div class="editor-stamp">${icon("edit", 27)}</div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("itemFallback"))}</div><form class="editor-form" data-form="shopping-edit"><label class="field"><span>${esc(this.t("shoppingItemName"))} *</span><input name="name" maxlength="250" required data-autofocus value="${esc(from.name)}"></label>
-      <label class="field"><span>${esc(this.t("shoppingItemQuantity"))}</span><input name="quantity" type="number" inputmode="decimal" min="0" max="99999" step="any" value="${esc(from.quantity || "")}"></label>
+      <label class="field"><span>${esc(this.t("shoppingItemQuantity"))}</span><input name="quantity" type="number" inputmode="decimal" min="0" max="100000" step="any" value="${esc(from.quantity || "")}"></label>
       ${from.freeText ? "" : `<label class="field"><span>${esc(this.t("shoppingItemNote"))}</span><input name="note" maxlength="250" value="${esc(from.note)}"></label>`}
       <div class="form-actions"><button type="button" class="btn" data-action="close-modal">${esc(this.t("shoppingCancel"))}</button><button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></form></section></div>`
         : `<div class="modal-content"><p class="notice">${esc(this.t("shoppingItemGone"))}</p><div class="form-actions"><button type="button" class="btn primary" data-action="close-modal">${esc(this.t("close"))}</button></div></div>`;

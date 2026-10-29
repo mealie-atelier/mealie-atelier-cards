@@ -410,7 +410,7 @@ test("the offline client queues edits, deletes and clears and shows them in the 
     view.map((x) => x.id),
     ["a", "b"],
   );
-  assert.equal(view[0].display, "Oat milk");
+  assert.equal(view[0].display, "1 Oat milk");
   assert.equal(view[1].quantity, 3);
   await client.enqueue("shopping_clear_checked", {
     list_id: "l1",
@@ -619,4 +619,44 @@ test("the conflict list and the alarm status translate Bridge codes instead of r
   // The replay keeps the code next to the English text.
   assert.match(core, /state: "conflict", reason: e\.message, code: e\.code/);
   assert.match(core, /e\.code === "shopping_item_not_found"/);
+});
+
+test("a rename chained after another edit is not a false conflict", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
+  try {
+    const state = {
+      items: {
+        // After a replayed rename Mealie holds the note and rebuilds the display with the quantity.
+        a: { id: "a", note: "Hafermilch", display: "2 Hafermilch", isFood: false, quantity: 2 },
+        // After a replayed quantity edit the display still carries the old text.
+        b: { id: "b", note: "Milch", display: "2 Milch", isFood: false, quantity: 4 },
+        c: { id: "c", note: "Milch", display: "Milch", isFood: false, quantity: 1 },
+        d: { id: "d", note: "Butter", display: "2 Butter", isFood: false, quantity: 2 },
+      },
+    };
+    const { ledger } = await conflictLedger(dir, state);
+    const chained = (id, expected) =>
+      op("shopping_update", { item_id: id, name: "Soja", expected_name: expected });
+    assert.equal((await ledger.process(chained("a", "2 Hafermilch"))).ok, true);
+    assert.equal((await ledger.process(chained("b", "4 Milch"))).ok, true);
+    assert.equal((await ledger.process(chained("c", "1 Milch"))).ok, true);
+    await assert.rejects(ledger.process(chained("d", "2 Milch")), {
+      atelierCode: "offline_conflict",
+    });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("the offline view of a chained rename shows the label Mealie rebuilds", async () => {
+  const client = await offlineClient();
+  await client.enqueue("shopping_update", { item_id: "a", name: "Oat milk" });
+  await client.enqueue("shopping_update", { item_id: "a", quantity: 3 });
+  assert.equal(client.shopping.items.find((x) => x.id === "a").display, "3 Oat milk");
+});
+
+test("a quantity of 100000 is accepted and one above it is rejected", () => {
+  const body = (quantity) => op("shopping_update", { item_id: "a", quantity });
+  assert.doesNotThrow(() => validateOperation(body(100000)));
+  assert.throws(() => validateOperation(body(100001)));
 });

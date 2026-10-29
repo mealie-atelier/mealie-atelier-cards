@@ -296,7 +296,7 @@ test("waiting operations change the list the user sees, in the order they were m
     view.map((x) => x.id),
     ["i1", "o1"],
   );
-  assert.equal(view[0].display, "Oat milk");
+  assert.equal(view[0].display, "1 Oat milk");
 });
 
 test("a waiting tick still counts when clear runs behind it", async () => {
@@ -415,4 +415,12 @@ test("the offline view of a clear leaves items ticked after it was queued", asyn
     card._offlineItems(card._data.shopping.items).map((x) => x.id),
     ["i1", "i3", "o1"],
   );
+});
+
+test("chained offline edits send the name the earlier edit leaves behind", async () => {
+  const { card } = offlineSetup();
+  await card._mutate("shopping_update", { item_id: "i1", name: "Oat milk" }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i1", quantity: 4 }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i1", name: "Soy milk" }, "shopping");
+  assert.equal(queue(card).at(-1).payload.expected_name, "4 Oat milk");
 });

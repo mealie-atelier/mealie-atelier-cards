@@ -88,7 +88,7 @@
     const quantity = Number(item.quantity);
     const unit = String(item.unit?.name || item.unit?.abbreviation || "").trim();
     item.display = [
-      quantity > 0 && (quantity !== 1 || unit) ? String(quantity) : "",
+      quantity > 0 ? String(quantity) : "",
       unit,
       String((item.food ? item.food.name : item.note) || "").trim(),
       item.food ? String(item.note || "").trim() : "",

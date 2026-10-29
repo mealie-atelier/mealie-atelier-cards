@@ -170,7 +170,7 @@ export const viewMethods = {
       if (
         Number.isFinite(quantity) &&
         quantity >= 0 &&
-        quantity <= 99999 &&
+        quantity <= 100000 &&
         quantity !== from.quantity
       )
         changes.quantity = quantity;
@@ -194,12 +194,7 @@ export const viewMethods = {
       ? String(merged.food.name || "").trim()
       : String(merged.note || "").trim();
     const note = merged.food ? String(merged.note || "").trim() : "";
-    const display = [
-      quantity > 0 && (quantity !== 1 || unit) ? String(quantity) : "",
-      unit,
-      name,
-      note,
-    ]
+    const display = [quantity > 0 ? String(quantity) : "", unit, name, note]
       .filter(Boolean)
       .join(" ");
     const local = { ...rest, display: display || merged.display };

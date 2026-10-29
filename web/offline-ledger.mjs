@@ -17,7 +17,7 @@ export const OFFLINE_ACTIONS = [
 ];
 const MAX_AGE = 30 * 86400e3;
 const validAmount = (value) =>
-  typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 99999;
+  typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100000;
 export function validateOperation(operation) {
   if (
     !operation ||
@@ -72,12 +72,39 @@ export function validateOperation(operation) {
   return { id: operation.id, action: operation.action, payload: structuredClone(p) };
 }
 /** The name a list shows for an item, as the Bridge reads it. */
-const seen = (key, item) =>
-  key === "name" ? String(item.display || item.note || item.food?.name || "").trim() : item[key];
-const same = (key, current, wanted) =>
-  key === "quantity"
+/** The label Mealie shows once it rebuilds the display: quantity, unit, name and note. */
+const rebuilt = (item, withOne) => {
+  const quantity = Number(item.quantity);
+  const unit = String(item.unit?.name || item.unit?.abbreviation || "").trim();
+  return [
+    quantity > 0 && (withOne || quantity !== 1 || unit) ? String(quantity) : "",
+    unit,
+    String((item.food ? item.food.name : item.note) || "").trim(),
+    item.food ? String(item.note || "").trim() : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+};
+/**
+ * The value of an item as the user saw it. The cards derive the label of an edited item themselves,
+ * so a name matches when it equals the display text, the note, the food name or the rebuilt label.
+ */
+const seen = (key, item, wanted) => {
+  if (key !== "name") return item[key];
+  const candidates = [
+    item.display,
+    item.note,
+    item.food?.name,
+    rebuilt(item, true),
+    rebuilt(item, false),
+  ].map((value) => String(value || "").trim());
+  return candidates.find((value) => same("name", value, wanted)) ?? candidates[0];
+};
+function same(key, current, wanted) {
+  return key === "quantity"
     ? (current || 0) === (wanted || 0)
     : String(current || "").trim() === String(wanted || "").trim();
+}
 const applied = (key, item, wanted) =>
   key === "name"
     ? !item.food && !item.isFood && same("note", item.note, wanted)
@@ -186,7 +213,11 @@ export class OfflineLedger {
         changes.some(
           (key) =>
             `expected_${key}` in op.payload &&
-            !same(key, seen(key, current), op.payload[`expected_${key}`]),
+            !same(
+              key,
+              seen(key, current, op.payload[`expected_${key}`]),
+              op.payload[`expected_${key}`],
+            ),
         )
       ) {
         await set("conflict", {

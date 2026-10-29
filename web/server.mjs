@@ -528,7 +528,7 @@ async function mutate(action, payload, req) {
           typeof payload.quantity !== "number" ||
           !Number.isFinite(payload.quantity) ||
           payload.quantity < 0 ||
-          payload.quantity > 99999
+          payload.quantity > 100000
         )
           throw bad("Invalid quantity");
         changes.quantity = payload.quantity;
