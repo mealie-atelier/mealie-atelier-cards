@@ -1174,8 +1174,8 @@
   "studioAiNotConfigured": "Es ist kein KI-Schlüssel hinterlegt.",
   "nutriUsdaKeyMissingHa": "USDA API-Key fehlt. Bitte in den Integrationsoptionen hinterlegen.",
   "syncReadOnly": "Dieses Dashboard ist im Nur-Lesen-Modus.",
-  "studioDiscoverRecipeBase.one": "Rezeptbasis 1 Portion",
-  "studioDiscoverRecipeBase.other": "Rezeptbasis {servings} Portionen",
+  "studioDiscoverRecipeBase.one": "Rezeptbasis: 1 Portion",
+  "studioDiscoverRecipeBase.other": "Rezeptbasis: {servings} Portionen",
   "studioDiscoverForPeople.one": "Für 1 Person",
   "studioDiscoverForPeople.other": "Für {people} Personen",
   "editorEntityDomainWarning": "Erwartet wird eine Entität der Domäne {domain}, zum Beispiel {example}."

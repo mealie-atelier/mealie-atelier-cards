@@ -201,7 +201,7 @@ test("German copy keeps one address, one term per concept and complete sentences
   const en = JSON.parse(read("../src/i18n/en.json"));
   for (const [key, value] of Object.entries(de))
     assert.doesNotMatch(value, /\b(euch|euer\w*|eure\w*|ihr)\b/i, `${key} uses the du-form`);
-  assert.match(de["studioDiscoverRecipeBase.other"], /^Rezeptbasis /);
+  assert.match(de["studioDiscoverRecipeBase.other"], /^Rezeptbasis: /);
   assert.match(de.studioCatalogTotal, /Rezepte\.$/);
   assert.match(en.studioCatalogTotal, /recipes\.$/);
   assert.equal(de.studioLunch, de.lunch);
@@ -435,4 +435,14 @@ test("merged i18n wording stays consistent between German and English", () => {
   assert.match(i18n("en").errMealieAuth, /API token/);
   assert.doesNotMatch(i18n("en").errMealieAuth, /access token/);
   assert.equal(i18n("de").editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
+});
+
+test("Discover recipe base copy keeps the colon in German like English", () => {
+  const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
+  const en = JSON.parse(readFileSync(new URL("../src/i18n/en.json", import.meta.url), "utf8"));
+  assert.equal(de["studioDiscoverRecipeBase.one"], "Rezeptbasis: 1 Portion");
+  assert.equal(de["studioDiscoverRecipeBase.other"], "Rezeptbasis: {servings} Portionen");
+  for (const key of ["studioDiscoverRecipeBase.one", "studioDiscoverRecipeBase.other"]) {
+    assert.equal(de[key].includes(":"), en[key].includes(":"), key);
+  }
 });
