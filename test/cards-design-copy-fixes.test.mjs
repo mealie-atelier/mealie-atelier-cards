@@ -133,7 +133,6 @@ test("bridge error codes for timers, protected values and USDA have card texts i
     "errTooManyTimers",
     "errTimerNotFound",
     "errTimerNotPermitted",
-    "errTimerDispatched",
     "errExistingValuesProtected",
     "errUsdaKeyInvalid",
     "errUsdaRateLimited",
@@ -364,4 +363,38 @@ test("English strings use the typographic apostrophe only", () => {
     straight.map(([key]) => key),
     [],
   );
+});
+
+test("the cancel wording matches the card's Remove action and the dead dispatched text is gone", () => {
+  assert.match(i18n("de").errTimerNotPermitted, /entfernen/);
+  assert.match(i18n("en").errTimerNotPermitted, /remove/);
+  for (const lang of ["de", "en"]) {
+    assert.doesNotMatch(i18n(lang).errTimerNotPermitted, /abbrechen|cancel/);
+    assert.equal(i18n(lang).errTimerDispatched, undefined);
+  }
+});
+
+test("nutrition save and calculate show the translated text for a Bridge error code", async () => {
+  for (const [language, action, expected] of [
+    ["en", "nutri-save", /Existing values are protected/],
+    ["de", "nutri-calc", /Vorhandene Werte sind geschützt/],
+  ]) {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._render = () => {};
+    Object.defineProperty(card, "_permissions", { get: () => ({ can_manage: true }) });
+    card._nutrition = {
+      busy: false,
+      rows: [],
+      replaceExisting: false,
+      preview: { slug: "s", hash: "h" },
+    };
+    card._ws = async () => {
+      throw Object.assign(new Error("raw bridge message"), { code: "existing_values_protected" });
+    };
+    const el = { dataset: { action, value: "" }, disabled: false, closest: () => el };
+    await card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
+    assert.match(card._nutrition.notice, expected, `${language} ${action}`);
+    assert.doesNotMatch(card._nutrition.notice, /raw bridge/);
+  }
 });

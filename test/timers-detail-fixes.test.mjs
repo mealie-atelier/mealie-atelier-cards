@@ -20,7 +20,7 @@ test("removing a finished server-armed timer still tries to cancel and drops it 
   const { card } = setup(async (msg) => calls.push(msg.type));
   card._ws = async (op) => {
     calls.push(op);
-    throw new Error("The kitchen timer has already been dispatched");
+    throw Object.assign(new Error("raw"), { code: "timer_dispatched" });
   };
   card._timers = [
     { id: "t1", label: "x", deadline: Date.now() - 5000, done: true, serverArmed: true },
@@ -32,7 +32,7 @@ test("removing a finished server-armed timer still tries to cancel and drops it 
 
 test("removing a timer the server no longer knows or has just started sending drops it", async () => {
   for (const [error, offset] of [
-    [Object.assign(new Error("Timer not found"), { code: "invalid_request" }), 600000],
+    [Object.assign(new Error("raw"), { code: "timer_not_found" }), 600000],
     [new Error("busy"), 20000],
   ]) {
     const { card, flashes } = setup();
@@ -348,4 +348,15 @@ test("a URL in the cooking step text is linked", () => {
     card._modalHtml(),
     /<a href="https:\/\/example\.org\/v" target="_blank" rel="noopener noreferrer">/,
   );
+});
+
+test("cancel never matches the English message text, only the error code", async () => {
+  const { card, flashes } = setup();
+  card._ws = async () => {
+    throw new Error("The kitchen timer has already been dispatched");
+  };
+  card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+  await click(card, "timer-remove", "t1");
+  assert.equal(card._timers.length, 1);
+  assert.equal(flashes[0].kind, "error");
 });
