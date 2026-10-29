@@ -307,7 +307,7 @@ test("an expired upload session restarts from the beginning once and a cancel st
   await cancelled.card._editorUploadFlow(pngFile(300 * 1024).file);
   assert.equal(cancelled.calls.filter((c) => c.type.endsWith("upload_chunk")).length, 1);
   assert.ok(!cancelled.calls.some((c) => c.type.endsWith("recipe_image_set")));
-  assert.match(cancelled.card._toast, /cancelled/);
+  assert.match(cancelled.card._toast, /canceled/);
 });
 
 test("a cancel that arrives while the last chunk is in flight stops before the target command", async () => {
@@ -326,7 +326,7 @@ test("a cancel that arrives while the last chunk is in flight stops before the t
   await card._editorUploadFlow(pngFile(100 * 1024).file);
   assert.equal(calls.filter((c) => c.type.endsWith("upload_chunk")).length, 1);
   assert.ok(!calls.some((c) => c.type.endsWith("recipe_image_set")));
-  assert.match(card._toast, /cancelled/);
+  assert.match(card._toast, /canceled/);
 });
 
 test("the servings stepper label and aria-label follow the previewed count", async () => {

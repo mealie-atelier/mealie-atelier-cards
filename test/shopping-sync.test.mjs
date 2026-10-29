@@ -563,7 +563,7 @@ test("standalone app shows the HA-only explanation and makes no sync call", asyn
   assert.match(markup(env.cards), /data-action="sync-open"/);
   await click(env.card, { action: "sync-open" });
   assert.equal(env.card._modal, "sync-info");
-  assert.match(markup(env.cards), /Live sync to Bring and other lists needs Home Assistant/);
+  assert.match(markup(env.cards), /Live sync to Bring! and other lists needs Home Assistant/);
   assert.match(markup(env.cards), /does not send shopping data to third parties/);
   await click(env.card, { action: "sync-setup-open", value: "" });
   assert.equal(env.card._modal, "sync-info");
