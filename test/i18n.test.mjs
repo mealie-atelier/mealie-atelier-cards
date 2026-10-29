@@ -442,9 +442,40 @@ test("Kochinspo servings and people read in singular and plural", () => {
 test("studio kickers share the eyebrow and carry no stray section numbers", () => {
   for (const locale of ["de", "en"]) {
     assert.equal(locales[locale].studioKicker, locales[locale].eyebrow);
-    for (const key of ["studioPlanKicker", "studioPantryKicker", "studioGroceryKicker"])
+    for (const key of [
+      "studioPlanKicker",
+      "studioPantryKicker",
+      "studioGroceryKicker",
+      "familyTeam",
+      "familySession",
+      "cookbookSelectKicker",
+      "cookbookBookKicker",
+    ])
       assert.doesNotMatch(locales[locale][key], /^\d+\s*\//, `${locale}.${key}`);
   }
+});
+
+test("Kochinspo scale note, unclear amounts and print item count read naturally", () => {
+  const cards = loadCards();
+  const de = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
+  assert.equal(
+    de
+      .t("uiScaleServingsNote", {
+        target: 1,
+        base: 4,
+        targetUnit: "Portion",
+        baseUnit: "Portionen",
+      })
+      .slice(0, 36),
+    "Mengen für 1 Portion angepasst. Reze",
+  );
+  assert.equal(
+    de.tp("studioReasonAmountsUnclear", 2, { count: 2 }),
+    "Bei 2 Zutaten ist die Menge unklar",
+  );
+  assert.equal(de.t("printDocItems.one"), "1 Artikel");
+  assert.equal(de.t("printDocItems.other", { count: 3 }), "3 Artikel");
+  assert.ok(!("studioDiscoverPerson" in locales.de));
 });
 
 test("the card credit line is translated for German", () => {

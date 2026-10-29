@@ -547,3 +547,31 @@ test("the print document credit line follows the card language", () => {
     assert.match(written.join(""), pattern, language);
   }
 });
+
+test("the shopping print line says 1 item in the singular", () => {
+  for (const [language, expected] of [
+    ["en", /<p class="dek">1 item ·/],
+    ["de", /<p class="dek">1 Artikel ·/],
+  ]) {
+    const written = [];
+    const popup = {
+      document: {
+        write: (html) => written.push(html),
+        open() {},
+        close() {},
+        getElementById: () => null,
+      },
+      focus() {},
+    };
+    const cards = loadCards({ window: { open: () => popup } });
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._data.shopping = {
+      lists: [{ id: "l1", name: "Market" }],
+      items: [{ id: "i1", shoppingListId: "l1", display: "Milk", checked: false }],
+    };
+    card._activeList = "l1";
+    card._printKind = "shopping";
+    card._print();
+    assert.match(written.join(""), expected, language);
+  }
+});

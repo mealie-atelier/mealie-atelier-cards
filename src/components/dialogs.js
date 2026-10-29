@@ -67,7 +67,12 @@ export const dialogMethods = {
         discoverTarget && servingBase ? `${discoverTarget} ${servingWord}` : baseYield || "—";
       const scaleNote =
         discoverTarget && servingBase && discoverTarget !== servingBase
-          ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", { target: discoverTarget, base: servingBase })}</p>`
+          ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", {
+              target: discoverTarget,
+              base: servingBase,
+              targetUnit: this.tp("uiServing", discoverTarget),
+              baseUnit: this.tp("uiServing", servingBase),
+            })}</p>`
           : "";
       const img = recipeImage(recipe);
       const labelName = (x) => String(x?.name ?? x ?? "").trim();

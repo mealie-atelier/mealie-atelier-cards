@@ -11,13 +11,13 @@ test("count strings pick the singular form for exactly one item in German and En
   const en = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
   assert.equal(de.tp("studioDiscoverMoreIdeas", 1), "1 weitere Idee");
   assert.equal(de.tp("studioDiscoverMoreIdeas", 2), "2 weitere Ideen");
-  assert.equal(de.tp("studioReasonAmountsUnclear", 1), "1 Menge unklar");
+  assert.equal(de.tp("studioReasonAmountsUnclear", 1), "Bei 1 Zutat ist die Menge unklar");
   assert.equal(de.tp("cookbookSelected", 1), "1 Rezept ausgewählt");
   assert.equal(de.tp("studioShoppingSuccess", 1), "1 Eintrag übernommen.");
   assert.equal(de.tp("studioDiagnosticsFailed", 1), "1 Verbindungstest fehlgeschlagen.");
   assert.equal(en.tp("studioDiscoverMoreIdeas", 1), "1 more idea");
-  assert.equal(en.tp("studioReasonAmountsUnclear", 1), "1 amount unclear");
-  assert.equal(en.tp("studioReasonAmountsUnclear", 3), "3 amounts unclear");
+  assert.equal(en.tp("studioReasonAmountsUnclear", 1), "Amount unclear for 1 ingredient");
+  assert.equal(en.tp("studioReasonAmountsUnclear", 3), "Amount unclear for 3 ingredients");
   assert.equal(en.tp("studioWeekSuccess", 1), "1 meal added.");
   assert.equal(en.tp("editorServingsPreview", 1), "Preview for 1 serving");
 });

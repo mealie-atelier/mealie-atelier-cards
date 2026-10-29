@@ -129,7 +129,7 @@ function buildPrintDocument(
       (x) => String(x.shoppingListId) === String(id) && (includeCompleted || !x.checked),
     );
     heading = `<div class="eyebrow">${esc(words.shopping)} · ${esc(words.created)}</div><h1>${esc(selected?.name || words.shop)}</h1>
-      <p class="dek">${items.length} ${esc(words.items)} · ${esc(new Intl.DateTimeFormat(locale || "de-DE", { day: "numeric", month: "long", year: "numeric" }).format(new Date()))}</p>`;
+      <p class="dek">${esc(t(items.length === 1 ? "printDocItems.one" : "printDocItems.other", { count: items.length }))} · ${esc(new Intl.DateTimeFormat(locale || "de-DE", { day: "numeric", month: "long", year: "numeric" }).format(new Date()))}</p>`;
     body = `<section class="shopping-print"><h2>${esc(words.shop)}</h2><div class="shopping-items ${items.length > 12 ? "two-columns" : ""}">
       ${items.length ? items.map((item) => `<div class="shopping-print-row">${tick()}<span>${esc(item.display || item.note || item.food?.name || "")}</span><b>${item.quantity && item.quantity !== 1 ? esc(item.quantity) : ""}</b></div>`).join("") : `<p class="quiet">${esc(words.empty)}</p>`}
       </div></section>${noteLines}`;
