@@ -124,3 +124,121 @@ test("Tab pulls focus back into the dialog when it sits outside, and traps at th
   card._handleKeyDown(shift);
   assert.equal(last.focused, 1);
 });
+
+/**
+ * Drive the real _render against a stub shadow root. `world` describes what the DOM holds after
+ * the subtree swap: `dialog`, `controls` (querySelectorAll results per selector) and `byQuery`.
+ */
+function renderHarness(world) {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card.getBoundingClientRect = () => ({ top: 0 });
+  card._body = () => "";
+  card._nav = () => "";
+  card._topbar = () => "";
+  card._pickerSync = () => {};
+  card._modalHtml = () => '<div class="modal modal-backdrop"></div>';
+  card._raiseModal = () => {};
+  const root = card.shadowRoot;
+  const focusable = (name) => ({
+    name,
+    disabled: false,
+    focus() {
+      root.activeElement = this;
+    },
+  });
+  world.make = focusable;
+  root.querySelector = (selector) => world.query?.(selector) ?? null;
+  root.querySelectorAll = (selector) => world.queryAll?.(selector) ?? [];
+  return { card, root, cards };
+}
+
+test("opening a dialog focuses its autofocus field, the search or the close button", async () => {
+  const world = {};
+  const { card, root } = renderHarness(world);
+  const close = world.make("close");
+  const search = world.make("search");
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return {};
+    if (selector.includes("command-search")) return search;
+    if (selector.includes("close-modal")) return close;
+    return null;
+  };
+  card._modal = "command";
+  card._render();
+  assert.equal(root.activeElement, search);
+
+  // Without a search or autofocus field the close button takes the focus.
+  root.activeElement = null;
+  card._lastRenderedModal = null;
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return {};
+    if (selector.includes("close-modal") && !selector.includes("command-search")) return close;
+    return null;
+  };
+  card._render();
+  assert.equal(root.activeElement, close);
+});
+
+test("closing a dialog returns focus to the control that opened it", () => {
+  const world = {};
+  const { card, root } = renderHarness(world);
+  const opener = world.make("opener");
+  opener.dataset = { action: "open-settings" };
+  opener.hasAttribute = (name) => name === "data-action";
+  opener.getAttribute = () => "open-settings";
+  root.activeElement = opener;
+  world.queryAll = (selector) => (selector === "[data-action]" ? [opener] : []);
+  world.query = (selector) => (selector === '[role="dialog"]' ? {} : null);
+  card._modal = "settings";
+  card._render();
+  assert.deepEqual({ ...card._modalReturn }, { action: "open-settings", value: "" });
+  // Dialog open: the subtree swap dropped focus, then the dialog closes.
+  root.activeElement = null;
+  world.query = () => null;
+  card._modal = null;
+  card._render();
+  assert.equal(root.activeElement, opener);
+  assert.equal(card._modalReturn, null);
+});
+
+/** A cook mode render whose focused control is `used`; after the swap the selector yields `fresh`. */
+function cookRender({ index, disabledIndex = -1 }) {
+  const world = {};
+  const { card, root } = renderHarness(world);
+  card._modal = "cook";
+  card._lastRenderedModal = "cook";
+  const close = world.make("close");
+  const old = [world.make("old-0"), world.make("old-1")];
+  const fresh = [world.make("fresh-0"), world.make("fresh-1")];
+  if (disabledIndex >= 0) fresh[disabledIndex].disabled = true;
+  const used = old[index];
+  used.hasAttribute = (name) => name === "data-action";
+  used.getAttribute = () => "cook-next";
+  root.activeElement = used;
+  let swapped = false;
+  world.query = (selector) =>
+    selector === '[role="dialog"]' ? {} : selector.includes("close-modal") ? close : null;
+  world.queryAll = (selector) => {
+    if (selector !== '[data-action="cook-next"]') return [];
+    if (!swapped) {
+      swapped = true;
+      return old;
+    }
+    return fresh;
+  };
+  card._render();
+  return { root, fresh, close };
+}
+
+test("cook mode: focus returns to the same nth control after the subtree is swapped", () => {
+  const { root, fresh } = cookRender({ index: 1 });
+  assert.equal(root.activeElement, fresh[1]);
+  const first = cookRender({ index: 0 });
+  assert.equal(first.root.activeElement, first.fresh[0]);
+});
+
+test("cook mode: a disabled target hands focus to the close button", () => {
+  const { root, close } = cookRender({ index: 1, disabledIndex: 1 });
+  assert.equal(root.activeElement, close);
+});
