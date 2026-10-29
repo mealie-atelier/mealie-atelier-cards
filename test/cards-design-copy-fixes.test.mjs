@@ -135,6 +135,11 @@ test("copy uses one term per setting, one Bridge name and the neuter Token", () 
   assert.equal(de.editorFoodPhotographyCrop, de.uiPhotoCrop);
   assert.doesNotMatch(JSON.stringify(de), /Mealie-Atelier-Bridge|den Zugriffstoken/);
   assert.match(de.errMealieAuth, /das API-Token/);
+  for (const lang of ["de", "en"]) {
+    assert.doesNotMatch(i18n(lang).errMealieAuth, /MEALIE_API_TOKEN/, "shared with the Bridge");
+    assert.ok(i18n(lang).errMealieForbidden, `${lang} errMealieForbidden`);
+  }
+  assert.doesNotMatch(JSON.stringify(de), /API-Schlüssel/);
   assert.match(de.uiNoWriteGrant, /Home-Assistant-Nutzer/);
   assert.equal(i18n("en").editorFoodPhotographyCrop, i18n("en").uiPhotoCrop);
 });

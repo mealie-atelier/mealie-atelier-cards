@@ -83,8 +83,8 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The sidebar and print brand lines are localized, the iOS install steps no longer repeat Share, offline conflict counts use proper singular and plural, and the sync status reads "wird synchronisiert".
 - Web app: free-text shopping items show exactly as typed (no forced "1 " prefix).
 - Web app: a wrong Mealie token reports `mealie_auth` (HTTP 502) instead of a passed-through 401, and the status call reports `connected: false` and an `ai` feature flag.
-- Web app: an address that answers with a web page instead of Mealie reports `mealie_not_mealie`; a Mealie 403 (missing permission) is no longer reported as a wrong token.
-- Timer, AI review and AI substitute errors, background timer errors, the hidden "Review with AI" button without an AI key, and new `err*` texts (no AI provider, USDA key, no notification destination, not a Mealie server) now show in the UI language.
+- Web app: an address that answers with a web page instead of Mealie reports `mealie_not_mealie`; so does a 404 that is not JSON. A Mealie 403 (missing permission) reports `mealie_forbidden`, not a wrong token.
+- Timer, AI review, AI substitute and background timer errors now show in the UI language, and "Review with AI" is hidden without an AI key. New `err*` texts cover a missing AI provider, a rejected USDA key, no notification destination, a wrong Mealie address and a forbidden Mealie action.
 - Web app: an invalid USDA key reports `usda_key_rejected` instead of a Mealie connection error; read-only, missing AI key and missing notification destination errors carry codes.
 - Web app: browsers see a small German or English page for the sign-in prompt and the lockout (with the wait time); API clients still get JSON.
 - Web app: a scheme-less `MEALIE_URL`, an invalid `PORT`, `ATELIER_TRUSTED_PROXIES`, `ATELIER_HA_URL`, `ATELIER_ALARM_CHANNEL`, or half-set VAPID or Home Assistant settings now stop the app at startup with a one-line message instead of a stack trace or silent ignore.

@@ -277,8 +277,18 @@ async function mealie(method, path, body, query) {
       });
     }
     const mime = response.headers.get("content-type") || "";
-    // A real Mealie answers errors and data as JSON; HTML or plain text means another server.
-    if ((response.status === 404 || response.status < 300) && mime.includes("html"))
+    if (response.status === 403) {
+      throw Object.assign(new Error("Mealie HTTP 403"), {
+        status: 403,
+        atelierCode: "mealie_forbidden",
+      });
+    }
+    // A real Mealie answers errors as JSON (FastAPI); a 404 that is not JSON, or HTML on success,
+    // means another server answers at MEALIE_URL.
+    if (
+      (response.status === 404 && !mime.includes("json")) ||
+      (response.status < 300 && mime.includes("html"))
+    )
       throw Object.assign(
         new Error("The address does not answer like a Mealie server. Check MEALIE_URL."),
         {
