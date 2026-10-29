@@ -6,6 +6,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Added
 
+- Shopping: edit an item (name, quantity, note), delete it, or clear all ticked items of a list after a confirmation. The offline queue keeps these edits too, and the web app server mirrors them with the same permission rules. The Mealie Atelier Bridge provides the matching actions `shopping_update`, `shopping_delete` and `shopping_clear_checked`.
 - The web app's AI helpers also work with an Anthropic API key (`ANTHROPIC_API_KEY`); `ATELIER_AI_PROVIDER` picks one when both keys are set.
 
 ### Fixed

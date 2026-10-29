@@ -442,6 +442,21 @@ async function addRecipeToShoppingList(listId, recipeId) {
   }
 }
 
+/** A note may be cleared (empty string) but never exceeds 250 characters. */
+function shoppingNote(v) {
+  if (typeof v !== "string" || v.length > 250) throw bad("Invalid note");
+  return v.trim();
+}
+/** Deleting an item that is already gone counts as done, so a replay or double tap stays harmless. */
+async function deleteShoppingItem(id) {
+  try {
+    await mealie("DELETE", `/api/households/shopping/items/${id}`);
+  } catch (error) {
+    if (error.status !== 404) throw error;
+  }
+  return { deleted: true };
+}
+
 async function mutate(action, payload, req) {
   if (READ_ONLY)
     throw Object.assign(new Error("Mealie Atelier is in read-only mode"), {
@@ -459,6 +474,42 @@ async function mutate(action, payload, req) {
         ...current,
         checked: payload.checked,
       });
+    }
+    case "shopping_delete":
+      return deleteShoppingItem(identifier(payload.item_id));
+    case "shopping_update": {
+      const id = identifier(payload.item_id);
+      const changes = {};
+      if ("note" in payload) changes.note = shoppingNote(payload.note);
+      if ("display" in payload) changes.display = text(payload.display);
+      if ("quantity" in payload) {
+        if (
+          typeof payload.quantity !== "number" ||
+          !Number.isFinite(payload.quantity) ||
+          payload.quantity < 0 ||
+          payload.quantity > 99999
+        )
+          throw bad("Invalid quantity");
+        changes.quantity = payload.quantity;
+      }
+      if (!Object.keys(changes).length) throw bad("Nothing to update");
+      const current = await mealie("GET", `/api/households/shopping/items/${id}`);
+      // A free-text item has no food: its name is the note, so a new name must replace the note.
+      if (changes.display !== undefined && !current?.food && !("note" in changes))
+        changes.note = changes.display;
+      return mealie("PUT", `/api/households/shopping/items/${id}`, { ...current, ...changes });
+    }
+    case "shopping_clear_checked": {
+      const listId = typeof payload.list_id === "string" ? payload.list_id : "";
+      identifier(listId);
+      const all = unwrap(
+        await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
+      );
+      const ids = all
+        .filter((x) => x?.checked === true && String(x.shoppingListId) === listId)
+        .map((x) => x.id);
+      for (const id of ids) await deleteShoppingItem(identifier(String(id)));
+      return { deleted: ids.length };
     }
     case "shopping_list_create":
       return mealie("POST", "/api/households/shopping/lists", { name: text(payload.name, 100) });

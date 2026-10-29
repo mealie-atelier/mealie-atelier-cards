@@ -129,10 +129,56 @@ export const viewMethods = {
     const text = String(item.display || item.note || item.food?.name || this.t("itemFallback"));
     return Number(item.quantity) === 1 && !item.unit ? text.replace(/^1(?:[.,]0+)?\s+/, "") : text;
   },
+  /** Rows that exist only on this device (waiting add or unsent save) cannot be edited yet. */
+  _shoppingRowBusy(item) {
+    return /^(pending|local)-/.test(String(item.id));
+  },
   _shoppingRow(item) {
     const label = this._shoppingLabel(item);
     const id = String(item.id);
-    return `<div class="shopping-row ${item.checked ? "checked" : ""}"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(item.id)}" data-checked="${item.checked ? "true" : "false"}" role="checkbox" aria-checked="${item.checked ? "true" : "false"}" ${!this._permissions.can_write || /^(pending|local)-/.test(id) ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(id.startsWith("local-") ? this.t("offlineWaiting") : id.startsWith("pending-") ? this.t("uiSaving") : this.t(item.checked ? "uiMarkShoppingOpen" : "uiMarkShoppingComplete", { item: label }))}">${icon("check", 14)}</button><span class="shopping-name">${esc(label)}</span><span class="shopping-qty">${esc(item.offlineWaiting ? this.t("offlineWaiting") : "")}</span></div>`;
+    const editable = this._permissions.can_write && !this._shoppingRowBusy(item);
+    const actions = editable
+      ? `<span class="shopping-actions"><button class="icon-btn shopping-action" type="button" data-action="shopping-edit-form" data-id="${esc(id)}" title="${esc(this.t("shoppingEditItem", { item: label }))}" aria-label="${esc(this.t("shoppingEditItem", { item: label }))}">${icon("edit", 16)}</button><button class="icon-btn shopping-action shopping-delete" type="button" data-action="shopping-delete" data-id="${esc(id)}" title="${esc(this.t("shoppingDeleteItem", { item: label }))}" aria-label="${esc(this.t("shoppingDeleteItem", { item: label }))}">${icon("trash", 16)}</button></span>`
+      : "";
+    return `<div class="shopping-row ${item.checked ? "checked" : ""}"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(item.id)}" data-checked="${item.checked ? "true" : "false"}" role="checkbox" aria-checked="${item.checked ? "true" : "false"}" ${!this._permissions.can_write || this._shoppingRowBusy(item) ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(id.startsWith("local-") ? this.t("offlineWaiting") : id.startsWith("pending-") ? this.t("uiSaving") : this.t(item.checked ? "uiMarkShoppingOpen" : "uiMarkShoppingComplete", { item: label }))}">${icon("check", 14)}</button><span class="shopping-name">${esc(label)}</span><span class="shopping-qty">${esc(item.offlineWaiting ? this.t("offlineWaiting") : "")}</span>${actions}</div>`;
+  },
+  /** Starting values of the edit form. A free-text item has no food: its name is its note. */
+  _shoppingEditFields(item) {
+    const freeText = !item.food;
+    const quantity = Number(item.quantity);
+    return {
+      freeText,
+      name: String(item.food?.name || item.note || item.display || "").trim(),
+      note: freeText ? "" : String(item.note || ""),
+      quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 0,
+    };
+  },
+  /** Only the fields the user changed, or null when nothing changed. */
+  _shoppingEditChanges(item, values) {
+    const from = this._shoppingEditFields(item);
+    const changes = {};
+    const name = tidy(values.name);
+    if (name && name !== from.name) {
+      changes.display = name;
+      if (from.freeText) changes.note = name;
+    }
+    if (!from.freeText && "note" in values && tidy(values.note) !== from.note.trim())
+      changes.note = tidy(values.note);
+    const raw = String(values.quantity ?? "").trim();
+    if (raw !== "") {
+      const quantity = Number(raw);
+      if (
+        Number.isFinite(quantity) &&
+        quantity >= 0 &&
+        quantity <= 99999 &&
+        quantity !== from.quantity
+      )
+        changes.quantity = quantity;
+    }
+    return Object.keys(changes).length ? changes : null;
+  },
+  _shoppingEditLocal(item, changes) {
+    return { ...changes };
   },
   /** Open items first, grouped by Mealie label (unlabelled last); ticked items sink to the bottom. */
   _shoppingRows(items) {
@@ -154,13 +200,17 @@ export const viewMethods = {
     if (done.length) parts.push(section(open.length ? this.t("shoppingTicked") : "", done));
     return parts.join("");
   },
+  /** Ticked items that exist on the server; unsent local rows are left alone. */
+  _shoppingClearable(items) {
+    return items.filter((i) => i.checked && !this._shoppingRowBusy(i)).length;
+  },
   _shopping() {
     const lists = asArray(this._data.shopping?.lists);
     const all = this._offlineItems(asArray(this._data.shopping?.items));
     const selected = this._activeList || String(lists[0]?.id || "");
     const filtered = all.filter((i) => String(i.shoppingListId) === selected);
     const done = filtered.filter((i) => i.checked).length;
-    return `<div class="shopping-card"><div class="toolbar shopping-toolbar">${this._syncEntryButton()}${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
+    return `<div class="shopping-card"><div class="toolbar shopping-toolbar">${this._syncEntryButton()}${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}${this._permissions.can_write && lists.length && this._shoppingClearable(filtered) ? `<button class="btn tiny" data-action="shopping-clear-form">${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
       ${this._offlineBar()}<div class="shopping-list">${this._shoppingRows(filtered)}
       ${!filtered.length ? `<div class="notice">${icon("cart")} ${esc(lists.length ? this.t("noShopping") : this.t("addListFirst"))}</div>` : ""}</div>
       ${lists.length && this._permissions.can_write ? `<form class="shopping-form" data-form="shopping-add"><input name="note" required maxlength="250" placeholder="${esc(this.t("addItem"))}" aria-label="${esc(this.t("addItem"))}"><button class="btn primary" type="submit">${icon("plus", 14)} ${esc(this.t("add"))}</button></form>` : ""}</div>`;

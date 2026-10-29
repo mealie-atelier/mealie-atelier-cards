@@ -1,6 +1,12 @@
-/** Offline queue for shopping edits (ticks and added notes) in the Home Assistant card. */
+/** Offline queue for shopping edits (ticks, added notes, edits, deletes and clearing ticked items) in the Home Assistant card. */
 const OFFLINE_CAP = 100;
-const OFFLINE_ACTIONS = ["shopping_toggle", "shopping_add"];
+const OFFLINE_ACTIONS = [
+  "shopping_toggle",
+  "shopping_add",
+  "shopping_delete",
+  "shopping_update",
+  "shopping_clear_checked",
+];
 const OFFLINE_CONFLICT_CODES = ["offline_conflict", "offline_add_uncertain", "offline_op_reused"];
 
 /** Index of the last waiting tick on an item (no `findLastIndex`: older wall tablets lack it). */
@@ -118,20 +124,39 @@ export const offlineQueueMethods = {
     // The state the user saw: a waiting tick on the same item wins over the last loaded state.
     const before = ops[lastToggleIndex(ops, String(payload.item_id))];
     const seen = before ? before.payload.checked : item?.checked;
-    const entry =
-      action === "shopping_toggle"
-        ? {
-            item_id: String(payload.item_id),
-            checked: payload.checked === true,
-            expected_checked: typeof seen === "boolean" ? seen : !payload.checked,
-          }
-        : { list_id: String(payload.list_id), note: String(payload.note) };
-    const label = action === "shopping_add" ? entry.note : this._offlineItemName(item);
+    const entry = this._offlineEntry(action, payload, seen);
+    const label =
+      action === "shopping_add"
+        ? entry.note
+        : action === "shopping_clear_checked"
+          ? String(
+              asArray(this._data.shopping?.lists).find((x) => String(x.id) === entry.list_id)
+                ?.name || this.t("shopping"),
+            )
+          : this._offlineItemName(item);
     if (!this._offlinePush(ops, action, entry, label)) return false;
     if (!this._offlineSave(ops)) return false;
     this._error = "";
     this._flash(this.t("offlineSaved"));
     return true;
+  },
+  /** The stored form of a failed write; only the fields the Bridge replay accepts. */
+  _offlineEntry(action, payload, seen) {
+    if (action === "shopping_toggle")
+      return {
+        item_id: String(payload.item_id),
+        checked: payload.checked === true,
+        expected_checked: typeof seen === "boolean" ? seen : !payload.checked,
+      };
+    if (action === "shopping_delete") return { item_id: String(payload.item_id) };
+    if (action === "shopping_update") {
+      const entry = { item_id: String(payload.item_id) };
+      for (const key of ["note", "display", "quantity"])
+        if (key in payload) entry[key] = payload[key];
+      return entry;
+    }
+    if (action === "shopping_clear_checked") return { list_id: String(payload.list_id) };
+    return { list_id: String(payload.list_id), note: String(payload.note) };
   },
   _offlineItemName(item) {
     return String(item?.display || item?.note || item?.food?.name || this.t("itemFallback"));
@@ -140,23 +165,45 @@ export const offlineQueueMethods = {
   _offlineItems(items) {
     const ops = this._offlineQueue().filter((op) => op.state !== "conflict");
     if (!ops.length) return items;
-    const ticks = new Map(
-      ops.filter((op) => op.action === "shopping_toggle").map((op) => [op.payload.item_id, op]),
-    );
-    const view = items.map((item) =>
-      ticks.has(String(item.id))
-        ? { ...item, checked: ticks.get(String(item.id)).payload.checked }
-        : item,
-    );
-    for (const op of ops)
-      if (op.action === "shopping_add")
-        view.push({
-          id: `local-${op.id}`,
-          shoppingListId: op.payload.list_id,
-          note: op.payload.note,
-          checked: false,
-          offlineWaiting: true,
-        });
+    // Waiting operations apply in the order the user made them.
+    let view = items;
+    for (const op of ops) {
+      const p = op.payload;
+      if (op.action === "shopping_toggle")
+        view = view.map((item) =>
+          String(item.id) === String(p.item_id) ? { ...item, checked: p.checked } : item,
+        );
+      else if (op.action === "shopping_delete")
+        view = view.filter((item) => String(item.id) !== String(p.item_id));
+      else if (op.action === "shopping_update")
+        view = view.map((item) =>
+          String(item.id) === String(p.item_id)
+            ? {
+                ...item,
+                ...Object.fromEntries(
+                  ["note", "display", "quantity"]
+                    .filter((key) => key in p)
+                    .map((key) => [key, p[key]]),
+                ),
+              }
+            : item,
+        );
+      else if (op.action === "shopping_clear_checked")
+        view = view.filter(
+          (item) => !(item.checked === true && String(item.shoppingListId) === String(p.list_id)),
+        );
+      else if (op.action === "shopping_add")
+        view = [
+          ...view,
+          {
+            id: `local-${op.id}`,
+            shoppingListId: p.list_id,
+            note: p.note,
+            checked: false,
+            offlineWaiting: true,
+          },
+        ];
+    }
     return view;
   },
   /** Status line and conflict list for the shopping view. */

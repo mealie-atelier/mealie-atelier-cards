@@ -8,6 +8,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const ID = /^[a-zA-Z0-9_-]{1,150}$/;
 const err = (status, message, atelierCode) =>
   Object.assign(new Error(message), { status, ...(atelierCode ? { atelierCode } : {}) });
+export const OFFLINE_ACTIONS = [
+  "shopping_toggle",
+  "shopping_add",
+  "shopping_delete",
+  "shopping_update",
+  "shopping_clear_checked",
+];
 const MAX_AGE = 30 * 86400e3;
 export function validateOperation(operation) {
   if (
@@ -17,8 +24,7 @@ export function validateOperation(operation) {
     !UUID.test(operation.id)
   )
     throw err(400, "Invalid offline operation ID");
-  if (!["shopping_toggle", "shopping_add"].includes(operation.action))
-    throw err(400, "Unsupported offline operation");
+  if (!OFFLINE_ACTIONS.includes(operation.action)) throw err(400, "Unsupported offline operation");
   const p = operation.payload;
   if (!p || typeof p !== "object" || Array.isArray(p)) throw err(400, "Invalid operation payload");
   if (operation.action === "shopping_toggle") {
@@ -28,6 +34,25 @@ export function validateOperation(operation) {
       typeof p.expected_checked !== "boolean"
     )
       throw err(400, "Toggle needs item ID, desired and original state");
+  } else if (operation.action === "shopping_delete") {
+    if (!ID.test(p.item_id || "")) throw err(400, "Delete needs an item ID");
+  } else if (operation.action === "shopping_update") {
+    const fields = ["note", "display", "quantity"].filter((key) => key in p);
+    if (
+      !ID.test(p.item_id || "") ||
+      !fields.length ||
+      ("note" in p && (typeof p.note !== "string" || p.note.length > 250)) ||
+      ("display" in p &&
+        (typeof p.display !== "string" || !p.display.trim() || p.display.length > 250)) ||
+      ("quantity" in p &&
+        (typeof p.quantity !== "number" ||
+          !Number.isFinite(p.quantity) ||
+          p.quantity < 0 ||
+          p.quantity > 99999))
+    )
+      throw err(400, "Update needs an item ID and valid changes");
+  } else if (operation.action === "shopping_clear_checked") {
+    if (!ID.test(p.list_id || "")) throw err(400, "Clear needs a list ID");
   } else if (
     !ID.test(p.list_id || "") ||
     typeof p.note !== "string" ||
@@ -118,7 +143,10 @@ export class OfflineLedger {
         });
         throw err(409, record.message, "offline_conflict");
       }
-    } else if (record.state === "uncertain" || record.state === "sending") {
+    } else if (
+      op.action === "shopping_add" &&
+      (record.state === "uncertain" || record.state === "sending")
+    ) {
       throw err(
         409,
         "Earlier add may have reached Mealie. Check the list to avoid a duplicate.",
@@ -133,7 +161,8 @@ export class OfflineLedger {
       await set("completed", { result: response });
       return response;
     } catch (e) {
-      await set(op.action === "shopping_toggle" ? "checking" : "uncertain", {
+      // Only an add is unsafe to repeat; every other action ends in the same state when replayed.
+      await set(op.action === "shopping_add" ? "uncertain" : "checking", {
         message: String(e.message || e).slice(0, 200),
       });
       throw e;

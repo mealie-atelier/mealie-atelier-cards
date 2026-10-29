@@ -4,6 +4,13 @@ const store = self.AtelierOfflineCore;
 const offlineError = (code) => Object.assign(new Error(code), { code });
 const syncChannel =
   typeof BroadcastChannel === "function" ? new BroadcastChannel("mealie-atelier-sync") : null;
+export const OFFLINE_ACTIONS = [
+  "shopping_toggle",
+  "shopping_add",
+  "shopping_delete",
+  "shopping_update",
+  "shopping_clear_checked",
+];
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class AtelierOfflineClient {
   constructor() {
@@ -93,10 +100,9 @@ export class AtelierOfflineClient {
   async enqueue(action, payload) {
     if (!this.enabled) throw offlineError("offlineNotEnabled");
     if (!this.snapshot) throw offlineError("offlineListNeedsRefresh");
-    if (!["shopping_toggle", "shopping_add"].includes(action))
-      throw offlineError("offlineRequiresConnection");
-    const id = crypto.randomUUID(),
-      data = { ...payload };
+    if (!OFFLINE_ACTIONS.includes(action)) throw offlineError("offlineRequiresConnection");
+    const id = crypto.randomUUID();
+    let data = { ...payload };
     if (action === "shopping_toggle") {
       const item = this.shopping.items.find((x) => String(x.id) === String(data.item_id));
       const original = this.snapshot.items.find((x) => String(x.id) === String(data.item_id));
@@ -118,6 +124,18 @@ export class AtelierOfflineClient {
         return { queued: false, reverted: true };
       }
       data.expected_checked = original.checked;
+    } else if (action === "shopping_delete" || action === "shopping_update") {
+      const item = this.shopping.items.find((x) => String(x.id) === String(data.item_id));
+      if (!item || store.isTemporary(item)) throw offlineError("offlineItemNotEditable");
+      if (action === "shopping_update") {
+        const keys = ["item_id", "note", "display", "quantity"];
+        for (const key of Object.keys(data)) if (!keys.includes(key)) delete data[key];
+        if (Object.keys(data).length < 2) throw offlineError("offlineInvalidItem");
+      }
+    } else if (action === "shopping_clear_checked") {
+      if (!this.snapshot.lists.some((l) => String(l.id) === String(data.list_id)))
+        throw offlineError("offlineInvalidItem");
+      data = { list_id: data.list_id };
     } else {
       if (
         typeof data.note !== "string" ||

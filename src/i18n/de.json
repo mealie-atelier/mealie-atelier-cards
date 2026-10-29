@@ -1177,5 +1177,18 @@
   "studioDiscoverRecipeBase.other": "Rezeptbasis {servings} Portionen",
   "studioDiscoverForPeople.one": "Für 1 Person",
   "studioDiscoverForPeople.other": "Für {people} Personen",
-  "editorEntityDomainWarning": "Erwartet wird eine Entität der Domäne {domain}, zum Beispiel {example}."
+  "editorEntityDomainWarning": "Erwartet wird eine Entität der Domäne {domain}, zum Beispiel {example}.",
+  "shoppingEditItem": "Bearbeiten: {item}",
+  "shoppingDeleteItem": "Löschen: {item}",
+  "shoppingEditTitle": "Artikel bearbeiten",
+  "shoppingEditTip": "Ändere Name, Menge oder Notiz. Nur was du änderst, wird an Mealie gesendet.",
+  "shoppingItemName": "Name",
+  "shoppingItemQuantity": "Menge",
+  "shoppingItemNote": "Notiz",
+  "shoppingItemGone": "Diesen Artikel gibt es nicht mehr.",
+  "shoppingCancel": "Abbrechen",
+  "shoppingClearTicked": "Erledigte entfernen",
+  "shoppingClearTitle": "Erledigte Artikel entfernen?",
+  "shoppingClearConfirm.one": "1 erledigter Artikel wird aus dieser Liste entfernt. Das lässt sich nicht rückgängig machen.",
+  "shoppingClearConfirm.other": "{count} erledigte Artikel werden aus dieser Liste entfernt. Das lässt sich nicht rückgängig machen."
 }

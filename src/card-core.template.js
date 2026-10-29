@@ -64,6 +64,8 @@ const ICONS = {
   external:
     '<path d="M13 5h6v6M19 5l-9 9"/><path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
   edit: '<path d="M12 20h9M4 16l12-12 4 4-12 12H4v-4Z"/>',
+  trash:
+    '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3"/>',
   bolt: '<path d="m13 2-9 12h7l-1 8 10-12h-7l0-8Z"/>',
   volume: '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>',
@@ -1387,6 +1389,59 @@ class MealieAtelierCard extends HTMLElement {
       if (current) current.checked = before;
     };
   }
+  _optimisticDelete(item_id) {
+    const before = asArray(this._data.shopping?.items);
+    const index = before.findIndex((x) => String(x.id) === String(item_id));
+    const removed = index >= 0 ? before[index] : null;
+    if (!removed) return null;
+    this._data.shopping = {
+      ...this._data.shopping,
+      items: before.filter((x) => String(x.id) !== String(item_id)),
+    };
+    return () => {
+      const current = asArray(this._data.shopping?.items);
+      if (current.some((x) => String(x.id) === String(item_id))) return;
+      const next = [...current];
+      next.splice(Math.min(index, next.length), 0, removed);
+      this._data.shopping = { ...this._data.shopping, items: next };
+    };
+  }
+  _optimisticUpdate(item_id, changes) {
+    const item = asArray(this._data.shopping?.items).find((x) => String(x.id) === String(item_id));
+    if (!item) return null;
+    const before = Object.fromEntries(Object.keys(changes).map((key) => [key, item[key]]));
+    Object.assign(item, changes);
+    return () => {
+      const current = asArray(this._data.shopping?.items).find(
+        (x) => String(x.id) === String(item_id),
+      );
+      if (!current) return;
+      // Only fields still holding this edit are restored, so a newer edit is never undone.
+      for (const key of Object.keys(before))
+        if (current[key] === changes[key]) current[key] = before[key];
+    };
+  }
+  _optimisticClearChecked(list_id) {
+    const before = asArray(this._data.shopping?.items);
+    const removed = before
+      .map((item, index) => ({ item, index }))
+      .filter(
+        ({ item }) => item.checked === true && String(item.shoppingListId) === String(list_id),
+      );
+    if (!removed.length) return null;
+    const gone = new Set(removed.map(({ item }) => String(item.id)));
+    this._data.shopping = {
+      ...this._data.shopping,
+      items: before.filter((x) => !gone.has(String(x.id))),
+    };
+    return () => {
+      const next = [...asArray(this._data.shopping?.items)];
+      const present = new Set(next.map((x) => String(x.id)));
+      for (const { item, index } of removed)
+        if (!present.has(String(item.id))) next.splice(Math.min(index, next.length), 0, item);
+      this._data.shopping = { ...this._data.shopping, items: next };
+    };
+  }
   _optimisticAdd(key, row) {
     const before = this._data[key];
     const rows = asArray(key === "shopping" ? before?.items : before);
@@ -1858,6 +1913,10 @@ class MealieAtelierCard extends HTMLElement {
         "create-list-form",
         "recipe-to-list-form",
         "shopping-toggle",
+        "shopping-edit-form",
+        "shopping-delete",
+        "shopping-clear-form",
+        "shopping-clear-confirm",
         "remove-meal",
       ].includes(action) &&
       !this._permissions.can_write
@@ -1958,6 +2017,39 @@ class MealieAtelierCard extends HTMLElement {
       await this._mutate("shopping_toggle", { item_id, checked }, "shopping", () =>
         this._optimisticToggle(item_id, checked),
       );
+      return;
+    }
+    if (action === "shopping-edit-form") {
+      const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
+        (x) => String(x.id) === String(el.dataset.id),
+      );
+      if (!item) return;
+      this._shoppingEditId = String(item.id);
+      this._modal = "shopping-edit";
+      this._render();
+      return;
+    }
+    if (action === "shopping-delete") {
+      el.disabled = true;
+      const item_id = el.dataset.id;
+      await this._mutate("shopping_delete", { item_id }, "shopping", () =>
+        this._optimisticDelete(item_id),
+      );
+      return;
+    }
+    if (action === "shopping-clear-form") {
+      if (!this._activeList) return;
+      this._modal = "shopping-clear";
+      this._render();
+      return;
+    }
+    if (action === "shopping-clear-confirm") {
+      el.disabled = true;
+      const list_id = this._activeList;
+      if (list_id)
+        await this._mutate("shopping_clear_checked", { list_id }, "shopping", () =>
+          this._optimisticClearChecked(list_id),
+        );
       return;
     }
     if (action === "remove-meal") {
@@ -2222,6 +2314,29 @@ class MealieAtelierCard extends HTMLElement {
             this._render();
           }
         }
+        break;
+      }
+      case "shopping-edit": {
+        const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
+          (x) => String(x.id) === String(this._shoppingEditId),
+        );
+        if (!item) {
+          this._modal = null;
+          this._render();
+          break;
+        }
+        const changes = this._shoppingEditChanges(item, values);
+        if (!changes) {
+          this._modal = null;
+          this._render();
+          break;
+        }
+        ok = await this._mutate(
+          "shopping_update",
+          { item_id: String(item.id), ...changes },
+          "shopping",
+          () => this._optimisticUpdate(item.id, this._shoppingEditLocal(item, changes)),
+        );
         break;
       }
       case "recipe-to-list":

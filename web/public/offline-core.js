@@ -89,6 +89,21 @@
       if (op.action === "shopping_toggle") {
         const item = shopping.items.find((x) => String(x.id) === String(op.payload.item_id));
         if (item) item.checked = op.payload.checked;
+      } else if (op.action === "shopping_delete") {
+        shopping.items = shopping.items.filter((x) => String(x.id) !== String(op.payload.item_id));
+      } else if (op.action === "shopping_update") {
+        const item = shopping.items.find((x) => String(x.id) === String(op.payload.item_id));
+        if (item) {
+          for (const key of ["note", "display", "quantity"])
+            if (key in op.payload) item[key] = op.payload[key];
+          // A free-text item has no food: its new name is also its note, as on the server.
+          if ("display" in op.payload && !item.food && !("note" in op.payload))
+            item.note = op.payload.display;
+        }
+      } else if (op.action === "shopping_clear_checked") {
+        shopping.items = shopping.items.filter(
+          (x) => !(x.checked === true && String(x.shoppingListId) === String(op.payload.list_id)),
+        );
       } else if (
         op.action === "shopping_add" &&
         !shopping.items.some((x) => String(x.id) === "local-" + op.id)

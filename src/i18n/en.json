@@ -1177,5 +1177,18 @@
   "studioAiNotConfigured": "No AI key is configured.",
   "nutriUsdaKeyMissingHa": "USDA API key not configured. Add it in the integration options.",
   "syncReadOnly": "This dashboard is in read-only mode.",
-  "editorEntityDomainWarning": "Expected an entity from the {domain} domain, for example {example}."
+  "editorEntityDomainWarning": "Expected an entity from the {domain} domain, for example {example}.",
+  "shoppingEditItem": "Edit: {item}",
+  "shoppingDeleteItem": "Delete: {item}",
+  "shoppingEditTitle": "Edit item",
+  "shoppingEditTip": "Change the name, quantity or note. Only what you change is sent to Mealie.",
+  "shoppingItemName": "Name",
+  "shoppingItemQuantity": "Quantity",
+  "shoppingItemNote": "Note",
+  "shoppingItemGone": "This item no longer exists.",
+  "shoppingCancel": "Cancel",
+  "shoppingClearTicked": "Clear ticked",
+  "shoppingClearTitle": "Clear ticked items?",
+  "shoppingClearConfirm.one": "1 ticked item will be removed from this list. This cannot be undone.",
+  "shoppingClearConfirm.other": "{count} ticked items will be removed from this list. This cannot be undone."
 }
