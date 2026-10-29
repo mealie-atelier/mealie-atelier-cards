@@ -774,6 +774,7 @@
   "uiTimerStopError": "Could not stop the timer: {error}",
   "dialogWeeklyMenu": "WEEKLY MENU",
   "dialogYourMenu": "YOUR MENU",
+  "removeMeal": "Remove: {name} ({mealType})",
   "dialogPlanned": "PLANNED",
   "dialogNewRecipe": "NEW RECIPE",
   "dialogRecipeTitle": "RECIPE TITLE",

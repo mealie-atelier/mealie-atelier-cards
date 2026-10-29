@@ -51,10 +51,9 @@ export const viewMethods = {
         const category =
           recipe.recipeCategory?.[0]?.name || recipe.recipeCategory?.[0] || this.t("featured");
         const image = this._design.show_images !== false;
-        const timeLabel =
-          AtelierStudio.formatTime(recipe.totalTime, this._language) ||
-          this.t("uiMealieRecipeFallback");
-        return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${image ? recipeImage(recipe) : ""}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div><div class="placeholder">${esc(recipe.name)}</div></div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon("clock", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
+        const time = AtelierStudio.formatTime(recipe.totalTime, this._language);
+        const timeLabel = time || this.t("uiMealieRecipeFallback");
+        return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${image ? recipeImage(recipe) : ""}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div><div class="placeholder">${esc(recipe.name)}</div></div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon(time ? "clock" : "book", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(
         "",
@@ -69,19 +68,56 @@ export const viewMethods = {
     if (last <= 1) return "";
     return `<div class="pager"><button class="btn tiny" data-action="page" data-value="${p - 1}" ${p <= 1 ? "disabled" : ""}>${esc(this.t("back"))}</button><span>${p} / ${last}</span><button class="btn tiny" data-action="page" data-value="${p + 1}" ${p >= last ? "disabled" : ""}>${esc(this.t("next"))}</button></div>`;
   },
+  /** Mealie entry types in display order; the plan dialog offers all of them. */
+  _mealTypes() {
+    return ["breakfast", "lunch", "dinner", "side", "snack", "dessert", "drink"];
+  },
+  _mealTypeLabel(type) {
+    const key = {
+      breakfast: "breakfast",
+      lunch: "lunch",
+      dinner: "dinner",
+      side: "printDocSide",
+      snack: "printDocSnack",
+      dessert: "printDocDessert",
+      drink: "printDocDrink",
+    }[type];
+    return key ? this.t(key) : type || "";
+  },
+  /** Stable sort by meal type (breakfast first); unknown types go last in API order. */
+  _sortMeals(list) {
+    const order = this._mealTypes();
+    const rank = (m) => {
+      const i = order.indexOf(m.entryType);
+      return i < 0 ? order.length : i;
+    };
+    return list
+      .map((m, i) => [m, i])
+      .sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1])
+      .map((x) => x[0]);
+  },
+  /** On swipeable (narrow) week strips, bring today's column into view. */
+  _revealToday() {
+    const grid = this.shadowRoot?.querySelector(".week-grid");
+    const day = grid?.querySelector(".day.today");
+    if (!grid || !day || grid.scrollWidth <= grid.clientWidth) return;
+    const g = grid.getBoundingClientRect(),
+      d = day.getBoundingClientRect();
+    if (d.left >= g.left && d.right <= g.right) return;
+    grid.scrollLeft += d.left - g.left;
+  },
   _week() {
     const all = asArray(this._data.mealplan);
     const today = dateYmd(new Date());
     return `<div class="week-grid">${Array.from({ length: 7 }, (_, i) => {
       const day = addDays(this._weekStart, i),
         ymd = dateYmd(day),
-        todays = all.filter((m) => m.date === ymd);
+        todays = this._sortMeals(all.filter((m) => m.date === ymd));
       return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
       ${todays
-        .slice(0, 3)
         .map((meal) => {
           const photo = recipeImage(meal.recipe || {});
-          return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this.t(meal.entryType) || meal.entryType || "")}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
+          return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
       ${todays.length === 0 ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
@@ -108,7 +144,7 @@ export const viewMethods = {
     );
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
-    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}) ? `<div class="meal-photo">${recipeImage(meal.recipe || {})}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this.t(meal.entryType) || meal.entryType)}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
+    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}) ? `<div class="meal-photo">${recipeImage(meal.recipe || {})}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
     <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${esc(this.tp("openItems", open.length))}</h3>
     ${

@@ -1077,8 +1077,12 @@ class MealieAtelierCard extends HTMLElement {
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
     if (viewChanged) {
       this._revealActiveNav();
+      this._revealToday();
       if (typeof requestAnimationFrame === "function")
-        requestAnimationFrame(() => this._revealActiveNav());
+        requestAnimationFrame(() => {
+          this._revealActiveNav();
+          this._revealToday();
+        });
     }
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     const closeButton = () =>
@@ -1818,7 +1822,7 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "day-meal") {
       if (v) await this._openRecipe(v);
       else {
-        this._planDay = dateYmd(new Date());
+        this._planDay = el.dataset?.date || dateYmd(new Date());
         this._modal = "plan";
         this._render();
       }

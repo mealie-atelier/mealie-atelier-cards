@@ -201,16 +201,28 @@ export const dialogMethods = {
         </div></div>`;
     }
     if (this._modal === "plan") {
+      size = "plan-anchored";
       const d = this._planDay || dateYmd(new Date());
       const all = asArray(this._data.mealplan).filter((m) => m.date === d);
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogWeeklyMenu")}</div><h2>${esc(this.t("planNow"))}</h2><p>${this.t("uiPlanMealsQuicklyWithoutClutter")}</p></div><div class="editor-stamp">${icon("calendar", 26)}</div></div>
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogYourMenu")}</div><form class="editor-form" data-form="plan">
           <div class="editor-columns"><label class="field"><span>${esc(this.t("day"))}</span><input type="date" name="date" value="${esc(d)}" required></label>
-          <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type"><option value="dinner">${esc(this.t("dinner"))}</option><option value="lunch">${esc(this.t("lunch"))}</option><option value="breakfast">${esc(this.t("breakfast"))}</option></select></label></div>
+          <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type">${["dinner", ...this._mealTypes().filter((x) => x !== "dinner")].map((x) => `<option value="${x}">${esc(this._mealTypeLabel(x))}</option>`).join("")}</select></label></div>
           ${this._pickerMarkup()}
           <div class="form-actions"><button class="btn primary" type="submit" data-picker="submit" ${!this._picker?.selected ? "disabled" : ""}>${icon("plus", 14)} ${esc(this.t("addToPlan"))}</button></div>
         </form></section>
-        ${all.length ? `<section class="editor-card"><div class="eyebrow">02 / ${this.t("dialogPlanned")}</div><h3>${esc(this.t("nextMeal"))}</h3>${all.map((e) => `<div class="shopping-row"><div class="shopping-name">${esc(mealName(e))}</div><button class="btn tiny" data-action="remove-meal" data-value="${esc(e.id)}" ${String(e.id).startsWith("pending-") ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(String(e.id).startsWith("pending-") ? this.t("uiSaving") : this.t("close"))}">${icon("close", 14)}</button></div>`).join("")}</section>` : ""}</div>`;
+        ${
+          all.length
+            ? `<section class="editor-card"><div class="eyebrow">02 / ${this.t("dialogPlanned")}</div>${this._sortMeals(
+                all,
+              )
+                .map(
+                  (e) =>
+                    `<div class="shopping-row"><div class="shopping-name"><small>${esc(this._mealTypeLabel(e.entryType))}</small> ${esc(mealName(e))}</div><button class="btn tiny" data-action="remove-meal" data-value="${esc(e.id)}" ${String(e.id).startsWith("pending-") ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(String(e.id).startsWith("pending-") ? this.t("uiSaving") : this.t("removeMeal", { name: mealName(e) || this._mealTypeLabel(e.entryType), mealType: this._mealTypeLabel(e.entryType) }))}">${icon("close", 14)}</button></div>`,
+                )
+                .join("")}</section>`
+            : ""
+        }</div>`;
     }
     if (this._modal === "create")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div><div class="editor-stamp">${icon("plus", 27)}</div></div>

@@ -11,6 +11,11 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 ### Fixed
 
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
+- The week plan shows every entry of a day sorted by meal type, labels side, snack, dessert and drink in the UI language, and the plan dialog can plan all seven meal types.
+- Tapping a note in the week plan opens the plan dialog for that day, and its remove buttons name the entry and meal type.
+- On phones the week strip opens at today and its day cards share one height; the plan dialog no longer jumps when a recipe is picked.
+- The recipe picker keeps long names readable, formats times in the UI language, and its German tag filter reads "Schlagwörter" without a pill shape.
+- Recipe tiles without a time show a book icon instead of a clock.
 - Finished kitchen timers can be removed again, an invalid duration says which values are allowed, one minute reads "1 minute", and the timer keeps running in the card when background delivery is unavailable (for example in the web app without Web Push). Timers of several cards on one dashboard no longer overwrite each other.
 - A timer that runs out raises a visible alert with a short beep and vibration where supported.
 - Kitchen timers: removed timers no longer come back from another card on the same page, and a finished timer alerts only once. The beep works on iOS Safari (audio is unlocked by the start click) and a late tick of a background tab still alerts. A refused background alarm says in your language that the timer keeps running on this device, an invalid duration keeps what you typed and moves focus to the field, and removing a timer the server no longer knows works.

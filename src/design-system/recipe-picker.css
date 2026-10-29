@@ -31,6 +31,7 @@
 }
 .atelier .picker-disclosure {
   min-height: 44px;
+  border-radius: var(--ds-radius-md);
   justify-content: space-between;
   gap: var(--ds-space-2);
 }
@@ -75,7 +76,7 @@
 }
 .atelier .picker-option {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) fit-content(30%);
   align-items: center;
   gap: var(--ds-space-3);
   min-height: 52px;
@@ -109,11 +110,15 @@
 }
 .atelier .picker-name {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .atelier .picker-time {
   color: var(--ds-muted);
   font-size: var(--ds-font-xs);
+  min-width: 0;
+  overflow: hidden;
+  text-align: end;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .atelier .picker-skeleton {

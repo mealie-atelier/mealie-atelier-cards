@@ -265,7 +265,7 @@ export const recipePickerMethods = {
     const rows = s.items.map((r, i) => {
       const chosen = s.selected && String(r.id) === s.selected.id;
       const on = s.open && i === s.active;
-      return `<li role="option" class="picker-option" id="${s.id}-opt-${i}" aria-selected="${on}" data-action="picker-pick" data-value="${i}" ${on ? "data-active" : ""} ${chosen ? "data-chosen" : ""}><span class="picker-thumb" aria-hidden="true">${recipeImage(r)}</span><span class="picker-name">${esc(r.name)}</span><span class="picker-time">${esc(r.totalTime || "")}</span></li>`;
+      return `<li role="option" class="picker-option" id="${s.id}-opt-${i}" aria-selected="${on}" data-action="picker-pick" data-value="${i}" ${on ? "data-active" : ""} ${chosen ? "data-chosen" : ""}><span class="picker-thumb" aria-hidden="true">${recipeImage(r)}</span><span class="picker-name">${esc(r.name)}</span><span class="picker-time">${esc(AtelierStudio.formatTime(r.totalTime, this._language))}</span></li>`;
     });
     if (s.loading) {
       const skeletons = s.items.length ? 1 : 3;
