@@ -8,4 +8,6 @@ test("brand credits name the generator and the font licence", () => {
   assert.match(credits, /SIL Open Font License 1\.1/);
   assert.match(credits, /Bricolage Grotesque/);
   assert.doesNotMatch(credits, /\bgenerated for\b/);
+  assert.doesNotMatch(credits, /MIT/);
+  assert.match(credits, /do not grant a license to reuse the project identity or artwork/);
 });
