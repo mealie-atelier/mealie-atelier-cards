@@ -8,10 +8,6 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 - The web app's AI helpers also work with an Anthropic API key (`ANTHROPIC_API_KEY`); `ATELIER_AI_PROVIDER` picks one when both keys are set.
 
-### Changed
-
-- The web app's container health check no longer sends `ATELIER_USERNAME` and `ATELIER_PASSWORD`. It calls the new unauthenticated `/healthz` endpoint, which replies only `{"ok": true|false}` and probes Mealie (cached for 60 s when healthy, 10 s when not). The container is now unhealthy when Mealie is down or rejects the token; before, a 401 from `/api/health` counted as healthy.
-
 ### Fixed
 
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
@@ -140,6 +136,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Kochinspo choices (diet, cookbooks, time, pantry, ingredients to avoid) are a typographic register with an accent underline instead of rows of rounded chips.
 - The search launcher in the toolbar has the same shape as the refresh and settings buttons, the active tab on phones has a straight accent line, and the daily shortcuts keep their labels on one line.
 - Demo: dark theme with the green accent by default, the page chrome uses the same palette, the language switch is a typographic register, recipe pages show "Vorbereitung" and "Kochen" in German and leave out zero times, and every external link opens in a new tab.
+- The web app's container health check no longer sends `ATELIER_USERNAME` and `ATELIER_PASSWORD`. It calls the new unauthenticated `/healthz` endpoint, which replies only `{"ok": true|false}` and probes Mealie (cached for 60 s when healthy, 10 s when not). The container is now unhealthy when Mealie is down or rejects the token; before, a 401 from `/api/health` counted as healthy.
 
 ## [0.10.0] - 2026-10-29
 
