@@ -321,9 +321,12 @@ ha-card {
     background var(--ds-motion-fast),
     color var(--ds-motion-fast);
 }
-.atelier .nav button:hover {
-  color: var(--at-ink);
-  background: var(--at-panel2);
+/* Touch screens keep :hover on whatever sits under the last tap, which painted a stale tab. */
+@media (hover: hover) {
+  .atelier .nav button:hover {
+    color: var(--at-ink);
+    background: var(--at-panel2);
+  }
 }
 .atelier .nav button.active {
   color: var(--ds-brand);
@@ -12045,6 +12048,15 @@ class MealieAtelierCard extends HTMLElement {
       </nav><div class="sidebar-footer"><div class="tiny-leaf">${icon("spark", 17)}</div>${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}<span class="atelier-version">Mealie Atelier ${VERSION}</span></div>
     </aside>`;
   }
+  _revealActiveNav() {
+    const rail = this.shadowRoot?.querySelector(".sidebar .nav");
+    const selected = rail?.querySelector('[data-action="nav"].active');
+    if (!rail || !selected) return;
+    const r = rail.getBoundingClientRect(),
+      a = selected.getBoundingClientRect();
+    if (a.left >= r.left + 10 && a.right <= r.right - 10) return;
+    rail.scrollLeft += a.left - r.left - (r.width - a.width) / 2;
+  }
   _topbar() {
     return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${["shopping", "mealplan"].includes(this._view) ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
   }
@@ -12244,16 +12256,11 @@ class MealieAtelierCard extends HTMLElement {
       }
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
+    // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
     if (viewChanged) {
-      const rail = this.shadowRoot.querySelector(".sidebar .nav");
-      const selected = rail?.querySelector('[data-action="nav"].active');
-      if (rail && selected && rail.scrollWidth > rail.clientWidth) {
-        const r = rail.getBoundingClientRect(),
-          a = selected.getBoundingClientRect();
-        if (a.left < r.left + 10 || a.right > r.right - 10) {
-          rail.scrollLeft += a.left - r.left - (r.width - a.width) / 2;
-        }
-      }
+      this._revealActiveNav();
+      if (typeof requestAnimationFrame === "function")
+        requestAnimationFrame(() => this._revealActiveNav());
     }
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     const closeButton = () =>
@@ -18959,7 +18966,8 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           confirmLabel: this.t("studioSessionReplaceConfirm"),
         })),
     );
-    await _atOriginalClick.call(this, event);
+    // The dialog awaited above, so the original event no longer targets the button.
+    await _atOriginalClick.call(this, { target: el });
     if (this._permissions.can_write && !existed && (!active || replace))
       await this._studioWrite("session_start", { slug, name, replace_existing: replace });
     return;

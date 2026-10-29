@@ -157,9 +157,12 @@ ha-card {
     background var(--ds-motion-fast),
     color var(--ds-motion-fast);
 }
-.atelier .nav button:hover {
-  color: var(--at-ink);
-  background: var(--at-panel2);
+/* Touch screens keep :hover on whatever sits under the last tap, which painted a stale tab. */
+@media (hover: hover) {
+  .atelier .nav button:hover {
+    color: var(--at-ink);
+    background: var(--at-panel2);
+  }
 }
 .atelier .nav button.active {
   color: var(--ds-brand);

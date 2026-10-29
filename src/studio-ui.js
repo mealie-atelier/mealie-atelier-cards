@@ -1250,7 +1250,8 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           confirmLabel: this.t("studioSessionReplaceConfirm"),
         })),
     );
-    await _atOriginalClick.call(this, event);
+    // The dialog awaited above, so the original event no longer targets the button.
+    await _atOriginalClick.call(this, { target: el });
     if (this._permissions.can_write && !existed && (!active || replace))
       await this._studioWrite("session_start", { slug, name, replace_existing: replace });
     return;

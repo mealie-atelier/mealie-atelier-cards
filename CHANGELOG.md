@@ -13,6 +13,8 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Opening a dialog in Home Assistant puts keyboard focus inside it again: Home Assistant renders `ha-card` asynchronously, so the one-shot `focus()` hit content without a layout box and silently did nothing. Focus is retried until it holds, so Esc, Ctrl+K typing and Tab (kept inside the open dialog) work right away, and focus returns to the opener on close.
 - Cooking mode keeps focus on the control you used (next, back, timers) after every re-render, or on the close button when that control is gone, so the arrow keys step through repeatedly.
 - Ctrl/Cmd+K and "/" also work in Home Assistant while nothing has focus (never while another element has focus, so its own shortcuts stay untouched); Esc, arrows and Tab keep working in an open dialog even if focus fell to the page.
+- Cooking mode: choosing "Cancel" in the "Replace the shared cooking session?" dialog now really starts the recipe locally, and "Replace session" opens cooking mode too (the click was replayed after the dialog and no longer hit the button).
+- Phone: the active navigation tab is scrolled into view when the view changes (also once more after layout settles), and the tab hover tint applies only on devices that can hover, so no stale highlight stays on a previous tab after a tap.
 - AI failures show their own message instead of claiming Mealie is unreachable.
 - Web app: `icon-maskable-512.png` and `pasta-with-tomatoes.jpg`, which the manifest and the service worker precache list, are served now instead of answering 404.
 - Web app: a reader sees "You are signed in with read access. An administrator can give your account the writer role." instead of the Home Assistant wording.
