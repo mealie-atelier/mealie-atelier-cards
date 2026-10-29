@@ -13973,7 +13973,7 @@ const viewMethods = {
         const photo = image ? recipeImage(recipe) : "";
         const time = AtelierStudio.formatTime(recipe.totalTime, this._language);
         const timeLabel = time || this.t("uiMealieRecipeFallback");
-        return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${photo}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div>${image && !photo ? `<div class="placeholder" aria-hidden="true"><span>${esc(recipe.name)}</span></div>` : ""}</div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon(time ? "clock" : "book", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
+        return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${photo}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div>${image ? `<div class="placeholder" aria-hidden="true"><span>${esc(recipe.name)}</span></div>` : ""}</div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon(time ? "clock" : "book", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(
         "",
