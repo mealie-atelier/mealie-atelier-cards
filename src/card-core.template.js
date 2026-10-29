@@ -2046,8 +2046,17 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "shopping-clear-confirm") {
       el.disabled = true;
       const list_id = this._activeList;
-      if (list_id)
-        await this._mutate("shopping_clear_checked", { list_id }, "shopping", () =>
+      // The ticked rows the user saw in the dialog: anything ticked meanwhile is left alone.
+      const expected_ids = this._offlineItems(asArray(this._data.shopping?.items))
+        .filter(
+          (x) =>
+            x.checked === true &&
+            String(x.shoppingListId) === String(list_id) &&
+            !this._shoppingRowBusy(x),
+        )
+        .map((x) => String(x.id));
+      if (list_id && expected_ids.length)
+        await this._mutate("shopping_clear_checked", { list_id, expected_ids }, "shopping", () =>
           this._optimisticClearChecked(list_id),
         );
       return;

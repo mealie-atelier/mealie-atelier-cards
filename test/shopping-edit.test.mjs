@@ -137,7 +137,7 @@ test("clear opens a confirm dialog with the count and only the confirm button se
   assert.deepEqual(mutations()[0], {
     type: "mealie_atelier/mutate",
     action: "shopping_clear_checked",
-    payload: { list_id: "l1" },
+    payload: { list_id: "l1", expected_ids: ["i2", "i3"] },
   });
   assert.equal(card._modal, null);
 });
@@ -168,10 +168,38 @@ test("the edit form is prefilled and sends only what changed", async () => {
   await submit(card, { name: "Spelt flour", quantity: "3", note: "" });
   assert.deepEqual(mutations()[0].payload, {
     item_id: "i2",
-    display: "Spelt flour",
-    note: "",
+    name: "Spelt flour",
     quantity: 3,
   });
+});
+
+test("renaming a food item folds its note into the new name and never sends name with note", async () => {
+  const { card, mutations } = setup();
+  await click(card, { action: "shopping-edit-form", id: "i2" });
+  await submit(card, { name: "Spelt flour", quantity: "2", note: "organic" });
+  assert.deepEqual(mutations()[0].payload, { item_id: "i2", name: "Spelt flour organic" });
+  const row = card._data.shopping.items.find((x) => x.id === "i2");
+  assert.equal(row.food, null, "the renamed item is a free text item");
+  assert.equal(row.note, "Spelt flour organic");
+  assert.match(card._shoppingLabel(row), /Spelt flour organic/);
+  // The form of a renamed item shows the new name, so a later save cannot undo it.
+  await click(card, { action: "shopping-edit-form", id: "i2" });
+  assert.match(card._modalHtml(), /name="name"[^>]*value="Spelt flour organic"/);
+});
+
+test("a quantity-only edit after a rename keeps the new name", async () => {
+  const { card, mutations } = setup();
+  await click(card, { action: "shopping-edit-form", id: "i2" });
+  await submit(card, { name: "Spelt flour", quantity: "2", note: "organic" });
+  await click(card, { action: "shopping-edit-form", id: "i2" });
+  const form = card._modalHtml();
+  const name = form.match(/name="name"[^>]*value="([^"]*)"/)[1];
+  await submit(card, { name, quantity: "5" });
+  assert.deepEqual(mutations()[1].payload, { item_id: "i2", quantity: 5 });
+  assert.match(
+    card._shoppingLabel(card._data.shopping.items.find((x) => x.id === "i2")),
+    /^5 Spelt flour/,
+  );
 });
 
 test("a free-text item has no separate note field: its new name is its note", async () => {
@@ -181,8 +209,7 @@ test("a free-text item has no separate note field: its new name is its note", as
   await submit(card, { name: "Oat milk", quantity: "1" });
   assert.deepEqual(mutations()[0].payload, {
     item_id: "i1",
-    display: "Oat milk",
-    note: "Oat milk",
+    name: "Oat milk",
   });
   assert.equal(card._data.shopping.items[0].note, "Oat milk");
 });
@@ -250,11 +277,7 @@ test("connectivity failures queue delete, update and clear with exactly the Brid
 
 test("waiting operations change the list the user sees, in the order they were made", async () => {
   const { card } = offlineSetup();
-  await card._mutate(
-    "shopping_update",
-    { item_id: "i1", display: "Oat milk", note: "Oat milk" },
-    "shopping",
-  );
+  await card._mutate("shopping_update", { item_id: "i1", name: "Oat milk" }, "shopping");
   await card._mutate("shopping_delete", { item_id: "i3" }, "shopping");
   await card._mutate("shopping_clear_checked", { list_id: "l1" }, "shopping");
   const view = card._offlineItems(card._data.shopping.items);

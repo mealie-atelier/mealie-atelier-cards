@@ -480,8 +480,9 @@ async function mutate(action, payload, req) {
     case "shopping_update": {
       const id = identifier(payload.item_id);
       const changes = {};
+      if ("name" in payload && "note" in payload) throw bad("Rename and note cannot be combined");
+      if ("name" in payload) changes.name = text(payload.name);
       if ("note" in payload) changes.note = shoppingNote(payload.note);
-      if ("display" in payload) changes.display = text(payload.display);
       if ("quantity" in payload) {
         if (
           typeof payload.quantity !== "number" ||
@@ -494,32 +495,40 @@ async function mutate(action, payload, req) {
       }
       if (!Object.keys(changes).length) throw bad("Nothing to update");
       const current = await mealie("GET", `/api/households/shopping/items/${id}`);
-      // A free-text item has no food: its name is the note, so a new name must replace the note.
-      if (changes.display !== undefined && !current?.food && !("note" in changes))
-        changes.note = changes.display;
+      const { name, ...rest } = changes;
       // Mealie rebuilds `display` (quantity, unit, name, note) only when it is empty, so the old
-      // one must never be sent back. A renamed food item has no other way to carry its new name.
-      const next = { ...current, ...changes, display: "" };
-      const unit = String(next.unit?.name || next.unit?.abbreviation || "").trim();
-      if (changes.display !== undefined && current?.food)
-        next.display = [
-          next.quantity > 0 && (next.quantity !== 1 || unit) ? String(next.quantity) : "",
-          unit,
-          changes.display,
-          String(next.note || "").trim(),
-        ]
-          .filter(Boolean)
-          .join(" ");
+      // one is never sent back. A rename turns the item into a free text item, as the Bridge does:
+      // a new custom display would be lost by the next edit, which sends an empty one.
+      const next = { ...current, ...rest, display: "" };
+      if (name !== undefined)
+        Object.assign(next, { note: name, food: null, foodId: null, isFood: false });
+      if (!next.food && !String(next.note || "").trim())
+        throw bad("An item without a food needs a name");
       return mealie("PUT", `/api/households/shopping/items/${id}`, next);
     }
     case "shopping_clear_checked": {
       const listId = typeof payload.list_id === "string" ? payload.list_id : "";
       identifier(listId);
+      let expected = null;
+      if ("expected_ids" in payload) {
+        if (
+          !Array.isArray(payload.expected_ids) ||
+          !payload.expected_ids.length ||
+          payload.expected_ids.length > 1000
+        )
+          throw bad("expected_ids must be a list of 1 to 1000 item IDs");
+        expected = new Set(payload.expected_ids.map((x) => identifier(x)));
+      }
       const all = unwrap(
         await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
       );
       const ids = all
-        .filter((x) => x?.checked === true && String(x.shoppingListId) === listId)
+        .filter(
+          (x) =>
+            x?.checked === true &&
+            String(x.shoppingListId) === listId &&
+            (!expected || expected.has(String(x.id))),
+        )
         .map((x) => x.id);
       for (const id of ids) await deleteShoppingItem(identifier(String(id)));
       return { deleted: ids.length };

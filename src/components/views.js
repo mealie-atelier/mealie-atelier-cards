@@ -158,12 +158,12 @@ export const viewMethods = {
     const from = this._shoppingEditFields(item);
     const changes = {};
     const name = tidy(values.name);
+    const note = "note" in values ? tidy(values.note) : from.note.trim();
     if (name && name !== from.name) {
-      changes.display = name;
-      if (from.freeText) changes.note = name;
-    }
-    if (!from.freeText && "note" in values && tidy(values.note) !== from.note.trim())
-      changes.note = tidy(values.note);
+      // A rename turns the item into a free text item (as the Bridge does), so a note on a food
+      // item is folded into the new name instead of being sent as a second, conflicting change.
+      changes.name = from.freeText ? name : [name, note].filter(Boolean).join(" ");
+    } else if (!from.freeText && note !== from.note.trim()) changes.note = note;
     const raw = String(values.quantity ?? "").trim();
     if (raw !== "") {
       const quantity = Number(raw);
@@ -182,13 +182,18 @@ export const viewMethods = {
    * itself, so the label is derived here the same way and a quantity or note edit is visible at once.
    */
   _shoppingEditLocal(item, changes) {
-    const merged = { ...item, ...changes };
+    const { name: renamed, ...rest } = changes;
+    // A rename makes the item a free text item: its name is its note and the food link is gone.
+    const merged =
+      renamed === undefined
+        ? { ...item, ...rest }
+        : { ...item, ...rest, note: renamed, food: null };
     const quantity = Number(merged.quantity);
     const unit = String(merged.unit?.name || merged.unit?.abbreviation || "").trim();
-    const name = item.food
-      ? String(changes.display ?? item.food.name ?? "").trim()
-      : String(merged.note || changes.display || "").trim();
-    const note = item.food ? String(merged.note || "").trim() : "";
+    const name = merged.food
+      ? String(merged.food.name || "").trim()
+      : String(merged.note || "").trim();
+    const note = merged.food ? String(merged.note || "").trim() : "";
     const display = [
       quantity > 0 && (quantity !== 1 || unit) ? String(quantity) : "",
       unit,
@@ -197,7 +202,9 @@ export const viewMethods = {
     ]
       .filter(Boolean)
       .join(" ");
-    return { ...changes, display: display || merged.display };
+    const local = { ...rest, display: display || merged.display };
+    if (renamed !== undefined) Object.assign(local, { note: renamed, food: null, isFood: false });
+    return local;
   },
   /** Open items first, grouped by Mealie label (unlabelled last); ticked items sink to the bottom. */
   _shoppingRows(items) {

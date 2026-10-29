@@ -79,6 +79,23 @@
     }
   }
   const isTemporary = (item) => String(item?.id || "").startsWith("local-");
+  /** Applies a queued edit and rebuilds `display` the way Mealie does, so the label follows it. */
+  function applyUpdate(item, payload) {
+    if ("quantity" in payload) item.quantity = payload.quantity;
+    if ("note" in payload) item.note = payload.note;
+    // A rename turns the item into a free text item: its name is its note and the food link is gone.
+    if ("name" in payload) Object.assign(item, { note: payload.name, food: null, isFood: false });
+    const quantity = Number(item.quantity);
+    const unit = String(item.unit?.name || item.unit?.abbreviation || "").trim();
+    item.display = [
+      quantity > 0 && (quantity !== 1 || unit) ? String(quantity) : "",
+      unit,
+      String((item.food ? item.food.name : item.note) || "").trim(),
+      item.food ? String(item.note || "").trim() : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
   function withPending(base, ops) {
     const shopping =
       base && typeof base === "object" ? structuredClone(base) : { lists: [], items: [] };
@@ -93,16 +110,16 @@
         shopping.items = shopping.items.filter((x) => String(x.id) !== String(op.payload.item_id));
       } else if (op.action === "shopping_update") {
         const item = shopping.items.find((x) => String(x.id) === String(op.payload.item_id));
-        if (item) {
-          for (const key of ["note", "display", "quantity"])
-            if (key in op.payload) item[key] = op.payload[key];
-          // A free-text item has no food: its new name is also its note, as on the server.
-          if ("display" in op.payload && !item.food && !("note" in op.payload))
-            item.note = op.payload.display;
-        }
+        if (item) applyUpdate(item, op.payload);
       } else if (op.action === "shopping_clear_checked") {
         shopping.items = shopping.items.filter(
-          (x) => !(x.checked === true && String(x.shoppingListId) === String(op.payload.list_id)),
+          (x) =>
+            !(
+              x.checked === true &&
+              String(x.shoppingListId) === String(op.payload.list_id) &&
+              (!Array.isArray(op.payload.expected_ids) ||
+                op.payload.expected_ids.map(String).includes(String(x.id)))
+            ),
         );
       } else if (
         op.action === "shopping_add" &&

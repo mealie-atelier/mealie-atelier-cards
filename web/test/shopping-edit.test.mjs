@@ -130,7 +130,6 @@ test("the web server mirrors delete, update and clear against the Mealie API", a
     // A food item keeps its note; a free-text item takes the new name as its note.
     let r = await call("shopping_update", {
       item_id: "b",
-      display: "Spelt flour",
       quantity: 3,
       note: "organic",
     });
@@ -141,13 +140,13 @@ test("the web server mirrors delete, update and clear against the Mealie API", a
         id: "b",
         shoppingListId: "l1",
         note: "organic",
-        display: "3 Spelt flour organic",
+        display: "3 Flour",
         food: { name: "Flour" },
         quantity: 3,
         checked: true,
       },
     );
-    r = await call("shopping_update", { item_id: "a", display: "Oat milk" });
+    r = await call("shopping_update", { item_id: "a", name: "Oat milk" });
     assert.equal(r.status, 200);
     const milk = remote.items.find((x) => x.id === "a");
     assert.equal(milk.display, "1 Oat milk");
@@ -157,9 +156,9 @@ test("the web server mirrors delete, update and clear against the Mealie API", a
     assert.equal(r.status, 200);
     assert.equal(remote.items.find((x) => x.id === "c").display, "3 Eggs");
     // A free-text rename keeps the quantity in the label.
-    r = await call("shopping_update", { item_id: "c", display: "Toast" });
+    r = await call("shopping_update", { item_id: "c", name: "Toast" });
     assert.equal(remote.items.find((x) => x.id === "c").display, "3 Toast");
-    r = await call("shopping_update", { item_id: "c", display: "Eggs", quantity: 1 });
+    r = await call("shopping_update", { item_id: "c", name: "Eggs", quantity: 1 });
     assert.equal(milk.checked, false, "untouched fields survive the update");
 
     r = await call("shopping_delete", { item_id: "a" });
@@ -197,7 +196,10 @@ test("the new actions reject malformed payloads before touching Mealie", async (
       ["shopping_update", { item_id: "a", quantity: -1 }],
       ["shopping_update", { item_id: "a", quantity: "3" }],
       ["shopping_update", { item_id: "a", quantity: Infinity }],
-      ["shopping_update", { item_id: "a", display: "  " }],
+      ["shopping_update", { item_id: "a", name: "  " }],
+      ["shopping_update", { item_id: "a", name: "x", note: "y" }],
+      ["shopping_clear_checked", { list_id: "l1", expected_ids: [] }],
+      ["shopping_clear_checked", { list_id: "l1", expected_ids: ["a/b"] }],
       ["shopping_update", { item_id: "a", note: "x".repeat(251) }],
       ["shopping_clear_checked", {}],
       ["shopping_clear_checked", { list_id: "a/b" }],
@@ -289,7 +291,9 @@ test("the ledger validates the new offline operations", () => {
     op("shopping_delete", { item_id: "a b" }),
     op("shopping_update", { item_id: "a" }),
     op("shopping_update", { item_id: "a", quantity: -2 }),
-    op("shopping_update", { item_id: "a", display: "" }),
+    op("shopping_update", { item_id: "a", name: "" }),
+    op("shopping_update", { item_id: "a", name: "x", note: "y" }),
+    op("shopping_clear_checked", { list_id: "l1", expected_ids: [] }),
     op("shopping_clear_checked", {}),
   ])
     assert.throws(() => validateOperation(bad), { status: 400 }, JSON.stringify(bad));
@@ -370,8 +374,7 @@ test("the offline client queues edits, deletes and clears and shows them in the 
   const client = await offlineClient();
   await client.enqueue("shopping_update", {
     item_id: "a",
-    display: "Oat milk",
-    note: "Oat milk",
+    name: "Oat milk",
     junk: 1,
   });
   await client.enqueue("shopping_update", { item_id: "b", quantity: 3, note: "organic" });
@@ -379,7 +382,7 @@ test("the offline client queues edits, deletes and clears and shows them in the 
   assert.deepEqual(
     client.operations.map((x) => [x.action, x.payload]),
     [
-      ["shopping_update", { item_id: "a", display: "Oat milk", note: "Oat milk" }],
+      ["shopping_update", { item_id: "a", name: "Oat milk" }],
       ["shopping_update", { item_id: "b", quantity: 3, note: "organic" }],
       ["shopping_delete", { item_id: "c" }],
     ],
@@ -391,8 +394,12 @@ test("the offline client queues edits, deletes and clears and shows them in the 
   );
   assert.equal(view[0].display, "Oat milk");
   assert.equal(view[1].quantity, 3);
-  await client.enqueue("shopping_clear_checked", { list_id: "l1", extra: true });
-  assert.deepEqual(client.operations.at(-1).payload, { list_id: "l1" });
+  await client.enqueue("shopping_clear_checked", {
+    list_id: "l1",
+    expected_ids: ["b", "c"],
+    extra: true,
+  });
+  assert.deepEqual(client.operations.at(-1).payload, { list_id: "l1", expected_ids: ["b", "c"] });
   view = client.shopping.items;
   assert.deepEqual(
     view.map((x) => x.id),
@@ -429,4 +436,68 @@ test("the app shell routes every offline action to the offline client", async ()
   globalThis.BroadcastChannel = channel;
   const { OFFLINE_ACTIONS: ledgerActions } = await import("../offline-ledger.mjs");
   assert.deepEqual([...OFFLINE_ACTIONS].sort(), [...ledgerActions].sort());
+});
+
+test("a renamed food item keeps its new name through later edits and clear honours expected_ids", async () => {
+  const remote = await mealie();
+  const app = await launch(remote, {
+    ATELIER_PASSWORD: "long-enough-password",
+    ATELIER_USERNAME: "atelier",
+  });
+  const call = (action, payload) => mutate(app, "atelier", "long-enough-password", action, payload);
+  try {
+    let r = await call("shopping_update", { item_id: "b", name: "Spelt flour" });
+    assert.equal(r.status, 200);
+    let stored = remote.items.find((x) => x.id === "b");
+    assert.equal(stored.food, null, "the rename turns the item into a free text item");
+    assert.equal(stored.note, "Spelt flour");
+    assert.equal(stored.display, "2 Spelt flour");
+    r = await call("shopping_update", { item_id: "b", quantity: 4 });
+    assert.equal(r.status, 200);
+    stored = remote.items.find((x) => x.id === "b");
+    assert.equal(
+      stored.display,
+      "4 Spelt flour",
+      "a quantity edit must not bring the old name back",
+    );
+
+    // Only the ticked rows the user saw are removed.
+    r = await call("shopping_clear_checked", { list_id: "l1", expected_ids: ["b"] });
+    assert.equal((await r.json()).deleted, 1);
+    assert.ok(
+      remote.items.some((x) => x.id === "c"),
+      "a row ticked meanwhile stays",
+    );
+  } finally {
+    await app.stop();
+    remote.server.close();
+  }
+});
+
+test("the offline view rebuilds the label after quantity, note and rename edits", async () => {
+  globalThis.self ??= globalThis;
+  await import("../public/offline-core.js");
+  const { withPending } = globalThis.self.AtelierOfflineCore;
+  const base = {
+    lists: [],
+    items: [
+      {
+        id: "m",
+        food: { name: "Milch" },
+        unit: { name: "l" },
+        quantity: 2,
+        display: "2 l Milch",
+      },
+    ],
+  };
+  const view = (payload) =>
+    withPending(base, [
+      { id: "o", action: "shopping_update", payload: { item_id: "m", ...payload } },
+    ]).items[0];
+  assert.equal(view({ quantity: 3 }).display, "3 l Milch");
+  assert.equal(view({ note: "bio" }).display, "2 l Milch bio");
+  const renamed = view({ name: "Hafermilch" });
+  assert.equal(renamed.display, "2 l Hafermilch");
+  assert.equal(renamed.food, null);
+  assert.equal(base.items[0].display, "2 l Milch", "the snapshot is not mutated");
 });

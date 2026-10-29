@@ -128,14 +128,20 @@ export class AtelierOfflineClient {
       const item = this.shopping.items.find((x) => String(x.id) === String(data.item_id));
       if (!item || store.isTemporary(item)) throw offlineError("offlineItemNotEditable");
       if (action === "shopping_update") {
-        const keys = ["item_id", "note", "display", "quantity"];
+        const keys = ["item_id", "note", "name", "quantity"];
         for (const key of Object.keys(data)) if (!keys.includes(key)) delete data[key];
-        if (Object.keys(data).length < 2) throw offlineError("offlineInvalidItem");
+        if (Object.keys(data).length < 2 || ("name" in data && "note" in data))
+          throw offlineError("offlineInvalidItem");
       }
     } else if (action === "shopping_clear_checked") {
       if (!this.snapshot.lists.some((l) => String(l.id) === String(data.list_id)))
         throw offlineError("offlineInvalidItem");
-      data = { list_id: data.list_id };
+      data = {
+        list_id: data.list_id,
+        ...(Array.isArray(data.expected_ids) && data.expected_ids.length
+          ? { expected_ids: data.expected_ids.map(String) }
+          : {}),
+      };
     } else {
       if (
         typeof data.note !== "string" ||

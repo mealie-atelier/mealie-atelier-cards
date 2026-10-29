@@ -151,11 +151,15 @@ export const offlineQueueMethods = {
     if (action === "shopping_delete") return { item_id: String(payload.item_id) };
     if (action === "shopping_update") {
       const entry = { item_id: String(payload.item_id) };
-      for (const key of ["note", "display", "quantity"])
-        if (key in payload) entry[key] = payload[key];
+      for (const key of ["note", "name", "quantity"]) if (key in payload) entry[key] = payload[key];
       return entry;
     }
-    if (action === "shopping_clear_checked") return { list_id: String(payload.list_id) };
+    if (action === "shopping_clear_checked") {
+      const entry = { list_id: String(payload.list_id) };
+      if (Array.isArray(payload.expected_ids))
+        entry.expected_ids = payload.expected_ids.map(String);
+      return entry;
+    }
     return { list_id: String(payload.list_id), note: String(payload.note) };
   },
   _offlineItemName(item) {
@@ -183,7 +187,7 @@ export const offlineQueueMethods = {
                 ...this._shoppingEditLocal(
                   item,
                   Object.fromEntries(
-                    ["note", "display", "quantity"]
+                    ["note", "name", "quantity"]
                       .filter((key) => key in p)
                       .map((key) => [key, p[key]]),
                   ),

@@ -37,13 +37,13 @@ export function validateOperation(operation) {
   } else if (operation.action === "shopping_delete") {
     if (!ID.test(p.item_id || "")) throw err(400, "Delete needs an item ID");
   } else if (operation.action === "shopping_update") {
-    const fields = ["note", "display", "quantity"].filter((key) => key in p);
+    const fields = ["note", "name", "quantity"].filter((key) => key in p);
     if (
       !ID.test(p.item_id || "") ||
       !fields.length ||
       ("note" in p && (typeof p.note !== "string" || p.note.length > 250)) ||
-      ("display" in p &&
-        (typeof p.display !== "string" || !p.display.trim() || p.display.length > 250)) ||
+      ("name" in p && (typeof p.name !== "string" || !p.name.trim() || p.name.length > 250)) ||
+      ("name" in p && "note" in p) ||
       ("quantity" in p &&
         (typeof p.quantity !== "number" ||
           !Number.isFinite(p.quantity) ||
@@ -52,7 +52,15 @@ export function validateOperation(operation) {
     )
       throw err(400, "Update needs an item ID and valid changes");
   } else if (operation.action === "shopping_clear_checked") {
-    if (!ID.test(p.list_id || "")) throw err(400, "Clear needs a list ID");
+    if (
+      !ID.test(p.list_id || "") ||
+      ("expected_ids" in p &&
+        (!Array.isArray(p.expected_ids) ||
+          !p.expected_ids.length ||
+          p.expected_ids.length > 1000 ||
+          !p.expected_ids.every((id) => ID.test(id || ""))))
+    )
+      throw err(400, "Clear needs a list ID");
   } else if (
     !ID.test(p.list_id || "") ||
     typeof p.note !== "string" ||
