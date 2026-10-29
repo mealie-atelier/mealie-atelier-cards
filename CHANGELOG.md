@@ -2,6 +2,14 @@
 
 All notable changes to Mealie Atelier Cards, the standalone Web app and the demo are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions before 0.10.0 were developer previews.
 
+## [Unreleased]
+
+### Fixed
+
+- Focused card types open their own view. `type: custom:mealie-atelier-today` (and every other focused type) without a `mode` showed the complete kitchen; the type now sets its start view, and an explicit `mode` still wins.
+- The visual editor preview no longer shows `extra keys not allowed` once a Bridge connection is picked: the status request is sent without `entry_id`.
+- Home Assistant's card picker lists the ten card types with German names and descriptions in a German Home Assistant.
+
 ## [0.10.0] - 2026-10-29
 
 First release prepared for the Home Assistant Marketplace (HA 2026.11), with HACS as the second install route.

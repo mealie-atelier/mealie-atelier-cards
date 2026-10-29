@@ -11407,7 +11407,9 @@ class MealieAtelierCard extends HTMLElement {
   }
   setConfig(config) {
     if (!config || typeof config !== "object") throw Error("Invalid card configuration");
-    this._config = { ...DEFAULTS, ...config };
+    // Focused card types open their own view when the YAML names only the type.
+    const { mode } = this.constructor.getStubConfig();
+    this._config = { ...DEFAULTS, mode, ...config };
     this._view = MODES.includes(this._config.mode) ? this._config.mode : "dashboard";
     if (this.isConnected) this._render();
   }
@@ -11571,7 +11573,8 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (!this._hass || typeof this._hass.callWS !== "function")
       throw new Error(this.t("uiHomeAssistantNotReady"));
-    const entry_id = this._config.entry_id || undefined;
+    // Status covers every Bridge entry, so it never carries an entry_id.
+    const entry_id = type === "status" ? undefined : this._config.entry_id || undefined;
     return this._hass.callWS({
       type: `mealie_atelier/${type}`,
       ...(entry_id ? { entry_id } : {}),
@@ -19224,8 +19227,52 @@ const CARD_TYPES = [
     "Create, import and edit recipe basics",
   ],
 ];
+// German names for Home Assistant's card picker; the picker has no i18n hook of its own.
+const CARD_TYPES_DE = {
+  "mealie-atelier-card": [
+    "Mealie Atelier · Komplette Küche",
+    "Rezepte, Wochenplan, Einkauf und Verwaltung in einer Küche",
+  ],
+  "mealie-atelier-today": [
+    "Mealie Atelier · Heute",
+    "Was heute auf dem Teller ist und was im Einkauf fehlt",
+  ],
+  "mealie-atelier-recipes": [
+    "Mealie Atelier · Rezepte",
+    "Rezeptgalerie mit Suche, Details und Kochmodus",
+  ],
+  "mealie-atelier-mealplan": ["Mealie Atelier · Wochenplan", "Mahlzeiten für sieben Tage planen"],
+  "mealie-atelier-shopping": [
+    "Mealie Atelier · Einkauf",
+    "Einkaufslisten zum Abhaken, auch offline",
+  ],
+  "mealie-atelier-discover": [
+    "Mealie Atelier · Kochinspo",
+    "Kochideen und ein Vorschlag für die Woche",
+  ],
+  "mealie-atelier-pantry": [
+    "Mealie Atelier · Vorräte",
+    "Vorrat erfassen und den Einkauf vorausplanen",
+  ],
+  "mealie-atelier-family": [
+    "Mealie Atelier · Gemeinsam kochen",
+    "Gemeinsame Kochsessions mit Helferaufgaben",
+  ],
+  "mealie-atelier-cookbook": ["Mealie Atelier · Kochbuch", "Ein druckfertiges Kochbuch in A4"],
+  "mealie-atelier-manage": [
+    "Mealie Atelier · Verwalten",
+    "Rezepte anlegen, importieren und bearbeiten",
+  ],
+};
+const pickerGerman = /^de\b/i.test(
+  globalThis.document?.documentElement?.lang || globalThis.navigator?.language || "",
+);
 customElements.define("mealie-atelier-card-editor", MealieAtelierEditor);
-for (const [tag, ctor, name, description] of CARD_TYPES) {
+for (const [tag, ctor, englishName, englishDescription] of CARD_TYPES) {
+  const [name, description] = (pickerGerman && CARD_TYPES_DE[tag]) || [
+    englishName,
+    englishDescription,
+  ];
   if (!customElements.get(tag)) customElements.define(tag, ctor);
   window.customCards = window.customCards || [];
   if (!window.customCards.some((c) => c.type === tag))
