@@ -1,0 +1,57 @@
+/* Corner style: every main surface derives its radius from --at-radius (6px square, 12px small,
+   23px large). The ratios keep the default look (23px) identical to the previous fixed values. */
+.atelier {
+  --at-r-hero: calc(var(--at-radius) * 26 / 23);
+  --at-r-panel: calc(var(--at-radius) * 20 / 23);
+  --at-r-tile: calc(var(--at-radius) * 18 / 23);
+  --at-r-stat: calc(var(--at-radius) * 17 / 23);
+  --at-r-day: calc(var(--at-radius) * 15 / 23);
+  --at-r-field: calc(var(--at-radius) * 13 / 23);
+  --at-r-inner: calc(var(--at-radius) * 14 / 23);
+  --at-r-item: calc(var(--at-radius) * 9 / 23);
+  --ds-radius-sm: calc(var(--at-radius) * 10 / 23);
+  --ds-radius-md: calc(var(--at-radius) * 14 / 23);
+  --ds-radius-lg: calc(var(--at-radius) * 20 / 23);
+  --ds-radius-xl: calc(var(--at-radius) * 26 / 23);
+  --ds-control-radius: calc(var(--at-radius) * 12 / 23);
+}
+.atelier .hero {
+  border-radius: var(--at-r-hero);
+}
+.atelier .shopping-card,
+.atelier .today-panel,
+.atelier .manage-card,
+.atelier .studio-panel {
+  border-radius: var(--at-r-panel);
+}
+.atelier .modal {
+  border-radius: var(--at-radius);
+}
+.atelier .recipe-tile {
+  border-radius: var(--at-r-tile);
+}
+.atelier.provider-home-assistant .recipe-tile {
+  border-radius: var(--at-r-stat);
+}
+.atelier .recipe-tile .tile-image {
+  border-radius: var(--at-r-inner);
+}
+.atelier .stat {
+  border-radius: var(--at-r-stat);
+}
+.atelier .day {
+  border-radius: var(--at-r-day);
+}
+.atelier .day-meal {
+  border-radius: var(--at-r-item);
+}
+.atelier input:not([type="checkbox"]):not([type="radio"]),
+.atelier textarea,
+.atelier select {
+  border-radius: var(--at-r-field);
+}
+@container atelier-card (max-width: 760px) {
+  .atelier .modal {
+    border-radius: var(--at-r-panel);
+  }
+}

@@ -542,6 +542,10 @@ test("Kochinspo keeps eggs and dairy out of vegan suggestions but not plant drin
   for (const line of [
     "vegane Butter",
     "200 ml Hafer Sahne",
+    "200 ml Hafer-Sahne",
+    "200 ml pflanzliche Sahne",
+    "200 ml Kokosrahm",
+    "200 ml Hafer Rahm",
     "400 ml coconut milk",
     "2 EL peanut butter",
     "200 ml oat milk",
@@ -556,6 +560,11 @@ test("Kochinspo keeps eggs and dairy out of vegan suggestions but not plant drin
     "4 Eier",
     "100 g Butter",
     "200 ml Sahne",
+    "200 g Sauerrahm",
+    "200 ml Schlagrahm",
+    "100 g saure Sahne",
+    "150 g Rahm",
+    "200 ml Kaffeerahm",
   ])
     assert.equal(vegan(line), false, line);
 });
@@ -625,6 +634,8 @@ test("Kochinspo keeps every option of a line and named cheeses out of plant diet
     "250 g Mascarpone",
     "1 cup cheddar",
     "200 g Schmand",
+    "200 g Sauerrahm",
+    "200 ml Schlagrahm",
     "200 g Crème fraîche",
     "2 tbsp ghee",
     "100 g Skyr",

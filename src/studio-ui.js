@@ -162,10 +162,16 @@ Object.assign(MealieAtelierCard.prototype, {
   _revealDiscover() {
     requestAnimationFrame(() => {
       const layout = this.shadowRoot.querySelector(".studio-discover-layout");
-      // 72px clears Home Assistant's sticky header; a wizard still below it is left where it is.
-      if (layout && layout.getBoundingClientRect().top < 72)
+      // A wizard top that is still on screen is left where it is: nudging by a few pixels reads as a jump.
+      if (layout && layout.getBoundingClientRect().top < 0)
         layout.scrollIntoView({ block: "start", behavior: "smooth" });
     });
+  },
+  /** Scroll to the pantry form only when it is entirely off screen; a visible form keeps the page still. */
+  _revealPantryForm(form) {
+    const box = form.getBoundingClientRect();
+    if (box.bottom > 0 && box.top < window.innerHeight) return;
+    form.scrollIntoView({ block: "nearest", behavior: "smooth" });
   },
   _studioSuggestions() {
     return AtelierStudio.suggest(
@@ -968,7 +974,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         form.elements.expires.value = v.expires || "";
         form.elements.staple.checked = v.staple === true;
         form.dataset.rowId = v.id;
-        form.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        this._revealPantryForm(form);
       }
       return;
     }

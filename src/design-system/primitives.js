@@ -40,10 +40,14 @@ const AtelierUI = Object.freeze({
     const accent = ["subtle", "flat"].includes(tone) ? ` data-tone="${tone}"` : "";
     return `<section class="studio-panel ds-surface ${classes}"${labelled}${accent}>`;
   },
-  metric({ value = "", label = "", graphic = "spark" } = {}) {
+  metric({ value = "", label = "", graphic = "spark", target = "" } = {}) {
     const supported = Object.hasOwn(ICONS, graphic) ? graphic : "spark";
-    return `<div class="stat ds-metric"><div class="stat-icon">${icon(supported, 20)}</div>
-      <div><strong>${esc(value)}</strong><span>${esc(label)}</span></div></div>`;
+    const body = `<div class="stat-icon">${icon(supported, 20)}</div>
+      <div><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
+    // A metric with a target is a real button that opens that view.
+    if (/^[a-z][a-z0-9-]*$/i.test(target))
+      return `<button type="button" class="stat ds-metric is-link" data-action="nav" data-value="${target}" aria-label="${esc(`${label}: ${value}`)}">${body}</button>`;
+    return `<div class="stat ds-metric">${body}</div>`;
   },
   empty({ title = "", description = "", iconName = "book" } = {}) {
     const graphic = Object.hasOwn(ICONS, iconName) ? iconName : "book";

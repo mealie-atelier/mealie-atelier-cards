@@ -20,7 +20,7 @@ export const viewMethods = {
       : items;
     const open = active.filter((i) => !i.checked).length;
     const scheduled = asArray(this._data.mealplan).length;
-    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book")}${this._stat(scheduled, this.t("nextMeal"), "calendar")}${this._stat(open, this.t("openItemsLabel"), "cart")}</div>`;
+    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book", "recipes")}${this._stat(scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
   },
   _recipeTools() {
     return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
@@ -68,7 +68,7 @@ export const viewMethods = {
         .slice(0, 3)
         .map((meal) => {
           const photo = recipeImage(meal.recipe || {});
-          return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this.t(meal.entryType) || meal.entryType || "")}</small>${esc(mealName(meal))}</button>`;
+          return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this.t(meal.entryType) || meal.entryType || "")}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
       ${todays.length === 0 ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;

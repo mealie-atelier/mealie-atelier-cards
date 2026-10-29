@@ -431,7 +431,7 @@ const AtelierStudio = (() => {
     const veganMark =
       /\b(?:vegan\w*|pflanzlich\w*|plant based|beyond|tofu\w*|seitan|tempeh)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
     const plantDairy =
-      /\b(?:hafer|soja|mandel|kokos|kokosnuss|reis|cashew|erbsen|dinkel|pflanzen|hasel|haselnuss|hanf|lupinen|nuss|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:koch|schlag)?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b|\b(?:cashew|nuss|mandel)kase\b/g;
+      /\b(?:hafer|soja|mandel|kokos|kokosnuss|reis|cashew|erbsen|dinkel|pflanzen|hasel|haselnuss|hanf|lupinen|nuss|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:koch|schlag)?(?:milch|sahne|rahm|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b|\b(?:cashew|nuss|mandel)kase\b/g;
     const lookalike =
       /\w*(?:frucht|kurbis|mango|kokos|melonen?|avocado|papaya|ananas)fleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\brinds? of\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten|parmesan|cheese|melon|watermelon)\s+rinds?\b|\bauster\w*\s?(?:pilz|seitling)\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\w*gewu(?:e)?rz(?:mischung|salz)?\b|\w+\s+gewu(?:e)?rz(?:mischung)?\b|\b(?:chicken|poultry|steak|beef)\s+(?:seasoning|spice|rub)\b|\bsteak(?:pfeffer|salz|sauce|sose|soße)\b|\bhirschhorn\w*|\blamb\s?s\s+lettuce\b|(?<=\b(?:cauliflower|celeriac|mushroom|portobello|cabbage|tofu|tuna|salmon|swordfish|sellerie|blumenkohl|kohl|kohlrabi|rotkohl|weisskohl|weißkohl|auberginen?|pilz|kurbis|thunfisch|lachs|in)\s)steaks?\b/g;
     const flesh = names
@@ -446,7 +446,7 @@ const AtelierStudio = (() => {
     const seafood =
       /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|worcester|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
     const animal =
-      /\w*(?:kase|kaese|milch|sahne|joghurt)\b|\b(feta|gouda|ricotta|mascarpone|pecorino|cheddar|emmentaler|gruyere|brie|camembert|halloumi|burrata|schmand|creme fraiche|ghee|butterschmalz|skyr|milch|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
+      /\w*(?:kase|kaese|milch|sahne|rahm|joghurt)\b|\b(feta|gouda|ricotta|mascarpone|pecorino|cheddar|emmentaler|gruyere|brie|camembert|halloumi|burrata|schmand|creme fraiche|ghee|butterschmalz|skyr|milch|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
     if (
       style === "vegan" &&
       (eats(meat) ||

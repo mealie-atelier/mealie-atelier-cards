@@ -2336,3 +2336,34 @@
   flex-shrink: 0;
   border-radius: 9px;
 }
+.atelier button.stat {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition:
+    background var(--at-fast),
+    border-color var(--at-fast);
+}
+.atelier button.stat:hover {
+  background: color-mix(in srgb, var(--at-accent) 8%, var(--ds-surface, var(--at-panel)));
+}
+.atelier button.stat:focus-visible {
+  outline: 3px solid var(--at-accent);
+  outline-offset: -3px;
+}
+.atelier .day-meal {
+  min-width: 0;
+  overflow: hidden;
+}
+.atelier .day-meal-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}

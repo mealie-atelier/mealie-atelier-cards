@@ -10397,6 +10397,37 @@ ha-card {
   flex-shrink: 0;
   border-radius: 9px;
 }
+.atelier button.stat {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition:
+    background var(--at-fast),
+    border-color var(--at-fast);
+}
+.atelier button.stat:hover {
+  background: color-mix(in srgb, var(--at-accent) 8%, var(--ds-surface, var(--at-panel)));
+}
+.atelier button.stat:focus-visible {
+  outline: 3px solid var(--at-accent);
+  outline-offset: -3px;
+}
+.atelier .day-meal {
+  min-width: 0;
+  overflow: hidden;
+}
+.atelier .day-meal-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
 
 /* Atelier Control Refinement 0.9.5: single geometric contract.
    Loaded last, scoped to Atelier, preserving colors, surfaces and typography. */
@@ -11116,6 +11147,64 @@ ha-card {
 @media (prefers-reduced-motion: reduce) {
   .atelier .picker-skeleton {
     animation: none;
+  }
+}
+
+/* Corner style: every main surface derives its radius from --at-radius (6px square, 12px small,
+   23px large). The ratios keep the default look (23px) identical to the previous fixed values. */
+.atelier {
+  --at-r-hero: calc(var(--at-radius) * 26 / 23);
+  --at-r-panel: calc(var(--at-radius) * 20 / 23);
+  --at-r-tile: calc(var(--at-radius) * 18 / 23);
+  --at-r-stat: calc(var(--at-radius) * 17 / 23);
+  --at-r-day: calc(var(--at-radius) * 15 / 23);
+  --at-r-field: calc(var(--at-radius) * 13 / 23);
+  --at-r-inner: calc(var(--at-radius) * 14 / 23);
+  --at-r-item: calc(var(--at-radius) * 9 / 23);
+  --ds-radius-sm: calc(var(--at-radius) * 10 / 23);
+  --ds-radius-md: calc(var(--at-radius) * 14 / 23);
+  --ds-radius-lg: calc(var(--at-radius) * 20 / 23);
+  --ds-radius-xl: calc(var(--at-radius) * 26 / 23);
+  --ds-control-radius: calc(var(--at-radius) * 12 / 23);
+}
+.atelier .hero {
+  border-radius: var(--at-r-hero);
+}
+.atelier .shopping-card,
+.atelier .today-panel,
+.atelier .manage-card,
+.atelier .studio-panel {
+  border-radius: var(--at-r-panel);
+}
+.atelier .modal {
+  border-radius: var(--at-radius);
+}
+.atelier .recipe-tile {
+  border-radius: var(--at-r-tile);
+}
+.atelier.provider-home-assistant .recipe-tile {
+  border-radius: var(--at-r-stat);
+}
+.atelier .recipe-tile .tile-image {
+  border-radius: var(--at-r-inner);
+}
+.atelier .stat {
+  border-radius: var(--at-r-stat);
+}
+.atelier .day {
+  border-radius: var(--at-r-day);
+}
+.atelier .day-meal {
+  border-radius: var(--at-r-item);
+}
+.atelier input:not([type="checkbox"]):not([type="radio"]),
+.atelier textarea,
+.atelier select {
+  border-radius: var(--at-r-field);
+}
+@container atelier-card (max-width: 760px) {
+  .atelier .modal {
+    border-radius: var(--at-r-panel);
   }
 }
 </style>`;
@@ -11962,8 +12051,8 @@ class MealieAtelierCard extends HTMLElement {
       highlight: this._view === "dashboard" ? this.t("uiEveryDay") : "",
     });
   }
-  _stat(number, label, ico) {
-    return AtelierUI.metric({ value: number, label, graphic: ico });
+  _stat(number, label, ico, target = "") {
+    return AtelierUI.metric({ value: number, label, graphic: ico, target });
   }
   _stepEditRow(value = "", index = 0, id = "") {
     const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
@@ -12106,7 +12195,7 @@ class MealieAtelierCard extends HTMLElement {
     const displayedModal = modalChanged
       ? modalMarkup
       : modalMarkup.replace('class="modal ', 'class="modal modal-stable ');
-    const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
+    const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
@@ -13234,7 +13323,7 @@ const viewMethods = {
       : items;
     const open = active.filter((i) => !i.checked).length;
     const scheduled = asArray(this._data.mealplan).length;
-    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book")}${this._stat(scheduled, this.t("nextMeal"), "calendar")}${this._stat(open, this.t("openItemsLabel"), "cart")}</div>`;
+    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book", "recipes")}${this._stat(scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
   },
   _recipeTools() {
     return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
@@ -13282,7 +13371,7 @@ const viewMethods = {
         .slice(0, 3)
         .map((meal) => {
           const photo = recipeImage(meal.recipe || {});
-          return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this.t(meal.entryType) || meal.entryType || "")}</small>${esc(mealName(meal))}</button>`;
+          return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this.t(meal.entryType) || meal.entryType || "")}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
       ${todays.length === 0 ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
@@ -16609,10 +16698,14 @@ const AtelierUI = Object.freeze({
     const accent = ["subtle", "flat"].includes(tone) ? ` data-tone="${tone}"` : "";
     return `<section class="studio-panel ds-surface ${classes}"${labelled}${accent}>`;
   },
-  metric({ value = "", label = "", graphic = "spark" } = {}) {
+  metric({ value = "", label = "", graphic = "spark", target = "" } = {}) {
     const supported = Object.hasOwn(ICONS, graphic) ? graphic : "spark";
-    return `<div class="stat ds-metric"><div class="stat-icon">${icon(supported, 20)}</div>
-      <div><strong>${esc(value)}</strong><span>${esc(label)}</span></div></div>`;
+    const body = `<div class="stat-icon">${icon(supported, 20)}</div>
+      <div><strong>${esc(value)}</strong><span>${esc(label)}</span></div>`;
+    // A metric with a target is a real button that opens that view.
+    if (/^[a-z][a-z0-9-]*$/i.test(target))
+      return `<button type="button" class="stat ds-metric is-link" data-action="nav" data-value="${target}" aria-label="${esc(`${label}: ${value}`)}">${body}</button>`;
+    return `<div class="stat ds-metric">${body}</div>`;
   },
   empty({ title = "", description = "", iconName = "book" } = {}) {
     const graphic = Object.hasOwn(ICONS, iconName) ? iconName : "book";
@@ -17124,7 +17217,7 @@ const AtelierStudio = (() => {
     const veganMark =
       /\b(?:vegan\w*|pflanzlich\w*|plant based|beyond|tofu\w*|seitan|tempeh)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
     const plantDairy =
-      /\b(?:hafer|soja|mandel|kokos|kokosnuss|reis|cashew|erbsen|dinkel|pflanzen|hasel|haselnuss|hanf|lupinen|nuss|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:koch|schlag)?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b|\b(?:cashew|nuss|mandel)kase\b/g;
+      /\b(?:hafer|soja|mandel|kokos|kokosnuss|reis|cashew|erbsen|dinkel|pflanzen|hasel|haselnuss|hanf|lupinen|nuss|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:koch|schlag)?(?:milch|sahne|rahm|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b|\b(?:cashew|nuss|mandel)kase\b/g;
     const lookalike =
       /\w*(?:frucht|kurbis|mango|kokos|melonen?|avocado|papaya|ananas)fleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\brinds? of\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten|parmesan|cheese|melon|watermelon)\s+rinds?\b|\bauster\w*\s?(?:pilz|seitling)\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\w*gewu(?:e)?rz(?:mischung|salz)?\b|\w+\s+gewu(?:e)?rz(?:mischung)?\b|\b(?:chicken|poultry|steak|beef)\s+(?:seasoning|spice|rub)\b|\bsteak(?:pfeffer|salz|sauce|sose|soße)\b|\bhirschhorn\w*|\blamb\s?s\s+lettuce\b|(?<=\b(?:cauliflower|celeriac|mushroom|portobello|cabbage|tofu|tuna|salmon|swordfish|sellerie|blumenkohl|kohl|kohlrabi|rotkohl|weisskohl|weißkohl|auberginen?|pilz|kurbis|thunfisch|lachs|in)\s)steaks?\b/g;
     const flesh = names
@@ -17139,7 +17232,7 @@ const AtelierStudio = (() => {
     const seafood =
       /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|worcester|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
     const animal =
-      /\w*(?:kase|kaese|milch|sahne|joghurt)\b|\b(feta|gouda|ricotta|mascarpone|pecorino|cheddar|emmentaler|gruyere|brie|camembert|halloumi|burrata|schmand|creme fraiche|ghee|butterschmalz|skyr|milch|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
+      /\w*(?:kase|kaese|milch|sahne|rahm|joghurt)\b|\b(feta|gouda|ricotta|mascarpone|pecorino|cheddar|emmentaler|gruyere|brie|camembert|halloumi|burrata|schmand|creme fraiche|ghee|butterschmalz|skyr|milch|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
     if (
       style === "vegan" &&
       (eats(meat) ||
@@ -17734,10 +17827,16 @@ Object.assign(MealieAtelierCard.prototype, {
   _revealDiscover() {
     requestAnimationFrame(() => {
       const layout = this.shadowRoot.querySelector(".studio-discover-layout");
-      // 72px clears Home Assistant's sticky header; a wizard still below it is left where it is.
-      if (layout && layout.getBoundingClientRect().top < 72)
+      // A wizard top that is still on screen is left where it is: nudging by a few pixels reads as a jump.
+      if (layout && layout.getBoundingClientRect().top < 0)
         layout.scrollIntoView({ block: "start", behavior: "smooth" });
     });
+  },
+  /** Scroll to the pantry form only when it is entirely off screen; a visible form keeps the page still. */
+  _revealPantryForm(form) {
+    const box = form.getBoundingClientRect();
+    if (box.bottom > 0 && box.top < window.innerHeight) return;
+    form.scrollIntoView({ block: "nearest", behavior: "smooth" });
   },
   _studioSuggestions() {
     return AtelierStudio.suggest(
@@ -18540,7 +18639,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         form.elements.expires.value = v.expires || "";
         form.elements.staple.checked = v.staple === true;
         form.dataset.rowId = v.id;
-        form.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        this._revealPantryForm(form);
       }
       return;
     }

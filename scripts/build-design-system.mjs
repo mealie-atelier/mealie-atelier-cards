@@ -21,6 +21,7 @@ const cssFiles = [
   "src/design-system/recipe-editor.css", // feature B
   "src/design-system/shopping-sync.css",
   "src/design-system/recipe-picker.css", // feature D
+  "src/design-system/corners.css",
 ];
 const content = cssFiles.map((file) => readFileSync(resolve(folder, file), "utf8").trim());
 const styleBegin = "const STYLE = `<style>\n";

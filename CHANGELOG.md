@@ -25,6 +25,10 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Safari and other WebKit browsers no longer jump the page down by the card's height after a tap that re-renders the card (Kochinspo choices, settings, ticks). The Kochinspo wizard scrolls back up only when its top has left the screen.
 - The corner style in the design settings shows the active option when no radius was set.
 - The Kochinspo time step always shows a selected limit. The default of 40 minutes matched none of the choices, so nothing was marked; a saved limit now selects the next choice up.
+- A long dish name in the overview week strip ("Hähnchensuppe mit Gemüse") wraps with hyphenation and clamps at three lines instead of overflowing its day button.
+- Kochinspo treats "Rahm" compounds (Sauerrahm, Schlagrahm, Kaffeerahm) as dairy, so they are no longer vegan. Plant versions (Kokosrahm, Hafer Rahm, pflanzliche Sahne) still are.
+- On phones, "Bearbeiten" in the pantry no longer scrolls the page while the form is on screen, and "Weiter" in Kochinspo no longer nudges the page by a few pixels; the wizard only scrolls back up when its top has left the screen.
+- The corner style (square, small, large) now shapes recipe tiles, panels, dialogs, day cards, metric tiles and inputs, not only three rules. The default look is unchanged.
 
 - The visual editor names the accent colours (Salbeigrün, Aprikose and so on, in German and English) with a colour swatch beside the select instead of raw hex values.
 - The suggested card titles in Home Assistant's card picker follow the Home Assistant language (German or English, English fallback) instead of always being English.
@@ -33,6 +37,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Changed
 
+- The overview tiles "Rezepte", "Geplant" and "Offene Artikel" are buttons that open the recipes, the week plan and the shopping list.
 - A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.
 - Recipe photos appear in the week grid, in today's plan and in the cookbook list.
 - Demo: the meal plan fills the whole current and next week from Monday, so the week view never opens on empty days.
