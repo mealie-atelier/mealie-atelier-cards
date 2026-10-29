@@ -271,14 +271,13 @@ test("every page shares the designed footer in its own language without photo cr
     const ids = sectionIds[locale];
     assert.ok(footer.includes(`#${ids.homeAssistant}"`), `${page} links the HA route`);
     assert.ok(footer.includes(`#${ids.webApp}"`), `${page} links the web app route`);
-    // The landing page shows the support tiles in its closing section, so its footer omits them.
-    const onLanding = /\/(de|en)\/index\.html$/.test(page);
     for (const link of [
       links.cards,
       links.bridge,
       links.guide,
       links.setup,
-      ...(onLanding ? [] : [links.youtube, links.kofi]),
+      links.youtube,
+      links.kofi,
     ]) {
       assert.ok(footer.includes(`href="${link}"`), `${page} footer lacks ${link}`);
     }
@@ -540,11 +539,12 @@ test("credits pages carry the same social tags as the other pages", () => {
   }
 });
 
-test("support tiles appear once per page: closing section on the landing, footer elsewhere", () => {
+test("support tiles appear once per page, in the same footer on every page type", () => {
   for (const locale of ["de", "en"]) {
     const home = landing(builds.local, locale);
     assert.equal((home.match(/ko-fi\.com\/allesautomatisch/g) ?? []).length, 1, locale);
-    assert.doesNotMatch(footerOf(home), /support-link/, `${locale} landing footer`);
+    assert.match(footerOf(home), /class="foot-support"/, `${locale} landing footer`);
+    assert.doesNotMatch(home, /class="support[ "]/, `${locale} landing closing holds no tiles`);
     const recipePage = listFiles(join(builds.local, locale), ".html").find((page) =>
       read(page).includes('<body class="recipe-body">'),
     );
@@ -568,7 +568,7 @@ test("page CSS keeps the footer wordmark off the rule and the metric grid divide
   const wordmark = css.match(/\.wordmark\s*\{[^}]*\}/)[0];
   assert.doesNotMatch(wordmark, /margin:[^;]*-\d/, "wordmark margin must not be negative");
   assert.match(wordmark, /margin:\s*0 0 clamp\(/);
-  assert.match(css, /\.recipe-metrics div:nth-child\(odd\)\s*\{[^}]*border-left:\s*0/);
+  assert.match(css, /\.recipe-metrics div:nth-child\(even\)\s*\{[^}]*border-left:/);
   assert.match(css, /\.term pre\s*\{[^}]*white-space:\s*pre;/);
   assert.match(css, /\.ba-labels\s*\{/);
   for (const locale of ["de", "en"]) {
@@ -610,4 +610,16 @@ test("recipe photos carry no clutter claims in their alt text", () => {
     alts.join("\n"),
     /Beere am|red berry|Knäckebrot|crispbread|Frühlingszwiebelring|sliced spring onion/,
   );
+});
+
+test("recipe metrics stay an even grid at every width and the page offsets match", () => {
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const metrics = css.match(/\.recipe-metrics \{[^}]*\}/)[0];
+  assert.match(metrics, /display: grid/, "metrics use a grid outside any media query");
+  assert.match(metrics, /grid-template-columns: 1fr 1fr/);
+  assert.doesNotMatch(css, /\.recipe-metrics div \{[^}]*border-right/, "no trailing divider");
+  assert.match(css, /\.credits-page \{[^}]*padding-block: 112px/, "credits offset equals recipe");
+  assert.match(css, /\.recipe-page \{\s*padding-top: 112px/);
+  const scrim = css.match(/\.closing::before \{[\s\S]*?\n\}/)[0];
+  assert.match(scrim, /0\.88\) 55%/, "closing scrim stays dense behind the text column");
 });

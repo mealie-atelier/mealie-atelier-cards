@@ -166,7 +166,7 @@ h2 em {
   text-wrap: pretty;
 }
 .sec {
-  padding-block: clamp(80px, 11vw, 160px);
+  padding-block: clamp(72px, 8vw, 120px);
   position: relative;
 }
 .sec-head {
@@ -962,7 +962,9 @@ h2 em {
 }
 @media (max-width: 700px) {
   .ba {
-    aspect-ratio: 720 / 1558;
+    /* Cropped a little at the foot: the Mealie phone shot ends in a row of chips that the plain
+       frame edge would cut in half, so the frame stops above that row. */
+    aspect-ratio: 720 / 1480;
     max-width: 420px;
     margin-inline: auto;
   }
@@ -1113,6 +1115,11 @@ h2 em {
   padding-block: 6vh;
   opacity: 0.38;
   transition: opacity 0.5s var(--ease);
+}
+/* The sticky stage already ends flush with the story, so the last step adds no blank run. */
+.step:last-child {
+  min-height: 0;
+  padding-bottom: 0;
 }
 .step.current,
 html:not(.js) .step {
@@ -2312,9 +2319,9 @@ details[open] .chev {
   background:
     linear-gradient(
       90deg,
-      rgba(8, 12, 10, 0.92) 0%,
-      rgba(8, 12, 10, 0.72) 45%,
-      rgba(8, 12, 10, 0.18) 100%
+      rgba(8, 12, 10, 0.94) 0%,
+      rgba(8, 12, 10, 0.88) 55%,
+      rgba(8, 12, 10, 0.3) 100%
     ),
     linear-gradient(0deg, rgba(12, 18, 15, 1) 0%, transparent 35%);
 }
@@ -2507,8 +2514,9 @@ details[open] .chev {
   position: relative;
   font: 500 clamp(64px, 15vw, 230px) / 0.8 var(--serif);
   letter-spacing: -0.04em;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(157, 203, 178, 0.24);
+  /* A soft mint fill with a clear outline, so it reads as a brand element at every width. */
+  color: rgba(157, 203, 178, 0.1);
+  -webkit-text-stroke: 1.5px rgba(157, 203, 178, 0.5);
   white-space: nowrap;
   text-align: center;
   /* Clear of the rule below: the letters end well above the hairline, nothing crosses them. */
@@ -2609,22 +2617,25 @@ details[open] .chev {
 .recipe-head h1 {
   font-size: clamp(40px, 6vw, 80px);
 }
+/* An even two column grid at every width: the dividers are left borders of the second column,
+   so a divider never dangles at the end of a row, whatever the viewport. */
 .recipe-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   border-block: 1px solid var(--line);
 }
 .recipe-metrics div {
   display: grid;
   align-content: start;
   gap: 2px;
-  padding: 14px 28px 14px 0;
-  margin-right: 28px;
-  border-right: 1px solid var(--line);
+  padding: 14px 18px 14px 0;
 }
-.recipe-metrics div:last-child {
-  border-right: 0;
+.recipe-metrics div:nth-child(even) {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+.recipe-metrics div:nth-child(n + 3) {
+  border-top: 1px solid var(--line);
 }
 .recipe-metrics b {
   font: 500 22px/1.2 var(--serif);
@@ -2632,26 +2643,6 @@ details[open] .chev {
 .recipe-metrics span {
   color: var(--faint);
   font-size: 13px;
-}
-/* Small screens: an even two column grid, so a divider never dangles at the end of a row. */
-@media (max-width: 860px) {
-  .recipe-metrics {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .recipe-metrics div {
-    margin-right: 0;
-    padding: 14px 0 14px 18px;
-    border-right: 0;
-    border-left: 1px solid var(--line);
-  }
-  .recipe-metrics div:nth-child(odd) {
-    padding: 14px 18px 14px 0;
-    border-left: 0;
-  }
-  .recipe-metrics div:nth-child(n + 3) {
-    border-top: 1px solid var(--line);
-  }
 }
 /* The hero shows the whole photo at its own ratio, so a plate rim or a bowl is never cut off.
    Wide screens put the photo beside the title block, narrow ones stack it. */
@@ -2707,7 +2698,8 @@ details[open] .chev {
   text-decoration-color: currentColor;
 }
 .credits-page {
-  padding-block: clamp(36px, 6vw, 72px) clamp(56px, 8vw, 104px);
+  /* Same top offset as .recipe-page, so the breadcrumb sits equally far below the header. */
+  padding-block: 112px clamp(56px, 8vw, 104px);
 }
 .credits-page .lead {
   max-width: 62ch;

@@ -168,11 +168,8 @@ export function renderSiteFooter(ctx) {
   const column = (title, rows) =>
     `<div class="foot-col"><h3>${title}</h3><ul>${rows.join("")}</ul></div>`;
   const heart = `<span class="heart" role="img" aria-label="${t("Liebe", "love")}">♥</span>`;
-  // The landing page closes with the same two tiles right above the footer, so only the pages
-  // without that closing section show them here.
-  const support = ctx.onLanding
-    ? ""
-    : `<div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>${t("Alles Automatisch auf YouTube", "Alles Automatisch on YouTube")}</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>${t("Unterstützen über Ko-fi", "Support on Ko-fi")}</small></span>`, "support-link")}</div>`;
+  // Every page shows the same two support tiles here, the landing page included.
+  const support = `<div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>${t("Alles Automatisch auf YouTube", "Alles Automatisch on YouTube")}</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>${t("Unterstützen über Ko-fi", "Support on Ko-fi")}</small></span>`, "support-link")}</div>`;
   return `<footer class="site-footer"><div class="foot-glow" aria-hidden="true"></div><div class="wrap foot-top"><div class="foot-brand"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}">${brandMark()}<b>Mealie Atelier</b></a><p class="promise">${t("Eine ruhige Küche für dein Mealie. Jeden Tag.", "A calm kitchen for your Mealie. Every day.")}</p><p class="foot-sub">${t("Kostenlos, Open Source und selbst gehostet. Für Home Assistant oder als eigene Web-App.", "Free, open source and self-hosted. For Home Assistant or as a web app of its own.")}</p>${support}</div><div class="foot-cols">${column(
     t("Produkt", "Product"),
     [
