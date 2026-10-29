@@ -176,7 +176,8 @@ class MealieAtelierEditor extends HTMLElement {
     if (typeof DEFAULTS[key] === "number" && value !== "") value = Number(value);
     this._patch({ [key]: value });
     this._emitConfig();
-    if (key === "mode" || key === "provider" || ENTITY_FIELDS[key]) this._render();
+    if (ENTITY_FIELDS[key]) this._syncEntityWarning(key);
+    else if (key === "mode" || key === "provider") this._render();
   }
   _handleClick(event) {
     const action = event.target.closest?.("[data-editor-action]")?.dataset.editorAction;
@@ -421,8 +422,22 @@ class MealieAtelierEditor extends HTMLElement {
   _entityWarning(key) {
     const value = String(this._config[key] || "").trim();
     const { domain, example } = ENTITY_FIELDS[key];
-    if (!value || value.startsWith(`${domain}.`)) return "";
+    // Same pattern as the card gate, so a warning appears exactly when the button stays hidden.
+    if (!value || new RegExp(`^${domain}\\.[a-z0-9_]+$`, "i").test(value)) return "";
     return `<p class="hint" role="alert" id="atelier-${key}-warning">${esc(translateLabel(this._locale(), "editorEntityDomainWarning", { domain, example }))}</p>`;
+  }
+  // Update only the warning in place: a full render on blur would swap the DOM under the
+  // user's next click or Tab.
+  _syncEntityWarning(key) {
+    const root = this.shadowRoot;
+    const html = this._entityWarning(key);
+    const existing = root.getElementById?.(`atelier-${key}-warning`);
+    if (existing) {
+      if (html) existing.outerHTML = html;
+      else existing.remove();
+    } else if (html) {
+      root.getElementById?.(`atelier-list-${key}`)?.insertAdjacentHTML("afterend", html);
+    }
   }
   _render() {
     if (!this.isConnected) return;

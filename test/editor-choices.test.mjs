@@ -144,3 +144,32 @@ test("entity fields use neutral placeholders, suggestions and a domain warning",
   assert.match(html, />10%</);
   assert.doesNotMatch(html, /Cockpit/);
 });
+
+test("editing an entity field updates its warning in place without re-rendering", () => {
+  const { editor } = makeEditor(
+    { type: "custom:mealie-atelier-card", cooking_scene: "scene.dinner" },
+    { language: "en", states: {} },
+  );
+  let renders = 0;
+  editor._render = () => renders++;
+  const nodes = new Map();
+  let inserted = "";
+  editor.shadowRoot.getElementById = (id) =>
+    nodes.get(id) ||
+    (id === "atelier-list-cooking_scene"
+      ? { insertAdjacentHTML: (_where, html) => (inserted = html) }
+      : null);
+  const change = (value) =>
+    editor._handleChange({ target: { dataset: { key: "cooking_scene" }, type: "text", value } });
+  change("scene.foo-bar");
+  assert.equal(renders, 0);
+  assert.match(inserted, /id="atelier-cooking_scene-warning"/);
+  inserted = "";
+  nodes.set("atelier-cooking_scene-warning", {
+    remove: () => nodes.delete("atelier-cooking_scene-warning"),
+  });
+  change("scene.dinner");
+  assert.equal(renders, 0);
+  assert.equal(nodes.size, 0);
+  assert.equal(inserted, "");
+});
