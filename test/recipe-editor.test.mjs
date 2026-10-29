@@ -583,7 +583,7 @@ test("permissions prefer the new fields and fall back to the legacy mirrors; err
   assert.equal(derived._errorText({ code: "no_such_code", message: "Plain" }), "Plain");
   assert.equal(derived._errorText({}), "Something went wrong.");
   const german = editor({ language: "de" }).card;
-  assert.match(german._errorText({ code: "backup_failed" }), /Sicherung/);
+  assert.match(german._errorText({ code: "backup_failed" }), /Backup/);
 });
 
 test("every editor and err translation key used by the component exists in en and de", () => {
