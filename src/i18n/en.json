@@ -1187,7 +1187,7 @@
   "designSystemEyebrow": "ATELIER DESIGN SYSTEM",
   "printEdition": "KITCHEN STUDIO · PRINT EDITION",
   "printNotes": "Notes",
-  "accentPlumLightDefault": "Plum (default in the light theme)",
+  "accentHerbLightDefault": "Herb green (default in the light theme)",
   "studioSessionReplaceLocal": "Cook here only",
   "studioAiNotConfigured": "AI is optional and needs an AI API key.",
   "nutriUsdaKeyMissingHa": "USDA API key not configured. Add it in the integration options.",

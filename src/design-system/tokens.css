@@ -124,20 +124,20 @@
 }
 .atelier.light {
   color-scheme: light;
-  --ds-brand: color-mix(in srgb, var(--at-accent) 88%, #281b22);
-  --ds-brand-text: color-mix(in srgb, var(--at-accent) 40%, #281b22);
+  --ds-brand: color-mix(in srgb, var(--at-accent) 88%, #14201a);
+  --ds-brand-text: color-mix(in srgb, var(--at-accent) 40%, #14201a);
   --ds-brand-foreground: var(--at-brand-ink, var(--at-accent-ink, #fffdfa));
-  --ds-ring: color-mix(in srgb, var(--at-accent) 82%, #241921);
-  --ds-photo-fallback: linear-gradient(145deg, #b8a7a2, #806877);
+  --ds-ring: color-mix(in srgb, var(--at-accent) 82%, #14201a);
+  --ds-photo-fallback: linear-gradient(145deg, #b8b9a6, #66786a);
   --at-surface: #f4f1eb;
-  --at-ink: #29252a;
-  --at-sub: #665e65;
+  --at-ink: #1f2621;
+  --at-sub: #566058;
   --at-panel: #fffdfa;
   --at-panel2: #eee9e3;
-  --at-line: rgba(57, 45, 54, 0.15);
-  --at-shadow: 0 18px 48px rgba(49, 37, 43, 0.085);
+  --at-line: rgba(20, 32, 26, 0.15);
+  --at-shadow: 0 18px 48px rgba(20, 32, 26, 0.085);
   --ds-sidebar-start: #eee9e3;
   --ds-sidebar-end: #e9e3dd;
-  --ds-shell-elevation: 0 12px 32px rgba(49, 37, 43, 0.065);
-  --ds-shadow-panel: 0 15px 40px rgba(49, 37, 43, 0.055);
+  --ds-shell-elevation: 0 12px 32px rgba(20, 32, 26, 0.065);
+  --ds-shadow-panel: 0 15px 40px rgba(20, 32, 26, 0.055);
 }

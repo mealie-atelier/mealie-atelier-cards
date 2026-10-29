@@ -83,16 +83,16 @@ test("dark and neutral stone-light palettes share central tokens and theme trans
   );
   assert.match(
     tokens,
-    /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8a7a2, #806877\)/s,
+    /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8b9a6, #66786a\)/s,
   );
   assert.match(file("src/design-system/editorial.css"), /background:\s*var\(--ds-photo-fallback/);
   assert.match(
     template,
-    /configuredAccent\.toLowerCase\(\) === DEFAULTS\.accent[\s\S]*?\? "#75465d"/,
+    /configuredAccent\.toLowerCase\(\) === DEFAULTS\.accent[\s\S]*?\? "#3e6b48"/,
   );
   assert.match(
     file("src/design-system/polish.css"),
-    /\.atelier\.light \.hero:after[\s\S]*rgb\(42 31 39 \/ 94%\)/,
+    /\.atelier\.light \.hero:after[\s\S]*rgb\(20 32 26 \/ 94%\)/,
   );
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*color-scheme:\s*light/s);
   assert.match(motion, /\.view-stage\.is-theme-entering/);
@@ -320,7 +320,7 @@ test("text on accent fills follows the accent: white on dark accents, dark ink o
     card._render();
     return cards.document.markup.match(/--at-accent-ink:(#[0-9a-f]{6})/)?.[1];
   };
-  assert.equal(ink("#75465d"), "#fffdfa");
+  assert.equal(ink("#3e6b48"), "#fffdfa");
   assert.equal(ink("#1f3a8a"), "#fffdfa");
   assert.equal(ink("#9dcbb2"), "#12221b");
   assert.equal(ink("#f2c94c"), "#12221b");
@@ -350,7 +350,7 @@ test("in the light theme the ink on brand fills is chosen against the darkened b
     card._render();
     return cards.document.markup.match(/--at-accent-ink:(#[0-9a-f]{6})/)?.[1];
   };
-  assert.equal(ink("#75465d"), "#fffdfa");
+  assert.equal(ink("#3e6b48"), "#fffdfa");
   assert.equal(ink("#f2c94c"), "#12221b");
   const probe = "#808080";
   assert.equal(raw(probe), "#12221b");

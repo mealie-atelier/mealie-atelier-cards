@@ -1183,7 +1183,7 @@
   "designSystemEyebrow": "ATELIER DESIGNSYSTEM",
   "printEdition": "KÜCHENSTUDIO · DRUCKAUSGABE",
   "printNotes": "Notizen",
-  "accentPlumLightDefault": "Pflaume (Standard im hellen Design)",
+  "accentHerbLightDefault": "Kräutergrün (Standard im hellen Theme)",
   "studioSessionReplaceLocal": "Nur hier kochen",
   "studioAiNotConfigured": "KI ist optional und benötigt einen KI-API-Key.",
   "nutriUsdaKeyMissingHa": "USDA-API-Key fehlt. Bitte in den Integrationsoptionen hinterlegen.",

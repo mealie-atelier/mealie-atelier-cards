@@ -368,10 +368,10 @@ export const dialogMethods = {
         <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
         <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map(
           (value) => {
-            // The light theme paints the default accent plum, so that swatch must look and read plum.
-            const plum = theme === "light" && value === DEFAULTS.accent;
-            const color = plum ? "#75465d" : value;
-            const name = plum ? this.t("accentPlumLightDefault") : this.t(COLOR_NAMES[value]);
+            // The light theme paints the default accent herb green, so that swatch must look and read herb green.
+            const herb = theme === "light" && value === DEFAULTS.accent;
+            const color = herb ? "#3e6b48" : value;
+            const name = herb ? this.t("accentHerbLightDefault") : this.t(COLOR_NAMES[value]);
             const chosen = String(d.accent).toLowerCase() === value;
             return `<button class="swatch ${chosen ? "chosen" : ""}" style="background:${color}" data-action="design" data-field="accent" data-value="${value}" title="${esc(name)}" aria-label="${esc(`${this.t("accent")}: ${name}`)}" aria-pressed="${chosen ? "true" : "false"}"></button>`;
           },

@@ -90,10 +90,10 @@ const esc = (value) =>
 const colorOk = (v) => /^#[0-9a-fA-F]{6}$/.test(v || "");
 // Text on accent fills: whichever of the two inks has the higher WCAG contrast against the accent.
 const accentInk = (hex, mix = 0) => {
-  // `mix` darkens the fill towards the light theme's brand shade (color-mix(accent 88%, #281b22)).
+  // `mix` darkens the fill towards the light theme's brand shade (color-mix(accent 88%, #14201a)).
   const [r, g, b] = [1, 3, 5].map((i, k) => {
     const base = parseInt(hex.slice(i, i + 2), 16);
-    const c = (base * (1 - mix) + [0x28, 0x1b, 0x22][k] * mix) / 255;
+    const c = (base * (1 - mix) + [0x14, 0x20, 0x1a][k] * mix) / 255;
     return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -1066,7 +1066,7 @@ class MealieAtelierCard extends HTMLElement {
     const configuredAccent = colorOk(d.accent) ? d.accent : DEFAULTS.accent;
     const accent =
       theme === "light" && configuredAccent.toLowerCase() === DEFAULTS.accent
-        ? "#75465d"
+        ? "#3e6b48"
         : configuredAccent;
     const rounded = d.radius === "small" ? "12px" : d.radius === "square" ? "6px" : "23px";
     const viewChanged = this._lastRenderedView !== this._view;

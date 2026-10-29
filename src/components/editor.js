@@ -326,11 +326,11 @@ class MealieAtelierEditor extends HTMLElement {
       tr = (key) => this._tr(key),
       percent = new Intl.NumberFormat(this._locale(), { style: "percent" }),
       choose = (key, options) => this._choose(key, options);
-    // The light theme paints the default accent plum, so the dot and its name must say plum too.
+    // The light theme paints the default accent herb green, so the dot and its name must say herb green too.
     const lightTheme = this._resolvedTheme(c.theme) === "light";
     // An invalid accent falls back to the default in the card, so the dot does the same.
     const accent = /^#[0-9a-fA-F]{6}$/.test(c.accent || "") ? c.accent : DEFAULTS.accent;
-    const accentPlum = lightTheme && accent.toLowerCase() === DEFAULTS.accent;
+    const accentHerb = lightTheme && accent.toLowerCase() === DEFAULTS.accent;
     return `<div class="editor"><div class="settings-top"><div><div class="title">Mealie Atelier <span class="title-accent">Studio</span></div><p class="hint">${tr("editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard")}</p><p class="hint" id="atelier-setup-browser-hint">${tr("editorTheSetupWizardIsRememberedPerBrowser")}</p></div><button class="editor-secondary" type="button" data-editor-action="restart">${tr("editorRunSetupWizard")}</button></div><div class="setup-success"><span aria-hidden="true">✓</span><div><strong>${tr("editorYourKitchenIsReady")}</strong><small>${esc(this._tr(c.mode))} · ${tr(c.theme === "auto" ? "editorAutomatic" : c.theme === "light" ? "editorDaylightKitchen" : "editorEveningStudio")}</small></div></div>
     <div class="section-head"><span>01</span><div><strong>${tr("editorBasics")}</strong><p>${tr("editorChooseContentAndTheConnectedMealieInstance")}</p></div></div>
     <div class="group"><label for="atelier-mode">${tr("editorMode")}</label>${choose(
@@ -385,12 +385,12 @@ class MealieAtelierEditor extends HTMLElement {
         [3, "3"],
         [4, "4"],
       ],
-    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(accentPlum ? "#75465d" : accent)}"></span>${choose(
+    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(accentHerb ? "#3e6b48" : accent)}"></span>${choose(
       "accent",
       COLORS.map((value) => [
         value,
         value === DEFAULTS.accent && lightTheme
-          ? tr("accentPlumLightDefault")
+          ? tr("accentHerbLightDefault")
           : tr(COLOR_NAMES[value]),
       ]),
     )}</div></div>

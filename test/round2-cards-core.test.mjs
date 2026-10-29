@@ -37,7 +37,7 @@ test("theme auto follows the Home Assistant light or dark mode", () => {
   assert.match(cards.document.markup, /class="atelier light /);
 });
 
-test("light theme names and paints the default accent swatch plum", () => {
+test("light theme names and paints the default accent swatch herb green", () => {
   const cards = loadCards();
   const card = makeCard(cards);
   card._design.theme;
@@ -45,8 +45,8 @@ test("light theme names and paints the default accent swatch plum", () => {
   card._modal = "settings";
   const html = card._modalHtml();
   const swatch = html.match(/<button class="swatch chosen"[^>]*>/)[0];
-  assert.match(swatch, /background:#75465d/);
-  assert.match(swatch, /Plum/);
+  assert.match(swatch, /background:#3e6b48/);
+  assert.match(swatch, /Herb green/);
   assert.doesNotMatch(swatch, /Sage/);
 });
 
@@ -173,7 +173,7 @@ test("wizard automatic preset renders its translated hint", () => {
   );
 });
 
-test("editor accent dot and option name show plum in the light theme", () => {
+test("editor accent dot and option name show herb green in the light theme", () => {
   for (const [darkMode, plum] of [
     [false, true],
     [true, false],
@@ -185,8 +185,8 @@ test("editor accent dot and option name show plum in the light theme", () => {
     editor._wizardMode = false;
     editor.setConfig({ type: "custom:mealie-atelier-card", theme: "auto" });
     const markup = editor.shadowRoot.innerHTML;
-    assert.equal(markup.includes("background:#75465d"), plum);
-    assert.equal(markup.includes("Plum (default in the light theme)"), plum);
+    assert.equal(markup.includes("background:#3e6b48"), plum);
+    assert.equal(markup.includes("Herb green (default in the light theme)"), plum);
     assert.equal(markup.includes("Sage green"), !plum);
   }
   const cards = loadCards();
@@ -195,7 +195,7 @@ test("editor accent dot and option name show plum in the light theme", () => {
   editor._hass = { language: "en", themes: { darkMode: false } };
   editor._wizardMode = false;
   editor.setConfig({ type: "custom:mealie-atelier-card", theme: "dark" });
-  assert.ok(!editor.shadowRoot.innerHTML.includes("#75465d"));
+  assert.ok(!editor.shadowRoot.innerHTML.includes("#3e6b48"));
 });
 
 test("card picker descriptions are parallel in English and German and match the README", () => {
@@ -368,13 +368,13 @@ test("editor accent dot and option name follow a theme change and ignore invalid
     return editor.shadowRoot.innerHTML;
   };
   let markup = change("light");
-  assert.ok(markup.includes("background:#75465d"));
-  assert.ok(markup.includes("Plum (default in the light theme)"));
+  assert.ok(markup.includes("background:#3e6b48"));
+  assert.ok(markup.includes("Herb green (default in the light theme)"));
   markup = change("dark");
-  assert.ok(!markup.includes("#75465d"));
+  assert.ok(!markup.includes("#3e6b48"));
   assert.ok(markup.includes("Sage green"));
   editor.setConfig({ type: "custom:mealie-atelier-card", theme: "light", accent: "nonsense" });
-  assert.ok(editor.shadowRoot.innerHTML.includes("background:#75465d"));
+  assert.ok(editor.shadowRoot.innerHTML.includes("background:#3e6b48"));
   assert.ok(!editor.shadowRoot.innerHTML.includes("background:nonsense"));
 });
 
