@@ -488,3 +488,11 @@
     flex: 1 1 100%;
   }
 }
+
+.atelier .heading > h2 {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.atelier .heading > .btn.icon-only {
+  flex: none;
+}

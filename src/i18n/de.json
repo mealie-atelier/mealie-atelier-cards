@@ -1120,5 +1120,18 @@
   "stubTitle.pantry": "Mealie Atelier · Vorräte",
   "stubTitle.family": "Mealie Atelier · Gemeinsam kochen",
   "stubTitle.cookbook": "Mealie Atelier · Kochbuch",
-  "stubTitle.manage": "Mealie Atelier · Verwalten"
+  "stubTitle.manage": "Mealie Atelier · Verwalten",
+  "uiOpenRecipe": "{name} öffnen",
+  "uiResultOne": "Treffer",
+  "uiSeeOneResult": "Treffer ansehen",
+  "uiSaveFailed": "Speichern fehlgeschlagen: {error}",
+  "uiImportFailed": "Import fehlgeschlagen: {error}",
+  "uiImportFailedUrl": "Diese URL konnte nicht importiert werden. Prüfe, dass die Adresse öffentlich erreichbar ist und ein Rezept enthält.",
+  "uiSetupMissingHint": "Richte die Mealie Atelier Bridge oder die integrierte Mealie-Integration von Home Assistant ein.",
+  "uiOpenIntegrations": "Integrationen öffnen",
+  "uiCheckAgain": "Erneut prüfen",
+  "uiManageBasicsHint": "Wähle ein Rezept, um Name, Beschreibung und Portionen zu bearbeiten.",
+  "uiEmptyLibraryHero": "Deine Rezeptsammlung ist noch leer.",
+  "uiHeroSub": "Was kochen wir heute?",
+  "uiEmptyLibrary": "In deinem Mealie gibt es noch keine Rezepte. Lege dein erstes Rezept unter Verwalten oder in Mealie an oder importiere es."
 }

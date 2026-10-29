@@ -11,6 +11,10 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 ### Fixed
 
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
+- Quick actions find views and actions by name again, say "1 result" in the singular, and announce recipe results in the card language.
+- Escape in a nested dialog (such as the recipe check) closes only that dialog, not the recipe behind it.
+- Failure messages end with proper punctuation, an import failure no longer claims a change was undone and explains unreachable URLs, and a network failure on load (even when only some requests fail) shows the translated offline notice instead of "Failed to fetch" and no longer claims an empty library.
+- A missing Bridge or Mealie integration shows one setup state, also with the default provider, with a link to the integrations instead of a useless retry. An empty library gets first-run guidance, and the Manage section no longer shows an admin warning to admins.
 - Opening a dialog in Home Assistant puts keyboard focus inside it again: Home Assistant renders `ha-card` asynchronously, so the one-shot `focus()` hit content without a layout box and silently did nothing. Focus is retried until it holds, so Esc, Ctrl+K typing and Tab (kept inside the open dialog) work right away, and focus returns to the opener on close.
 - Cooking mode keeps focus on the control you used (next, back, timers) after every re-render, so the arrow keys step through repeatedly. When that control is gone or disabled, focus moves to the primary step button (Next or Done), so a repeated Enter neither ends cooking nor starts a timer by accident.
 - Ctrl/Cmd+K and "/" also work in Home Assistant while nothing has focus (never while another element has focus, so its own shortcuts stay untouched); Esc, arrows and Tab keep working in an open dialog even if focus fell to the page.

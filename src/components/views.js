@@ -8,9 +8,21 @@ export const viewMethods = {
     const title = entry ? mealName(entry) : this.t("headline");
     const name = entry?.recipe?.name;
     const img = recipeImage(entry?.recipe || {}, "hero-food");
-    return `<section class="hero">${img}<div class="hero-copy"><div class="eyebrow">${esc(this.t("tonight"))}</div><h2>${esc(title)}</h2><p>${esc(entry ? this.t("featured") : this.t("greetingSub"))}</p>
-      <button class="btn primary" data-action="${name ? "open-recipe" : "nav"}" data-value="${name ? esc(entry.recipe.slug) : "mealplan"}">${icon(name ? "book" : "plus", 15)} ${esc(this.t(name ? "viewRecipe" : "planNow"))} ${icon("arrow", 14)}</button></div>
+    const emptyLibrary = this._libraryEmpty();
+    return `<section class="hero">${img}<div class="hero-copy"><div class="eyebrow">${esc(this.t("tonight"))}</div><h2>${esc(title)}</h2><p>${esc(entry ? this.t("featured") : emptyLibrary ? this.t("uiEmptyLibraryHero") : this.t("uiHeroSub"))}</p>
+      ${emptyLibrary && !entry ? "" : `<button class="btn primary" data-action="${name ? "open-recipe" : "nav"}" data-value="${name ? esc(entry.recipe.slug) : "mealplan"}">${icon(name ? "book" : "plus", 15)} ${esc(this.t(name ? "viewRecipe" : "planNow"))} ${icon("arrow", 14)}</button>`}</div>
       ${img ? "" : `<div class="hero-art" aria-hidden="true"><div class="plate"></div></div>`}</section>`;
+  },
+  /** A loaded, unfiltered library without a single recipe (first run). */
+  _libraryEmpty() {
+    const recipes = this._data.recipes;
+    return Boolean(
+      recipes &&
+      !this._loadFailed &&
+      !this._query &&
+      (recipes.total ?? asArray(recipes.items).length) === 0 &&
+      !asArray(recipes.items).length,
+    );
   },
   _stats() {
     const total = this._data.recipes?.total ?? asArray(this._data.recipes?.items).length;
@@ -20,7 +32,8 @@ export const viewMethods = {
       : items;
     const open = active.filter((i) => !i.checked).length;
     const scheduled = asArray(this._data.mealplan).length;
-    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book", "recipes")}${this._stat(scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
+    const failed = this._loadFailed === true;
+    return `<div class="statline">${this._stat(failed ? "—" : (total ?? "—"), this.t("count"), "book", "recipes")}${this._stat(failed ? "—" : scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(failed ? "—" : open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
   },
   _recipeTools() {
     return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
@@ -45,7 +58,7 @@ export const viewMethods = {
       })
       .join(
         "",
-      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length ? `<div class="notice">${icon("book")} ${esc(this.t("noRecipes"))}</div>` : ""}`;
+      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this.t(this._libraryEmpty() ? "uiEmptyLibrary" : "noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
     const page = this._data.recipes || {};
@@ -118,7 +131,7 @@ export const viewMethods = {
         : ""; // the global read-only banner already explains the missing write access
     return `<div class="manage-grid"><div class="manage-card"><div class="stat-icon">${icon("plus", 21)}</div><h3>${esc(this.t("create"))}</h3><p>${esc(this.t("recipeTip"))}</p><button class="btn primary" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button></div>
     <div class="manage-card"><div class="stat-icon">${icon("external", 21)}</div><h3>${esc(this.t("import"))}</h3><p>${esc(this.t("importTip"))}</p><button class="btn" data-action="import-form">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></div>
-    <div class="section"><div class="heading"><div><h2>${esc(this.t("saveNote"))}</h2><p>${esc(this.t("adminOnly"))}</p></div></div>${this._recipes(12)}</div>`;
+    <div class="section"><div class="heading"><div><h2>${esc(this.t("saveNote"))}</h2><p>${esc(this.t("uiManageBasicsHint"))}</p></div></div>${this._recipes(12)}</div>`;
   },
   _body() {
     if (this._busy && !this._data.recipes)

@@ -460,6 +460,22 @@ class MealieAtelierCard extends HTMLElement {
     }
     return err?.message || this.t("error");
   }
+  /** An error text that always ends like a sentence, for templates that append more text. */
+  _errorSentence(err) {
+    const text = String(this._errorText(err)).trim();
+    return /[.!?]$/.test(text) ? text : `${text}.`;
+  }
+  /** True for a failed network request (fetch TypeError or a browser that is offline). */
+  _isNetworkFailure(err) {
+    return (
+      (typeof navigator !== "undefined" && navigator.onLine === false) ||
+      /failed to fetch|networkerror|load failed/i.test(String(err?.message || ""))
+    );
+  }
+  /** True when the bridge or built-in Mealie integration is missing altogether. */
+  get _setupMissing() {
+    return this._errorCode === "not_configured";
+  }
   /** After a refused write the grant may have changed: re-read the status once and re-render. */
   async _recoverPermissions(err) {
     if (!["write_not_permitted", "unauthorized"].includes(err?.code) || this._recovering) return;
@@ -502,8 +518,8 @@ class MealieAtelierCard extends HTMLElement {
   get _hasNativeMealie() {
     return Boolean(
       this._hass?.services?.mealie?.get_recipes &&
-        this._hass?.services?.mealie?.get_recipe &&
-        this._nativeMealieEntryIds.length,
+      this._hass?.services?.mealie?.get_recipe &&
+      this._nativeMealieEntryIds.length,
     );
   }
   async _nativeAction(action, data = {}) {
@@ -601,6 +617,8 @@ class MealieAtelierCard extends HTMLElement {
     if (this._busy) return;
     this._busy = true;
     this._error = "";
+    this._errorCode = "";
+    this._loadFailed = false;
     this._render();
     try {
       if (this._config.provider === "home_assistant") {
@@ -618,18 +636,27 @@ class MealieAtelierCard extends HTMLElement {
         ];
         const result = await Promise.allSettled(calls);
         const keys = ["recipes", "mealplan", "shopping", "status"];
-        let failures = [];
+        const failures = [];
+        const failedErrors = [];
         result.forEach((r, i) => {
           if (r.status === "fulfilled") {
             if (keys[i] === "status") this._status = r.value;
             else this._data[keys[i]] = r.value;
           } else {
+            failedErrors.push(r.reason);
             failures.push(
-              r.reason?.code ? this._errorText(r.reason) : r.reason?.message || String(r.reason),
+              r.reason?.code
+                ? this._errorText(r.reason)
+                : this._isNetworkFailure(r.reason)
+                  ? this.t("offline")
+                  : r.reason?.message || String(r.reason),
             );
           }
         });
-        if (failures.length) this._error = failures[0];
+        if (failures.length) {
+          this._error = failures[0];
+          this._errorCode = failedErrors.find((e) => typeof e?.code === "string")?.code || "";
+        }
         if (
           this._config.provider === "auto" &&
           result[0].status === "rejected" &&
@@ -644,17 +671,22 @@ class MealieAtelierCard extends HTMLElement {
             this._emitConfig();
           }
         }
-        if (
-          failures.length &&
-          result.every((r) => r.status === "rejected") &&
-          this._providerActive !== "home_assistant"
-        )
-          throw new Error(failures[0]);
+        if (failures.length && this._providerActive !== "home_assistant") {
+          // Any failed call means the page may be incomplete: never present it as an empty library.
+          this._loadFailed = true;
+          if (result.every((r) => r.status === "rejected")) throw failedErrors[0];
+        }
         if (!this._activeList)
           this._activeList = String(asArray(this._data.shopping?.lists)[0]?.id || "");
       }
     } catch (err) {
-      this._error = err?.code ? this._errorText(err) : err?.message || this.t("offline");
+      this._errorCode = typeof err?.code === "string" ? err.code : "";
+      this._loadFailed = true;
+      this._error = err?.code
+        ? this._errorText(err)
+        : this._isNetworkFailure(err)
+          ? this.t("offline")
+          : err?.message || this.t("offline");
     } finally {
       this._busy = false;
       this._render();
@@ -913,9 +945,9 @@ class MealieAtelierCard extends HTMLElement {
       : modalMarkup.replace('class="modal ', 'class="modal modal-stable ');
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
-      ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
+      ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
-      <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._body()}</div>
+      <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
@@ -1059,6 +1091,12 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature D: recipe picker keyboard
     if (this._pickerKeydown(event)) return;
     // END feature D
+    // A nested Atelier dialog closes itself on Esc; the card dialog underneath must stay open.
+    if (
+      event.key === "Escape" &&
+      this.shadowRoot?.querySelector?.("dialog.at-premium-dialog[open]")
+    )
+      return;
     if (event.key === "Escape" && this._modal) {
       event.preventDefault();
       if (this._modal === "command") {
@@ -1195,7 +1233,19 @@ class MealieAtelierCard extends HTMLElement {
       if (this._offlineHandleFailure(action, payload, err)) return true;
       // END feature H
       this._error = "";
-      this._flash(this.t("uiMutationFailed", { error: this._errorText(err) }), "error");
+      // An import has nothing to undo and does not "save"; a bad URL gets its own hint.
+      const failure =
+        action === "recipe_import"
+          ? this.t(
+              err?.code === "invalid_request" || !err?.code
+                ? "uiImportFailedUrl"
+                : "uiImportFailed",
+              { error: this._errorSentence(err) },
+            )
+          : this.t(rollback ? "uiMutationFailed" : "uiSaveFailed", {
+              error: this._errorSentence(err),
+            });
+      this._flash(failure, "error");
       await this._recoverPermissions(err);
       // Resync with the server: overlapping writes may have changed the collection meanwhile.
       try {
@@ -1785,7 +1835,7 @@ class MealieAtelierCard extends HTMLElement {
         .slice(0, 100)
         .trim();
       const active = Boolean(this._commandQuery);
-      this.shadowRoot.querySelector(".command-shortcuts")?.toggleAttribute("hidden", active);
+      this._commandFilterViews(this._commandQuery);
       this.shadowRoot.querySelector("[data-command-hint]")?.toggleAttribute("hidden", active);
       clearTimeout(this._commandSearchTimer);
       this._commandSearchSeq++;
@@ -1914,6 +1964,27 @@ class MealieAtelierCard extends HTMLElement {
       );
     }
   }
+  /** Filters the view and action shortcuts by label; hides the whole block when none match. */
+  _commandFilterViews(query) {
+    const needle = String(query || "")
+      .trim()
+      .toLowerCase();
+    const items = [
+      ...(this.shadowRoot?.querySelectorAll?.(".command-shortcuts .command-item") || []),
+    ];
+    let matches = 0;
+    for (const item of items) {
+      const hit =
+        !needle ||
+        String(item.textContent || "")
+          .toLowerCase()
+          .includes(needle);
+      item.toggleAttribute("hidden", !hit);
+      if (hit) matches++;
+    }
+    this.shadowRoot?.querySelector?.(".command-shortcuts")?.toggleAttribute("hidden", !matches);
+    return matches;
+  }
   _commandConversionMarkup(conversion) {
     const number = (value) =>
       new Intl.NumberFormat(this._language, { maximumFractionDigits: 3 }).format(value);
@@ -1933,13 +2004,13 @@ class MealieAtelierCard extends HTMLElement {
         (
           { recipe, match },
           index,
-        ) => `<button class="command-item command-recipe ${index === 0 ? "is-featured" : ""}" type="button" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)} öffnen">
+        ) => `<button class="command-item command-recipe ${index === 0 ? "is-featured" : ""}" type="button" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(this.t("uiOpenRecipe", { name: recipe.name }))}">
       <span class="command-recipe-image">${recipeImage(recipe)}</span><span class="command-recipe-copy"><strong>${esc(recipe.name)}</strong><span class="command-recipe-meta">${recipe.totalTime ? `${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language))}` : `${icon("book", 12)} ${esc(recipe.recipeCategory?.[0]?.name || this.t("featured"))}`}</span></span>
       <span class="command-match command-match-${match}">${esc(label[match] || label.match)}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`,
       )
       .join("");
-    const more = `<button class="command-item command-all-results" type="button" data-action="command-all-results">${icon("search", 16)}<span>${this.t("uiSeeAllResults", { count: this._commandTotal })}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`;
-    return `<div class="command-results-heading"><span>${this.t("uiMATCHINGRECIPES")}</span><span>${this._commandTotal} ${this.t("uiresults")}</span></div><div class="command-results-list" role="group" aria-label="${this.t("uiRecipeResults")}">${results}</div>${more}`;
+    const more = `<button class="command-item command-all-results" type="button" data-action="command-all-results">${icon("search", 16)}<span>${this._commandTotal === 1 ? this.t("uiSeeOneResult") : this.t("uiSeeAllResults", { count: this._commandTotal })}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`;
+    return `<div class="command-results-heading"><span>${this.t("uiMATCHINGRECIPES")}</span><span>${this._commandTotal} ${this.t(this._commandTotal === 1 ? "uiResultOne" : "uiresults")}</span></div><div class="command-results-list" role="group" aria-label="${this.t("uiRecipeResults")}">${results}</div>${more}`;
   }
   async _handleSubmit(event) {
     const form = event.target.closest?.("[data-form]");

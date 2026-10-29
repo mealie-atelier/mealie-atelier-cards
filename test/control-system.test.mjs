@@ -146,7 +146,7 @@ test("Home Assistant Mealie fallback is read-only, credential-safe, and visibly 
   );
   assert.ok(
     compactCore.indexOf('if(this._config.provider==="auto"&&result[0].status==="rejected"') <
-      compactCore.indexOf('if(failures.length&&result.every((r)=>r.status==="rejected")'),
+      compactCore.indexOf('if(failures.length&&this._providerActive!=="home_assistant")'),
   );
   assert.match(editor, /editorHomeAssistantMealieFound/);
   assert.match(editor, /atelier-mealie_entry_id/);

@@ -1120,5 +1120,18 @@
   "stubTitle.pantry": "Mealie Atelier · Pantry",
   "stubTitle.family": "Mealie Atelier · Family",
   "stubTitle.cookbook": "Mealie Atelier · Cookbook",
-  "stubTitle.manage": "Mealie Atelier · Manager"
+  "stubTitle.manage": "Mealie Atelier · Manager",
+  "uiOpenRecipe": "Open {name}",
+  "uiResultOne": "result",
+  "uiSeeOneResult": "See the result",
+  "uiSaveFailed": "Could not save: {error}",
+  "uiImportFailed": "Import failed: {error}",
+  "uiImportFailedUrl": "This URL could not be imported. Check that the address is publicly reachable and contains a recipe.",
+  "uiSetupMissingHint": "Add the Mealie Atelier Bridge or the built-in Home Assistant Mealie integration.",
+  "uiOpenIntegrations": "Open integrations",
+  "uiCheckAgain": "Check again",
+  "uiManageBasicsHint": "Pick a recipe to edit its name, description and servings.",
+  "uiEmptyLibraryHero": "Your recipe collection is still empty.",
+  "uiHeroSub": "What are we cooking today?",
+  "uiEmptyLibrary": "Your Mealie has no recipes yet. Add or import your first recipe in Manage or in Mealie."
 }
