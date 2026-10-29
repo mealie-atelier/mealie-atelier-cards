@@ -203,3 +203,35 @@ test("the Mealie connection uses one term in the editor basics hint", () => {
     assert.match(html, term);
   }
 });
+
+test("every editor Mealie label says connection, never instance", () => {
+  for (const language of ["en", "de"]) {
+    for (const wizard of [false, true]) {
+      const { editor } = makeEditor(
+        { type: "custom:mealie-atelier-card", mode: "recipes" },
+        { language, states: { "sensor.mealie_recipes": {} } },
+      );
+      editor._nativeEntries = [{ entry_id: "a", name: "Home" }];
+      editor._entriesState = "native";
+      editor._wizardMode = wizard;
+      editor._step = 0;
+      editor._render();
+      const html = editor.shadowRoot.innerHTML;
+      assert.match(html, /atelier-mealie_entry_id/);
+      assert.doesNotMatch(html, /Mealie instance|Mealie-Instanz/);
+    }
+  }
+});
+
+test("the editor explains that the setup wizard is remembered per browser", () => {
+  for (const [language, text] of [
+    ["en", /remembered per browser/],
+    ["de", /pro Browser gespeichert/],
+  ]) {
+    const { editor } = makeEditor({ type: "custom:mealie-atelier-card" }, { language });
+    assert.match(editor.shadowRoot.innerHTML, text);
+    editor._wizardMode = true;
+    editor._render();
+    assert.match(editor.shadowRoot.innerHTML, text);
+  }
+});
