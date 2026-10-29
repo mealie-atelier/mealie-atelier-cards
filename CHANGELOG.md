@@ -7,6 +7,9 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 ### Added
 
 - The web app's AI helpers also work with an Anthropic API key (`ANTHROPIC_API_KEY`); `ATELIER_AI_PROVIDER` picks one when both keys are set.
+- Demo site: the German and English landing pages are now a full product page, with hero, facts, food photos, a before/after slider (mouse, touch and keyboard), the live card in its own "try it" section, a week in the kitchen with a scroll stage, features, devices, Home Assistant, the web app without Home Assistant, the optional AI helpers, the recipe directory, open source and both install routes. Scroll reveals, counters, parallax and the slider sweep respect `prefers-reduced-motion`.
+- Demo site: new product screenshots from the current recipes at phone, tablet and desktop size, plus Home Assistant and Bridge captures with fictional data only. They ship as WebP with `srcset`, explicit width and height, and lazy loading below the first screen.
+- Demo site: a designed footer on every page with brand, both routes, guides, GitHub, YouTube, Ko-fi, a language switch and "Mit ♥ gemacht von Daniel" or "Made with ♥ by Daniel". Recipe pages share the header, footer and design language; photo credits stay at their photos.
 
 ### Fixed
 

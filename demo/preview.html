@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="description" content="__SEO_DESCRIPTION__" />
-    <meta name="theme-color" content="#111613" />
+    <meta name="theme-color" content="#0c120f" />
     <meta name="color-scheme" content="dark" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="__SEO_TITLE__" />
@@ -31,62 +31,14 @@
     </script>
   </head>
   <body>
-    <div class="wrap">
-      <header class="demo-header">
-        <a class="demo-brand" href="__DEMO_HOME__" aria-label="Mealie Atelier"
-          ><span class="demo-brand-mark" aria-hidden="true"
-            ><svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-              stroke-linecap="round"
-            >
-              <path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z" />
-              <path d="M5 20c2-4 5-7 10-10" /></svg></span
-          ><span>Mealie Atelier</span></a
-        >
-        <nav class="demo-language" aria-label="__LANGUAGE_LABEL__">
-          <a href="__GERMAN_URL__" data-language="de">DE</a
-          ><a href="__ENGLISH_URL__" data-language="en">EN</a>
-        </nav>
-      </header>
-      <section class="demo-hero">
-        <div>
-          <p class="demo-eyebrow">__HERO_EYEBROW__</p>
-          <h1>__HERO_TITLE__</h1>
-          <p>__HERO_COPY__</p>
-        </div>
-        <aside class="demo-promise"><strong>__LOCAL_TITLE__</strong>__LOCAL_COPY__</aside>
-      </section>
-      <p class="demo-local-note">
-        <svg
-          viewBox="0 0 20 20"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.6"
-          aria-hidden="true"
-        >
-          <rect x="3" y="4" width="14" height="12" rx="2" />
-          <path d="M7 8h6M7 11h4" /></svg
-        ><span>__LOCAL_NOTICE__</span>
-      </p>
+    __SITE_HEADER__
+    <main id="main">
+      __SECTIONS_BEFORE_DEMO__
       <mealie-atelier-card></mealie-atelier-card>
-      <section class="demo-directory" aria-labelledby="demo-directory-title">
-        <h2 id="demo-directory-title">__DIRECTORY_TITLE__</h2>
-        <p class="demo-directory-intro">__DIRECTORY_COPY__</p>
-        <div class="demo-recipe-list">__SEO_RECIPE_DIRECTORY__</div>
-      </section>
-      __CTA_SECTION__
-      <footer class="demo-footer">
-        <span
-          >__MADE_WITH__
-          <a href="https://alles-automatisch.de/" target="_blank" rel="me noopener noreferrer"
-            >Daniel</a
-          ></span
-        >__FOOTER_LINKS__
-      </footer>
-    </div>
+      __SECTIONS_AFTER_DEMO__
+    </main>
+    __SITE_FOOTER__
+    <script type="module" src="./site.js"></script>
     <script type="module">
       import "../dist/mealie-atelier-cards.js";
       import { searchDemoRecipes } from "./recipe-search.js";
