@@ -63,6 +63,20 @@ test("the dialog close button is sticky so it stays reachable", () => {
   assert.match(rule(refinement, ".atelier .modal > .modal-close"), /position:\s*sticky/);
 });
 
+test("a scroll-driven header strip keeps content from being cut by the sticky close button", () => {
+  const strip = rule(refinement, ".atelier .modal > .modal-close::before");
+  assert.match(strip, /position:\s*absolute/);
+  assert.match(strip, /z-index:\s*-1/);
+  assert.match(strip, /background:\s*var\(--at-surface\)/);
+  assert.match(strip, /opacity:\s*0/);
+  assert.match(refinement, /animation-timeline:\s*scroll\(nearest block\)/);
+  assert.match(refinement, /@keyframes at-close-strip \{\s*to \{\s*opacity: 1/);
+  assert.match(
+    refinement,
+    /max-height: 700px\) \{\s*\.atelier \.modal\.large:has\(> \.modal-hero\) > \.modal-close::before \{\s*display: none/,
+  );
+});
+
 test("the HA scene hint names the Cooking light button, not cooking start", () => {
   for (const [lang, word] of [
     ["de", "Kochlicht"],

@@ -10892,6 +10892,40 @@ ha-card {
     --at-close-size: 44px;
   }
 }
+/* A header strip behind the sticky button: once the dialog scrolls, content passes under the strip instead of
+   being cut by the button. It fades in with the scroll position, so it stays invisible over the hero at the top. */
+.atelier .modal > .modal-close::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -20px;
+  right: -20px;
+  width: 3000px;
+  height: calc(var(--at-close-size) + 32px);
+  background: var(--at-surface);
+  border-bottom: 1px solid var(--at-line);
+  opacity: 0;
+  pointer-events: none;
+}
+@supports (animation-timeline: scroll()) {
+  .atelier .modal > .modal-close::before {
+    pointer-events: auto;
+    animation: at-close-strip linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 48px;
+  }
+}
+/* In the landscape grid the button is absolute and only the right column scrolls, so no strip there. */
+@media (orientation: landscape) and (max-height: 700px) {
+  .atelier .modal.large:has(> .modal-hero) > .modal-close::before {
+    display: none;
+  }
+}
+@keyframes at-close-strip {
+  to {
+    opacity: 1;
+  }
+}
 
 /* Structured recipe editor (feature B): ingredient rows, comboboxes, history and photo uploads.
    Time values come from the motion tokens; touch targets are at least 44px. */
