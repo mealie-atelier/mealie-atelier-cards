@@ -139,6 +139,36 @@ test("copy uses one term per setting, one Bridge name and the neuter Token", () 
   assert.equal(i18n("en").editorFoodPhotographyCrop, i18n("en").uiPhotoCrop);
 });
 
+test("every language names the Bridge in full and labels density once", () => {
+  for (const lang of ["de", "en"]) {
+    const dict = i18n(lang);
+    assert.equal(dict.editorDensity, dict.density, `${lang} density`);
+    for (const [key, value] of Object.entries(dict))
+      assert.doesNotMatch(
+        value.replace(/Mealie Atelier Bridge/g, ""),
+        /Atelier[- ]Bridge/,
+        `${lang} ${key}`,
+      );
+  }
+});
+
+test("timer and nutrition texts are actionable and use the card's own words", () => {
+  for (const lang of ["de", "en"]) {
+    const dict = i18n(lang);
+    assert.doesNotMatch(dict.errTimerExists, /\bID\b/);
+    assert.doesNotMatch(dict.errTooManyTimers, /Lösche|Delete/);
+    assert.match(dict.errInvalidTimer, /24/);
+    assert.match(dict.errInvalidTimer, /100/);
+  }
+  assert.match(i18n("de").errTooManyTimers, /Entferne/);
+  assert.match(i18n("en").errTooManyTimers, /Remove/);
+  assert.doesNotMatch(
+    i18n("de").uiNoCompleteNutritionEntriesFoundTryAnotherQuery,
+    /^Keine.*\. Anderen/,
+  );
+  assert.match(i18n("de").uiNoCompleteNutritionEntriesFoundTryAnotherQuery, /Versuche/);
+});
+
 test("empty Discover title and today heading fit their content", () => {
   assert.equal(i18n("en").tonight, "On the table today");
   for (const lang of ["de", "en"]) assert.notEqual(i18n(lang).studioDiscoverEmptyTitle, "");
