@@ -794,9 +794,98 @@ test("sharp photos: every master is at least 2000 px wide and ships a 1600w vari
   assert.match(html, /photos\/buttermilch-pancakes-mit-beeren\.webp 2400w/);
 });
 
-test("the phone photo grid sizes dishes by ratio so the quote card keeps its own height", () => {
-  const css = read(new URL("../demo/live-demo.css", import.meta.url));
-  const phone = css.slice(css.indexOf("@media (max-width: 560px) {\n  .food-grid"));
-  assert.match(phone, /\.food-grid \{[^}]*grid-auto-rows: auto;/);
-  assert.match(phone, /\.dish \{[^}]*aspect-ratio: 4 \/ 3;/);
+// Layout needs a real browser engine: find a headless Chromium (CHROME_BIN, PATH or the Playwright
+// cache) and skip when none is installed.
+function findChrome() {
+  const candidates = [process.env.CHROME_BIN];
+  const cache = join(process.env.HOME ?? "", "Library/Caches/ms-playwright");
+  const linuxCache = join(process.env.HOME ?? "", ".cache/ms-playwright");
+  for (const dir of [cache, linuxCache]) {
+    if (!existsSync(dir)) continue;
+    for (const entry of readdirSync(dir).sort().reverse()) {
+      if (!entry.startsWith("chromium_headless_shell-")) continue;
+      for (const sub of readdirSync(join(dir, entry))) {
+        candidates.push(join(dir, entry, sub, "chrome-headless-shell"));
+      }
+    }
+  }
+  return candidates.find((path) => path && existsSync(path));
+}
+
+test("rendered at 390 and 768 px the photo grid follows the photo ratios and the quote card hugs its text", (t) => {
+  const chrome = findChrome();
+  if (!chrome) return t.skip("no headless Chromium available");
+  const dir = mkdtempSync(join(tmpdir(), "atelier-layout-"));
+  try {
+    const widths = [390, 768];
+    const frames = ["de", "en"]
+      .flatMap((locale) =>
+        widths.map(
+          (width) =>
+            `<iframe id="${locale}-${width}" src="file://${join(builds.local, locale, "index.html")}" width="${width}" height="800"></iframe>`,
+        ),
+      )
+      .join("");
+    writeFileSync(
+      join(dir, "harness.html"),
+      `<!doctype html><body><pre id="out">pending</pre>${frames}<script>
+const result = {};
+let pending = 4;
+for (const frame of document.querySelectorAll("iframe")) {
+  frame.addEventListener("load", () => setTimeout(() => {
+    const doc = frame.contentDocument;
+    const grid = doc.querySelector(".food-grid");
+    const quote = doc.querySelector(".food-quote");
+    const box = quote.getBoundingClientRect();
+    const lastChild = quote.lastElementChild.getBoundingClientRect();
+    result[frame.id] = {
+      columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+      ratios: [...grid.querySelectorAll(".dish")].map((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width / r.height;
+      }),
+      quoteHeight: box.height,
+      emptyBelowQuote: box.bottom - lastChild.bottom,
+    };
+    if (--pending === 0) document.getElementById("out").textContent = JSON.stringify(result);
+  }, 800));
+}
+</script>`,
+    );
+    const dom = execFileSync(
+      chrome,
+      [
+        "--no-sandbox",
+        "--allow-file-access-from-files",
+        "--virtual-time-budget=8000",
+        "--window-size=900,900",
+        "--dump-dom",
+        `file://${join(dir, "harness.html")}`,
+      ],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 120000 },
+    );
+    const json = dom.match(/<pre id="out">([^<]*)<\/pre>/)?.[1] ?? "";
+    assert.notEqual(json, "pending", "the harness never measured the page");
+    const measured = JSON.parse(json);
+    for (const locale of ["de", "en"]) {
+      for (const width of widths) {
+        const id = `${locale} ${width}px`;
+        const { columns, ratios, quoteHeight, emptyBelowQuote } = measured[`${locale}-${width}`];
+        assert.equal(columns, width < 561 ? 1 : 2, `${id} grid columns`);
+        assert.equal(ratios.length, 5, `${id} dish count`);
+        // The first dish is wide on a tablet (3:2) and every other dish is 4:3.
+        ratios.forEach((ratio, index) => {
+          const expected = index === 0 && width > 560 ? 3 / 2 : 4 / 3;
+          assert.ok(Math.abs(ratio - expected) < 0.02, `${id} dish ${index} ratio ${ratio}`);
+        });
+        assert.ok(quoteHeight < 200, `${id} quote card is ${quoteHeight}px tall`);
+        assert.ok(
+          emptyBelowQuote < 40,
+          `${id} quote card has ${emptyBelowQuote}px empty below its text`,
+        );
+      }
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
