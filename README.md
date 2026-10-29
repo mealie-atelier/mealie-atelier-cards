@@ -30,7 +30,7 @@
 - **Cook without the clutter.** A full-screen cooking mode with one step at a time, kitchen timers, step photos and a screen that stays awake.
 - **Plan the week at a glance.** A weekly planner with a searchable recipe picker.
 - **Shop together.** Tick items on the phone, even with a weak signal: edits wait on the device and are sent in order when the connection is back.
-- **Feels native.** A visual card editor, ten focused card types, German and English, light and dark, compact and comfortable density, your accent colour.
+- **Feels native.** A visual card editor, ten focused card types, German and English, light and dark, compact and comfortable density, your accent color.
 - **Safe by design.** Your Mealie token stays on the server, writes respect per-user grants and an optional read-only mode, and every recipe edit is backed up first.
 
 ## Screenshots
@@ -156,7 +156,7 @@ The cooking actions only run when you press them. Nothing triggers automatically
 - **Recipe editor:** structured ingredients with food and unit lookup, a review step with scaled preview, cover and step photo upload, and a version history with restore. Every write is backed up first.
 - **Print Studio:** A4 layouts for recipes, shopping lists, the week plan and a whole cookbook, in Editorial, Compact or Ink saver style.
 - **Nutrition Lab:** match ingredients against USDA data, confirm grams and store per-serving values in Mealie. AI name suggestions are optional and off by default.
-- **Smart Shopping Sync:** rule-based sync from a Mealie list to a Home Assistant To-do list such as Bring, with a preview before the first batch (Bridge).
+- **Smart Shopping Sync:** rule-based sync from a Mealie list to a Home Assistant To-do list such as Bring!, with a preview before the first batch (Bridge).
 - **Offline shopping:** ticks and new items made without a connection are kept on the device and replayed in order, exactly once, when the connection returns.
 - **Accessibility:** keyboard navigation and focus management in every dialog, screen reader labels and reduced motion support.
 

@@ -129,14 +129,14 @@ test("bridge error codes for timers, protected values and USDA have card texts i
 });
 
 test("copy uses one term per setting, one Bridge name and the neuter Token", () => {
-  const de = readLocale("de");
+  const de = i18n("de");
   assert.equal(de.editorComfortable, de.comfortable);
   assert.equal(de.editorMotionTransitions, de.uiMotionTransitions);
   assert.equal(de.editorFoodPhotographyCrop, de.uiPhotoCrop);
   assert.doesNotMatch(JSON.stringify(de), /Mealie-Atelier-Bridge|den Zugriffstoken/);
   assert.match(de.errMealieAuth, /das API-Token/);
   assert.match(de.uiNoWriteGrant, /Home-Assistant-Nutzer/);
-  assert.equal(readLocale("en").editorFoodPhotographyCrop, readLocale("en").uiPhotoCrop);
+  assert.equal(i18n("en").editorFoodPhotographyCrop, i18n("en").uiPhotoCrop);
 });
 
 test("every language names the Bridge in full and labels density once", () => {
@@ -160,20 +160,20 @@ test("timer and nutrition texts are actionable and use the card's own words", ()
     assert.match(dict.errInvalidTimer, /24/);
     assert.match(dict.errInvalidTimer, /100/);
   }
-  assert.match(readLocale("de").errTooManyTimers, /Entferne/);
-  assert.match(readLocale("en").errTooManyTimers, /Remove/);
+  assert.match(i18n("de").errTooManyTimers, /Entferne/);
+  assert.match(i18n("en").errTooManyTimers, /Remove/);
   assert.doesNotMatch(
-    readLocale("de").uiNoCompleteNutritionEntriesFoundTryAnotherQuery,
+    i18n("de").uiNoCompleteNutritionEntriesFoundTryAnotherQuery,
     /^Keine.*\. Anderen/,
   );
-  assert.match(readLocale("de").uiNoCompleteNutritionEntriesFoundTryAnotherQuery, /Versuche/);
+  assert.match(i18n("de").uiNoCompleteNutritionEntriesFoundTryAnotherQuery, /Versuche/);
 });
 
 test("empty Discover title and today heading fit their content", () => {
-  assert.equal(readLocale("en").tonight, "On the table today");
+  assert.equal(i18n("en").tonight, "On the table today");
   for (const lang of ["de", "en"]) assert.notEqual(i18n(lang).studioDiscoverEmptyTitle, "");
-  assert.doesNotMatch(readLocale("en").studioDiscoverEmptyTitle, /open/i);
-  assert.doesNotMatch(readLocale("de").studioDiscoverEmptyTitle, /offen/i);
+  assert.doesNotMatch(i18n("en").studioDiscoverEmptyTitle, /open/i);
+  assert.doesNotMatch(i18n("de").studioDiscoverEmptyTitle, /offen/i);
 });
 
 test("Discover empty state lays its buttons out in a wrapping row", () => {
@@ -211,11 +211,9 @@ test("German copy keeps one address, one term per concept and complete sentences
     assert.match(de[key], /^z\. B\. /, key);
 });
 
-const readLocale = (name) => JSON.parse(read(`../src/i18n/${name}.json`));
-
 test("copy uses one spelling per concept in both locales", () => {
-  const en = readLocale("en");
-  const de = readLocale("de");
+  const en = i18n("en");
+  const de = i18n("de");
   assert.doesNotMatch(en.editorQuantityInvalid, /1,5/);
   assert.match(de.editorQuantityInvalid, /1,5; 1 1\/2/);
   assert.doesNotMatch(JSON.stringify(en), /Favourites|cancelled|Tick off|popups|per 100g/);
@@ -232,5 +230,7 @@ test("copy uses one spelling per concept in both locales", () => {
   assert.match(de.studioSwapQuark, /^Pflanzliche/);
   assert.match(de.studioSwapFlour, /^Anderes/);
   assert.match(en.uiPrintGuide, /new window/);
+  const serialComma = Object.entries(en).filter(([, v]) => /\w, [^,.]+, and \w/.test(v));
+  assert.deepEqual(serialComma, [], "English lists use no serial comma");
   assert.match(en.editorOnlyTriggeredWhenYouTapTheCookingCockpitButton, /Cooking light/);
 });

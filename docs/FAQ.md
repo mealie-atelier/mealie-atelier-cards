@@ -18,7 +18,7 @@ Yes. The standalone Web app in `web/` runs on its own, for example in Docker, an
 
 No. The [demo](https://mealie.alles-automatisch.de) uses fictional recipes in the browser. Changes stay in your current browser and are never sent anywhere.
 
-## Does shopping list sync to Bring work?
+## Does shopping list sync to Bring! work?
 
 The cards include the interface for Smart Shopping Sync rules, which needs the Bridge and Home Assistant. The standalone app cannot sync. The safety rules are in the [Smart Shopping Sync specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).
 

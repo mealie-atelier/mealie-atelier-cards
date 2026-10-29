@@ -889,7 +889,7 @@ async function uploadRecipeImage(req, slug) {
       { headers: { Authorization: `Bearer ${MEALIE_API_TOKEN}` }, redirect: "manual" },
     );
     if (!previous.ok)
-      throw Object.assign(new Error("Cannot back up existing photo. Upload cancelled."), {
+      throw Object.assign(new Error("Cannot back up existing photo. Upload canceled."), {
         status: 409,
       });
     const original = Buffer.from(await previous.arrayBuffer());
