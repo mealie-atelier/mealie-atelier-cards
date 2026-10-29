@@ -1133,5 +1133,15 @@
   "uiManageBasicsHint": "Wähle ein Rezept, um Name, Beschreibung und Portionen zu bearbeiten.",
   "uiEmptyLibraryHero": "Deine Rezeptsammlung ist noch leer.",
   "uiHeroSub": "Was kochen wir heute?",
-  "uiEmptyLibrary": "In deinem Mealie gibt es noch keine Rezepte. Lege dein erstes Rezept unter Verwalten oder in Mealie an oder importiere es."
+  "uiEmptyLibrary": "In deinem Mealie gibt es noch keine Rezepte. Lege dein erstes Rezept unter Verwalten oder in Mealie an oder importiere es.",
+  "uiMinute.one": "Minute",
+  "uiMinute.other": "Minuten",
+  "uiTimerMinutesRange": "Bitte gib ganze Minuten von 1 bis 180 ein.",
+  "uiTimerDone": "{label} ist fertig.",
+  "uiBackToRecipe": "Zum Rezept",
+  "uiSodium": "Natrium",
+  "uiRecipeNotes": "Notizen",
+  "uiRecipeSource": "Originalrezept",
+  "uiRecipeCategories": "Kategorien",
+  "uiRecipeTags": "Tags"
 }

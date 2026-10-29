@@ -70,6 +70,29 @@ export const dialogMethods = {
           ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", { target: discoverTarget, base: servingBase })}</p>`
           : "";
       const img = recipeImage(recipe);
+      const labelName = (x) => String(x?.name ?? x ?? "").trim();
+      const categoryNames = asArray(recipe.recipeCategory).map(labelName).filter(Boolean),
+        tagNames = asArray(recipe.tags).map(labelName).filter(Boolean);
+      const recipeEyebrow = categoryNames[0] || this.t("featured");
+      const labelLine = (key, names) =>
+        names.length
+          ? `<p class="recipe-labels"><span>${esc(this.t(key))}</span> ${esc(names.join(", "))}</p>`
+          : "";
+      const sourceUrl = /^https?:\/\//i.test(String(recipe.orgURL || ""))
+        ? String(recipe.orgURL)
+        : "";
+      const sourceLine = sourceUrl
+        ? `<p class="recipe-labels"><span>${esc(this.t("uiRecipeSource"))}</span> <a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(sourceUrl)}</a></p>`
+        : "";
+      const noteBlocks = asArray(recipe.notes)
+        .map((note) => ({
+          title: String(note?.title || "").trim(),
+          text: String(note?.text || "").trim(),
+        }))
+        .filter((note) => note.text || note.title);
+      const notesHtml = noteBlocks.length
+        ? `<section class="recipe-notes"><h3>${esc(this.t("uiRecipeNotes"))}</h3>${noteBlocks.map((note) => `<div class="recipe-note">${note.title ? `<strong>${esc(note.title)}</strong>` : ""}<p>${linkify(note.text)}</p></div>`).join("")}</section>`
+        : "";
       const stepRows = steps
         .map((step, i) => {
           const section = typeof step === "object" && step ? String(step.title || "") : "";
@@ -91,25 +114,35 @@ export const dialogMethods = {
         })
         .join("");
       size = "large";
-      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(this.t("featured"))}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${esc(recipe.description)}</p>
+      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${linkify(recipe.description || "")}</p>
         <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
         <div class="toolbar recipe-actions"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn" data-action="nutrition-open">${icon("leaf", 16)} ${esc(this.t("nutrition"))}</button>`}<button class="btn" data-action="journal-open">${icon("book", 16)} ${esc(this.t("journal"))}</button><button class="btn" data-action="print-recipe">${icon("print", 16)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button><button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button>` : ""}${this._permissions.can_manage ? `<button class="btn" data-action="edit-form">${icon("edit", 16)} ${esc(this.t("edit"))}</button>` : ""}</div>
         ${this._journal[recipe.slug]?.note ? `<div class="journal-hint"><span>${esc(this.t("journalNote"))}</span><strong>${esc(this._journal[recipe.slug].note)}</strong></div>` : ""}
         ${
           recipe.nutrition && Object.values(recipe.nutrition).some(Boolean)
             ? `<div class="nutri-current"><span>${esc(this.t("nutrition"))} · Mealie</span>${[
-                ["calories", "kcal"],
+                ["calories", ""],
                 ["proteinContent", this.t("uiProtein")],
                 ["carbohydrateContent", this.t("uiCarbs")],
                 ["fatContent", this.t("uiFat")],
+                ["fiberContent", this.t("printDocFiber")],
+                ["sugarContent", this.t("printDocSugar")],
+                ["sodiumContent", this.t("uiSodium")],
               ]
                 .filter(([k]) => recipe.nutrition[k])
-                .map(([k, label]) => `<strong>${esc(label)} ${esc(recipe.nutrition[k])}</strong>`)
+                .map(([k, label]) => {
+                  const value = String(recipe.nutrition[k]).trim();
+                  if (k === "calories")
+                    return `<strong>${esc(/^[\d.,]+$/.test(value) ? `${value} kcal` : value)}</strong>`;
+                  const unit = k === "sodiumContent" && /^[\d.,]+$/.test(value) ? " mg" : "";
+                  return `<strong>${esc(label)} ${esc(value + unit)}</strong>`;
+                })
                 .join("")}</div>`
             : ""
         }
-        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase) : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
-        <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div></div>`;
+        ${labelLine("uiRecipeCategories", categoryNames)}${labelLine("uiRecipeTags", tagNames)}${sourceLine}
+        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase) : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
+        <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div>${notesHtml}</div>`;
     }
     if (this._modal === "cook" && this._detail) {
       const steps = asArray(this._detail.recipeInstructions),
@@ -153,7 +186,7 @@ export const dialogMethods = {
                     const context = timer.stepIndex ? `${this.t("uiStep")} ${timer.stepIndex}` : "";
                     const timeLabel = `${timer.label} · ${this.t("uitimeRemaining")}`;
                     const durationLabel = duration
-                      ? `${Math.round(duration / 60000)} ${this.t("uiminutes")}`
+                      ? `${Math.round(duration / 60000)} ${this.tp("uiMinute", Math.round(duration / 60000))}`
                       : this.t("uiActiveTimer");
                     return `<article class="cook-timer-card ${timer.done ? "is-done" : ""} ${progress === null ? "is-progress-unknown" : ""}" data-cook-timer="${esc(timer.id)}"><span class="cook-timer-dial" data-timer-ring style="--timer-progress:${progress === null ? 0 : progress.toFixed(2)}%"><span><time role="timer" data-timer-remaining="${esc(timer.id)}" aria-label="${esc(timeLabel)}">${remainingText}</time></span></span><span class="cook-timer-copy"><span class="cook-timer-status">${timer.done ? this.t("uiREADY") : this.t("uiRUNNING")}</span><strong>${esc(timer.label)}</strong><small>${durationLabel}${context ? ` · ${esc(context)}` : ""}</small></span><button class="icon-btn" data-action="timer-remove" data-value="${esc(timer.id)}" aria-label="${esc(this.t("timerRemove"))}">${icon("close", 16)}</button></article>`;
                   })
@@ -163,7 +196,7 @@ export const dialogMethods = {
           <div class="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}"></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div></div>
         </section>
         ${this._journal[this._detail.slug]?.note ? `<div class="cook-note">${icon("book", 14)} ${esc(this._journal[this._detail.slug].note)}</div>` : ""}
-        <div class="cook-actions"><button class="btn" data-action="cook-back" ${idx <= 0 ? "disabled" : ""}>${icon("chevron", 15)} ${esc(this.t("back"))}</button><button class="btn primary" data-action="${idx >= n - 1 ? "cook-finish" : "cook-next"}">${esc(this.t(idx >= n - 1 ? "done" : "next"))} ${icon("arrow", 15)}</button></div>
+        <div class="cook-actions"><button class="btn" data-action="cook-back" ${idx <= 0 ? "disabled" : ""}>${icon("chevron", 15)} ${esc(this.t("back"))}</button><button class="btn" data-action="cook-to-recipe">${esc(this.t("uiBackToRecipe"))}</button><button class="btn primary" data-action="${idx >= n - 1 ? "cook-finish" : "cook-next"}">${esc(this.t(idx >= n - 1 ? "done" : "next"))} ${icon("arrow", 15)}</button></div>
         <p class="cook-footnote">${this.t("uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe")}</p></div>
         </div></div>`;
     }

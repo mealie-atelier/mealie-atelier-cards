@@ -160,6 +160,14 @@ function ingredientName(row) {
       .trim()
   );
 }
+/** Escapes text and turns plain http(s) URLs into safe external links. */
+function linkify(text) {
+  return esc(text).replace(/https?:\/\/[^\s<>"']+/g, (match) => {
+    const url = match.replace(/(?:&amp;|[.,;:!?)\]])+$/, "");
+    const tail = match.slice(url.length);
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${tail}`;
+  });
+}
 function instructionText(row) {
   return typeof row === "string" ? row : row?.text || "";
 }
@@ -286,6 +294,7 @@ class MealieAtelierCard extends HTMLElement {
       this._timers = JSON.parse(localStorage.getItem("mealie-atelier:timers") || "[]").filter(
         (x) => x?.deadline > Date.now() - 3600000,
       );
+      this._timerIds = new Set(this._timers.map((x) => String(x.id)));
     } catch {
       this._timers = [];
     }
@@ -818,22 +827,64 @@ class MealieAtelierCard extends HTMLElement {
   }
   _persistTimers() {
     try {
-      localStorage.setItem("mealie-atelier:timers", JSON.stringify(this._timers));
+      // Cards share one storage key: keep local timers that another card wrote and this one never held.
+      const known = (this._timerIds ||= new Set());
+      let stored = [];
+      try {
+        stored = JSON.parse(localStorage.getItem("mealie-atelier:timers") || "[]");
+      } catch {}
+      const mine = new Set(this._timers.map((x) => String(x.id)));
+      const foreign = (Array.isArray(stored) ? stored : []).filter(
+        (x) =>
+          x &&
+          !x.serverArmed &&
+          x.deadline > Date.now() - 3600000 &&
+          !mine.has(String(x.id)) &&
+          !known.has(String(x.id)),
+      );
+      for (const id of mine) known.add(id);
+      localStorage.setItem("mealie-atelier:timers", JSON.stringify([...foreign, ...this._timers]));
+    } catch {}
+  }
+  /** Toast, short beep and vibration for a timer that just finished, visible outside cooking mode. */
+  _alertTimerDone(timer) {
+    this._flash(this.t("uiTimerDone", { label: timer.label }), "error");
+    try {
+      globalThis.navigator?.vibrate?.([200, 100, 200]);
+    } catch {}
+    try {
+      const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
+      if (!Ctx) return;
+      this._audio ||= new Ctx();
+      const ctx = this._audio;
+      ctx.resume?.();
+      const osc = ctx.createOscillator(),
+        gain = ctx.createGain();
+      osc.frequency.value = 880;
+      gain.gain.value = 0.15;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
     } catch {}
   }
   _tickTimers() {
     const now = Date.now();
     let finished = false;
+    const alerts = [];
     for (const timer of this._timers) {
       if (!timer.done && timer.deadline <= now) {
         timer.done = true;
         finished = true;
+        // Only alert for timers that just ran out, not for ones that expired while the page was closed.
+        if (now - timer.deadline < 15000) alerts.push(timer);
       }
     }
     if (finished) {
       this._persistTimers();
       this._render();
     }
+    for (const timer of alerts) this._alertTimerDone(timer);
     for (const span of this.shadowRoot.querySelectorAll("[data-timer-remaining]")) {
       const timer = this._timers.find((x) => String(x.id) === span.dataset.timerRemaining);
       if (timer) {
@@ -1103,7 +1154,7 @@ class MealieAtelierCard extends HTMLElement {
         clearTimeout(this._commandSearchTimer);
         this._commandSearchSeq++;
       }
-      this._modal = null;
+      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
       this._render();
       return;
     }
@@ -1482,7 +1533,13 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "timer-start") {
       const input = this.shadowRoot.querySelector("[data-timer-minutes]");
       const minutes = Number(input?.value);
-      if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) return;
+      if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
+        input?.setAttribute?.("aria-invalid", "true");
+        this._flash(this.t("uiTimerMinutesRange"), "error");
+        input?.focus?.({ preventScroll: true });
+        return;
+      }
+      input?.removeAttribute?.("aria-invalid");
       const now = Date.now(),
         label =
           this.shadowRoot.querySelector("[data-timer-label]")?.value.trim() ||
@@ -1499,18 +1556,33 @@ class MealieAtelierCard extends HTMLElement {
       };
       try {
         // Native HA cards use the HA-owned scheduler; standalone uses its companion handler.
+        let armError = null;
         if (this._hass?.callWS) {
-          await this._ws("alarm_create", {
-            timer: { id, label, deadline: timer.deadline, locale: this._language },
-          });
-          timer.serverArmed = true;
+          try {
+            await this._ws("alarm_create", {
+              timer: { id, label, deadline: timer.deadline, locale: this._language },
+            });
+            timer.serverArmed = true;
+          } catch (error) {
+            armError = error;
+          }
         }
+        // The timer always runs locally; background delivery is best effort.
         this._timers.push(timer);
         this._persistTimers();
         this._render();
-        this._flash(this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"));
+        if (armError) {
+          this._flash(this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) }));
+        } else {
+          this._flash(
+            this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"),
+          );
+        }
       } catch (error) {
-        this._flash(this.t("uiBackgroundTimerError", { error: error.message || String(error) }));
+        this._flash(
+          this.t("uiBackgroundTimerError", { error: this._errorSentence(error) }),
+          "error",
+        );
       }
       return;
     }
@@ -1525,12 +1597,15 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (action === "timer-remove") {
       const timer = this._timers.find((x) => String(x.id) === v);
-      if (timer?.serverArmed) {
+      // A finished timer has already been dispatched, so there is nothing left to cancel.
+      if (timer?.serverArmed && !timer.done && timer.deadline > Date.now()) {
         try {
           await this._ws("alarm_cancel", { timer_id: timer.id });
         } catch (error) {
-          this._flash(this.t("uiTimerStopError", { error: error.message || String(error) }));
-          return;
+          if (!(timer.deadline <= Date.now())) {
+            this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");
+            return;
+          }
         }
       }
       this._timers = this._timers.filter((timer) => String(timer.id) !== v);
@@ -1656,12 +1731,17 @@ class MealieAtelierCard extends HTMLElement {
       this._renumberSteps();
       return;
     }
+    if (action === "cook-to-recipe") {
+      this._modal = this._detail ? "recipe" : null;
+      this._render();
+      return;
+    }
     if (action === "close-modal" || action === "backdrop") {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
         this._commandSearchSeq++;
       }
-      this._modal = null;
+      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
       this._render();
       return;
     }

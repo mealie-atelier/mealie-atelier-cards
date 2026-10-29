@@ -496,3 +496,19 @@
 .atelier .heading > .btn.icon-only {
   flex: none;
 }
+.atelier .recipe-labels {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--at-ink);
+}
+.atelier .recipe-labels span {
+  color: var(--ds-brand);
+  font-weight: 750;
+}
+.atelier .recipe-notes {
+  margin-top: 22px;
+}
+.atelier .recipe-note p {
+  margin: 4px 0 10px;
+  white-space: pre-line;
+}

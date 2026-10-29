@@ -1133,5 +1133,15 @@
   "uiManageBasicsHint": "Pick a recipe to edit its name, description and servings.",
   "uiEmptyLibraryHero": "Your recipe collection is still empty.",
   "uiHeroSub": "What are we cooking today?",
-  "uiEmptyLibrary": "Your Mealie has no recipes yet. Add or import your first recipe in Manage or in Mealie."
+  "uiEmptyLibrary": "Your Mealie has no recipes yet. Add or import your first recipe in Manage or in Mealie.",
+  "uiMinute.one": "minute",
+  "uiMinute.other": "minutes",
+  "uiTimerMinutesRange": "Enter a whole number of minutes from 1 to 180.",
+  "uiTimerDone": "{label} is done.",
+  "uiBackToRecipe": "Back to recipe",
+  "uiSodium": "Sodium",
+  "uiRecipeNotes": "Notes",
+  "uiRecipeSource": "Original recipe",
+  "uiRecipeCategories": "Categories",
+  "uiRecipeTags": "Tags"
 }
