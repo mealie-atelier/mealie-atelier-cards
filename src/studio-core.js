@@ -39,6 +39,12 @@ const AtelierStudio = (() => {
           .join(" "),
     ).trim();
   }
+  // The Kochinspo time choices; a saved limit between them (the default 40) selects the next one up.
+  const DISCOVER_MINUTES = [20, 35, 50, 80];
+  function discoverMinutes(value) {
+    const minutes = Number(value) || 40;
+    return DISCOVER_MINUTES.find((option) => option >= minutes) || DISCOVER_MINUTES.at(-1);
+  }
   function durationMinutes(value) {
     if (typeof value === "number") return Number.isFinite(value) && value > 0 ? value : null;
     const source = String(value ?? "")
@@ -405,24 +411,42 @@ const AtelierStudio = (() => {
     const tagged = (...terms) => tags.some((tag) => terms.some((term) => tag.includes(term)));
     const has = (pattern) => pattern.test(all);
     // German puts the animal anywhere in a compound (Hähnchenbrust, Miesmuscheln, Seelachs), so most
-    // meat and fish stems match inside words. A plant product never counts as animal, and look-alikes
-    // (Kürbisfleisch, Hühnereier, Parmesanrinde, Steakpfeffer, Hirschhornsalz) are removed first.
+    // meat and fish stems match inside words. Only the product as written counts, not an alternative
+    // after "oder" or "vegan:". A plant product never counts as meat or fish, but "vegetarisch" or
+    // "Protein" on cheese and quark does not make it vegan. Look-alikes (Kürbisfleisch, Hühnereier,
+    // Parmesanrinde, Steakpfeffer, Hirschhornsalz) are removed first.
+    const main = rows
+      .map(ingredient)
+      .filter(Boolean)
+      .map((text) =>
+        clean(
+          text.replace(
+            /\s*[(,;]?\s*(?:\b(?:oder|or|alternativ\w*|ersatzweise|statt|instead)\b|\b(?:vegan|vegetarisch|vegetarian)\s*:).*$/i,
+            "",
+          ),
+        ),
+      );
     const plant =
       /\b(?:vegan\w*|vegetari\w*|veggie\w*|pflanzlich\w*|plant based|fleischfrei\w*|fleischlos\w*|fleischersatz|meatless|beyond|tofu\w*|seitan|tempeh|\w*protein)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
+    const veganMark =
+      /\b(?:vegan\w*|pflanzlich\w*|plant based|beyond|tofu\w*|seitan|tempeh)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
     const plantDairy =
-      /\b(?:hafer|soja|mandel|kokos|reis|cashew|erbsen|dinkel|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b/g;
+      /\b(?:hafer|soja|mandel|kokos|reis|cashew|erbsen|dinkel|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b|\b(?:cashew|nuss|mandel)kase\b/g;
     const lookalike =
       /\w*(?:frucht|kurbis|mango|kokos|melonen?|avocado|papaya|ananas)fleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\brinds? of\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten|parmesan|cheese|melon|watermelon)\s+rinds?\b|\bauster\w*\s?(?:pilz|seitling)\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\w*gewu(?:e)?rz(?:mischung|salz)?\b|\w+\s+gewu(?:e)?rz(?:mischung)?\b|\b(?:chicken|poultry|steak|beef)\s+(?:seasoning|spice|rub)\b|\bsteak(?:pfeffer|salz|sauce|sose|soße)\b|\bhirschhorn\w*|\blamb\s?s\s+lettuce\b|(?<=\b(?:cauliflower|celeriac|mushroom|portobello|cabbage|tofu|tuna|salmon|swordfish|sellerie|blumenkohl|kohl|kohlrabi|rotkohl|weisskohl|weißkohl|auberginen?|pilz|kurbis|thunfisch|lachs|in)\s)steaks?\b/g;
-    const animalSide = names.filter((name) => !plant.test(name));
-    const flesh = animalSide.map((name) => name.replace(lookalike, " "));
-    const dairy = animalSide.map((name) => name.replace(plantDairy, " "));
+    const flesh = main
+      .filter((name) => !plant.test(name))
+      .map((name) => name.replace(lookalike, " "));
+    const dairy = main
+      .filter((name) => !veganMark.test(name))
+      .map((name) => name.replace(plantDairy, " "));
     const eats = (pattern) => flesh.some((name) => pattern.test(name));
     const meat =
-      /fleisch|wurst|schinken|speck|salami|chorizo|salsiccia|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|gyros|(?<!g|tama)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb(?!rusco)|venison|rabbit|goose(?!berr)|mutton|sausage|rumpsteak|huftsteak|roastbeef)|(?<!(?:crab|lobster|coconut)\s?)\bmeat|\b(?:ham|mince|steaks?)\b|\bgehacktes(?:$|\s+(?:halb|gemischt|vom|aus|rind|schwein))|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild(?:$|\s+(?:vom|aus|gewurfelt|oder|tiefgekuhlt))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
+      /fleisch|wurst|schinken|speck|salami|chorizo|salsiccia|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|gyros|wachtel|wildente|brisket|ground chuck|(?:nacken|minuten|filet|huft|rump)steak|\bhasen?\b|(?<!g|tama)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb(?!rusco)|venison|rabbit|goose(?!berr)|mutton|sausage|rumpsteak|huftsteak|roastbeef)|(?<!(?:crab|lobster|coconut)\s?)\bmeat|\b(?:ham|mince|steaks?)\b|\bgehacktes(?:$|\s+(?:halb|gemischt|vom|aus|rind|schwein))|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild(?:$|\s+(?:vom|aus|gewurfelt|oder|tiefgekuhlt))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
     const seafood =
-      /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
+      /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|worcester|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
     const animal =
-      /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
+      /\w*(?:kase|kaese)\b|\b(milch|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
     if (
       style === "vegan" &&
       (eats(meat) ||
@@ -849,5 +873,7 @@ const AtelierStudio = (() => {
     matchesCookbook,
     searchMatch,
     convertMeasurementQuery,
+    DISCOVER_MINUTES,
+    discoverMinutes,
   };
 })();

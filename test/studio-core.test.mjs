@@ -559,3 +559,50 @@ test("Kochinspo keeps eggs and dairy out of vegan suggestions but not plant drin
   ])
     assert.equal(vegan(line), false, line);
 });
+test("Kochinspo judges the product as written, not the alternative or a dairy label", () => {
+  const style = (line) =>
+    ["meat", "fish", "vegetarian", "vegan"]
+      .filter((mealStyle) => Studio.suggest([recipe(line, [line])], { mealStyle }).length)
+      .join(",");
+  const expected = {
+    meat: [
+      "100 g Speck (vegetarisch: Räuchertofu)",
+      "500 g Hähnchenbrust oder Tofu",
+      "400 g Rinderhack (oder Sojagranulat)",
+      "4 Nackensteaks",
+      "4 Minutensteaks",
+      "2 Filetsteaks",
+      "2 Wildenten",
+      "4 Wachteln",
+      "1 Hase",
+      "1 lb brisket",
+      "2 Rib-Eye Steaks",
+      "500 g Hähnchenschenkel, gewürzt",
+    ],
+    fish: ["2 EL Fischsauce (vegan: Sojasauce)", "1 tbsp Worcestershire sauce"],
+    vegetarian: [
+      "50 g Parmesan (vegetarisch)",
+      "125 g Mozzarella (vegetarisch)",
+      "250 g High Protein Quark",
+      "1 Protein-Joghurt",
+      "1 EL Honig (vegan: Agavendicksaft)",
+      "50 g vegetarischer Hartkäse",
+    ],
+    "vegetarian,vegan": [
+      "100 g Cashewkäse",
+      "1 TL Fleischgewürz",
+      "4 Gewürzgurken",
+      "250 g Hackfleisch (vegan)",
+    ],
+  };
+  for (const [want, lines] of Object.entries(expected))
+    for (const line of lines) assert.equal(style(line), want, line);
+});
+test("Kochinspo selects a time choice for every saved limit", () => {
+  assert.deepEqual([...Studio.DISCOVER_MINUTES], [20, 35, 50, 80]);
+  assert.equal(Studio.discoverMinutes(40), 50);
+  assert.equal(Studio.discoverMinutes(undefined), 50);
+  assert.equal(Studio.discoverMinutes(35), 35);
+  assert.equal(Studio.discoverMinutes(10), 20);
+  assert.equal(Studio.discoverMinutes(240), 80);
+});

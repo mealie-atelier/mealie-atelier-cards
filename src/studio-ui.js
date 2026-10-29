@@ -361,7 +361,7 @@ Object.assign(MealieAtelierCard.prototype, {
         cookbooks: [...(p.cookbooks || [])],
         kidFriendly: p.kidFriendly === true,
         people: Number(p.people) || 2,
-        maxMinutes: Number(p.maxMinutes) || 40,
+        maxMinutes: AtelierStudio.discoverMinutes(p.maxMinutes),
         usePantry: p.usePantry !== false,
         exclude: [...(p.exclude || [])],
       });
@@ -426,14 +426,14 @@ Object.assign(MealieAtelierCard.prototype, {
       ${step === 1 ? `<div class="studio-discover-label-block"><span class="studio-discover-label">${this.t("studioDiscoverCookbooks")}</span><small>${this.t("studioDiscoverCookbooksHint")}</small></div><div class="studio-choice-grid studio-cookbook-choices" role="group" aria-label="${this.t("studioDiscoverCookbooksAria")}">${chip("cookbooks", "all", this.t("studioDiscoverAllRecipes"))}${cookbooks.map((book) => chip("cookbooks", book.slug, esc(book.name))).join("")}</div>${!cookbooks.length ? `<p class="studio-muted studio-discover-note">${this.t("studioDiscoverNoCookbooks")}</p>` : ""}` : ""}
       ${
         step === 2
-          ? `<div class="studio-discover-household"><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverPeople")}</span><small>${this.t("studioDiscoverPeopleHint")}</small></div><div class="studio-counter"><button type="button" data-action="studio-discover-choice" data-key="people" data-value="-1" aria-label="${this.t("studioDiscoverOneLess")}">−</button><output aria-live="polite">${d.people}</output><button type="button" data-action="studio-discover-choice" data-key="people" data-value="1" aria-label="${this.t("studioDiscoverOneMore")}">+</button></div></div><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverKidFriendly")}</span><small>${this.t("studioDiscoverMild")}</small></div><div class="studio-choice-grid studio-choice-grid--compact">${chip("kidFriendly", false, this.t("studioDiscoverAnyPreference"))}${chip("kidFriendly", true, this.t("studioDiscoverWithKids"))}</div></div></div><div class="studio-choice-grid studio-time-choices" role="group" aria-label="${this.t("studioDiscoverTime")}">${[
-              [20, "20 min"],
-              [35, "35 min"],
-              [50, "50 min"],
-              [80, this.t("studioDiscoverRelaxed")],
-            ]
-              .map(([value, label]) => chip("maxMinutes", value, label))
-              .join("")}</div>`
+          ? `<div class="studio-discover-household"><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverPeople")}</span><small>${this.t("studioDiscoverPeopleHint")}</small></div><div class="studio-counter"><button type="button" data-action="studio-discover-choice" data-key="people" data-value="-1" aria-label="${this.t("studioDiscoverOneLess")}">−</button><output aria-live="polite">${d.people}</output><button type="button" data-action="studio-discover-choice" data-key="people" data-value="1" aria-label="${this.t("studioDiscoverOneMore")}">+</button></div></div><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverKidFriendly")}</span><small>${this.t("studioDiscoverMild")}</small></div><div class="studio-choice-grid studio-choice-grid--compact">${chip("kidFriendly", false, this.t("studioDiscoverAnyPreference"))}${chip("kidFriendly", true, this.t("studioDiscoverWithKids"))}</div></div></div><div class="studio-choice-grid studio-time-choices" role="group" aria-label="${this.t("studioDiscoverTime")}">${AtelierStudio.DISCOVER_MINUTES.map(
+              (value, index, all) =>
+                chip(
+                  "maxMinutes",
+                  value,
+                  index === all.length - 1 ? this.t("studioDiscoverRelaxed") : `${value} min`,
+                ),
+            ).join("")}</div>`
           : ""
       }
       ${step === 3 ? `<div class="studio-discover-preferences"><div class="studio-choice-grid studio-choice-grid--compact" role="group" aria-label="${this.t("studioDiscoverPantry")}">${chip("usePantry", true, this.t("studioDiscoverUsePantry"))}${chip("usePantry", false, this.t("studioDiscoverNoPreference"))}</div><div class="studio-discover-label-block"><span class="studio-discover-label">${this.t("studioDiscoverExclude")}</span><small>${this.t("studioDiscoverOptional")}</small></div><div class="studio-choice-grid studio-choice-grid--compact studio-exclude-choices">${ingredients.map(([value, label]) => chip("exclude", value, value === "Schärfe" ? "🌶️ " + label : label)).join("")}</div></div><p class="studio-muted studio-discover-note">${this.t("studioDiscoverIngredientHint")}</p>` : ""}

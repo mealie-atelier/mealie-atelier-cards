@@ -9945,47 +9945,46 @@ ha-card {
   font-size: var(--ds-font-sm);
   line-height: var(--ds-line-body);
 }
+/* Kochinspo choices are a typographic register: muted words, the chosen ones in full ink with an
+   accent rule. No filled chips. */
 .atelier .studio-choice-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-1) var(--ds-space-6);
 }
 .atelier .studio-choice {
   min-height: 44px;
-  padding: var(--ds-space-2) var(--ds-space-4);
-  border: 1px solid var(--ds-border);
-  border-radius: var(--ds-radius-pill);
-  background: var(--ds-surface);
-  color: var(--ds-text);
-  font: 650 var(--ds-font-sm) / 1.2 var(--ds-font-ui);
+  padding: 0 1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--ds-muted);
+  font: 500 clamp(18px, 2.2cqi, 22px) / 1.2 var(--ds-font-display);
+  letter-spacing: -0.01em;
+  text-align: start;
   cursor: pointer;
   transition:
-    background var(--ds-motion-fast),
-    border-color var(--ds-motion-fast),
     color var(--ds-motion-fast),
-    transform var(--ds-motion-fast);
+    border-color var(--ds-motion-fast);
 }
 .atelier .studio-choice:hover {
-  border-color: var(--ds-brand);
-  transform: translateY(-1px);
+  color: var(--ds-text);
 }
 .atelier .studio-choice:focus-visible {
   outline: 2px solid var(--ds-ring);
   outline-offset: 3px;
 }
 .atelier .studio-choice.is-selected {
-  border-color: var(--ds-brand);
-  background: color-mix(in srgb, var(--ds-brand) 15%, var(--ds-surface));
+  border-bottom-color: var(--ds-brand);
   color: var(--ds-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ds-brand) 28%, transparent);
+}
+.atelier .studio-choice-grid--compact {
+  gap: var(--ds-space-1) var(--ds-space-5);
 }
 .atelier .studio-choice-grid--compact .studio-choice {
-  min-height: 42px;
-  padding-inline: var(--ds-space-3);
-}
-.atelier .studio-cookbook-choices {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  font: 650 var(--ds-font-sm) / 1.2 var(--ds-font-ui);
+  letter-spacing: 0;
 }
 .atelier .studio-cookbook-choices .studio-choice {
   min-width: 0;
@@ -10288,12 +10287,6 @@ ha-card {
 @container atelier-card (max-width: 560px) {
   .atelier .studio-discover-layout > .studio-panel {
     padding: var(--ds-space-4);
-  }
-  .atelier .studio-choice {
-    flex: 1 1 calc(50% - var(--ds-space-2));
-  }
-  .atelier .studio-choice-grid--compact .studio-choice {
-    flex: 0 1 auto;
   }
   .atelier .studio-discover-hero {
     grid-template-columns: minmax(0, 1fr);
@@ -16666,6 +16659,12 @@ const AtelierStudio = (() => {
           .join(" "),
     ).trim();
   }
+  // The Kochinspo time choices; a saved limit between them (the default 40) selects the next one up.
+  const DISCOVER_MINUTES = [20, 35, 50, 80];
+  function discoverMinutes(value) {
+    const minutes = Number(value) || 40;
+    return DISCOVER_MINUTES.find((option) => option >= minutes) || DISCOVER_MINUTES.at(-1);
+  }
   function durationMinutes(value) {
     if (typeof value === "number") return Number.isFinite(value) && value > 0 ? value : null;
     const source = String(value ?? "")
@@ -17032,24 +17031,42 @@ const AtelierStudio = (() => {
     const tagged = (...terms) => tags.some((tag) => terms.some((term) => tag.includes(term)));
     const has = (pattern) => pattern.test(all);
     // German puts the animal anywhere in a compound (Hähnchenbrust, Miesmuscheln, Seelachs), so most
-    // meat and fish stems match inside words. A plant product never counts as animal, and look-alikes
-    // (Kürbisfleisch, Hühnereier, Parmesanrinde, Steakpfeffer, Hirschhornsalz) are removed first.
+    // meat and fish stems match inside words. Only the product as written counts, not an alternative
+    // after "oder" or "vegan:". A plant product never counts as meat or fish, but "vegetarisch" or
+    // "Protein" on cheese and quark does not make it vegan. Look-alikes (Kürbisfleisch, Hühnereier,
+    // Parmesanrinde, Steakpfeffer, Hirschhornsalz) are removed first.
+    const main = rows
+      .map(ingredient)
+      .filter(Boolean)
+      .map((text) =>
+        clean(
+          text.replace(
+            /\s*[(,;]?\s*(?:\b(?:oder|or|alternativ\w*|ersatzweise|statt|instead)\b|\b(?:vegan|vegetarisch|vegetarian)\s*:).*$/i,
+            "",
+          ),
+        ),
+      );
     const plant =
       /\b(?:vegan\w*|vegetari\w*|veggie\w*|pflanzlich\w*|plant based|fleischfrei\w*|fleischlos\w*|fleischersatz|meatless|beyond|tofu\w*|seitan|tempeh|\w*protein)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
+    const veganMark =
+      /\b(?:vegan\w*|pflanzlich\w*|plant based|beyond|tofu\w*|seitan|tempeh)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
     const plantDairy =
-      /\b(?:hafer|soja|mandel|kokos|reis|cashew|erbsen|dinkel|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b/g;
+      /\b(?:hafer|soja|mandel|kokos|reis|cashew|erbsen|dinkel|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b|\b(?:cashew|nuss|mandel)kase\b/g;
     const lookalike =
       /\w*(?:frucht|kurbis|mango|kokos|melonen?|avocado|papaya|ananas)fleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\brinds? of\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten|parmesan|cheese|melon|watermelon)\s+rinds?\b|\bauster\w*\s?(?:pilz|seitling)\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\w*gewu(?:e)?rz(?:mischung|salz)?\b|\w+\s+gewu(?:e)?rz(?:mischung)?\b|\b(?:chicken|poultry|steak|beef)\s+(?:seasoning|spice|rub)\b|\bsteak(?:pfeffer|salz|sauce|sose|soße)\b|\bhirschhorn\w*|\blamb\s?s\s+lettuce\b|(?<=\b(?:cauliflower|celeriac|mushroom|portobello|cabbage|tofu|tuna|salmon|swordfish|sellerie|blumenkohl|kohl|kohlrabi|rotkohl|weisskohl|weißkohl|auberginen?|pilz|kurbis|thunfisch|lachs|in)\s)steaks?\b/g;
-    const animalSide = names.filter((name) => !plant.test(name));
-    const flesh = animalSide.map((name) => name.replace(lookalike, " "));
-    const dairy = animalSide.map((name) => name.replace(plantDairy, " "));
+    const flesh = main
+      .filter((name) => !plant.test(name))
+      .map((name) => name.replace(lookalike, " "));
+    const dairy = main
+      .filter((name) => !veganMark.test(name))
+      .map((name) => name.replace(plantDairy, " "));
     const eats = (pattern) => flesh.some((name) => pattern.test(name));
     const meat =
-      /fleisch|wurst|schinken|speck|salami|chorizo|salsiccia|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|gyros|(?<!g|tama)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb(?!rusco)|venison|rabbit|goose(?!berr)|mutton|sausage|rumpsteak|huftsteak|roastbeef)|(?<!(?:crab|lobster|coconut)\s?)\bmeat|\b(?:ham|mince|steaks?)\b|\bgehacktes(?:$|\s+(?:halb|gemischt|vom|aus|rind|schwein))|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild(?:$|\s+(?:vom|aus|gewurfelt|oder|tiefgekuhlt))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
+      /fleisch|wurst|schinken|speck|salami|chorizo|salsiccia|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|gyros|wachtel|wildente|brisket|ground chuck|(?:nacken|minuten|filet|huft|rump)steak|\bhasen?\b|(?<!g|tama)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb(?!rusco)|venison|rabbit|goose(?!berr)|mutton|sausage|rumpsteak|huftsteak|roastbeef)|(?<!(?:crab|lobster|coconut)\s?)\bmeat|\b(?:ham|mince|steaks?)\b|\bgehacktes(?:$|\s+(?:halb|gemischt|vom|aus|rind|schwein))|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild(?:$|\s+(?:vom|aus|gewurfelt|oder|tiefgekuhlt))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
     const seafood =
-      /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
+      /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|worcester|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
     const animal =
-      /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
+      /\w*(?:kase|kaese)\b|\b(milch|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
     if (
       style === "vegan" &&
       (eats(meat) ||
@@ -17476,6 +17493,8 @@ const AtelierStudio = (() => {
     matchesCookbook,
     searchMatch,
     convertMeasurementQuery,
+    DISCOVER_MINUTES,
+    discoverMinutes,
   };
 })();
 /* Add kitchen workflows to the card while routing remote calls through the shared bridge client. */
@@ -17841,7 +17860,7 @@ Object.assign(MealieAtelierCard.prototype, {
         cookbooks: [...(p.cookbooks || [])],
         kidFriendly: p.kidFriendly === true,
         people: Number(p.people) || 2,
-        maxMinutes: Number(p.maxMinutes) || 40,
+        maxMinutes: AtelierStudio.discoverMinutes(p.maxMinutes),
         usePantry: p.usePantry !== false,
         exclude: [...(p.exclude || [])],
       });
@@ -17906,14 +17925,14 @@ Object.assign(MealieAtelierCard.prototype, {
       ${step === 1 ? `<div class="studio-discover-label-block"><span class="studio-discover-label">${this.t("studioDiscoverCookbooks")}</span><small>${this.t("studioDiscoverCookbooksHint")}</small></div><div class="studio-choice-grid studio-cookbook-choices" role="group" aria-label="${this.t("studioDiscoverCookbooksAria")}">${chip("cookbooks", "all", this.t("studioDiscoverAllRecipes"))}${cookbooks.map((book) => chip("cookbooks", book.slug, esc(book.name))).join("")}</div>${!cookbooks.length ? `<p class="studio-muted studio-discover-note">${this.t("studioDiscoverNoCookbooks")}</p>` : ""}` : ""}
       ${
         step === 2
-          ? `<div class="studio-discover-household"><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverPeople")}</span><small>${this.t("studioDiscoverPeopleHint")}</small></div><div class="studio-counter"><button type="button" data-action="studio-discover-choice" data-key="people" data-value="-1" aria-label="${this.t("studioDiscoverOneLess")}">−</button><output aria-live="polite">${d.people}</output><button type="button" data-action="studio-discover-choice" data-key="people" data-value="1" aria-label="${this.t("studioDiscoverOneMore")}">+</button></div></div><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverKidFriendly")}</span><small>${this.t("studioDiscoverMild")}</small></div><div class="studio-choice-grid studio-choice-grid--compact">${chip("kidFriendly", false, this.t("studioDiscoverAnyPreference"))}${chip("kidFriendly", true, this.t("studioDiscoverWithKids"))}</div></div></div><div class="studio-choice-grid studio-time-choices" role="group" aria-label="${this.t("studioDiscoverTime")}">${[
-              [20, "20 min"],
-              [35, "35 min"],
-              [50, "50 min"],
-              [80, this.t("studioDiscoverRelaxed")],
-            ]
-              .map(([value, label]) => chip("maxMinutes", value, label))
-              .join("")}</div>`
+          ? `<div class="studio-discover-household"><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverPeople")}</span><small>${this.t("studioDiscoverPeopleHint")}</small></div><div class="studio-counter"><button type="button" data-action="studio-discover-choice" data-key="people" data-value="-1" aria-label="${this.t("studioDiscoverOneLess")}">−</button><output aria-live="polite">${d.people}</output><button type="button" data-action="studio-discover-choice" data-key="people" data-value="1" aria-label="${this.t("studioDiscoverOneMore")}">+</button></div></div><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverKidFriendly")}</span><small>${this.t("studioDiscoverMild")}</small></div><div class="studio-choice-grid studio-choice-grid--compact">${chip("kidFriendly", false, this.t("studioDiscoverAnyPreference"))}${chip("kidFriendly", true, this.t("studioDiscoverWithKids"))}</div></div></div><div class="studio-choice-grid studio-time-choices" role="group" aria-label="${this.t("studioDiscoverTime")}">${AtelierStudio.DISCOVER_MINUTES.map(
+              (value, index, all) =>
+                chip(
+                  "maxMinutes",
+                  value,
+                  index === all.length - 1 ? this.t("studioDiscoverRelaxed") : `${value} min`,
+                ),
+            ).join("")}</div>`
           : ""
       }
       ${step === 3 ? `<div class="studio-discover-preferences"><div class="studio-choice-grid studio-choice-grid--compact" role="group" aria-label="${this.t("studioDiscoverPantry")}">${chip("usePantry", true, this.t("studioDiscoverUsePantry"))}${chip("usePantry", false, this.t("studioDiscoverNoPreference"))}</div><div class="studio-discover-label-block"><span class="studio-discover-label">${this.t("studioDiscoverExclude")}</span><small>${this.t("studioDiscoverOptional")}</small></div><div class="studio-choice-grid studio-choice-grid--compact studio-exclude-choices">${ingredients.map(([value, label]) => chip("exclude", value, value === "Schärfe" ? "🌶️ " + label : label)).join("")}</div></div><p class="studio-muted studio-discover-note">${this.t("studioDiscoverIngredientHint")}</p>` : ""}
