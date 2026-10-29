@@ -360,6 +360,14 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
+    // Theme auto outside Home Assistant follows the system colour scheme live.
+    this._schemeQuery =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    this._boundScheme = () => {
+      if (this._design.theme === "auto" && this._resolvedTheme("auto") !== this._lastRenderedTheme)
+        this._render();
+    };
+    this._schemeQuery?.addEventListener?.("change", this._boundScheme);
     this._render();
     this._timerHandle = setInterval(() => this._tickTimers(), 1000);
     // BEGIN feature H: offline queue replay on connect
@@ -385,6 +393,7 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
     document.removeEventListener("visibilitychange", this._boundVisibility);
+    this._schemeQuery?.removeEventListener?.("change", this._boundScheme);
     this._wakeLock.set(false);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);

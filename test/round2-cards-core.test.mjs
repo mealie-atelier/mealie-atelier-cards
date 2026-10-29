@@ -352,3 +352,52 @@ test("sidebar credit link keeps its padded hit area in flow so the version line 
   assert.ok(rule, "sidebar override rule exists");
   assert.match(rule, /margin-block: 0/);
 });
+
+test("editor accent dot and option name follow a theme change and ignore invalid accents", () => {
+  const cards = loadCards();
+  const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+  Object.defineProperty(editor, "isConnected", { value: true });
+  editor._hass = { language: "en", themes: { darkMode: false } };
+  editor._wizardMode = false;
+  editor.setConfig({ type: "custom:mealie-atelier-card", theme: "dark" });
+  const change = (theme) => {
+    editor._handleChange({
+      target: { dataset: { key: "theme" }, type: "select-one", value: theme },
+    });
+    editor.setConfig({ ...editor._raw });
+    return editor.shadowRoot.innerHTML;
+  };
+  let markup = change("light");
+  assert.ok(markup.includes("background:#75465d"));
+  assert.ok(markup.includes("Plum (default in the light theme)"));
+  markup = change("dark");
+  assert.ok(!markup.includes("#75465d"));
+  assert.ok(markup.includes("Sage green"));
+  editor.setConfig({ type: "custom:mealie-atelier-card", theme: "light", accent: "nonsense" });
+  assert.ok(editor.shadowRoot.innerHTML.includes("background:#75465d"));
+  assert.ok(!editor.shadowRoot.innerHTML.includes("background:nonsense"));
+});
+
+test("the card re-renders when the system colour scheme changes under theme auto", () => {
+  let light = false;
+  const listeners = new Set();
+  const query = {
+    get matches() {
+      return light;
+    },
+    addEventListener: (_type, fn) => listeners.add(fn),
+    removeEventListener: (_type, fn) => listeners.delete(fn),
+  };
+  const cards = loadCards({ window: { matchMedia: () => query } });
+  const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+  card.connectedCallback();
+  try {
+    assert.equal(card._lastRenderedTheme, "dark");
+    light = true;
+    for (const fn of listeners) fn();
+    assert.equal(card._lastRenderedTheme, "light");
+  } finally {
+    card.disconnectedCallback();
+  }
+  assert.equal(listeners.size, 0);
+});

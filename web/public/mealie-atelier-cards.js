@@ -12006,6 +12006,14 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
+    // Theme auto outside Home Assistant follows the system colour scheme live.
+    this._schemeQuery =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    this._boundScheme = () => {
+      if (this._design.theme === "auto" && this._resolvedTheme("auto") !== this._lastRenderedTheme)
+        this._render();
+    };
+    this._schemeQuery?.addEventListener?.("change", this._boundScheme);
     this._render();
     this._timerHandle = setInterval(() => this._tickTimers(), 1000);
     // BEGIN feature H: offline queue replay on connect
@@ -12031,6 +12039,7 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
     document.removeEventListener("visibilitychange", this._boundVisibility);
+    this._schemeQuery?.removeEventListener?.("change", this._boundScheme);
     this._wakeLock.set(false);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);
@@ -20296,7 +20305,7 @@ class MealieAtelierEditor extends HTMLElement {
     this._patch({ [key]: value });
     this._emitConfig();
     if (ENTITY_FIELDS[key]) this._syncEntityWarning(key);
-    else if (key === "mode" || key === "provider") this._render();
+    else if (key === "mode" || key === "provider" || key === "theme") this._render();
   }
   _handleClick(event) {
     const action = event.target.closest?.("[data-editor-action]")?.dataset.editorAction;
@@ -20436,7 +20445,9 @@ class MealieAtelierEditor extends HTMLElement {
       choose = (key, options) => this._choose(key, options);
     // The light theme paints the default accent plum, so the dot and its name must say plum too.
     const lightTheme = this._resolvedTheme(c.theme) === "light";
-    const accentPlum = lightTheme && String(c.accent).toLowerCase() === DEFAULTS.accent;
+    // An invalid accent falls back to the default in the card, so the dot does the same.
+    const accent = /^#[0-9a-fA-F]{6}$/.test(c.accent || "") ? c.accent : DEFAULTS.accent;
+    const accentPlum = lightTheme && accent.toLowerCase() === DEFAULTS.accent;
     return `<div class="editor"><div class="settings-top"><div><div class="title">Mealie Atelier <span class="title-accent">Studio</span></div><p class="hint">${tr("editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard")}</p></div><button class="editor-secondary" type="button" data-editor-action="restart">${tr("editorRunSetupWizard")}</button></div><div class="setup-success"><span aria-hidden="true">✓</span><div><strong>${tr("editorYourKitchenIsReady")}</strong><small>${esc(this._tr(c.mode))} · ${tr(c.theme === "auto" ? "editorAutomatic" : c.theme === "light" ? "editorDaylightKitchen" : "editorEveningStudio")}</small></div></div>
     <div class="section-head"><span>01</span><div><strong>${tr("editorBasics")}</strong><p>${tr("editorChooseContentAndTheConnectedMealieInstance")}</p></div></div>
     <div class="group"><label for="atelier-mode">${tr("editorMode")}</label>${choose(
@@ -20491,7 +20502,7 @@ class MealieAtelierEditor extends HTMLElement {
         [3, "3"],
         [4, "4"],
       ],
-    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(accentPlum ? "#75465d" : c.accent)}"></span>${choose(
+    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(accentPlum ? "#75465d" : accent)}"></span>${choose(
       "accent",
       COLORS.map((value) => [
         value,
