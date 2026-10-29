@@ -54,6 +54,11 @@
   gap: 4px;
 }
 .atelier-credit a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 8px;
+  margin-inline: -8px;
   color: inherit;
   text-decoration-color: color-mix(in srgb, var(--ds-brand) 60%, transparent);
   text-underline-offset: 3px;
@@ -470,7 +475,9 @@
 
 /* Semantic shopping toolbar, shared across themes and card widths. */
 .atelier .shopping-toolbar {
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  justify-content: end;
   margin-block: 0 var(--ds-space-4);
 }
 .atelier .shopping-form {
@@ -515,4 +522,18 @@
 /* Keep the plan dialog anchored at the top so closing the picker list does not re-centre it. */
 .atelier .modal.plan-anchored {
   align-self: flex-start;
+}
+
+.atelier .shopping-group-title {
+  margin-top: var(--ds-space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--at-sub);
+}
+.atelier .mini-shopping-name {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
 }

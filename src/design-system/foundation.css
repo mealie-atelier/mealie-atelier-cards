@@ -1072,7 +1072,7 @@ ha-card {
 .atelier .mini-shopping:last-child {
   border: 0;
 }
-.atelier .mini-shopping button {
+.atelier .mini-shopping button:not(.check-ui) {
   border: 0;
   background: none;
   color: var(--at-ink);
@@ -1080,7 +1080,7 @@ ha-card {
   padding: 5px 0;
   flex: 1;
 }
-.atelier .mini-shopping button:hover {
+.atelier .mini-shopping button:not(.check-ui):hover {
   color: var(--ds-brand);
 }
 .atelier .editing-hint {

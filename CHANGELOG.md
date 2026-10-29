@@ -11,6 +11,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 ### Fixed
 
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
+- Shopping: quantity shown once, open items grouped by label with ticked items at the bottom, one print button per view, tidy toolbar on phones; Today items use a checkbox; footer credit link has a 44px touch target; English copy polished.
 - The week view scrolls to today when the dashboard data arrives or you press the today button, and the plan dialog stays open after removing one of several entries. The German category filter label is plural like the tag label.
 - The week plan shows every entry of a day sorted by meal type, labels side, snack, dessert and drink in the UI language, and the plan dialog can plan all seven meal types.
 - Tapping a note in the week plan opens the plan dialog for that day, and its remove buttons name the entry and meal type.

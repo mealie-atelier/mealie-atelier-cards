@@ -2381,7 +2381,7 @@ const CARD_TYPES = [
     "mealie-atelier-today",
     AtelierTodayCard,
     "Mealie Atelier · Today",
-    "A beautiful today card: meals, shopping, and next action",
+    "A polished today card: meals, shopping, and next action",
   ],
   [
     "mealie-atelier-recipes",
@@ -2405,7 +2405,7 @@ const CARD_TYPES = [
     "mealie-atelier-discover",
     AtelierDiscoverCard,
     "Mealie Atelier · Discover",
-    "Personalized meal suggestions and previewable week optimization",
+    "Personalized meal suggestions and a week optimization you can preview",
   ],
   [
     "mealie-atelier-pantry",

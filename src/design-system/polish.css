@@ -659,7 +659,7 @@
 .atelier .mini-shopping {
   min-height: 48px;
 }
-.atelier .mini-shopping button {
+.atelier .mini-shopping button:not(.check-ui) {
   font-size: 14px;
   line-height: 1.5;
   text-align: left;

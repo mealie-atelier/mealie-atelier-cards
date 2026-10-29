@@ -190,7 +190,10 @@ test("status panel shows route, mode text, state line and pending count", async 
   await openStatus(env, [withRule({ mode: "move", paused: true, counts: { pending: 2 } })]);
   const html = markup(env.cards);
   assert.match(html, /Weekly groceries → Bring \(bring\)/);
-  assert.match(html, /Move: Items are checked off in Mealie after the destination confirmed them/);
+  assert.match(
+    html,
+    /Move: Items are checked off in Mealie after the destination has confirmed them/,
+  );
   assert.match(html, /Paused/);
   assert.match(html, /2 waiting/);
   assert.match(html, /data-action="sync-resume"/);

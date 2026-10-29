@@ -166,3 +166,48 @@ test("removing one of several planned entries keeps the plan dialog open", async
   await click("b");
   assert.equal(card._modal, null);
 });
+
+test("shopping rows show the quantity once, sink ticked items and group open ones by label", () => {
+  const { card } = setup("de");
+  card._data.shopping = {
+    lists: [{ id: "L", name: "L" }],
+    items: [
+      { id: "1", shoppingListId: "L", display: "1 Salz", quantity: 1, checked: true },
+      { id: "2", shoppingListId: "L", display: "3 Tomaten", quantity: 3 },
+      {
+        id: "3",
+        shoppingListId: "L",
+        display: "1 Brot",
+        quantity: 1,
+        label: { name: "Backwaren" },
+      },
+      { id: "4", shoppingListId: "L", display: "Mehl", quantity: 1 },
+    ],
+  };
+  card._activeList = "L";
+  const html = card._shopping();
+  const names = [...html.matchAll(/class="shopping-name">([^<]*)</g)].map((m) => m[1]);
+  assert.deepEqual(names, ["Brot", "3 Tomaten", "Mehl", "Salz"]);
+  assert.match(html, /shopping-group-title">Backwaren</);
+  assert.doesNotMatch(html, /shopping-qty">3</);
+});
+
+test("print is offered once per view and today items use a checkbox control", () => {
+  const { card } = setup("en");
+  assert.doesNotMatch(card._shopping(), /data-action="print-list"/);
+  card._data.shopping = {
+    lists: [{ id: "L", name: "L" }],
+    items: [{ id: "9", shoppingListId: "L", display: "Parmesan", quantity: 1 }],
+  };
+  card._activeList = "L";
+  const html = card._today();
+  assert.match(html, /<button class="check-ui" data-action="shopping-toggle"[^>]*role="checkbox"/);
+  assert.match(html, /mini-shopping-name">Parmesan</);
+});
+
+test("credit link has a 44px hit area and English copy is fixed", () => {
+  assert.match(file("src/design-system/layout.css"), /\.atelier-credit a \{[^}]*min-height: 44px/);
+  const en = JSON.parse(file("src/i18n/en.json"));
+  assert.equal(en.list, "Shopping list");
+  assert.match(en.syncModeMoveHint, /has confirmed/);
+});
