@@ -606,3 +606,32 @@ test("Kochinspo selects a time choice for every saved limit", () => {
   assert.equal(Studio.discoverMinutes(10), 20);
   assert.equal(Studio.discoverMinutes(240), 80);
 });
+test("Kochinspo keeps every option of a line and named cheeses out of plant diets", () => {
+  const style = (line) =>
+    ["meat", "vegetarian", "vegan"]
+      .filter((mealStyle) => Studio.suggest([recipe(line, [line])], { mealStyle }).length)
+      .join(",");
+  for (const line of [
+    "500 ml Gemüse- oder Hühnerbrühe",
+    "500 ml Gemüse- oder Fleischbrühe",
+    "4 cups vegetable or chicken stock",
+    "1 cup vegetable or chicken broth",
+  ])
+    assert.equal(style(line), "meat", line);
+  for (const line of [
+    "200 g Feta",
+    "100 g Gouda, gerieben",
+    "250 g Ricotta",
+    "250 g Mascarpone",
+    "1 cup cheddar",
+    "200 g Schmand",
+    "200 g Crème fraîche",
+    "2 tbsp ghee",
+    "100 g Skyr",
+    "200 g Schlagsahne",
+    "200 g Feta- oder Hirtenkäse",
+  ])
+    assert.equal(style(line), "vegetarian", line);
+  assert.equal(style("400 ml Kokosmilch"), "vegetarian,vegan");
+  assert.equal(style("200 ml Hafersahne"), "vegetarian,vegan");
+});
