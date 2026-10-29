@@ -436,7 +436,7 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
     assert.match(html, /<h2 id="ingredients-title">/, page);
     assert.match(html, /<h2 id="method-title">/, page);
     assert.match(html, /<meta property="og:site_name" content="Mealie Atelier">/, page);
-    assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, page);
+    assert.match(html, /<meta name="twitter:card" content="summary_large_image"\s*\/?>/, page);
     assert.match(
       html,
       /<meta name="twitter:image" content="https:\/\/mealie\.example\.test\/og\/(de|en)\/[^"]+\.jpg">/,
@@ -536,7 +536,7 @@ test("credits pages carry the same social tags as the other pages", () => {
     for (const path of ["de/bildnachweise", "en/credits"]) {
       const html = read(join(build, path, "index.html"));
       assert.match(html, /<meta property="og:image" content="[^"]*og\/(de|en)\/home\.jpg">/, path);
-      assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, path);
+      assert.match(html, /<meta name="twitter:card" content="summary_large_image"\s*\/?>/, path);
       assert.match(html, /<meta name="twitter:title" content="[^"]+">/, path);
       assert.match(html, /<meta name="twitter:description" content="[^"]+">/, path);
       assert.match(html, /<meta name="twitter:image" content="[^"]*og\/(de|en)\/home\.jpg">/, path);
@@ -909,7 +909,20 @@ for (const frame of document.querySelectorAll("iframe")) {
   }
 });
 
-// Every page must point its share image at a real 1200x630 JPEG under 300 KB that the build wrote.
+// Reads the pixel size from the first start-of-frame marker of a JPEG.
+function jpegSize(bytes) {
+  let offset = 2;
+  while (offset + 9 < bytes.length) {
+    assert.equal(bytes[offset], 0xff, "JPEG marker expected");
+    const marker = bytes[offset + 1];
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) {
+      return { height: bytes.readUInt16BE(offset + 5), width: bytes.readUInt16BE(offset + 7) };
+    }
+    offset += 2 + bytes.readUInt16BE(offset + 2);
+  }
+  throw new Error("no JPEG frame header found");
+}
+
 function pagesBelow(root) {
   const pages = [];
   for (const entry of readdirSync(root, { withFileTypes: true })) {
@@ -922,13 +935,20 @@ function pagesBelow(root) {
   return pages;
 }
 
+// Every page, the bare domain redirect included, must point its share image at a real JPEG of
+// 1200x630 pixels under 300 KB that the build wrote. Crawlers such as Twitter/X ignore a meta refresh,
+// so the root page needs the full card itself.
 test("every generated page has og:image and twitter:image pointing at an existing 1200x630 JPEG", () => {
   for (const [build, base] of [
     [builds.deployed, baseUrl],
     [builds.local, ""],
   ]) {
-    const pages = pagesBelow(build).filter((page) => page !== join(build, "index.html"));
-    assert.ok(pages.length >= 2 + 2 + 20, "landing, credits and recipe pages are covered");
+    const pages = pagesBelow(build);
+    assert.ok(pages.includes(join(build, "index.html")), "the root redirect page is covered");
+    assert.ok(
+      pages.length >= 1 + 2 + 2 + 20,
+      "root, landing, credits and recipe pages are covered",
+    );
     for (const page of pages) {
       const html = read(page);
       const og = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
@@ -941,9 +961,13 @@ test("every generated page has og:image and twitter:image pointing at an existin
       const bytes = readFileSync(file);
       assert.ok(bytes.length < 300 * 1024, `${file} stays under 300 KB`);
       assert.deepEqual([...bytes.subarray(0, 2)], [0xff, 0xd8], `${file} is a JPEG`);
+      assert.deepEqual(jpegSize(bytes), { width: 1200, height: 630 }, `${file} is 1200x630`);
       assert.match(html, /<meta property="og:image:width" content="1200">/, page);
       assert.match(html, /<meta property="og:image:height" content="630">/, page);
       assert.match(html, /<meta property="og:image:alt" content="[^"]{10,}">/, page);
+      assert.match(html, /<meta property="og:title" content="[^"]{5,}"\s*\/?>/, page);
+      assert.match(html, /<meta name="twitter:card" content="summary_large_image"\s*\/?>/, page);
+      assert.match(html, /<meta name="twitter:image:alt" content="[^"]{10,}">/, page);
       const locale = html.match(/<html lang="(de|en)"/)[1];
       const own = locale === "de" ? "de_DE" : "en_US";
       const other = locale === "de" ? "en_US" : "de_DE";
@@ -951,4 +975,12 @@ test("every generated page has og:image and twitter:image pointing at an existin
       assert.ok(html.includes(`<meta property="og:locale:alternate" content="${other}">`), page);
     }
   }
+});
+
+test("German share image alt texts hyphenate the compound with the brand name", () => {
+  const html = read(
+    join(builds.local, "de/rezepte/pfannen-eier-mit-tomaten-und-basilikum/index.html"),
+  );
+  assert.doesNotMatch(html, /Mealie Atelier Logo/);
+  assert.match(html, /Rezeptfoto mit dem Logo von Mealie Atelier/);
 });

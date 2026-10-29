@@ -56,7 +56,6 @@ function assert(condition, message) {
   if (!condition) throw new Error(`Demo catalog validation failed: ${message}`);
 }
 
-// Photos are self-hosted: the catalog names a local file relative to recipes.json.
 const ogLocales = { de: "de_DE", en: "en_US" };
 const ogTaglines = {
   de: {
@@ -79,7 +78,7 @@ function ogPath(locale, recipe) {
 function ogAlt(locale, recipe) {
   if (recipe) {
     return locale === "de"
-      ? `${recipe.title.de}: Rezeptfoto mit Mealie Atelier Logo`
+      ? `${recipe.title.de}: Rezeptfoto mit dem Logo von Mealie Atelier`
       : `${recipe.title.en}: recipe photo with the Mealie Atelier logo`;
   }
   return locale === "de"
@@ -145,6 +144,7 @@ async function buildOgImages() {
   return renderOgImages(jobs, join(demoRoot, ".og-cache"));
 }
 
+// Photos are self-hosted: the catalog names a local file relative to recipes.json.
 function photoName(recipe) {
   return basename(recipe.image.file);
 }
@@ -579,8 +579,10 @@ function localizedRecipePage(locale, slug) {
   return renderRecipePage(locale, recipe);
 }
 
+// The bare domain is the URL people share most. Crawlers that ignore meta refresh (Twitter/X and most
+// others) read the share card from here, so it carries the full og and twitter set of the German home.
 function rootIndex() {
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}">${iconLinks("assets/")}<meta name="theme-color" content="#f8f3e9" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}">${iconLinks("assets/")}<meta name="theme-color" content="#f8f3e9" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(copy.de.title)}"><meta property="og:description" content="${escapeHtml(copy.de.description)}">${ogImageMeta("de", null, "")}${deploymentBase ? `<meta property="og:url" content="${escapeHtml(deploymentBase)}">` : ""}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(copy.de.title)}"><meta name="twitter:description" content="${escapeHtml(copy.de.description)}"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
 }
 
 // Deletes every file below `target` that has no counterpart below `source`.
