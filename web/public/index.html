@@ -175,6 +175,10 @@
       card.addEventListener("mealie-atelier-theme-change", (event) => {
         syncShellTheme(event.detail?.theme);
       });
+      // Automatic theme follows the system colour scheme live while the app is open.
+      window.matchMedia?.("(prefers-color-scheme: light)")?.addEventListener?.("change", () => {
+        if (card._design.theme === "auto") syncShellTheme("auto");
+      });
       card.addEventListener("mealie-atelier-motion-change", (event) => {
         const motion = event.detail?.motion;
         if (["expressive", "balanced", "off"].includes(motion))

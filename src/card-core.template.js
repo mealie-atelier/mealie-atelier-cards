@@ -2428,7 +2428,7 @@ const CARD_TYPES = [
     "mealie-atelier-recipes",
     AtelierRecipeCard,
     "Mealie Atelier · Recipes",
-    "Recipe collection, search, details and cooking mode",
+    "Recipe gallery with search, details and cooking mode",
   ],
   [
     "mealie-atelier-mealplan",
@@ -2440,7 +2440,7 @@ const CARD_TYPES = [
     "mealie-atelier-shopping",
     AtelierShoppingCard,
     "Mealie Atelier · Shopping",
-    "Shopping lists with tick, add and offline queue",
+    "Shopping lists to tick off and add to, also offline",
   ],
   [
     "mealie-atelier-discover",

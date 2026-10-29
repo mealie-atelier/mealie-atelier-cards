@@ -127,15 +127,96 @@ test("theme auto without Home Assistant themes follows prefers-color-scheme", ()
   }
 });
 
-test("family title, provider eyebrow and recipe print word are translated", () => {
+test("family title and recipe print word are translated", () => {
   const cards = loadCards();
   const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
   assert.equal(card.t("familyTitle"), "Family");
   assert.equal(card.t("printDocRecipe"), "Recipe");
-  assert.notEqual(card.t("providerEyebrow"), "providerEyebrow");
-  assert.notEqual(
-    card.t("editorFollowsHomeAssistantLightOrDark"),
-    "editorFollowsHomeAssistantLightOrDark",
+});
+
+test("provider banner eyebrow renders in the provider view", () => {
+  const cards = loadCards();
+  const card = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
+  card._providerActive = "home_assistant";
+  card._view = "shopping";
+  assert.match(card._body(), /<span class="eyebrow">HOME ASSISTANT MEALIE<\/span>/);
+});
+
+test("print studio eyebrow is rendered in the print dialog per language", () => {
+  for (const [language, expected] of [
+    ["de", "MEALIE ATELIER / DRUCKSTUDIO"],
+    ["en", "MEALIE ATELIER / PRINT STUDIO"],
+  ]) {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._data.shopping = { lists: [{ id: "l1", name: "Market" }], items: [] };
+    card._data.mealplan = [];
+    card._activeList = "l1";
+    card._printKind = "shopping";
+    card._modal = "print";
+    assert.ok(card._modalHtml().includes(`<div class="eyebrow">${expected}</div>`));
+  }
+});
+
+test("wizard automatic preset renders its translated hint", () => {
+  const cards = loadCards();
+  const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+  Object.defineProperty(editor, "isConnected", { value: true });
+  editor._hass = { language: "de" };
+  editor._wizardMode = true;
+  editor.setConfig({ type: "custom:mealie-atelier-card" });
+  editor._step = 2;
+  editor._render();
+  assert.match(
+    editor.shadowRoot.innerHTML,
+    /Folgt dem hellen oder dunklen Modus von Home Assistant/,
+  );
+});
+
+test("editor accent dot and option name show plum in the light theme", () => {
+  for (const [darkMode, plum] of [
+    [false, true],
+    [true, false],
+  ]) {
+    const cards = loadCards();
+    const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+    Object.defineProperty(editor, "isConnected", { value: true });
+    editor._hass = { language: "en", themes: { darkMode } };
+    editor._wizardMode = false;
+    editor.setConfig({ type: "custom:mealie-atelier-card", theme: "auto" });
+    const markup = editor.shadowRoot.innerHTML;
+    assert.equal(markup.includes("background:#75465d"), plum);
+    assert.equal(markup.includes("Plum (default in the light theme)"), plum);
+    assert.equal(markup.includes("Sage green"), !plum);
+  }
+  const cards = loadCards();
+  const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+  Object.defineProperty(editor, "isConnected", { value: true });
+  editor._hass = { language: "en", themes: { darkMode: false } };
+  editor._wizardMode = false;
+  editor.setConfig({ type: "custom:mealie-atelier-card", theme: "dark" });
+  assert.ok(!editor.shadowRoot.innerHTML.includes("#75465d"));
+});
+
+test("card picker descriptions are parallel in English and German and match the README", () => {
+  const source = readFileSync(new URL("../src/card-core.template.js", import.meta.url), "utf8");
+  const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+  for (const text of [
+    "Shopping lists to tick off and add to, also offline",
+    "Recipe gallery with search, details and cooking mode",
+    "Einkaufslisten zum Abhaken und Ergänzen, auch offline",
+    "Rezeptgalerie mit Suche, Details und Kochmodus",
+  ])
+    assert.ok(source.includes(`"${text}"`), text);
+  assert.match(readme, /Shopping lists to tick off and add to, also offline/);
+  assert.match(readme, /Recipe gallery with search, details and cooking mode/);
+});
+
+test("the web app shell follows live system colour scheme changes", () => {
+  const html = readFileSync(new URL("../web/public/index.html", import.meta.url), "utf8");
+  assert.match(
+    html,
+    /matchMedia\?\.\("\(prefers-color-scheme: light\)"\)\?\.addEventListener\?\.\("change", \(\) => \{\s*if \(card\._design\.theme === "auto"\) syncShellTheme\("auto"\);/,
   );
 });
 

@@ -20190,9 +20190,10 @@ class MealieAtelierEditor extends HTMLElement {
   set hass(hass) {
     if (this._hass === hass) return;
     const priorLanguage = this._hass?.language;
+    const priorDark = this._hass?.themes?.darkMode;
     this._hass = hass;
     if (this._requested) {
-      if (priorLanguage !== hass?.language) this._render();
+      if (priorLanguage !== hass?.language || priorDark !== hass?.themes?.darkMode) this._render();
       return;
     }
     this._requested = true;
@@ -20228,6 +20229,15 @@ class MealieAtelierEditor extends HTMLElement {
   }
   _locale() {
     return resolveLanguage("auto", this._hass?.language, navigator.language);
+  }
+  /** Resolves the configured theme like the card does ("auto" follows Home Assistant, then the system). */
+  _resolvedTheme(theme) {
+    if (theme === "light" || theme === "dark") return theme;
+    const darkMode = this._hass?.themes?.darkMode;
+    if (typeof darkMode === "boolean") return darkMode ? "dark" : "light";
+    const query =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    return query?.matches ? "light" : "dark";
   }
   _tr(key) {
     return translateLabel(this._locale(), key);
@@ -20424,6 +20434,9 @@ class MealieAtelierEditor extends HTMLElement {
     const c = this._config,
       tr = (key) => this._tr(key),
       choose = (key, options) => this._choose(key, options);
+    // The light theme paints the default accent plum, so the dot and its name must say plum too.
+    const lightTheme = this._resolvedTheme(c.theme) === "light";
+    const accentPlum = lightTheme && String(c.accent).toLowerCase() === DEFAULTS.accent;
     return `<div class="editor"><div class="settings-top"><div><div class="title">Mealie Atelier <span class="title-accent">Studio</span></div><p class="hint">${tr("editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard")}</p></div><button class="editor-secondary" type="button" data-editor-action="restart">${tr("editorRunSetupWizard")}</button></div><div class="setup-success"><span aria-hidden="true">✓</span><div><strong>${tr("editorYourKitchenIsReady")}</strong><small>${esc(this._tr(c.mode))} · ${tr(c.theme === "auto" ? "editorAutomatic" : c.theme === "light" ? "editorDaylightKitchen" : "editorEveningStudio")}</small></div></div>
     <div class="section-head"><span>01</span><div><strong>${tr("editorBasics")}</strong><p>${tr("editorChooseContentAndTheConnectedMealieInstance")}</p></div></div>
     <div class="group"><label for="atelier-mode">${tr("editorMode")}</label>${choose(
@@ -20478,9 +20491,14 @@ class MealieAtelierEditor extends HTMLElement {
         [3, "3"],
         [4, "4"],
       ],
-    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(c.accent)}"></span>${choose(
+    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(accentPlum ? "#75465d" : c.accent)}"></span>${choose(
       "accent",
-      COLORS.map((value) => [value, tr(COLOR_NAMES[value])]),
+      COLORS.map((value) => [
+        value,
+        value === DEFAULTS.accent && lightTheme
+          ? tr("accentPlumLightDefault")
+          : tr(COLOR_NAMES[value]),
+      ]),
     )}</div></div>
     <div class="group"><label for="atelier-radius">${tr("editorCornerStyle")}</label>${choose(
       "radius",
@@ -20581,7 +20599,7 @@ const CARD_TYPES = [
     "mealie-atelier-recipes",
     AtelierRecipeCard,
     "Mealie Atelier · Recipes",
-    "Recipe collection, search, details and cooking mode",
+    "Recipe gallery with search, details and cooking mode",
   ],
   [
     "mealie-atelier-mealplan",
@@ -20593,7 +20611,7 @@ const CARD_TYPES = [
     "mealie-atelier-shopping",
     AtelierShoppingCard,
     "Mealie Atelier · Shopping",
-    "Shopping lists with tick, add and offline queue",
+    "Shopping lists to tick off and add to, also offline",
   ],
   [
     "mealie-atelier-discover",
