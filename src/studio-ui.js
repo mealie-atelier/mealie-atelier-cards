@@ -804,6 +804,23 @@ MealieAtelierCard.prototype._openRecipe = async function (slug) {
   }
 };
 // A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
+/** False when the status says no AI key is set (Bridge `ai_enabled`, web app `features.ai`); undefined when unknown. */
+Object.defineProperty(MealieAtelierCard.prototype, "_aiAvailable", {
+  get() {
+    const entry = this._statusEntry;
+    if (entry?.ai_enabled === false || entry?.features?.ai === false) return false;
+    return entry?.ai_enabled === true || entry?.features?.ai === true ? true : undefined;
+  },
+});
+/** Display name of the configured AI provider for the consent dialog (Bridge `ai_provider`). */
+Object.defineProperty(MealieAtelierCard.prototype, "_aiProviderName", {
+  get() {
+    const provider = this._statusEntry?.ai_provider;
+    if (provider === "openai") return this.t("studioAiProviderOpenai");
+    if (provider === "anthropic") return this.t("studioAiProviderAnthropic");
+    return this.t("studioAiProviderGeneric");
+  },
+});
 MealieAtelierCard.prototype._aiErrorText = function (error) {
   const translated = this._errorText(error);
   if (translated !== error?.message) return translated;
@@ -840,7 +857,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
               .slice(0, 3)
               .join(" · ")
           : this.t("studioRecipeAuditNone")
-      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${this._statusEntry?.features?.ai === false ? "" : this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}:</b> ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
+      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${this._aiAvailable === false ? "" : this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}:</b> ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
     );
   }
   return html;
@@ -1231,6 +1248,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           const answer = await this._ws("studio_substitute", {
             ingredient: raw.slice(0, 160),
             recipe: this._detail.name.slice(0, 200),
+            language: this._language,
           });
           output =
             answer.alternatives.map((x) => `${x.name}: ${x.adjustment}`).join(" · ") +
@@ -1251,14 +1269,17 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       if (
         !(await this._atelierDialog({
           title: this.t("studioAiAuditTitle"),
-          body: this.t("studioAiAuditBody"),
+          body: this.t("studioAiAuditBody", { provider: this._aiProviderName }),
           confirmLabel: this.t("studioAiConsent"),
         }))
       )
         return;
       this._flash(this.t("studioAiStarting"));
       try {
-        const result = await this._ws("studio_ai_audit", { slug: this._detail.slug });
+        const result = await this._ws("studio_ai_audit", {
+          slug: this._detail.slug,
+          language: this._language,
+        });
         this._aiAudit = result;
         this._render();
       } catch (error) {

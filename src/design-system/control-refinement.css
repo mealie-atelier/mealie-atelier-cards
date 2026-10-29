@@ -306,3 +306,60 @@
     --at-close-size: 44px;
   }
 }
+
+/* Recipe steps: the number is the checkbox, the step text is plain content with working links. */
+.atelier .detail-cols .step {
+  cursor: auto;
+  min-height: 0;
+}
+.atelier .detail-cols .step:hover {
+  transform: none;
+  border-color: var(--at-line);
+  background: var(--at-panel);
+}
+.atelier .detail-cols .step.active:hover {
+  border-color: var(--ds-brand);
+  background: color-mix(in srgb, var(--at-accent) 14%, var(--at-panel));
+}
+.atelier .detail-cols .step:active {
+  transform: none;
+}
+.atelier .detail-cols .step:focus-within {
+  border-color: color-mix(in srgb, var(--at-accent) 54%, var(--at-line));
+}
+.atelier .detail-cols .step button.step-number {
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  min-height: 0;
+  margin: 0;
+  color: var(--ds-brand-text, var(--ds-brand));
+  font: inherit;
+  font-family: var(--at-serif);
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  appearance: none;
+}
+/* Keep a 44px touch target around the 32 to 35px number without changing the layout. */
+.atelier .detail-cols .step button.step-number::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+.atelier .detail-cols .step button.step-number:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 3px;
+}
+.atelier .detail-cols .step button.step-number[aria-checked="true"] {
+  background: var(--ds-brand);
+  border-color: var(--ds-brand);
+  color: var(--ds-check-ink, #fff);
+}
+.atelier .step-text a {
+  color: var(--ds-brand-text, var(--ds-brand));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

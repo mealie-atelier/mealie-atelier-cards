@@ -115,7 +115,10 @@ export const dialogMethods = {
                 `<img class="step-photo" src="${esc(src)}" alt="${this.t("uiRecipeStepImageAlt", { step: i + 1 })}" loading="lazy" decoding="async">`,
             )
             .join("");
-          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<button class="step ${this._checkedSteps.has(i) ? "active" : ""}" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}"><span class="step-number">${String(i + 1).padStart(2, "0")}</span><span class="step-copy">${summary ? `<strong class="step-summary">${esc(summary)}</strong>` : ""}<span class="step-text">${esc(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></button></div>`;
+          const number = String(i + 1).padStart(2, "0"),
+            done = this._checkedSteps.has(i);
+          // The checkbox is its own control. The step text stays plain content so its links work.
+          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${done ? "active" : ""}"><button class="step-number" type="button" role="checkbox" aria-checked="${done}" aria-label="${esc(this.t("uiStepDone", { step: i + 1 }))}" data-action="step-check" data-value="${i}">${number}</button><div class="step-copy">${summary ? `<strong class="step-summary">${linkify(summary)}</strong>` : ""}<div class="step-text">${linkify(instructionText(step))}</div>${photos ? `<div class="step-photos">${photos}</div>` : ""}</div></div></div>`;
         })
         .join("");
       size = "large";

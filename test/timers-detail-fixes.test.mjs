@@ -20,7 +20,7 @@ test("removing a finished server-armed timer still tries to cancel and drops it 
   const { card } = setup(async (msg) => calls.push(msg.type));
   card._ws = async (op) => {
     calls.push(op);
-    throw new Error("The kitchen timer has already been dispatched");
+    throw Object.assign(new Error("any wording"), { code: "timer_dispatched" });
   };
   card._timers = [
     { id: "t1", label: "x", deadline: Date.now() - 5000, done: true, serverArmed: true },
@@ -32,7 +32,7 @@ test("removing a finished server-armed timer still tries to cancel and drops it 
 
 test("removing a timer the server no longer knows or has just started sending drops it", async () => {
   for (const [error, offset] of [
-    [Object.assign(new Error("Timer not found"), { code: "invalid_request" }), 600000],
+    [Object.assign(new Error("any wording"), { code: "timer_not_found" }), 600000],
     [new Error("busy"), 20000],
   ]) {
     const { card, flashes } = setup();
@@ -44,6 +44,20 @@ test("removing a timer the server no longer knows or has just started sending dr
     assert.equal(card._timers.length, 0);
     assert.equal(flashes.length, 0);
   }
+});
+
+test("cancel never matches on message text, only on the error code", async () => {
+  const { card, flashes } = setup();
+  card._ws = async () => {
+    throw Object.assign(new Error("Timer not found, already been dispatched"), {
+      code: "timer_not_permitted",
+    });
+  };
+  card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+  await click(card, "timer-remove", "t1");
+  assert.equal(card._timers.length, 1);
+  assert.equal(flashes.length, 1);
+  assert.match(flashes[0].text, /another person/);
 });
 
 test("a failed cancel of a running timer keeps it and reports the error", async () => {
