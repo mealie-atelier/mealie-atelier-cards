@@ -621,10 +621,10 @@
 }
 .atelier .command-heading {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 46px 15px 0;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 0 56px 15px 0;
+  gap: 6px;
   font:
     normal 25px/1.2 Georgia,
     serif;
@@ -1051,7 +1051,7 @@
   }
   .atelier .command-heading {
     font-size: 21px;
-    margin-right: 34px;
+    margin-right: 56px;
   }
   .atelier .command-item.command-recipe {
     gap: 8px;

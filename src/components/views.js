@@ -20,7 +20,7 @@ export const viewMethods = {
       : items;
     const open = active.filter((i) => !i.checked).length;
     const scheduled = asArray(this._data.mealplan).length;
-    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book")}${this._stat(scheduled, this.t("nextMeal"), "calendar")}${this._stat(open, this.t("open") + " " + this.t("items"), "cart")}</div>`;
+    return `<div class="statline">${this._stat(total ?? "—", this.t("count"), "book")}${this._stat(scheduled, this.t("nextMeal"), "calendar")}${this._stat(open, this.t("openItemsLabel"), "cart")}</div>`;
   },
   _recipeTools() {
     return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
@@ -97,7 +97,7 @@ export const viewMethods = {
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
     ${meals.length ? meals.map((meal) => `<div class="today-meal"><div class="meal-badge">${icon("utensils", 22)}</div><div class="meal-details"><small>${esc(this.t(meal.entryType) || meal.entryType)}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
-    <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${open.length} ${esc(this.t("open"))} ${esc(this.t("items"))}</h3>
+    <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${esc(this.t("openItems", { count: open.length }))}</h3>
     ${
       open.length
         ? open
@@ -124,16 +124,16 @@ export const viewMethods = {
     const view = this._view;
     if (view === "dashboard")
       return `${this._intro(this.t("greeting"), this.t("greetingSub"), this.t("eyebrow"))}${this._hero()}${this._stats()}
-      <section class="section"><div class="heading"><div><h2>${esc(this.t("collections"))}</h2><p>${esc(this.t("discover"))}</p></div><button class="btn plain" data-action="nav" data-value="recipes">${esc(this.t("all"))} ${icon("arrow", 14)}</button></div>${this._recipes(6)}</section>
+      <section class="section"><div class="heading"><div><h2>${esc(this.t("collections"))}</h2><p>${esc(this.t("recipesSub"))}</p></div><button class="btn plain" data-action="nav" data-value="recipes">${esc(this.t("all"))} ${icon("arrow", 14)}</button></div>${this._recipes(6)}</section>
       <section class="section"><div class="heading"><div><h2>${esc(this.t("week"))}</h2></div><button class="btn plain" data-action="nav" data-value="mealplan">${esc(this.t("mealplan"))} ${icon("arrow", 14)}</button></div>${this._week()}</section>
       <section class="section"><div class="heading"><h2>${esc(this.t("list"))}</h2><button class="btn plain icon-only" data-action="nav" data-value="shopping" aria-label="${esc(this.t("toShopping"))}" title="${esc(this.t("toShopping"))}">${icon("arrow", 14)}</button></div>${this._shopping()}</section>`;
     if (view === "today") return this._today();
     if (view === "recipes")
-      return `${this._intro(this.t("collections"), this.t("discover"), this.t("eyebrow"))}${this._recipeTools()}${this._recipes()}${this._pagination()}`;
+      return `${this._intro(this.t("collections"), this.t("recipesSub"), this.t("eyebrow"))}${this._recipeTools()}${this._recipes()}${this._pagination()}`;
     if (view === "mealplan")
-      return `${this._intro(this.t("week"), this.t("mealplan"), this.t("eyebrow"))}<div class="heading"><div><h2>${esc(dayString(this._locale, this._weekStart, { month: "long", year: "numeric" }))}</h2><p>${esc(dayString(this._locale, this._weekStart, { day: "numeric", month: "short" }))} – ${esc(dayString(this._locale, addDays(this._weekStart, 6), { day: "numeric", month: "short" }))}</p></div><div class="toolbar"><button class="btn tiny" data-action="print-week">${icon("print", 13)} ${this.t("uiPrint")}</button><button class="btn tiny" data-action="week-prev">${esc(this.t("back"))}</button><button class="btn tiny" data-action="week-today">${esc(this.t("today"))}</button><button class="btn tiny" data-action="week-next">${esc(this.t("next"))}</button></div></div><p class="week-swipe-hint">${this.t("uiSwipeToBrowseAllSevenDays")}</p>${this._week()}`;
+      return `${this._intro(this.t("week"), this.t("mealplanSub"), this.t("eyebrow"))}<div class="heading"><div><h2>${esc(dayString(this._locale, this._weekStart, { month: "long", year: "numeric" }))}</h2><p>${esc(dayString(this._locale, this._weekStart, { day: "numeric", month: "short" }))} – ${esc(dayString(this._locale, addDays(this._weekStart, 6), { day: "numeric", month: "short" }))}</p></div><div class="toolbar"><button class="btn tiny" data-action="print-week">${icon("print", 13)} ${this.t("uiPrint")}</button><button class="btn tiny" data-action="week-prev">${esc(this.t("back"))}</button><button class="btn tiny" data-action="week-today">${esc(this.t("today"))}</button><button class="btn tiny" data-action="week-next">${esc(this.t("next"))}</button></div></div><p class="week-swipe-hint">${this.t("uiSwipeToBrowseAllSevenDays")}</p>${this._week()}`;
     if (view === "shopping")
-      return `${this._intro(this.t("list"), this.t("shopping"), this.t("eyebrow"))}${this._shopping()}`;
-    return `${this._intro(this.t("admin"), this.t("recipeTip"), this.t("eyebrow"))}${this._manage()}`;
+      return `${this._intro(this.t("list"), this.t("shoppingSub"), this.t("eyebrow"))}${this._shopping()}`;
+    return `${this._intro(this.t("admin"), this.t("manageSub"), this.t("eyebrow"))}${this._manage()}`;
   },
 };

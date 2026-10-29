@@ -1833,7 +1833,7 @@
 /* Kochinspo uses shared design tokens for every step, choice, and recipe card. */
 .atelier .studio-discover-layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-grid-gap);
   align-items: start;
 }

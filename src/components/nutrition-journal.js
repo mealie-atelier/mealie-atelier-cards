@@ -21,7 +21,7 @@ export const nutritionJournalMethods = {
       n.preview.existing && Object.values(n.preview.existing).some((v) => v !== null && v !== ""),
     );
     const report = n.report;
-    return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / NUTRITION LAB</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div><div class="editor-stamp">${icon("leaf", 27)}</div></div>
+    return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div><div class="editor-stamp">${icon("leaf", 27)}</div></div>
       <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong>${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.t("servings"))}</span></div>
       ${!n.preview.fdc_enabled ? `<div class="nutri-alert">${this.t("uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv")}</div>` : ""}
       ${existing ? `<div class="nutri-alert">${this.t("uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt")}</div>` : ""}
@@ -61,7 +61,7 @@ export const nutritionJournalMethods = {
   _journalMarkup() {
     const slug = this._detail?.slug,
       note = this._journal[slug] || {};
-    return `<div class="modal-content journal-studio"><div class="eyebrow">MEALIE ATELIER / COOKING JOURNAL</div><h2>${esc(this.t("journal"))}</h2><p class="muted">${this.t("uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie")}</p>
+    return `<div class="modal-content journal-studio"><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("journalKicker"))}</div><h2>${esc(this.t("journal"))}</h2><p class="muted">${this.t("uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie")}</p>
     <form data-form="journal" class="editor-form"><section class="editor-card"><label class="field"><span>${this.t("uiHowDidItTurnOut")}</span><select name="rating">${[0, 1, 2, 3, 4, 5].map((i) => `<option value="${i}" ${Number(note.rating || 0) === i ? "selected" : ""}>${i ? `${"★".repeat(i)} ${i}/5` : this.t("uiNotRated")}</option>`).join("")}</select></label><label class="field"><span>${esc(this.t("journalNote"))}</span><textarea name="note" maxlength="800" rows="5" placeholder="${this.t("uiNextTimeReduceTheSalt")}">${esc(note.note || "")}</textarea></label><label class="editor-check"><input type="checkbox" name="favorite" ${note.favorite === true ? "checked" : ""}> ${esc(this.t("uiRememberAsFavoriteRecipe"))}</label><div class="form-actions"><button type="button" class="btn" data-action="close-modal">${esc(this.t("back"))}</button><button class="btn primary" type="submit">${esc(this.t("journalSave"))}</button></div></section></form></div>`;
   },
 };
