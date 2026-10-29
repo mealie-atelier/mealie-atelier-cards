@@ -660,3 +660,46 @@ test("a quantity of 100000 is accepted and one above it is rejected", () => {
   assert.doesNotThrow(() => validateOperation(body(100000)));
   assert.throws(() => validateOperation(body(100001)));
 });
+
+test("another device's note or name change makes a rename a conflict, a quantity edit does not", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
+  try {
+    const state = {
+      items: {
+        // Another device added the note "fettarm" to the food item the user saw as "Milch".
+        a: {
+          id: "a",
+          note: "fettarm",
+          display: "Milch fettarm",
+          isFood: true,
+          food: { name: "Milch" },
+          quantity: 0,
+        },
+        // Another device set the quantity to 3 on an item the user saw as "2 Milch".
+        b: { id: "b", note: "Milch", display: "3 Milch", isFood: false, quantity: 3 },
+        c: { id: "c", note: "Milch", display: "3 Milch", isFood: false, quantity: 3 },
+      },
+    };
+    const { ledger } = await conflictLedger(dir, state);
+    const rename = (id, expected) =>
+      op("shopping_update", { item_id: id, name: "Soja", expected_name: expected });
+    await assert.rejects(ledger.process(rename("a", "Milch")), { atelierCode: "offline_conflict" });
+    assert.equal((await ledger.process(rename("b", "2 Milch"))).ok, true);
+    assert.equal((await ledger.process(rename("c", "Milch"))).ok, true);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("the German texts call a shopping item Artikel, never Eintrag", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const de = JSON.parse(await readFile(join(ROOT, "../src/i18n/de.json"), "utf8"));
+  for (const key of [
+    "errShoppingItemNotFound",
+    "errOfflineConflict",
+    "errOfflineAddUncertain",
+    "offlineItemNotEditable",
+    "offlineInvalidItem",
+  ])
+    assert.doesNotMatch(de[key], /Eintrag/, key);
+});

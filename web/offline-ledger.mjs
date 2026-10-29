@@ -71,7 +71,6 @@ export function validateOperation(operation) {
     throw err(400, "Add needs an existing list and note");
   return { id: operation.id, action: operation.action, payload: structuredClone(p) };
 }
-/** The name a list shows for an item, as the Bridge reads it. */
 /** The label Mealie shows once it rebuilds the display: quantity, unit, name and note. */
 const rebuilt = (item, withOne) => {
   const quantity = Number(item.quantity);
@@ -85,19 +84,36 @@ const rebuilt = (item, withOne) => {
     .filter(Boolean)
     .join(" ");
 };
+/** The text of an item without quantity and unit: food name plus note, or the note alone. */
+const bareLabel = (item) =>
+  [item.food ? item.food.name : "", item.note]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+/** Drops a leading quantity and the unit of the item from a label the user saw. */
+const withoutAmount = (text, item) => {
+  const stripped = text.replace(/^\s*\d+(?:[.,]\d+)?\s+/, "");
+  if (stripped === text) return text;
+  for (const unit of [item.unit?.name, item.unit?.abbreviation]) {
+    const prefix = String(unit || "").trim();
+    if (prefix && stripped.toLowerCase().startsWith(`${prefix.toLowerCase()} `))
+      return stripped.slice(prefix.length).trim();
+  }
+  return stripped.trim();
+};
 /**
  * The value of an item as the user saw it. The cards derive the label of an edited item themselves,
- * so a name matches when it equals the display text, the note, the food name or the rebuilt label.
+ * so a name matches when it equals the display text, the rebuilt label, or the name and note without
+ * quantity and unit. A name or note changed by another device never matches, only a quantity edit.
  */
 const seen = (key, item, wanted) => {
   if (key !== "name") return item[key];
-  const candidates = [
-    item.display,
-    item.note,
-    item.food?.name,
-    rebuilt(item, true),
-    rebuilt(item, false),
-  ].map((value) => String(value || "").trim());
+  const bare = bareLabel(item);
+  const given = String(wanted || "").trim();
+  if (same("name", withoutAmount(given, item), bare)) return given;
+  const candidates = [item.display, bare, rebuilt(item, true), rebuilt(item, false)].map((value) =>
+    String(value || "").trim(),
+  );
   return candidates.find((value) => same("name", value, wanted)) ?? candidates[0];
 };
 function same(key, current, wanted) {
