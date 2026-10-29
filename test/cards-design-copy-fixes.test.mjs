@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { loadCards, makeCard } from "./support/card-harness.mjs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const refinement = read("../src/design-system/control-refinement.css");
@@ -24,6 +25,7 @@ test("cooking step text wraps long words inside the stage", () => {
     ".atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail)",
   );
   assert.match(stage, /overflow-wrap:\s*anywhere/);
+  assert.doesNotMatch(stage, /max-width/, "the reading-measure caps of the stage stay in force");
   assert.match(rule(refinement, ".atelier .cook-stage"), /min-width:\s*0/);
 });
 
@@ -87,4 +89,23 @@ test("click and tap wording is device neutral", () => {
     en.editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio,
     /“Overview”/,
   );
+});
+
+test("cooking mode renders the studio tools and the configured light button inside the timer section", () => {
+  const cards = loadCards();
+  const card = makeCard(cards, {
+    hass: { language: "en", callWS: async () => ({}), callService: async () => ({}) },
+  });
+  card._config = { ...card._config, cooking_scene: "scene.kitchen_light" };
+  card._detail = {
+    slug: "soup",
+    name: "Soup",
+    recipeInstructions: [{ text: "Chop." }],
+    recipeIngredient: [],
+  };
+  card._modal = "cook";
+  const html = card._modalHtml();
+  assert.match(html, /<section class="cook-utility"[^>]*><div class="studio-cook-tools">/);
+  assert.match(html, /data-action="studio-ha-scene"/);
+  assert.match(html, /data-action="studio-read-step"/);
 });

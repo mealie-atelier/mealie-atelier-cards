@@ -10814,7 +10814,6 @@ ha-card {
 }
 .atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
   min-width: 0;
-  max-width: 100%;
   overflow-wrap: anywhere;
 }
 
@@ -19129,11 +19128,12 @@ MealieAtelierCard.prototype._modalHtml = function () {
     const session = this._studio?.family?.session;
     const connected = session?.slug === this._detail.slug;
     const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
-    html = html.replace('<div class="cook-utility">', '<div class="cook-utility">' + voice);
+    html = html.replace(/<section class="cook-utility"[^>]*>/, (open) => open + voice);
     if (connected && session.timers.length) {
       html = html.replace(
-        '<div class="cook-timers">',
-        `<div class="cook-timers">${session.timers.map((x) => `<div class="cook-timer"><span>${esc(x.name)} · ${this.t("studioSharedTimer")}</span><strong data-shared-timer="${esc(x.id)}">${Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000))} ${this.t("studioMinutesShort")}</strong></div>`).join("")}`,
+        /<div class="cook-timers"[^>]*>/,
+        (open) =>
+          `${open}${session.timers.map((x) => `<div class="cook-timer"><span>${esc(x.name)} · ${this.t("studioSharedTimer")}</span><strong data-shared-timer="${esc(x.id)}">${Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000))} ${this.t("studioMinutesShort")}</strong></div>`).join("")}`,
       );
     }
   }

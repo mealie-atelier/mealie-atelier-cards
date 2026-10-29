@@ -276,7 +276,6 @@
 }
 .atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
   min-width: 0;
-  max-width: 100%;
   overflow-wrap: anywhere;
 }
 
