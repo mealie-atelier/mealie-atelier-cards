@@ -558,7 +558,7 @@
   "editorOptionalHomeAssistantActionsNothingTriggersAutomatically": "Optionale Home-Assistant-Aktionen, niemals ungefragt.",
   "editorUseEnlargedTabletLayout": "Großes Tablet-Layout verwenden",
   "editorOptionalKitchenSceneHA": "Optionale Lichtszene (HA)",
-  "editorOnlyTriggeredWhenYouTapTheCookingCockpitButton": "Wird nur ausgelöst, wenn du den Kochmodus startest.",
+  "editorOnlyTriggeredWhenYouTapTheCookingCockpitButton": "Nur wenn du im Kochmodus „Kochlicht“ wählst.",
   "editorOptionalMediaPlayerHA": "Optionaler Mediaplayer (HA)",
   "editorCookingVolume": "Koch-Lautstärke",
   "editorOptionalTTSEngineHA": "Optionale Sprachausgabe (HA)",

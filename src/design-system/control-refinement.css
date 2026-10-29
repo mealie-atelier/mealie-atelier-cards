@@ -280,33 +280,30 @@
   overflow-wrap: anywhere;
 }
 
-/* Step navigation stays at the bottom of the dialog at every size, whatever the step length. */
+/* Step navigation stays at the bottom of the dialog at every size, whatever the step length.
+   The DOM and Tab order stay untouched here, so no size gets a visual order that differs from it. */
 .atelier .modal:has(.cook-layout) .cook-controls {
   display: contents;
 }
 .atelier .modal:has(.cook-layout) .cook-actions {
-  order: 3;
   position: sticky;
   bottom: 0;
   z-index: 6;
   padding: 8px 0 max(10px, env(safe-area-inset-bottom));
   background: linear-gradient(180deg, transparent, var(--at-surface) 24%);
 }
-.atelier .modal:has(.cook-layout) .cook-utility {
-  order: 4;
-}
-.atelier .modal:has(.cook-layout) .cook-note {
-  order: 5;
-}
-.atelier .modal:has(.cook-layout) .cook-footnote {
-  order: 6;
-}
 
-/* The close button follows the scroll instead of leaving with the hero. */
+/* The close button follows the scroll instead of leaving with the hero, inset like the old absolute one. */
 .atelier .modal > .modal-close {
+  --at-close-size: 48px;
   position: sticky;
-  top: 0;
+  top: 20px;
   right: auto;
-  margin: 20px 20px -68px auto;
+  margin: 20px 20px calc(-20px - var(--at-close-size)) auto;
   display: grid;
+}
+@container atelier-card (max-width: 420px) {
+  .atelier .modal > .modal-close {
+    --at-close-size: 44px;
+  }
 }

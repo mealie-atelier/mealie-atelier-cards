@@ -558,7 +558,7 @@
   "editorOptionalHomeAssistantActionsNothingTriggersAutomatically": "Optional Home Assistant actions. Nothing triggers automatically.",
   "editorUseEnlargedTabletLayout": "Use enlarged tablet layout",
   "editorOptionalKitchenSceneHA": "Optional kitchen scene (HA)",
-  "editorOnlyTriggeredWhenYouTapTheCookingCockpitButton": "Only triggered when you start the Cooking Cockpit.",
+  "editorOnlyTriggeredWhenYouTapTheCookingCockpitButton": "Only when you select “Cooking light” in cooking mode.",
   "editorOptionalMediaPlayerHA": "Optional media player (HA)",
   "editorCookingVolume": "Cooking volume",
   "editorOptionalTTSEngineHA": "Optional TTS engine (HA)",
