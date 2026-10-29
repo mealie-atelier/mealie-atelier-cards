@@ -107,7 +107,11 @@ test("checked shopping rows keep full opacity, disabled primary buttons stay leg
 test("recipe tiles clamp the placeholder title and keep the meta row clear of the open button", () => {
   assert.match(
     read("../src/design-system/editorial.css"),
-    /\.tile-image \.placeholder \{[^}]*-webkit-line-clamp: 4;[^}]*overflow: hidden;[^}]*overflow-wrap: anywhere/,
+    /\.tile-image \.placeholder > span \{[^}]*-webkit-line-clamp: 3;[^}]*overflow: hidden;[^}]*overflow-wrap: anywhere/,
+  );
+  assert.match(
+    read("../src/design-system/editorial.css"),
+    /\.tile-image \.placeholder \{[^}]*align-items: center;[^}]*position: absolute;[^}]*inset: 0/,
   );
   const refine = read("../src/design-system/control-refinement.css");
   assert.match(refine, /\.atelier \.tile-meta \{[^}]*padding-right: 40px/);
@@ -126,13 +130,49 @@ test("mealplan toolbar buttons meet the 44px touch target and the tablet week st
   assert.match(adaptive, /repeat\(7, minmax\(140px, 1fr\)\)/);
   assert.match(
     read("../src/design-system/polish.css"),
-    /\.day-meal-name \{[^}]*hyphens: auto;[^}]*hyphenate-limit-chars: 10 4 4/,
+    /\.day-meal-name \{[^}]*hyphens: auto;[^}]*hyphenate-limit-chars: 10 4 4;[^}]*-webkit-hyphenate-limit-before: 4;[^}]*-webkit-hyphenate-limit-after: 4/,
   );
 });
 
 test("narrow cards keep the topbar on one line and fill wrapped action rows evenly", () => {
   const refine = read("../src/design-system/control-refinement.css");
   assert.match(refine, /\.topbar \.toolbar \{[^}]*flex-wrap: nowrap/);
-  assert.match(refine, /\.shopping-toolbar \.btn \{[^}]*flex: 1 1 auto/);
   assert.match(refine, /\.week-grid \.day-head \{[^}]*justify-content: flex-start/);
+  assert.match(refine, /\.breadcrumb strong \{[^}]*overflow: hidden;[^}]*text-overflow: ellipsis/);
+  assert.doesNotMatch(refine, /justify-content: stretch/);
+});
+
+test("wrapped shopping actions fill their rows up to tablet width", () => {
+  const refine = read("../src/design-system/control-refinement.css");
+  assert.match(
+    refine,
+    /max-width: 760px\) \{\s*\.atelier \.shopping-toolbar \.btn \{[^}]*flex: 1 1 auto/,
+  );
+});
+
+test("the day strip fades at the end edge and shows the swipe hint up to 1080px", () => {
+  const refine = read("../src/design-system/control-refinement.css");
+  assert.match(
+    refine,
+    /max-width: 1080px\) \{\s*\.atelier \.week-grid \{[^}]*mask-image: linear-gradient/,
+  );
+  assert.match(refine, /max-width: 1080px\)[\s\S]*\.week-swipe-hint \{\s*display: flex/);
+});
+
+test("recipe tiles render the title placeholder only when there is no photo", () => {
+  const cards = loadCards();
+  const card = makeCard(cards, {});
+  card._local = { show_images: false };
+  card._data = { recipes: { items: [{ slug: "a", name: "Plain Soup" }] } };
+  const html = card._recipes(6);
+  assert.doesNotMatch(html, /class="placeholder"/);
+  assert.equal((html.match(/Plain Soup/g) || []).length, 2);
+  card._local = { show_images: true };
+  assert.match(card._recipes(6), /class="placeholder"/);
+  card._data = {
+    recipes: {
+      items: [{ slug: "a", name: "Plain Soup", imageUrl: "/api/mealie_atelier/image/a.webp" }],
+    },
+  };
+  assert.doesNotMatch(card._recipes(6), /class="placeholder"/);
 });

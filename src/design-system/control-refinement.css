@@ -199,6 +199,9 @@
   }
   .atelier .topbar .breadcrumb {
     min-width: 0;
+  }
+  .atelier .topbar .breadcrumb strong {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -219,11 +222,34 @@
     flex-wrap: wrap;
     overflow: visible;
   }
-  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn,
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn {
+    flex: 1 1 auto;
+  }
+}
+/* Shopping actions can wrap anywhere below tablet width: fill every row so none is left alone. */
+@container atelier-card (max-width: 760px) {
   .atelier .shopping-toolbar .btn {
     flex: 1 1 auto;
   }
-  .atelier .shopping-toolbar {
-    justify-content: stretch;
+}
+/* A day strip wider than its card fades out at the end edge so the cut tile reads as scrollable. */
+@container atelier-card (max-width: 1080px) {
+  .atelier .week-grid {
+    padding-inline-end: 36px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+  .atelier .week-swipe-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--at-sub);
+    margin: 9px 0 14px;
+  }
+  .atelier .week-swipe-hint:before {
+    content: "↔";
+    color: var(--ds-brand);
+    font-size: 21px;
+    line-height: 1;
   }
 }

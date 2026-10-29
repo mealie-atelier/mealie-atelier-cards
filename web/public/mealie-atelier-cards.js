@@ -2090,27 +2090,32 @@ ha-card {
   display: none;
 }
 .atelier .tile-image .placeholder {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  align-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 40px 16px 14px;
-  min-height: 130px;
+  padding: 36px 16px 14px;
   min-width: 0;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  width: 100%;
-  height: 100%;
   font-family: var(--at-serif);
   font-size: clamp(20px, 2vw, 30px);
   color: #f0e9d2;
   filter: none;
   font-style: italic;
   line-height: 1.13;
+}
+.atelier .tile-image .placeholder > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .atelier.light .tile-image .placeholder {
   color: #fffdfa;
@@ -10515,6 +10520,8 @@ ha-card {
   overflow-wrap: anywhere;
   hyphens: auto;
   hyphenate-limit-chars: 10 4 4;
+  -webkit-hyphenate-limit-before: 4;
+  -webkit-hyphenate-limit-after: 4;
 }
 
 /* Atelier Control Refinement 0.9.5: single geometric contract.
@@ -10718,6 +10725,9 @@ ha-card {
   }
   .atelier .topbar .breadcrumb {
     min-width: 0;
+  }
+  .atelier .topbar .breadcrumb strong {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -10738,12 +10748,35 @@ ha-card {
     flex-wrap: wrap;
     overflow: visible;
   }
-  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn,
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn {
+    flex: 1 1 auto;
+  }
+}
+/* Shopping actions can wrap anywhere below tablet width: fill every row so none is left alone. */
+@container atelier-card (max-width: 760px) {
   .atelier .shopping-toolbar .btn {
     flex: 1 1 auto;
   }
-  .atelier .shopping-toolbar {
-    justify-content: stretch;
+}
+/* A day strip wider than its card fades out at the end edge so the cut tile reads as scrollable. */
+@container atelier-card (max-width: 1080px) {
+  .atelier .week-grid {
+    padding-inline-end: 36px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+  .atelier .week-swipe-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--at-sub);
+    margin: 9px 0 14px;
+  }
+  .atelier .week-swipe-hint:before {
+    content: "↔";
+    color: var(--ds-brand);
+    font-size: 21px;
+    line-height: 1;
   }
 }
 
@@ -13812,9 +13845,10 @@ const viewMethods = {
         const category =
           recipe.recipeCategory?.[0]?.name || recipe.recipeCategory?.[0] || this.t("featured");
         const image = this._design.show_images !== false;
+        const photo = image ? recipeImage(recipe) : "";
         const time = AtelierStudio.formatTime(recipe.totalTime, this._language);
         const timeLabel = time || this.t("uiMealieRecipeFallback");
-        return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${image ? recipeImage(recipe) : ""}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div><div class="placeholder">${esc(recipe.name)}</div></div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon(time ? "clock" : "book", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
+        return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${photo}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div>${image && !photo ? `<div class="placeholder" aria-hidden="true"><span>${esc(recipe.name)}</span></div>` : ""}</div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon(time ? "clock" : "book", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(
         "",
