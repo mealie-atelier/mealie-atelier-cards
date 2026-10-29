@@ -45,20 +45,22 @@ test("demo recipe search finds ingredient matches, not only titles", () => {
 test("localized demo routes can discover ingredients using the alternate language", () => {
   for (const locale of ["en", "de"]) {
     const { recipes, details } = catalog(locale);
-    const alternateIngredient = locale === "de" ? "kale" : "grünkohl";
+    const alternateIngredient = locale === "de" ? "peanuts" : "erdnüsse";
     const matches = searchDemoRecipes(recipes, details, alternateIngredient);
-    assert.ok(
-      matches.some((recipe) => recipe.slug === "kokos-curry-mit-champignons-und-gruenkohl"),
-    );
+    assert.ok(matches.some((recipe) => recipe.slug === "kokos-curry-mit-kartoffeln-und-karotten"));
   }
 });
 
 test("demo query transforms apply dietary, time, serving, and ingredient filters", () => {
   const { recipes, details } = catalog("en");
-  const matches = searchDemoRecipes(recipes, details, "vegan ingredient:kale under 30 min for 4");
+  const matches = searchDemoRecipes(
+    recipes,
+    details,
+    "vegan ingredient:peanuts under 30 min for 4",
+  );
   assert.deepEqual(
     matches.map((recipe) => recipe.slug),
-    ["kokos-curry-mit-champignons-und-gruenkohl"],
+    ["kokos-curry-mit-kartoffeln-und-karotten"],
   );
 });
 

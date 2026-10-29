@@ -79,7 +79,7 @@ function food(ctx) {
       "(max-width: 560px) 94vw, (max-width: 820px) 46vw, 420px",
     ],
     [
-      "kokos-curry-mit-champignons-und-gruenkohl",
+      "kokos-curry-mit-kartoffeln-und-karotten",
       "f5",
       "(max-width: 560px) 94vw, (max-width: 820px) 46vw, 320px",
     ],

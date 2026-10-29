@@ -102,8 +102,8 @@
         "en": "Gnocchi alla Sorrentina"
       },
       "description": {
-        "de": "Kartoffelgnocchi in einer fruchtigen Sauce aus Kirschtomaten. Mini-Mozzarella schmilzt nur leicht an, frisches Basilikum kommt zum Schluss dazu.",
-        "en": "Potato gnocchi in a bright cherry tomato sauce. Mini mozzarella balls just start to melt and fresh basil goes on at the end."
+        "de": "Kartoffelgnocchi in einer fruchtigen Sauce aus Kirschtomaten. Gezupfter Mozzarella schmilzt nur leicht an, frisches Basilikum kommt zum Schluss dazu.",
+        "en": "Potato gnocchi in a bright cherry tomato sauce. Torn mozzarella just starts to melt and fresh basil goes on at the end."
       },
       "category": {
         "de": "Hauptgericht",
@@ -125,7 +125,7 @@
           "1 Knoblauchzehe, in Scheiben",
           "2 EL Olivenöl",
           "1 Prise getrockneter Oregano",
-          "250 g Mini-Mozzarella",
+          "250 g Mozzarella",
           "1 Handvoll Basilikum"
         ],
         "en": [
@@ -135,7 +135,7 @@
           "1 garlic clove, sliced",
           "2 tbsp olive oil",
           "1 pinch dried oregano",
-          "250 g mini mozzarella balls",
+          "250 g mozzarella",
           "1 handful basil leaves"
         ]
       },
@@ -154,7 +154,7 @@
           {
             "title": "Mit Mozzarella servieren",
             "summary": "Mozzarella nur leicht anschmelzen",
-            "text": "Gnocchi in der Sauce schwenken, bis sie glänzen. Pfanne vom Herd nehmen, Mini-Mozzarella darauf verteilen und 1 Minute ziehen lassen. Mit Basilikum in Schalen servieren."
+            "text": "Gnocchi in der Sauce schwenken, bis sie glänzen. Pfanne vom Herd nehmen, den Mozzarella in Stücke zupfen und darauf verteilen, 1 Minute ziehen lassen. Mit Basilikum in tiefen Tellern servieren."
           }
         ],
         "en": [
@@ -171,19 +171,19 @@
           {
             "title": "Serve with mozzarella",
             "summary": "Let the mozzarella just soften",
-            "text": "Toss the gnocchi in the sauce until glossy. Take the pan off the heat, dot with the mini mozzarella and leave for 1 minute. Serve in bowls with basil."
+            "text": "Toss the gnocchi in the sauce until glossy. Take the pan off the heat, tear the mozzarella into pieces and dot it over the top, then leave for 1 minute. Serve in shallow bowls with basil."
           }
         ]
       },
       "image": {
         "file": "../photos/gnocchi-alla-sorrentina.webp",
         "alt": {
-          "de": "Gnocchi in Tomatensauce mit Mini-Mozzarella und Basilikum in einer Holzschale auf hellem Stein",
-          "en": "Gnocchi in tomato sauce with mini mozzarella balls and basil in a wooden bowl on light stone"
+          "de": "Gnocchi in Tomatensauce mit gezupftem Mozzarella und Basilikum in einem weißen Teller mit braunem Rand auf hellem Holz",
+          "en": "Gnocchi in tomato sauce with torn mozzarella and basil in a white bowl with a brown rim on light wood"
         },
-        "photographer": "Max Griss",
-        "photographerUrl": "https://unsplash.com/@grissphoto?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/a-bowl-of-food-bqs2XoayCt8"
+        "photographer": "Nathalie Klippert",
+        "photographerUrl": "https://unsplash.com/@nathaliescontent?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/a-white-plate-topped-with-food-on-top-of-a-wooden-table-c8anfbnfPRo"
       }
     },
     {
@@ -669,15 +669,15 @@
     },
     {
       "id": "coconut-curry",
-      "slug": "kokos-curry-mit-champignons-und-gruenkohl",
-      "slugEn": "coconut-curry-with-mushrooms-and-kale",
+      "slug": "kokos-curry-mit-kartoffeln-und-karotten",
+      "slugEn": "coconut-curry-with-potatoes-and-carrots",
       "title": {
-        "de": "Kokos-Curry mit Champignons und Grünkohl",
-        "en": "Coconut curry with mushrooms and kale"
+        "de": "Kokos-Curry mit Kartoffeln und Karotten",
+        "en": "Coconut curry with potatoes and carrots"
       },
       "description": {
-        "de": "Champignons und Zwiebeln köcheln in einer milden roten Kokossauce. Dazu gibt es Jasminreis, frisch gehackten Grünkohl, Koriander und Limette.",
-        "en": "Mushrooms and onion simmer in a mild red coconut sauce. Serve with jasmine rice, freshly chopped kale, coriander and lime."
+        "de": "Kartoffeln und Karotten garen in einer milden roten Kokossauce. Dazu gibt es Basmatireis, geröstete Erdnüsse, frischen Koriander und Limette.",
+        "en": "Potatoes and carrots simmer in a mild red coconut sauce. Serve with basmati rice, roasted peanuts, fresh coriander and lime."
       },
       "category": {
         "de": "Curry",
@@ -693,28 +693,28 @@
       "cookMinutes": 20,
       "ingredients": {
         "de": [
-          "250 g Jasminreis",
+          "250 g Basmatireis",
           "1 EL Kokosöl",
-          "1 Zwiebel, gewürfelt",
+          "1 Zwiebel, in Spalten",
           "2 Knoblauchzehen, fein gehackt",
           "2 EL vegane rote Currypaste",
-          "400 g braune Champignons, in Scheiben",
+          "400 g festkochende Kartoffeln, in 2 cm Würfeln",
+          "2 Karotten, in dicken Scheiben",
           "400 ml Kokosmilch",
-          "100 g Grünkohl, entstielt",
-          "1 Bund Frühlingszwiebeln",
+          "50 g geröstete Erdnüsse",
           "2 Limetten",
           "1 Handvoll Koriander"
         ],
         "en": [
-          "250 g jasmine rice",
+          "250 g basmati rice",
           "1 tbsp coconut oil",
-          "1 onion, diced",
+          "1 onion, cut into wedges",
           "2 garlic cloves, finely chopped",
           "2 tbsp vegan red curry paste",
-          "400 g chestnut mushrooms, sliced",
+          "400 g waxy potatoes, in 2 cm cubes",
+          "2 carrots, in thick slices",
           "400 ml coconut milk",
-          "100 g kale, stems removed",
-          "1 bunch spring onions",
+          "50 g roasted peanuts",
           "2 limes",
           "1 handful coriander"
         ]
@@ -723,47 +723,47 @@
         "de": [
           {
             "title": "Reis garen",
-            "summary": "Jasminreis aufsetzen",
+            "summary": "Basmatireis aufsetzen",
             "text": "Reis kalt abspülen, mit 375 ml Wasser und einer Prise Salz aufkochen. Zugedeckt bei kleiner Hitze 12 Minuten garen, dann 5 Minuten ruhen lassen."
           },
           {
             "title": "Curry kochen",
-            "summary": "Pilze in Kokosmilch köcheln",
-            "text": "Kokosöl in einem Topf erhitzen. Zwiebel und Knoblauch 3 Minuten anschwitzen, Currypaste einrühren und 1 Minute rösten. Champignons zugeben und 4 Minuten braten. Kokosmilch angießen und 8 Minuten leise köcheln lassen. Mit dem Saft einer Limette und Salz abschmecken."
+            "summary": "Gemüse in Kokosmilch garen",
+            "text": "Kokosöl in einem Topf erhitzen. Zwiebel und Knoblauch 3 Minuten anschwitzen, Currypaste einrühren und 1 Minute rösten. Kartoffeln und Karotten zugeben, Kokosmilch und 100 ml Wasser angießen und zugedeckt 15 Minuten leise köcheln lassen, bis das Gemüse weich ist. Mit dem Saft einer Limette und Salz abschmecken."
           },
           {
             "title": "Anrichten",
-            "summary": "Mit Grünkohl, Koriander und Limette servieren",
-            "text": "Grünkohl und Koriander fein hacken, Frühlingszwiebeln in Ringe schneiden. Reis mit dem Curry anrichten, Grünkohl, Koriander und Frühlingszwiebeln darüberstreuen. Mit Limettenspalten servieren."
+            "summary": "Mit Erdnüssen, Koriander und Limette servieren",
+            "text": "Koriander grob hacken. Reis in Schalen geben, das Curry daraufsetzen und mit Erdnüssen und Koriander bestreuen. Mit Limettenspalten servieren."
           }
         ],
         "en": [
           {
             "title": "Cook the rice",
-            "summary": "Start the jasmine rice",
+            "summary": "Start the basmati rice",
             "text": "Rinse the rice in cold water and bring to the boil with 375 ml water and a pinch of salt. Cover and cook over low heat for 12 minutes, then rest for 5 minutes."
           },
           {
             "title": "Make the curry",
-            "summary": "Simmer the mushrooms in coconut milk",
-            "text": "Heat the coconut oil in a pot. Soften the onion and garlic for 3 minutes, stir in the curry paste and fry for 1 minute. Add the mushrooms and cook for 4 minutes. Pour in the coconut milk and simmer gently for 8 minutes. Season with the juice of one lime and salt."
+            "summary": "Simmer the vegetables in coconut milk",
+            "text": "Heat the coconut oil in a pot. Soften the onion and garlic for 3 minutes, stir in the curry paste and fry for 1 minute. Add the potatoes and carrots, pour in the coconut milk and 100 ml water, cover and simmer gently for 15 minutes until the vegetables are tender. Season with the juice of one lime and salt."
           },
           {
             "title": "Serve",
-            "summary": "Finish with kale, coriander and lime",
-            "text": "Finely chop the kale and coriander and slice the spring onions. Serve the curry with the rice, scatter over the kale, coriander and spring onions and add lime wedges."
+            "summary": "Finish with peanuts, coriander and lime",
+            "text": "Roughly chop the coriander. Spoon the rice into bowls, set the curry on top and scatter over the peanuts and coriander. Serve with lime wedges."
           }
         ]
       },
       "image": {
-        "file": "../photos/kokos-curry-mit-champignons-und-gruenkohl.webp",
+        "file": "../photos/kokos-curry-mit-kartoffeln-und-karotten.webp",
         "alt": {
-          "de": "Kokos-Curry mit Champignons, Reis, gehacktem Grünkohl und einer Limettenspalte auf einem Teller, ringsum Grünkohl, Limetten und Frühlingszwiebeln auf einem Holzbrett",
-          "en": "Coconut curry with mushrooms, rice, chopped kale and a lime wedge on a plate, with kale, limes and spring onions around it on a wooden board"
+          "de": "Kokos-Curry mit Kartoffeln, Karotten und Erdnüssen auf Basmatireis in einer dunklen Schale, mit Koriander und einer Limettenspalte, auf hellem Stein",
+          "en": "Coconut curry with potatoes, carrots and peanuts on basmati rice in a dark bowl, topped with coriander and a lime wedge, on light stone"
         },
-        "photographer": "Nathan Dumlao",
-        "photographerUrl": "https://unsplash.com/@nate_dumlao?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/brown-ceramic-plate-with-brown-wooden-chopsticks-w9zCH4Lpflw"
+        "photographer": "Filipp Romanovski",
+        "photographerUrl": "https://unsplash.com/@filipp_roman_photography?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/a-bowl-filled-with-rice-and-vegetables-on-top-of-a-table-GHDs-GG81SA"
       }
     },
     {
