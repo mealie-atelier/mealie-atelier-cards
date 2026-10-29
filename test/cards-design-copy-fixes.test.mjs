@@ -342,3 +342,12 @@ test("the display font token reuses the single --at-serif stack", async () => {
   assert.match(tokens, /--ds-font-display:\s*var\(--at-serif\);/);
   assert.doesNotMatch(tokens, /Times New Roman/);
 });
+
+test("English strings use the typographic apostrophe only", () => {
+  const strings = JSON.parse(read("../src/i18n/en.json"));
+  const straight = Object.entries(strings).filter(([, value]) => /\w'\w/.test(String(value)));
+  assert.deepEqual(
+    straight.map(([key]) => key),
+    [],
+  );
+});
