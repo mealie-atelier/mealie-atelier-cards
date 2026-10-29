@@ -10,7 +10,7 @@ The visual direction is a calm, photographic kitchen studio: excellent food phot
 
 ## 2. Localization contract
 
-- Ship German and English as complete interface languages. `auto` follows the Home Assistant language in cards and the browser language in the standalone companion, then falls back to English. Users can choose German or English explicitly; an explicit choice always wins over automatic detection.
+- Ship German and English as complete interface languages. `auto` follows the Home Assistant language in cards and the browser language in the standalone web app, then falls back to English. Users can choose German or English explicitly; an explicit choice always wins over automatic detection.
 - Translate every Atelier-owned string, including setup, editor, dialogs, notifications, validation, print layouts, empty/error/loading states, keyboard help, and accessible names. Recipe titles, ingredient names, Mealie content, and other user-authored data remain in their source language.
 - Keep translations in the standalone `src/i18n/` module, with one resource file per locale and one shared resolver. Never scatter locale tables across view modules or add new user-visible German or English literals directly to view markup or event handlers.
 - Register an additional language by adding its complete locale JSON file; the bundle builder discovers supported locale files automatically. Runtime branching must use the resolved locale or translation helper, not a list of hard-coded language checks.
@@ -22,7 +22,7 @@ The visual direction is a calm, photographic kitchen studio: excellent food phot
 ## 3. Home Assistant setup contract
 
 - Make the recommended path UI-only: no YAML, token pasted into a dashboard, or manual resource registration when the Home Assistant Marketplace/HACS can manage it.
-- Start by offering two honest paths: native Home Assistant Mealie for read-only recipe search/cooking without an Atelier server, or the optional Atelier Bridge for photos and full kitchen workflows. Never make the Bridge sound mandatory for the limited native path.
+- Start by offering two honest paths: native Home Assistant Mealie for read-only recipe search/cooking without an Atelier server, or the optional Mealie Atelier Bridge for photos and full kitchen workflows. Never make the Bridge sound mandatory for the limited native path.
 - Detect an existing Home Assistant Mealie connection and select it automatically when there is exactly one. If there is no usable connection, show the next concrete action and a recovery path in the visual card editor.
 - Ask only for credentials required by the selected path. Explain that the Mealie URL must be reachable from the Home Assistant host, where to create an API token, and how to resolve common address/certificate errors. Never request credentials in Lovelace card YAML.
 - Keep optional nutrition/AI and experimental settings out of first-run setup. Explain write permissions before users enable household changes; retain safe, explicit defaults.

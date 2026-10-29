@@ -81,6 +81,7 @@
   --ds-muted: var(--at-sub);
   --ds-border: var(--at-line);
   --ds-brand: var(--at-accent);
+  --ds-brand-text: var(--ds-brand);
   --ds-brand-foreground: var(--at-accent-ink, #12221b);
   --ds-ring: color-mix(in srgb, var(--at-accent) 55%, white);
   --ds-photo-fallback: linear-gradient(145deg, #304237, #67775b);

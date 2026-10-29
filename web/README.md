@@ -2,7 +2,7 @@
 
 Part of [Mealie Atelier Cards](../README.md). Contents: [Docker](#docker-quick-start) · [Node](#node-quick-start) · [Configuration](#configuration) · [Accounts](#per-person-accounts) · [Security](#security) · [Third-party hosts](#third-party-hosts) · [Tests](#tests) · [Notes](#notes) · [Printing](#printing-recipes-and-plans) · [Nutrition Lab](#nutrition-lab) · [Kitchen state](#kitchen-state-and-persistence) · [Support](#support) · [License](#license)
 
-Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **without Home Assistant**. This standalone companion shares the same visual components as the Mealie Atelier cards, but uses a local, password-protected Node proxy to your own Mealie API.
+Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **without Home Assistant**. This standalone web app shares the same visual components as the Mealie Atelier cards, but uses a local, password-protected Node proxy to your own Mealie API.
 
 ![Mealie Atelier standalone UI (demo data)](assets/showcase-desktop.png)
 

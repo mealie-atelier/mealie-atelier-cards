@@ -15,7 +15,7 @@
 <p align="center">
 <a href="https://mealie.alles-automatisch.de"><strong>Try the live demo</strong></a> ·
 <a href="https://alles-automatisch.de/lernen/mealie-atelier">Documentation</a> ·
-<a href="https://github.com/mealie-atelier/mealie-atelier-bridge">Atelier Bridge</a> ·
+<a href="https://github.com/mealie-atelier/mealie-atelier-bridge">Mealie Atelier Bridge</a> ·
 <a href="https://github.com/orgs/mealie-atelier/discussions">Discussions</a>
 </p>
 

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Mealie Atelier Cards, the standalone Web app and the demo are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions before 0.10.0 were developer previews.
+All notable changes to Mealie Atelier Cards, the standalone web app and the demo are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions before 0.10.0 were developer previews.
 
 ## [Unreleased]
 

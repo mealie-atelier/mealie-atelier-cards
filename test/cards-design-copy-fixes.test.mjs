@@ -234,3 +234,80 @@ test("copy uses one spelling per concept in both locales", () => {
   assert.deepEqual(serialComma, [], "English lists use no serial comma");
   assert.match(en.editorOnlyTriggeredWhenYouTapTheCookingCockpitButton, /Cooking light/);
 });
+
+test("every accent coloured text uses the AA contrast token on light surfaces", () => {
+  const sheets = [
+    "foundation",
+    "editorial",
+    "kitchen",
+    "motion",
+    "adaptive",
+    "layout",
+    "components",
+    "polish",
+    "control-refinement",
+  ].map((name) => [name, read(`../src/design-system/${name}.css`)]);
+  for (const [name, css] of sheets)
+    assert.doesNotMatch(css, /^\s*color:\s*var\(--ds-brand\);/m, `${name}.css has raw brand text`);
+  const tokens = read("../src/design-system/tokens.css");
+  assert.match(rule(tokens, ".atelier"), /--ds-brand-text:\s*var\(--ds-brand\)/);
+  assert.match(rule(tokens, ".atelier.light"), /--ds-brand-text:\s*color-mix/);
+  assert.match(
+    rule(read("../src/design-system/motion.css"), ".at-premium-dialog .eyebrow"),
+    /color:\s*var\(--ds-brand-text,/,
+  );
+});
+
+test("the cooking dialog is a fixed-height flex column with the action bar on its bottom edge", () => {
+  const modal = rule(refinement, ".atelier .modal.large:has(.cook-layout)");
+  assert.match(modal, /display:\s*flex/);
+  assert.match(modal, /flex-direction:\s*column/);
+  assert.match(modal, /height:\s*min\(90dvh,\s*940px\)/);
+  assert.match(
+    rule(refinement, ".atelier .modal.large:has(.cook-layout) > .cook-layout"),
+    /flex:\s*1 0 auto/,
+  );
+  const actions = rule(refinement, ".atelier .modal:has(.cook-layout) .cook-actions");
+  assert.match(actions, /margin-block:\s*auto 0/);
+  assert.match(actions, /position:\s*sticky/);
+  assert.match(
+    refinement,
+    /\.cook-content > \*,\s*\.atelier \.modal:has\(\.cook-layout\) \.cook-controls > \* \{\s*order: 0;/,
+    "earlier breakpoint orders are reset so the bar is last in every layout",
+  );
+});
+
+test("long German words hyphenate only when the word is at least 12 letters long", () => {
+  const polish = read("../src/design-system/polish.css");
+  assert.match(rule(polish, ".atelier .day-meal-name"), /hyphenate-limit-chars:\s*12 5 5;/);
+});
+
+test("the cards UI always names the Mealie Atelier Bridge in full", () => {
+  const strings = {
+    de: JSON.parse(read("../src/i18n/de.json")),
+    en: JSON.parse(read("../src/i18n/en.json")),
+  };
+  for (const [locale, table] of Object.entries(strings))
+    for (const [key, value] of Object.entries(table)) {
+      if (typeof value !== "string") continue;
+      const bare = value.replace(/Mealie Atelier Bridge/g, "");
+      assert.doesNotMatch(bare, /\bBridge\b|Bridge-/, `${locale}.${key} shortens the Bridge name`);
+    }
+});
+
+test("docs and README spell web app in lower case within a sentence and name the full Bridge", () => {
+  for (const file of [
+    "../README.md",
+    "../docs/ARCHITECTURE.md",
+    "../docs/DESIGN_SYSTEM.md",
+    "../docs/FAQ.md",
+    "../docs/MARKETPLACE.md",
+    "../docs/REPOSITORY_MAP.md",
+    "../web/.env.example",
+  ]) {
+    const text = read(file);
+    assert.doesNotMatch(text, /[a-z,] Web app\b/, `${file} capitalises web app mid-sentence`);
+    assert.doesNotMatch(text, /Web companion|web companion/, `${file} says companion`);
+    assert.doesNotMatch(text, /(?<!Mealie )Atelier Bridge/, `${file} shortens the Bridge name`);
+  }
+});

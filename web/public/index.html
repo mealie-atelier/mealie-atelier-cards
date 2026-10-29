@@ -4,6 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#101613" />
+    <script>
+      // First paint follows the saved theme choice or the system scheme, so a light system never flashes dark.
+      (() => {
+        try {
+          const saved = JSON.parse(localStorage.getItem("mealie-atelier:design") || "{}")?.theme;
+          const light =
+            saved === "light" ||
+            (saved !== "dark" && window.matchMedia("(prefers-color-scheme: light)").matches);
+          if (!light) return;
+          document.documentElement.dataset.theme = "light";
+          document.documentElement.style.colorScheme = "light";
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f4f1eb");
+        } catch {}
+      })();
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -132,7 +147,7 @@
       const card = document.querySelector("mealie-atelier-card");
       card.setConfig({
         mode: "dashboard",
-        theme: "dark",
+        theme: "auto",
         accent: "#9dcbb2",
         columns: 3,
         language: "auto",
@@ -146,6 +161,12 @@
           ?.setAttribute("content", normalizedTheme === "light" ? "#f4f1eb" : "#101613");
       };
       syncShellTheme(card._design.theme);
+      // Theme "auto" follows the system colour scheme live, including the browser chrome colour.
+      window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+        if (card._design.theme !== "auto") return;
+        syncShellTheme("auto");
+        card._render();
+      });
       const syncShellLanguage = (language) => {
         const isGerman = language === "de";
         document.documentElement.lang = language;

@@ -175,7 +175,7 @@
   min-width: 0;
 }
 .atelier .studio-suggestion-copy small {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 10px;
   display: block;
   margin-bottom: 7px;
@@ -257,7 +257,7 @@
   margin: 16px 0;
 }
 .atelier .studio-group h3 {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 11px;
   letter-spacing: 1px;
   border-bottom: 1px solid var(--at-line);
@@ -291,7 +291,7 @@
   gap: 9px;
 }
 .atelier .studio-member small {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 10px;
 }
 .atelier .studio-task > span {
@@ -340,7 +340,7 @@
   color: var(--at-sub);
 }
 .atelier .studio-audit strong {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .studio-cook-tools {
   display: flex;
@@ -354,7 +354,7 @@
 }
 .atelier .studio-shared-note {
   font-size: 10px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   letter-spacing: 0.5px;
 }
 .atelier .studio-swap {
@@ -428,7 +428,7 @@
   background: var(--at-panel2);
 }
 .atelier .studio-audit-details strong {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .studio-audit-details p {
   font-size: 12px;

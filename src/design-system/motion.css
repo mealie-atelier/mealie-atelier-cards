@@ -179,7 +179,7 @@
     color var(--at-fast);
 }
 .atelier .icon-btn:hover {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   border-color: color-mix(in srgb, var(--at-accent) 42%, var(--at-line));
 }
 .atelier .icon-btn:active {
@@ -204,7 +204,7 @@
     0 8px 20px rgba(1, 14, 9, 0.12);
 }
 .atelier .nav button.active svg {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .nav button:hover:not(.active) {
   transform: translateX(3px);
@@ -664,7 +664,7 @@
 .atelier .command-example {
   display: inline-block;
   margin-left: 5px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 700;
 }
 .atelier .command-conversion {
@@ -678,7 +678,7 @@
   animation: at-view-enter var(--ds-motion-enter) var(--ds-motion-ease) backwards;
 }
 .atelier .command-conversion-label {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 11px;
   font-weight: 760;
   letter-spacing: 0.09em;
@@ -703,7 +703,7 @@
 .atelier .command-section {
   font-size: 10px;
   letter-spacing: 2px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   margin: 22px 8px 8px;
   font-weight: 800;
 }
@@ -736,7 +736,7 @@
   transform: translateX(3px);
 }
 .atelier .command-item svg {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .command-item .command-arrow {
   margin-left: auto;
@@ -818,7 +818,7 @@
     color-mix(in srgb, var(--at-accent) 20%, var(--at-panel2)),
     var(--at-panel2)
   );
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .command-recipe-image:empty::before {
   content: "✦";
@@ -852,7 +852,7 @@
 }
 .atelier .command-recipe-meta svg {
   flex: none;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .command-match {
   flex: none;
@@ -867,14 +867,14 @@
 .atelier .command-match-ingredient,
 .atelier .command-match-mixed {
   background: color-mix(in srgb, var(--at-accent) 18%, var(--at-panel));
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .command-all-results {
   margin-top: 7px;
   border-top: 1px solid var(--at-line);
   border-radius: 0;
   padding-top: 13px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .command-state,
 .atelier .command-loading {
@@ -921,7 +921,7 @@
   margin-bottom: 3px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--at-accent) 12%, var(--at-panel));
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 @keyframes command-spin {
   to {
@@ -1290,7 +1290,7 @@
   }
   .atelier .week-swipe-hint:before {
     content: "↔";
-    color: var(--ds-brand);
+    color: var(--ds-brand-text);
     font-size: 21px;
     line-height: 1;
   }
@@ -1394,7 +1394,7 @@
 }
 .atelier .studio-diagnostic-status.ok {
   background: color-mix(in srgb, var(--at-accent) 17%, transparent);
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .studio-diagnostic-status.fail {
   background: color-mix(in srgb, #e5a77d 22%, transparent);
@@ -1434,7 +1434,7 @@
   gap: 13px;
 }
 .at-premium-dialog .eyebrow {
-  color: var(--at-accent, #a2cdb3);
+  color: var(--ds-brand-text, var(--at-accent, #a2cdb3));
   font-size: 10px;
   letter-spacing: 2px;
 }
