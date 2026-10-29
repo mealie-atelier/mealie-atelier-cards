@@ -8,6 +8,7 @@
        +--> Mealie Atelier Bridge (Home Assistant custom component)
        |       | WebSocket: mealie_atelier/{recipes,recipe,mealplan,shopping,metadata,mutate,status}
        |       | HA-signed image routes: /api/mealie_atelier/image/<entry>/<recipe>
+       |                         /api/mealie_atelier/recipe_asset/...
        |       +--> Ten Lovelace custom cards and graphical card editor
        |
        +--> Mealie Atelier Web (optional self-hosted Node 22 server)

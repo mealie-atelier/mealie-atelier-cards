@@ -69,6 +69,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The nutrition dialog has a German title, a USDA API key hint that fits the web app, lowercase "servings" and "per 100 g". The AI review reports a missing AI key in your language.
 - The shopping sync dialog says "read-only mode" instead of blaming your permissions when the dashboard is read-only.
 - Docs and repository files: working issue forms and a current security policy, README screenshots that sit side by side on GitHub, corrected statements about the built-in Mealie integration, a refreshed design system and architecture description, and a stated Mealie minimum (3.x, tested with v3.29).
+- Docs and repository files: working issue forms and a current security policy, README screenshots that sit side by side on GitHub, corrected statements about the built-in Mealie integration, a refreshed design system file tree and architecture diagram (second image route), and a stated Mealie minimum (3.x, tested with v3.29).
 - Docs: the manual install describes the UI resource route and the HA 2026.11 Marketplace (Add from link, GitHub login), the card picker needs the By card tab, an Uninstall section was added, the config table lists `kiosk_mode`, and the install and documentation lists wrap on phones.
 - Web app: `.env.example` no longer enables read-only mode and the user name `home` by default, drops the removed experimental flag and uses the published Mealie port 9925 in its example; the web README corrects the CSP, VAPID, proxy and contents notes.
 - The phone week toolbar buttons now really reach 44px, the install dialog "Later" button keeps its visible text as accessible name, and the iOS install step 1 reads as an action.
@@ -89,7 +90,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Cooking mode: "Replace session" in the "Replace the shared cooking session?" dialog opens cooking mode too (the click was replayed after the dialog and no longer hit the button).
 - Phone: the active navigation tab is scrolled into view when the view changes (also once more after layout settles), and the tab hover tint applies only on devices that can hover, so no stale highlight stays on a previous tab after a tap.
 - Count texts use proper singular and plural in German and English ("1 weitere Idee", "1 Menge unklar", selected recipes, servings, meals, items, failed checks).
-- The accent colour swatches in the design settings have a translated colour name as accessible name instead of an English hex value.
+- The accent color swatches in the design settings have a translated color name as accessible name instead of an English hex value.
 - The disabled primary button (for example "Kochbuch als PDF / Druckvorschau") stays readable in the light and dark theme.
 - Web app: the footer has a side gutter on phones.
 - The Verwalten view no longer repeats the read-only notice that the global banner already shows.
@@ -98,11 +99,11 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Web app: a reader sees "You are signed in with read access. An administrator can give your account the writer role." instead of the Home Assistant wording.
 - Web app: the footer line follows the app language (German or English).
 - Web app docs: a reader's shared cooking journal is read only (only personal timers still work), and the sign-in throttle allows 5 free failures and locks out from the 6th.
-- Demo recipe catalogue thumbnails load eagerly instead of lazily, so no tile stays empty when the page is captured or printed without scrolling.
+- Demo recipe catalog thumbnails load eagerly instead of lazily, so no tile stays empty when the page is captured or printed without scrolling.
 - The credit line in the print document (recipe, shopping list, week plan) follows the card language like the card footer does.
-- The card credit line ("Made with ♥ by Daniel") and the demo page footer follow the language: "Mit ♥ von Daniel" and "Mit Liebe gemacht von Daniel" in German. Photo credits left the footer; every photo carries its own credit in the recipe catalogue and on its recipe page.
+- The card credit line ("Made with ♥ by Daniel") and the demo page footer follow the language: "Mit ♥ von Daniel" and "Mit Liebe gemacht von Daniel" in German. Photo credits left the footer; every photo carries its own credit in the recipe catalog and on its recipe page.
 - Demo recipe pages: step titles are h3 under the "Zubereitung" / "Method" h2, and the pages carry og:site_name, Twitter card tags (summary_large_image with title, description and image) and a hreflang x-default pointing to the German page.
-- Demo pages declare their dark colour scheme explicitly (meta color-scheme), so a light system setting renders the intended dark page.
+- Demo pages declare their dark color scheme explicitly (meta color-scheme), so a light system setting renders the intended dark page.
 - Text no longer sits on a blurred compositing layer after a view change: the enter animations stop holding their end frame, which left Safari rendering the whole view slightly soft.
 - The pantry and the shopping assistant show the piece unit as "Stück" / "pcs" instead of the stored key "stück", also in the notes sent to the shopping list.
 - On phones and narrow cards each day of the week carousel keeps its own height, so a single dish no longer sits above a large empty area.
@@ -117,7 +118,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Kochinspo treats "Rahm" compounds (Sauerrahm, Schlagrahm, Kaffeerahm) as dairy, so they are no longer vegan. Plant versions (Kokosrahm, Hafer Rahm, pflanzliche Sahne) still are.
 - On phones, "Bearbeiten" in the pantry no longer scrolls the page while the form is on screen.
 - The corner style (square, small, large) now shapes recipe tiles, panels, dialogs, day cards, metric tiles and inputs, not only three rules. The default look is unchanged.
-- The visual editor names the accent colours (Salbeigrün, Aprikose and so on, in German and English) with a colour swatch beside the select instead of raw hex values.
+- The visual editor names the accent colors (Salbeigrün, Aprikose and so on, in German and English) with a color swatch beside the select instead of raw hex values.
 - The suggested card titles in Home Assistant's card picker follow the Home Assistant language (German or English, English fallback) instead of always being English.
 - The visual editor no longer shows the first option when a stored value is not a preset (for example `language: fr`, `columns: 9`, `theme: purple`): the stored value is shown as a selected, labelled extra option and kept on save.
 - The data connection select always lists the built-in Home Assistant Mealie option; without a Mealie integration it is disabled with a one-line hint.
@@ -147,7 +148,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Per-user write grants. The cards read the Bridge permissions and hide write and admin actions a person cannot use, with a clear notice when a write grant is missing and a localized message for every error code.
 - Accounts in the standalone app through `ATELIER_USERS` (`username:role:scrypt-hash`, roles admin, writer, reader). The shared password keeps working as admin. `npm run hash-password` creates hashes.
 - Structured recipe editor with food and unit comboboxes, a review step with scaled preview and a history list with restore. Cover and step photos can be uploaded through bounded, checksummed upload sessions. The web app saves a JSON snapshot before every recipe write.
-- Searchable, paginated recipe picker in the meal plan dialog (debounced search, 20 per page, keyboard navigation, category, tag, favourites and sort filters). The web app accepts the same filters.
+- Searchable, paginated recipe picker in the meal plan dialog (debounced search, 20 per page, keyboard navigation, category, tag, favorites and sort filters). The web app accepts the same filters.
 - Smart Shopping Sync interface in the Shopping view: a status dialog per rule and a seven step setup with a preview of the first batch that is only sent after explicit confirmation. The standalone app reports that sync is not supported.
 - Marketplace readiness: HACS validation workflow, package metadata, `hacs.json` and a pinned Prettier setup with a local pre-commit gate.
 - Cook mode keeps the screen awake while you cook.
@@ -288,10 +289,10 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 ### Added
 
 - Cookbook studio with cover, table of contents and several recipe pages.
-- Recommendations by time budget, pantry, expiry, taste, favourites and cooking history.
+- Recommendations by time budget, pantry, expiry, taste, favorites and cooking history.
 - Seven day meal plan with a preview that keeps existing entries, leftovers and ingredient overlap.
 - Pantry with quantities, expiry dates and a shopping list built from planned meals.
-- Recipe memory with rating, favourite and personal notes.
+- Recipe memory with rating, favorite and personal notes.
 - Shared cooking sessions with progress sync, shared timers, family members and helper tasks.
 - Quality check and substitution suggestions on request.
 - Cooking cockpit with timers, browser text to speech and voice input, and optional Home Assistant scene, volume and TTS actions.

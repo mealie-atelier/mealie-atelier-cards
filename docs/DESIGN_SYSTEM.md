@@ -51,7 +51,14 @@ mealie-atelier-cards/
       polish.css                  # Approved presentation rules
       control-refinement.css      # Final shared control geometry and states
       editor.css                  # Home Assistant visual editor
+      corners.css                 # Shared corner radii
+      recipe-editor.css           # Structured recipe editor
+      recipe-picker.css           # Recipe picker
+      shopping-sync.css           # Smart Shopping Sync
       primitives.js               # Escaping UI constructors
+    i18n/
+      en.json, de.json            # Locale strings, English is the fallback
+      resolver.js                 # Shared locale resolver
     components/
       offline-queue.js            # On-device write queue and ordered replay
       recipe-editor.js            # Structured recipe and ingredient editor
