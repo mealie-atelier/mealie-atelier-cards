@@ -343,7 +343,7 @@ test("shopping label groups sort by name and the done heading reads checked off"
 
 test("German settings copy matches the English preset wording", () => {
   const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
-  assert.equal(de.editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
+  assert.equal(de.editorDeepGreenWarmLightEditorial, "Tiefgrün · warmes Licht · großzügig");
 });
 
 test("sidebar credit link keeps its padded hit area in flow so the version line cannot cover it", () => {

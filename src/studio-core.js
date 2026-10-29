@@ -717,21 +717,31 @@ const AtelierStudio = (() => {
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruhe)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon)/,
     ],
     [
       "spices",
       /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$)/,
     ],
   ];
+  // Foods whose name starts like a spice or pantry stem but are something else (Zuckerschoten, Pfefferminze).
+  const aisleExceptions = [
+    [
+      "produce",
+      /^(zuckerschote|zuckererbse|zuckermais|zuckerruebe|zuckerrube|zuckerhut|pfefferminz|pfefferoni)/,
+    ],
+    ["pantry", /^(gewurzgurke|gewurzgurken)/],
+  ];
   const aisleSuffixes = [
     ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter)$/],
-    ["protein", /(wurst|fleisch|fisch|schinken|speck)$/],
-    ["pantry", /(mehl|brot|reis|nudeln|wein)$/],
+    ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein)$/],
+    ["pantry", /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon)$/],
     ["spices", /(salz|zucker|essig|pfeffer|ol)$/],
   ];
   const category = (name) => {
     const tokens = clean(name).split(" ").filter(Boolean);
+    for (const [aisle, exception] of aisleExceptions)
+      if (tokens.some((w) => exception.test(w))) return aisle;
     for (const [aisle, suffix] of aisleSuffixes)
       if (tokens.some((w) => suffix.test(w))) return aisle;
     for (const [aisle, stem] of aisleStems) if (tokens.some((w) => stem.test(w))) return aisle;
@@ -780,6 +790,17 @@ const AtelierStudio = (() => {
           ing.unit = counted[0].toLocaleLowerCase("de");
           ing.label = lead[2];
           ing.estimated = false;
+        } else if (ing.quantity !== null && ing.unit === "stück" && !/\s/.test(ing.label)) {
+          // "2 Knoblauchzehen" reads like "2 Zehen Knoblauch", so both merge into one row.
+          const lower = ing.label.toLocaleLowerCase("de");
+          const word = Object.keys(countUnits)
+            .sort((a, b) => b.length - a.length)
+            .find((key) => lower.length >= key.length + 3 && lower.endsWith(key));
+          if (word) {
+            ing.unit = countUnits[word][0].toLocaleLowerCase("de");
+            ing.label = ing.label.slice(0, ing.label.length - word.length);
+            ing.estimated = false;
+          }
         }
         if (ing.quantity !== null) ing.quantity = Math.round(ing.quantity * factor * 100) / 100;
         const found = combined.find(
@@ -829,7 +850,8 @@ const AtelierStudio = (() => {
             ? null
             : Math.max(0, Math.round((item.quantity - have) * 100) / 100);
         // Whole pieces cannot be bought in halves.
-        if (needed !== null && item.unit === "stück") needed = Math.ceil(needed - 1e-9);
+        if (needed !== null && (item.unit === "stück" || counted))
+          needed = Math.ceil(needed - 1e-9);
         if (s && !s.staple && needed !== null) s.amount = Math.max(0, s.amount - item.quantity);
         return {
           ...item,

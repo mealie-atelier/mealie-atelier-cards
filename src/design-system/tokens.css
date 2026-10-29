@@ -126,7 +126,7 @@
   color-scheme: light;
   --ds-brand: color-mix(in srgb, var(--at-accent) 88%, #281b22);
   --ds-brand-text: color-mix(in srgb, var(--at-accent) 40%, #281b22);
-  --ds-brand-foreground: var(--at-accent-ink, #fffdfa);
+  --ds-brand-foreground: var(--at-brand-ink, var(--at-accent-ink, #fffdfa));
   --ds-ring: color-mix(in srgb, var(--at-accent) 82%, #241921);
   --ds-photo-fallback: linear-gradient(145deg, #b8a7a2, #806877);
   --at-surface: #f4f1eb;

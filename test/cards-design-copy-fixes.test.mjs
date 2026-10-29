@@ -214,7 +214,7 @@ test("German copy keeps one address, one term per concept and complete sentences
   assert.equal(de.studioAICheck, "Mit KI prüfen");
   assert.doesNotMatch(de.studioDeviceInvalid, /Entity/);
   assert.doesNotMatch(de.editorRunSetupWizard, /Wizard/);
-  assert.match(de.uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv, /^USDA-API-Key/);
+  assert.match(de.uiUsdaKeyMissingWeb, /^USDA-API-Key/);
   assert.match(de.uiFoodsMatched, /zugeordnet/);
   for (const key of [
     "uieGLemonPastaWithSpinach",
@@ -462,7 +462,7 @@ test("merged i18n wording stays consistent between German and English", () => {
       i18n(lang).errMealieAuth,
       /MEALIE_API_TOKEN|server config|Konfiguration des Servers/i,
     );
-  assert.equal(i18n("de").editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
+  assert.equal(i18n("de").editorDeepGreenWarmLightEditorial, "Tiefgrün · warmes Licht · großzügig");
 });
 
 test("Discover recipe base copy keeps the colon in German like English", () => {

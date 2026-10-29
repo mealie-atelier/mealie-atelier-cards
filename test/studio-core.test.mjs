@@ -702,7 +702,7 @@ test("grocery list keeps counting words as units, merges notes, rounds pieces an
   assert.deepEqual([row("Sauerteigbrot").needed, row("Sauerteigbrot").unit], [2, "Scheiben"]);
   assert.equal(row("Zwiebel").needed, 1);
   assert.equal(row("Zwiebel").unit, "stück");
-  assert.equal(list.filter((x) => /Knoblauchzehe/.test(x.name)).length, 1);
+  assert.equal(list.filter((x) => /Knoblauch/.test(x.name)).length, 1);
   assert.equal(row("Ochsenbacke").needed, 500);
   assert.equal(row("Feta").category, "chilled");
   assert.equal(row("Hähnchenbrust").category, "protein");
@@ -736,4 +736,52 @@ test("shopping aisles recognise German compound food names", () => {
   const list = Studio.shoppingNeeds([r], []);
   for (const [n, aisle] of Object.entries(names))
     assert.equal(list.find((x) => x.name === n)?.category, aisle, n);
+});
+
+test("shopping aisles keep Schwein, Zuckerschoten, Pfefferminze, Gewürzgurken and broths out of the wrong aisle", () => {
+  const names = {
+    Schwein: "protein",
+    Wildschwein: "protein",
+    Rotwein: "pantry",
+    Zuckerschoten: "produce",
+    Pfefferminze: "produce",
+    Gewürzgurken: "pantry",
+    Gemüsebrühe: "pantry",
+    Rinderbrühe: "pantry",
+    Hühnerbrühe: "pantry",
+    Gemüsefond: "pantry",
+    Kalbsfond: "pantry",
+    Hühnerfond: "pantry",
+    Fischfond: "pantry",
+    Brühwürfel: "pantry",
+    Gemüsebrühepulver: "pantry",
+    Gemüsebrühwürfel: "pantry",
+    Zucker: "spices",
+    Pfeffer: "spices",
+    Gewürzmischung: "spices",
+  };
+  const r = recipe(
+    "K",
+    Object.keys(names).map((n) => `1 Stück ${n}`),
+    25,
+    2,
+  );
+  const list = Studio.shoppingNeeds([r], []);
+  for (const [n, aisle] of Object.entries(names))
+    assert.equal(list.find((x) => x.name === n)?.category, aisle, n);
+});
+
+test("counting-unit spellings merge into one row and fractions round up", () => {
+  const r = recipe(
+    "Z",
+    ["3 Zehen Knoblauch", "2 Knoblauchzehen", "0,5 Handvoll Basilikum", "1 Zweig Rosmarin"],
+    25,
+    2,
+  );
+  const list = Studio.shoppingNeeds([r], []);
+  const garlic = list.filter((x) => /Knoblauch/.test(x.name));
+  assert.equal(garlic.length, 1);
+  assert.deepEqual([garlic[0].name, garlic[0].needed, garlic[0].unit], ["Knoblauch", 5, "Zehen"]);
+  const basil = list.find((x) => x.name === "Basilikum");
+  assert.deepEqual([basil.needed, basil.unit], [1, "Handvoll"]);
 });

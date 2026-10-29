@@ -397,6 +397,9 @@ test("read-only companion exposes permission and denies writes at the server bou
       ATELIER_PASSWORD: password,
       ATELIER_USERNAME: "atelier",
       ATELIER_READ_ONLY: "true",
+      OPENAI_API_KEY: "",
+      ANTHROPIC_API_KEY: "",
+      ATELIER_AI_PROVIDER: "",
       PORT: "0",
       HOST: "127.0.0.1",
     },
@@ -431,6 +434,9 @@ test("read-only companion exposes permission and denies writes at the server bou
     assert.equal(status.entries[0].read_only, true);
     assert.equal(status.entries[0].can_write, false);
     assert.equal(status.entries[0].can_manage, false);
+    // Without an AI key the cards hide the AI helpers instead of offering a dead button.
+    assert.equal(status.entries[0].ai_enabled, false);
+    assert.equal(status.entries[0].ai_provider, "none");
     assert.equal((await call("mealie_atelier/recipes")).status, 200);
     const n = remote.reads();
     const denied = await call("mealie_atelier/mutate", {

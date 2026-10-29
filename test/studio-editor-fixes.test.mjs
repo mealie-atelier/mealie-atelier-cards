@@ -146,6 +146,6 @@ test("the substitute button reports a missing AI key in the card language", asyn
   card._atelierDialog = async (opts) => (opts.kind === "prompt" ? "Drachenfrucht" : true);
   const el = { dataset: { action: "studio-replacement" }, disabled: false, closest: () => el };
   await card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
-  assert.match(card._aiSwap, /kein KI-Schlüssel/);
+  assert.match(card._aiSwap, /benötigt einen KI-API-Key/);
   assert.doesNotMatch(card._aiSwap, /not configured/);
 });
