@@ -416,3 +416,69 @@ test("conflict counts use the singular form for exactly one conflict", async () 
   assert.equal(formatConflictCount(t, 1), "offlineConflictOne");
   assert.equal(formatConflictCount(t, 3), "offlineConflictCount:3");
 });
+
+async function alarmClientWith(bridge) {
+  globalThis.self ??= globalThis;
+  const channel = globalThis.BroadcastChannel;
+  globalThis.BroadcastChannel = undefined;
+  const { AtelierAlarmClient } = await import("../public/offline-client.js");
+  globalThis.BroadcastChannel = channel;
+  globalThis.self.AtelierOfflineCore.bridge = bridge;
+  const client = new AtelierAlarmClient();
+  client.alarms = [{ id: "t1", status: "scheduled" }];
+  return client;
+}
+
+test("stopping a timer that already fired or vanished counts as success and refreshes the list", async () => {
+  for (const code of ["timer_dispatched", "timer_not_found"]) {
+    const calls = [];
+    const client = await alarmClientWith(async (path) => {
+      calls.push(path);
+      if (path.endsWith("alarm_cancel")) throw Object.assign(new Error("x"), { code });
+      return { alarms: [{ id: "t1", status: "sent" }] };
+    });
+    let changed = 0;
+    client.onChange = () => changed++;
+    await client.cancel("t1");
+    assert.deepEqual(calls, ["mealie_atelier/alarm_cancel", "mealie_atelier/alarms"], code);
+    assert.equal(client.alarms[0].status, "sent", code);
+    assert.ok(changed > 0);
+  }
+});
+
+test("stopping a timer rethrows other errors such as timer_not_permitted", async () => {
+  const client = await alarmClientWith(async () => {
+    throw Object.assign(new Error("x"), { code: "timer_not_permitted" });
+  });
+  await assert.rejects(client.cancel("t1"), { code: "timer_not_permitted" });
+});
+
+test("the connectivity panel maps Bridge error codes to their err texts", async () => {
+  globalThis.self ??= globalThis;
+  const channel = globalThis.BroadcastChannel;
+  globalThis.BroadcastChannel = undefined;
+  const { localizeOfflineError } = await import("../public/offline-client.js");
+  globalThis.BroadcastChannel = channel;
+  for (const language of ["de", "en"]) {
+    const strings = JSON.parse(
+      readFileSync(new URL(`../../src/i18n/${language}.json`, import.meta.url), "utf8"),
+    );
+    const card = { t: (key) => strings[key] ?? key };
+    assert.equal(
+      localizeOfflineError(card, { code: "timer_not_permitted" }),
+      strings.errTimerNotPermitted,
+    );
+    assert.equal(
+      localizeOfflineError(card, { code: "timer_dispatched" }),
+      strings.errTimerDispatched,
+    );
+    assert.equal(
+      localizeOfflineError(card, { code: "offlineNoSnapshot" }),
+      strings.offlineNoSnapshot,
+    );
+    assert.equal(
+      localizeOfflineError(card, { code: "unknown_code", message: "raw" }),
+      strings.offlineUnexpectedError,
+    );
+  }
+});

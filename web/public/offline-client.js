@@ -244,7 +244,15 @@ export class AtelierAlarmClient {
     return result;
   }
   async cancel(id) {
-    const result = await store.bridge("mealie_atelier/alarm_cancel", { timer_id: id });
+    let result;
+    try {
+      result = await store.bridge("mealie_atelier/alarm_cancel", { timer_id: id });
+    } catch (e) {
+      if (!["timer_dispatched", "timer_not_found"].includes(e?.code)) throw e;
+      // Already gone off or removed elsewhere: nothing is left to stop, so reload the list instead of failing.
+      await this.refresh().catch(() => {});
+      return null;
+    }
     this.alarms = this.alarms.map((x) => (x.id === id ? result : x));
     this.onChange();
     return result;
@@ -261,12 +269,21 @@ export function formatConflictCount(t, problems) {
   return problems === 1 ? t("offlineConflictOne") : t("offlineConflictCount", { count: problems });
 }
 
+/** Resolves an offline or Bridge error to translated text: a direct key, then the err* key of its code. */
+export function localizeOfflineError(card, error) {
+  const translate = (key) => card?.t?.(key);
+  const code = typeof error?.code === "string" ? error.code : "";
+  const bridgeKey = /^[a-z][a-z0-9_]*$/.test(code)
+    ? "err" + code.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase())
+    : "";
+  for (const key of [error?.code, bridgeKey, error?.message])
+    if (key && translate(key) !== key) return translate(key);
+  return translate("offlineUnexpectedError") ?? "offlineUnexpectedError";
+}
+
 export function attachOfflineUi(card, offline, alarms) {
   const t = (key, values) => card?.t?.(key, values) ?? key;
-  const localizedError = (error) => {
-    const key = error?.code || error?.message;
-    return key && card?.t?.(key) !== key ? t(key) : t("offlineUnexpectedError");
-  };
+  const localizedError = (error) => localizeOfflineError(card, error);
   const panel = document.createElement("details");
   panel.className = "atelier-connectivity";
   panel.setAttribute("aria-label", t("offlinePanelLabel"));
