@@ -395,6 +395,10 @@
   min-height: 48px;
   min-width: 48px;
 }
+/* The search launcher shares the toolbar buttons' shape at every width. */
+.atelier .topbar .command-launch {
+  border-radius: 14px;
+}
 .atelier .icon-btn {
   display: inline-grid;
   place-items: center;

@@ -146,6 +146,31 @@ test("Kochinspo filters by meal style, child-friendly heat, and ranks portions/p
     ),
   );
 });
+test("Kochinspo recognises meat and fish inside German compound words", () => {
+  const soup = recipe(
+    "Haehnchensuppe",
+    ["450 g Hähnchenbrust", "1,2 l Hühnerbrühe", "2 Möhren"],
+    50,
+    4,
+  );
+  const ragu = recipe("Ragu", ["500 g Rinderhackfleisch", "1 Dose Tomaten"], 60, 4);
+  const salmon = recipe("Lachsnudeln", ["200 g Lachsfilet", "250 g Nudeln"], 25, 2);
+  const shrimp = recipe("Garnelenpfanne", ["300 g Garnelen", "1 Zucchini"], 20, 2);
+  const veggie = recipe(
+    "Pilzpfanne",
+    ["300 g Austernpilze", "250 g Muschelnudeln", "1 Stück Parmesanrinde"],
+    25,
+    2,
+  );
+  const items = [soup, ragu, salmon, shrimp, veggie];
+  const slugs = (profile) =>
+    Studio.suggest(items, profile)
+      .map((x) => x.slug)
+      .sort();
+  assert.deepEqual(slugs({ mealStyle: "meat" }), ["Haehnchensuppe", "Ragu"]);
+  assert.deepEqual(slugs({ mealStyle: "fish" }), ["Garnelenpfanne", "Lachsnudeln"]);
+  assert.deepEqual(slugs({ mealStyle: "vegetarian" }), ["Pilzpfanne"]);
+});
 test("Kochinspo filters against exact Mealie cookbook tag and category IDs", () => {
   const tagBook = {
     name: "Kindgerecht",

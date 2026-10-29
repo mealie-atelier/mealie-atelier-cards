@@ -404,10 +404,12 @@ const AtelierStudio = (() => {
       all = names.join(" ");
     const tagged = (...terms) => tags.some((tag) => terms.some((term) => tag.includes(term)));
     const has = (pattern) => pattern.test(all);
+    // German compounds put the animal first (Hähnchenbrust, Lachsfilet), so most terms match as a
+    // word prefix; a few lookaheads keep Parmesanrinde, Austernpilze and Muschelnudeln vegetarian.
     const meat =
-      /\b(fleisch|rind|rinder|hackfleisch|schwein|schinken|speck|wurst|salami|huhn|haehnchen|hahnchen|hähnchen|pute|truthahn|ente|lamm|kalb|wild|bacon|beef|pork|chicken|turkey|ham)\b/;
+      /\b(?:rind(?!en?\b)|kalb|schwein|schinken|speck|salami|chorizo|huhn|haehnchen|hahnchen|hähnchen|pute|truthahn|ente|gans|bacon|beef|pork|chicken|turkey|veal|duck|prosciutto|pancetta|guanciale)\w*|\b(?:hack|lamm|lammfleisch|lammkeule|lammfilet|wild|ham|mett|leber)\b|fleisch|wurst|schinken|suppenhuhn/;
     const seafood =
-      /\b(fisch|lachs|thunfisch|forelle|kabeljau|garnele|shrimps|krabbe|muschel|sardine|matjes|herring|salmon|tuna|seafood)\b/;
+      /\b(?:lachs|forelle|kabeljau|garnele|shrimp|krabbe|muschel(?!nudel)|sardine|sardelle|anchovi|matjes|hering|herring|salmon|tuna|prawn|scampi|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster(?!n?pilz)|seafood|fish)\w*|fisch/;
     const animal =
       /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|honey)\b/;
     if (

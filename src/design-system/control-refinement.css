@@ -60,6 +60,11 @@
 .atelier :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions) > * {
   max-width: 100%;
 }
+/* Daily shortcuts keep their labels on one line and wrap as whole buttons instead. */
+.atelier .studio-daily-actions > .btn {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
 /* Native form controls and select arrows share geometry across all views. */
 .atelier :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   box-sizing: border-box;

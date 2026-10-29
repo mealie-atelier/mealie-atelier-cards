@@ -98,6 +98,15 @@ const imageOk = (v) =>
     ? v
     : "";
 const asArray = (v) => (Array.isArray(v) ? v : []);
+/** Nearest scrolling ancestor across shadow roots; the document scroller when none is set. */
+function scrollParent(node) {
+  for (let el = node.parentNode || node.host; el; el = el.parentNode || el.host) {
+    if (!(el instanceof Element)) continue;
+    const { overflowY } = getComputedStyle(el);
+    if (/(auto|scroll)/.test(overflowY) && el.scrollHeight > el.clientHeight) return el;
+  }
+  return document.scrollingElement;
+}
 const dateYmd = (d) =>
   [
     d.getFullYear(),
@@ -4789,6 +4798,11 @@ ha-card {
   .atelier .nav button.active {
     box-shadow: inset 0 -2px 0 var(--at-accent);
   }
+  /* Square bottom corners keep the accent line straight under a rounded tab. */
+  .atelier .sidebar .nav > button.active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
   .atelier .main {
     padding: 20px 20px 56px;
   }
@@ -5933,6 +5947,11 @@ ha-card {
   }
   .atelier .nav button.active {
     box-shadow: inset 0 -2px 0 var(--at-accent);
+  }
+  /* Square bottom corners keep the accent line straight under a rounded tab. */
+  .atelier .sidebar .nav > button.active {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
   .atelier .main {
     padding: 20px 20px 56px;
@@ -7877,17 +7896,43 @@ ha-card {
   outline: 3px solid var(--ds-ring);
   outline-offset: 4px;
 }
+/* Exclusive design choices read as a typographic register, not a row of pills. */
 .atelier .range {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-2);
+  gap: 0 var(--ds-space-5);
   min-width: 0;
 }
-.atelier .range button[aria-pressed="true"] {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ds-brand) 40%, transparent);
-}
-.atelier .range button {
+.atelier .range button.range-option {
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   min-width: 0;
+  min-height: 44px;
+  padding: 0 1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--ds-muted);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    color var(--ds-motion-fast) var(--ds-motion-ease),
+    border-color var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier .range button.range-option:hover {
+  color: var(--ds-text);
+}
+.atelier .range button.range-option[aria-pressed="true"] {
+  border-bottom-color: var(--ds-brand);
+  color: var(--ds-text);
+}
+.atelier .range button.range-option:focus-visible {
+  outline: 3px solid var(--ds-ring);
+  outline-offset: 2px;
 }
 .atelier button.print-option {
   min-height: 65px;
@@ -8397,6 +8442,10 @@ ha-card {
 .atelier .command-launch {
   min-height: 48px;
   min-width: 48px;
+}
+/* The search launcher shares the toolbar buttons' shape at every width. */
+.atelier .topbar .command-launch {
+  border-radius: 14px;
 }
 .atelier .icon-btn {
   display: inline-grid;
@@ -10370,6 +10419,11 @@ ha-card {
 .atelier :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions) > * {
   max-width: 100%;
 }
+/* Daily shortcuts keep their labels on one line and wrap as whole buttons instead. */
+.atelier .studio-daily-actions > .btn {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
 /* Native form controls and select arrows share geometry across all views. */
 .atelier :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   box-sizing: border-box;
@@ -11996,8 +12050,15 @@ class MealieAtelierCard extends HTMLElement {
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
+    // WebKit loses its scroll anchor when the card subtree is swapped and jumps the page by
+    // the card's height. Nothing above the card changes here, so any drift is undone.
+    const topBefore = card ? this.getBoundingClientRect().top : null;
     if (card) card.replaceWith(template.content.firstElementChild);
     else this.shadowRoot.appendChild(template.content.firstElementChild);
+    if (topBefore !== null) {
+      const drift = this.getBoundingClientRect().top - topBefore;
+      if (Math.abs(drift) > 1) scrollParent(this)?.scrollBy(0, drift);
+    }
     // Every action button must be inert in forms unless explicitly declared a submit.
     // This fixes accidental form submissions from ingredient controls and dialog actions.
     for (const button of this.shadowRoot.querySelectorAll("button:not([type])"))
@@ -13629,9 +13690,9 @@ const dialogMethods = {
       const d = this._design;
       const theme = d.theme === "light" ? "light" : "dark";
       content = `<div class="modal-content"><div class="eyebrow">ATELIER DESIGN SYSTEM</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
-        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="btn ${theme === "dark" ? "primary" : ""}" data-action="design" data-field="theme" data-value="dark" aria-pressed="${theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="btn ${theme === "light" ? "primary" : ""}" data-action="design" data-field="theme" data-value="light" aria-pressed="${theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
         <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map((color) => `<button class="swatch ${d.accent === color ? "chosen" : ""}" style="background:${color}" data-action="design" data-field="accent" data-value="${color}" title="${color}" aria-label="Accent color ${color}" aria-pressed="${d.accent === color ? "true" : "false"}"></button>`).join("")}</div></div>
-        <div class="settings-group"><h3>${esc(this.t("density"))}</h3><div class="range"><button class="btn ${d.density === "compact" ? "primary" : ""}" data-action="design" data-field="density" data-value="compact" aria-pressed="${d.density === "compact" ? "true" : "false"}">${esc(this.t("compact"))}</button><button class="btn ${d.density === "comfortable" ? "primary" : ""}" data-action="design" data-field="density" data-value="comfortable" aria-pressed="${d.density === "comfortable" ? "true" : "false"}">${esc(this.t("comfortable"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("density"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="density" data-value="compact" aria-pressed="${d.density === "compact" ? "true" : "false"}">${esc(this.t("compact"))}</button><button class="range-option" data-action="design" data-field="density" data-value="comfortable" aria-pressed="${d.density === "comfortable" ? "true" : "false"}">${esc(this.t("comfortable"))}</button></div></div>
         <div class="settings-group"><label class="field"><span>${esc(this.t("columns"))}</span><select data-input="columns"><option value="2" ${Number(d.columns) === 2 ? "selected" : ""}>2</option><option value="3" ${Number(d.columns) === 3 ? "selected" : ""}>3</option><option value="4" ${Number(d.columns) === 4 ? "selected" : ""}>4</option></select></label></div>
         <div class="settings-group"><label class="field"><span>${esc(this.t("language"))}</span><select data-input="language" aria-label="${esc(this.t("language"))}"><option value="auto" ${(d.language || "auto") === "auto" ? "selected" : ""}>${esc(this.t("languageAuto"))}</option>${Object.keys(
           LABELS,
@@ -13648,7 +13709,7 @@ const dialogMethods = {
         ]
           .map(
             ([v, label]) =>
-              `<button class="btn ${d.motion === v ? "primary" : ""}" data-action="design" data-field="motion" data-value="${v}" aria-pressed="${d.motion === v ? "true" : "false"}">${label}</button>`,
+              `<button class="range-option" data-action="design" data-field="motion" data-value="${v}" aria-pressed="${d.motion === v ? "true" : "false"}">${label}</button>`,
           )
           .join("")}</div></div>
         <div class="settings-group"><h3>${this.t("uiPhotoCrop")}</h3><div class="range">${[
@@ -13658,7 +13719,7 @@ const dialogMethods = {
         ]
           .map(
             ([v, label]) =>
-              `<button class="btn ${d.photo_ratio === v ? "primary" : ""}" data-action="design" data-field="photo_ratio" data-value="${v}" aria-pressed="${d.photo_ratio === v ? "true" : "false"}">${label}</button>`,
+              `<button class="range-option" data-action="design" data-field="photo_ratio" data-value="${v}" aria-pressed="${d.photo_ratio === v ? "true" : "false"}">${label}</button>`,
           )
           .join("")}</div></div>
         <div class="settings-group"><h3>${this.t("uiCornerStyle")}</h3><div class="range">${[
@@ -13668,11 +13729,11 @@ const dialogMethods = {
         ]
           .map(
             ([v, label]) =>
-              `<button class="btn ${d.radius === v ? "primary" : ""}" data-action="design" data-field="radius" data-value="${v}" aria-pressed="${d.radius === v ? "true" : "false"}">${label}</button>`,
+              `<button class="range-option" data-action="design" data-field="radius" data-value="${v}" aria-pressed="${(d.radius || "large") === v ? "true" : "false"}">${label}</button>`,
           )
           .join("")}</div></div>
         <div class="settings-group"><label class="field"><span><input type="checkbox" data-input="show-images" ${d.show_images !== false ? "checked" : ""}> ${esc(this.t("pictures"))}</span></label></div>
-        <div class="settings-group"><h3>PRINT STUDIO</h3><p class="settings-hint">${this.t("uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan")}</p><button class="btn" data-action="print-settings">${icon("print", 14)} ${this.t("uiOpenPrintSettings")}</button></div>
+        <div class="settings-group"><h3>${esc(this.t("editorPrintStudio"))}</h3><p class="settings-hint">${this.t("uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan")}</p><button class="btn" data-action="print-settings">${icon("print", 14)} ${this.t("uiOpenPrintSettings")}</button></div>
         <div class="settings-group support-group"><h3>${this.t("uiEnjoyingTheAtelier")}</h3><p class="settings-hint">${this.t("uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi")}</p><a class="btn support-link" href="https://ko-fi.com/allesautomatisch" target="_blank" rel="noopener noreferrer">${icon("spark", 14)} ${this.t("uiSayThanksOnKoFi")} <span aria-hidden="true">↗</span></a></div>
         <p class="settings-hint">${esc(this.t("configured"))}</p><div class="form-actions"><button class="btn" data-action="reset-design">${esc(this.t("resetDesign"))}</button></div><div class="form-actions"><button class="btn primary" data-action="close-modal">${esc(this.t("done"))}</button></div></div>`;
     }
@@ -16970,10 +17031,12 @@ const AtelierStudio = (() => {
       all = names.join(" ");
     const tagged = (...terms) => tags.some((tag) => terms.some((term) => tag.includes(term)));
     const has = (pattern) => pattern.test(all);
+    // German compounds put the animal first (Hähnchenbrust, Lachsfilet), so most terms match as a
+    // word prefix; a few lookaheads keep Parmesanrinde, Austernpilze and Muschelnudeln vegetarian.
     const meat =
-      /\b(fleisch|rind|rinder|hackfleisch|schwein|schinken|speck|wurst|salami|huhn|haehnchen|hahnchen|hähnchen|pute|truthahn|ente|lamm|kalb|wild|bacon|beef|pork|chicken|turkey|ham)\b/;
+      /\b(?:rind(?!en?\b)|kalb|schwein|schinken|speck|salami|chorizo|huhn|haehnchen|hahnchen|hähnchen|pute|truthahn|ente|gans|bacon|beef|pork|chicken|turkey|veal|duck|prosciutto|pancetta|guanciale)\w*|\b(?:hack|lamm|lammfleisch|lammkeule|lammfilet|wild|ham|mett|leber)\b|fleisch|wurst|schinken|suppenhuhn/;
     const seafood =
-      /\b(fisch|lachs|thunfisch|forelle|kabeljau|garnele|shrimps|krabbe|muschel|sardine|matjes|herring|salmon|tuna|seafood)\b/;
+      /\b(?:lachs|forelle|kabeljau|garnele|shrimp|krabbe|muschel(?!nudel)|sardine|sardelle|anchovi|matjes|hering|herring|salmon|tuna|prawn|scampi|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster(?!n?pilz)|seafood|fish)\w*|fisch/;
     const animal =
       /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|honey)\b/;
     if (
@@ -17563,6 +17626,15 @@ Object.assign(MealieAtelierCard.prototype, {
       this._render();
     }
     return this._fullCatalog || [];
+  },
+  /** Bring the Kochinspo wizard back into view only when its top has scrolled out above. */
+  _revealDiscover() {
+    requestAnimationFrame(() => {
+      const layout = this.shadowRoot.querySelector(".studio-discover-layout");
+      // 72px clears Home Assistant's sticky header; a wizard still below it is left where it is.
+      if (layout && layout.getBoundingClientRect().top < 72)
+        layout.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
   },
   _studioSuggestions() {
     return AtelierStudio.suggest(
@@ -18236,33 +18308,21 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-discover-back") {
       this._discoverDraft.step = Math.max(0, this._discoverDraft.step - 1);
       this._render();
-      requestAnimationFrame(() =>
-        this.shadowRoot
-          .querySelector(".studio-discover-layout")
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      );
+      this._revealDiscover();
       return;
     }
     if (action === "studio-discover-edit") {
       this._discoverResults = false;
       this._discoverDraft.step = 0;
       this._render();
-      requestAnimationFrame(() =>
-        this.shadowRoot
-          .querySelector(".studio-discover-layout")
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      );
+      this._revealDiscover();
       return;
     }
     if (action === "studio-discover-next") {
       if (this._discoverDraft.step < 3) {
         this._discoverDraft.step++;
         this._render();
-        requestAnimationFrame(() =>
-          this.shadowRoot
-            .querySelector(".studio-discover-layout")
-            ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-        );
+        this._revealDiscover();
         return;
       }
       const d = this._discoverDraft,
@@ -18289,11 +18349,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       this._discoverSelected = this._discoverCandidates[0]?.slug || "";
       this._discoverResults = true;
       this._render();
-      requestAnimationFrame(() =>
-        this.shadowRoot
-          .querySelector(".studio-discover-layout")
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      );
+      this._revealDiscover();
       return;
     }
     if (action === "studio-discover-pick") {

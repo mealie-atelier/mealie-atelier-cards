@@ -293,9 +293,9 @@ export const dialogMethods = {
       const d = this._design;
       const theme = d.theme === "light" ? "light" : "dark";
       content = `<div class="modal-content"><div class="eyebrow">ATELIER DESIGN SYSTEM</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
-        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="btn ${theme === "dark" ? "primary" : ""}" data-action="design" data-field="theme" data-value="dark" aria-pressed="${theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="btn ${theme === "light" ? "primary" : ""}" data-action="design" data-field="theme" data-value="light" aria-pressed="${theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
         <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map((color) => `<button class="swatch ${d.accent === color ? "chosen" : ""}" style="background:${color}" data-action="design" data-field="accent" data-value="${color}" title="${color}" aria-label="Accent color ${color}" aria-pressed="${d.accent === color ? "true" : "false"}"></button>`).join("")}</div></div>
-        <div class="settings-group"><h3>${esc(this.t("density"))}</h3><div class="range"><button class="btn ${d.density === "compact" ? "primary" : ""}" data-action="design" data-field="density" data-value="compact" aria-pressed="${d.density === "compact" ? "true" : "false"}">${esc(this.t("compact"))}</button><button class="btn ${d.density === "comfortable" ? "primary" : ""}" data-action="design" data-field="density" data-value="comfortable" aria-pressed="${d.density === "comfortable" ? "true" : "false"}">${esc(this.t("comfortable"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("density"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="density" data-value="compact" aria-pressed="${d.density === "compact" ? "true" : "false"}">${esc(this.t("compact"))}</button><button class="range-option" data-action="design" data-field="density" data-value="comfortable" aria-pressed="${d.density === "comfortable" ? "true" : "false"}">${esc(this.t("comfortable"))}</button></div></div>
         <div class="settings-group"><label class="field"><span>${esc(this.t("columns"))}</span><select data-input="columns"><option value="2" ${Number(d.columns) === 2 ? "selected" : ""}>2</option><option value="3" ${Number(d.columns) === 3 ? "selected" : ""}>3</option><option value="4" ${Number(d.columns) === 4 ? "selected" : ""}>4</option></select></label></div>
         <div class="settings-group"><label class="field"><span>${esc(this.t("language"))}</span><select data-input="language" aria-label="${esc(this.t("language"))}"><option value="auto" ${(d.language || "auto") === "auto" ? "selected" : ""}>${esc(this.t("languageAuto"))}</option>${Object.keys(
           LABELS,
@@ -312,7 +312,7 @@ export const dialogMethods = {
         ]
           .map(
             ([v, label]) =>
-              `<button class="btn ${d.motion === v ? "primary" : ""}" data-action="design" data-field="motion" data-value="${v}" aria-pressed="${d.motion === v ? "true" : "false"}">${label}</button>`,
+              `<button class="range-option" data-action="design" data-field="motion" data-value="${v}" aria-pressed="${d.motion === v ? "true" : "false"}">${label}</button>`,
           )
           .join("")}</div></div>
         <div class="settings-group"><h3>${this.t("uiPhotoCrop")}</h3><div class="range">${[
@@ -322,7 +322,7 @@ export const dialogMethods = {
         ]
           .map(
             ([v, label]) =>
-              `<button class="btn ${d.photo_ratio === v ? "primary" : ""}" data-action="design" data-field="photo_ratio" data-value="${v}" aria-pressed="${d.photo_ratio === v ? "true" : "false"}">${label}</button>`,
+              `<button class="range-option" data-action="design" data-field="photo_ratio" data-value="${v}" aria-pressed="${d.photo_ratio === v ? "true" : "false"}">${label}</button>`,
           )
           .join("")}</div></div>
         <div class="settings-group"><h3>${this.t("uiCornerStyle")}</h3><div class="range">${[
@@ -332,11 +332,11 @@ export const dialogMethods = {
         ]
           .map(
             ([v, label]) =>
-              `<button class="btn ${d.radius === v ? "primary" : ""}" data-action="design" data-field="radius" data-value="${v}" aria-pressed="${d.radius === v ? "true" : "false"}">${label}</button>`,
+              `<button class="range-option" data-action="design" data-field="radius" data-value="${v}" aria-pressed="${(d.radius || "large") === v ? "true" : "false"}">${label}</button>`,
           )
           .join("")}</div></div>
         <div class="settings-group"><label class="field"><span><input type="checkbox" data-input="show-images" ${d.show_images !== false ? "checked" : ""}> ${esc(this.t("pictures"))}</span></label></div>
-        <div class="settings-group"><h3>PRINT STUDIO</h3><p class="settings-hint">${this.t("uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan")}</p><button class="btn" data-action="print-settings">${icon("print", 14)} ${this.t("uiOpenPrintSettings")}</button></div>
+        <div class="settings-group"><h3>${esc(this.t("editorPrintStudio"))}</h3><p class="settings-hint">${this.t("uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan")}</p><button class="btn" data-action="print-settings">${icon("print", 14)} ${this.t("uiOpenPrintSettings")}</button></div>
         <div class="settings-group support-group"><h3>${this.t("uiEnjoyingTheAtelier")}</h3><p class="settings-hint">${this.t("uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi")}</p><a class="btn support-link" href="https://ko-fi.com/allesautomatisch" target="_blank" rel="noopener noreferrer">${icon("spark", 14)} ${this.t("uiSayThanksOnKoFi")} <span aria-hidden="true">↗</span></a></div>
         <p class="settings-hint">${esc(this.t("configured"))}</p><div class="form-actions"><button class="btn" data-action="reset-design">${esc(this.t("resetDesign"))}</button></div><div class="form-actions"><button class="btn primary" data-action="close-modal">${esc(this.t("done"))}</button></div></div>`;
     }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="description" content="__SEO_DESCRIPTION__" />
-    <meta name="theme-color" content="#f4f1eb" />
+    <meta name="theme-color" content="#111613" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="__SEO_TITLE__" />
     <meta property="og:description" content="__SEO_DESCRIPTION__" />
@@ -79,7 +79,8 @@
       __CTA_SECTION__
       <footer class="demo-footer">
         <span
-          >Made with love by <a href="https://alles-automatisch.de/" rel="me">Daniel</a> ·
+          >Made with love by
+          <a href="https://alles-automatisch.de/" target="_blank" rel="me noopener">Daniel</a> ·
           __UNSPLASH_COPY__</span
         >__FOOTER_LINKS__
       </footer>
@@ -330,9 +331,7 @@
       const card = document.querySelector("mealie-atelier-card");
       card.setConfig({
         mode: "dashboard",
-        theme: "light",
         language: demoLanguage,
-        accent: "#75465d",
         columns: 3,
       });
       card.hass = {

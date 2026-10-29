@@ -55,7 +55,7 @@ test("live demo pages carry the call to action, social tags and JSON-LD", () => 
       for (const link of ctaLinks) {
         assert.ok(section.includes(`href="${link}"`), `${locale} CTA is missing ${link}`);
       }
-      assert.match(section, /<a [^>]*rel="noopener"/);
+      assert.match(section, /<a [^>]*target="_blank" rel="noopener noreferrer"/);
       assert.match(html, /<meta name="description" content="[^"]{40,}"/);
       assert.match(html, /<meta property="og:title" content="[^"]+"/);
       assert.match(html, /<meta property="og:description" content="[^"]+"/);
@@ -103,7 +103,13 @@ test("every page has footer links and no page references Unsplash image hosting"
       if (page === join(out, "index.html")) continue;
       const footer = html.match(/<footer class="demo-footer">[\s\S]*?<\/footer>/)?.[0] ?? "";
       for (const link of [ctaLinks[0], ctaLinks[2], ctaLinks[4], ctaLinks[5]]) {
-        assert.ok(footer.includes(`href="${link}" rel="noopener"`), `${page} footer lacks ${link}`);
+        assert.ok(footer.includes(`href="${link}"`), `${page} footer lacks ${link}`);
+      }
+      // External links always open in a new tab; links inside the demo stay in place.
+      for (const anchor of html.match(/<a [^>]*href="https?:[^"]*"[^>]*>/g) ?? []) {
+        if (anchor.includes(baseUrl)) continue;
+        assert.match(anchor, /target="_blank"/, `${page}: ${anchor}`);
+        assert.match(anchor, /rel="[^"]*noopener/, `${page}: ${anchor}`);
       }
     }
   } finally {

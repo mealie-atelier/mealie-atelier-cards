@@ -9,6 +9,15 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Focused card types open their own view. `type: custom:mealie-atelier-today` (and every other focused type) without a `mode` showed the complete kitchen; the type now sets its start view, and an explicit `mode` still wins.
 - The visual editor preview no longer shows `extra keys not allowed` once a Bridge connection is picked: the status request is sent without `entry_id`.
 - Home Assistant's card picker lists the ten card types with German names and descriptions in a German Home Assistant.
+- Kochinspo recognises meat and fish inside German compound words (Hähnchenbrust, Rinderhackfleisch, Lachsfilet, Garnelen). "Mit Fleisch" and "Mit Fisch" found nothing, and vegetarian or vegan suggestions could include a chicken soup. Austernpilze, Muschelnudeln and Parmesanrinde stay vegetarian.
+- Safari and other WebKit browsers no longer jump the page down by the card's height after a tap that re-renders the card (Kochinspo choices, settings, ticks). The Kochinspo wizard scrolls back up only when its top has left the screen.
+- The corner style in the design settings shows the active option when no radius was set.
+
+### Changed
+
+- Exclusive design settings (theme, density, motion, photo crop, corners) are a typographic choice with an accent underline instead of a row of filled buttons; the print section is titled "Druckstudio" / "Print studio".
+- The search launcher in the toolbar has the same shape as the refresh and settings buttons, the active tab on phones has a straight accent line, and the daily shortcuts keep their labels on one line.
+- Demo: dark theme with the green accent by default, the page chrome uses the same palette, the language switch is a typographic register, recipe pages show "Vorbereitung" and "Kochen" in German and leave out zero times, and every external link opens in a new tab.
 
 ## [0.10.0] - 2026-10-29
 

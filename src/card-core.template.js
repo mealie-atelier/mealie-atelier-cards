@@ -98,6 +98,15 @@ const imageOk = (v) =>
     ? v
     : "";
 const asArray = (v) => (Array.isArray(v) ? v : []);
+/** Nearest scrolling ancestor across shadow roots; the document scroller when none is set. */
+function scrollParent(node) {
+  for (let el = node.parentNode || node.host; el; el = el.parentNode || el.host) {
+    if (!(el instanceof Element)) continue;
+    const { overflowY } = getComputedStyle(el);
+    if (/(auto|scroll)/.test(overflowY) && el.scrollHeight > el.clientHeight) return el;
+  }
+  return document.scrollingElement;
+}
 const dateYmd = (d) =>
   [
     d.getFullYear(),
@@ -866,8 +875,15 @@ class MealieAtelierCard extends HTMLElement {
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
+    // WebKit loses its scroll anchor when the card subtree is swapped and jumps the page by
+    // the card's height. Nothing above the card changes here, so any drift is undone.
+    const topBefore = card ? this.getBoundingClientRect().top : null;
     if (card) card.replaceWith(template.content.firstElementChild);
     else this.shadowRoot.appendChild(template.content.firstElementChild);
+    if (topBefore !== null) {
+      const drift = this.getBoundingClientRect().top - topBefore;
+      if (Math.abs(drift) > 1) scrollParent(this)?.scrollBy(0, drift);
+    }
     // Every action button must be inert in forms unless explicitly declared a submit.
     // This fixes accidental form submissions from ingredient controls and dialog actions.
     for (const button of this.shadowRoot.querySelectorAll("button:not([type])"))

@@ -1,12 +1,15 @@
 :root {
-  color-scheme: light;
-  --demo-paper: #f4f1eb;
-  --demo-panel: #fffdfa;
-  --demo-ink: #29252a;
-  --demo-muted: #665e65;
-  --demo-brand: #75465d;
-  --demo-line: rgba(57, 45, 54, 0.15);
-  --demo-saffron: #a8792a;
+  color-scheme: dark;
+  /* Same palette as the card's default dark theme. */
+  --demo-paper: #111613;
+  --demo-panel: #1b241e;
+  --demo-raised: #263027;
+  --demo-ink: #f3f0e8;
+  --demo-muted: #a5aca3;
+  --demo-brand: #9dcbb2;
+  --demo-brand-ink: #10231a;
+  --demo-line: rgba(230, 237, 220, 0.12);
+  --demo-saffron: #d9b26a;
   font-family: Inter, "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif;
   color: var(--demo-ink);
   background: var(--demo-paper);
@@ -76,7 +79,7 @@ mealie-atelier-card {
   border: 1px solid color-mix(in srgb, var(--demo-brand) 34%, var(--demo-line));
   border-radius: 13px;
   color: var(--demo-brand);
-  background: color-mix(in srgb, var(--demo-brand) 7%, white);
+  background: color-mix(in srgb, var(--demo-brand) 10%, var(--demo-panel));
 }
 
 .demo-brand-mark svg {
@@ -86,30 +89,33 @@ mealie-atelier-card {
 
 .demo-language {
   display: flex;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid var(--demo-line);
-  border-radius: 999px;
+  align-items: center;
+  gap: 2px;
 }
 
 .demo-language a {
   min-width: 42px;
-  min-height: 35px;
+  min-height: 44px;
   display: inline-grid;
   place-items: center;
-  border-radius: 999px;
   color: var(--demo-muted);
   font-size: 12px;
   font-weight: 750;
   text-decoration: none;
   transition:
     color var(--ds-motion-fast, 140ms) var(--ds-motion-ease, ease),
-    background-color var(--ds-motion-fast, 140ms) var(--ds-motion-ease, ease);
+    text-decoration-color var(--ds-motion-fast, 140ms) var(--ds-motion-ease, ease);
+  text-decoration: underline 2px transparent;
+  text-underline-offset: 6px;
+}
+
+.demo-language a:hover {
+  color: var(--demo-ink);
 }
 
 .demo-language a[aria-current="page"] {
-  color: white;
-  background: var(--demo-brand);
+  color: var(--demo-ink);
+  text-decoration-color: var(--demo-brand);
 }
 
 .demo-hero {
@@ -213,7 +219,7 @@ mealie-atelier-card {
   overflow: hidden;
   border: 1px solid var(--demo-line);
   border-radius: 18px;
-  background: #fff;
+  background: var(--demo-raised);
   transition:
     border-color var(--ds-motion-base, 220ms) var(--ds-motion-ease, ease),
     box-shadow var(--ds-motion-base, 220ms) var(--ds-motion-ease, ease),
@@ -392,16 +398,16 @@ mealie-atelier-card {
 }
 
 .demo-button:hover {
-  background: rgba(117, 70, 93, 0.08);
+  background: color-mix(in srgb, var(--demo-brand) 10%, transparent);
 }
 
 .demo-button-primary {
   background: var(--demo-brand);
-  color: #fffdfa;
+  color: var(--demo-brand-ink);
 }
 
 .demo-button-primary:hover {
-  background: #5f384c;
+  background: color-mix(in srgb, var(--demo-brand) 84%, white);
 }
 
 .demo-footer-links {
@@ -497,18 +503,19 @@ mealie-atelier-card {
 .seo-back-link {
   display: inline-flex;
   align-items: center;
-  min-height: 42px;
-  padding: 0 16px;
-  border: 1px solid var(--demo-line);
-  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--demo-brand) 46%, var(--demo-line));
+  border-radius: 12px;
   color: var(--demo-brand);
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .seo-back-link:hover {
-  background: color-mix(in srgb, var(--demo-brand) 7%, white);
+  background: color-mix(in srgb, var(--demo-brand) 10%, transparent);
 }
 
 @media (max-width: 760px) {

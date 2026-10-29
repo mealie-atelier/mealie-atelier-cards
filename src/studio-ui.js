@@ -158,6 +158,15 @@ Object.assign(MealieAtelierCard.prototype, {
     }
     return this._fullCatalog || [];
   },
+  /** Bring the Kochinspo wizard back into view only when its top has scrolled out above. */
+  _revealDiscover() {
+    requestAnimationFrame(() => {
+      const layout = this.shadowRoot.querySelector(".studio-discover-layout");
+      // 72px clears Home Assistant's sticky header; a wizard still below it is left where it is.
+      if (layout && layout.getBoundingClientRect().top < 72)
+        layout.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  },
   _studioSuggestions() {
     return AtelierStudio.suggest(
       this._fullCatalog || asArray(this._data.recipes?.items),
@@ -830,33 +839,21 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-discover-back") {
       this._discoverDraft.step = Math.max(0, this._discoverDraft.step - 1);
       this._render();
-      requestAnimationFrame(() =>
-        this.shadowRoot
-          .querySelector(".studio-discover-layout")
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      );
+      this._revealDiscover();
       return;
     }
     if (action === "studio-discover-edit") {
       this._discoverResults = false;
       this._discoverDraft.step = 0;
       this._render();
-      requestAnimationFrame(() =>
-        this.shadowRoot
-          .querySelector(".studio-discover-layout")
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      );
+      this._revealDiscover();
       return;
     }
     if (action === "studio-discover-next") {
       if (this._discoverDraft.step < 3) {
         this._discoverDraft.step++;
         this._render();
-        requestAnimationFrame(() =>
-          this.shadowRoot
-            .querySelector(".studio-discover-layout")
-            ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-        );
+        this._revealDiscover();
         return;
       }
       const d = this._discoverDraft,
@@ -883,11 +880,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       this._discoverSelected = this._discoverCandidates[0]?.slug || "";
       this._discoverResults = true;
       this._render();
-      requestAnimationFrame(() =>
-        this.shadowRoot
-          .querySelector(".studio-discover-layout")
-          ?.scrollIntoView({ block: "start", behavior: "smooth" }),
-      );
+      this._revealDiscover();
       return;
     }
     if (action === "studio-discover-pick") {
