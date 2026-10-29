@@ -114,7 +114,11 @@ test("recipe tiles clamp the placeholder title and keep the meta row clear of th
     /\.tile-image \.placeholder \{[^}]*align-items: center;[^}]*position: absolute;[^}]*inset: 0/,
   );
   const refine = read("../src/design-system/control-refinement.css");
-  assert.match(refine, /\.atelier \.tile-meta \{[^}]*padding-right: 40px/);
+  assert.match(refine, /\.atelier \.tile-meta \{[^}]*flex-wrap: nowrap;[^}]*padding-right: 40px/);
+  assert.match(
+    read("../src/design-system/editorial.css"),
+    /\.tile-image \.placeholder \{[^}]*font-size: clamp\(14px, 4cqw, 18px\)/,
+  );
   assert.match(refine, /\.tile-body h3 \{[^}]*-webkit-line-clamp: 3/);
 });
 
@@ -157,6 +161,13 @@ test("the day strip fades at the end edge and shows the swipe hint up to 1080px"
     /max-width: 1080px\) \{\s*\.atelier \.week-grid \{[^}]*mask-image: linear-gradient/,
   );
   assert.match(refine, /max-width: 1080px\)[\s\S]*\.week-swipe-hint \{\s*display: flex/);
+});
+
+test("the week strip hint says scroll, not swipe, so it fits mouse users", () => {
+  for (const lang of ["de", "en"]) {
+    const text = JSON.parse(read(`../src/i18n/${lang}.json`)).uiSwipeToBrowseAllSevenDays;
+    assert.doesNotMatch(text, /wisch|swipe/i);
+  }
 });
 
 test("recipe tiles render the title placeholder only when there is no photo", () => {

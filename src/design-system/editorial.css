@@ -309,7 +309,7 @@
   inset: 0;
   z-index: 1;
   font-family: var(--at-serif);
-  font-size: clamp(20px, 2vw, 30px);
+  font-size: clamp(14px, 4cqw, 18px);
   color: #f0e9d2;
   filter: none;
   font-style: italic;

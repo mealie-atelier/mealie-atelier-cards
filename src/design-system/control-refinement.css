@@ -165,7 +165,7 @@
 }
 /* Tile meta keeps clear of the round open button, even for long duration labels. */
 .atelier .tile-meta {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding-right: 40px;
 }
 /* Narrow tiles show three title lines so ordinary recipe names stay readable. */
@@ -252,4 +252,61 @@
     font-size: 21px;
     line-height: 1;
   }
+}
+
+/* Timer cards need room for the dial and button, so side-by-side cards stay wide enough for names. */
+.atelier .cook-timers {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+.atelier .cook-timer-copy strong {
+  overflow-wrap: break-word;
+  hyphens: auto;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Long words and URLs in a cooking step wrap inside the stage instead of overflowing. */
+.atelier .cook-content,
+.atelier .cook-stage {
+  min-width: 0;
+  max-width: 100%;
+}
+.atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* Step navigation stays at the bottom of the dialog at every size, whatever the step length. */
+.atelier .modal:has(.cook-layout) .cook-controls {
+  display: contents;
+}
+.atelier .modal:has(.cook-layout) .cook-actions {
+  order: 3;
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  padding: 8px 0 max(10px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent, var(--at-surface) 24%);
+}
+.atelier .modal:has(.cook-layout) .cook-utility {
+  order: 4;
+}
+.atelier .modal:has(.cook-layout) .cook-note {
+  order: 5;
+}
+.atelier .modal:has(.cook-layout) .cook-footnote {
+  order: 6;
+}
+
+/* The close button follows the scroll instead of leaving with the hero. */
+.atelier .modal > .modal-close {
+  position: sticky;
+  top: 0;
+  right: auto;
+  margin: 20px 20px -68px auto;
+  display: grid;
 }
