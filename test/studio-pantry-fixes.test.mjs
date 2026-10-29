@@ -90,5 +90,31 @@ test("the cookbook print preview offers a close button and a viewport meta", asy
   card._bookSelected = new Set(["a"]);
   await card._studioPrintBook({ title: "T", subtitle: "S", photos: false });
   assert.match(written, /name="viewport"/);
+  assert.match(written, /@media screen and \(max-width:840px\)\{\.page,\.chapter\{width:auto/);
   assert.match(written, /window\.close\(\)">Close</);
+});
+
+test("deleting the row under edit clears the edit target and typed values survive a re-render", async () => {
+  const card = pantryCard([{ id: "p1", name: "Rice", amount: 500, unit: "g" }], {});
+  card._render = () => {};
+  card._atelierDialog = async () => true;
+  card._pantryEdit = "p1";
+  const form = {
+    dataset: { form: "studio-pantry" },
+    elements: {
+      name: { value: "Basmati" },
+      amount: { value: "750" },
+      unit: { value: "g" },
+      expires: { value: "" },
+      staple: { checked: false },
+    },
+  };
+  const field = { dataset: {}, hasAttribute: () => false, closest: () => form };
+  card._handleInput({ target: field });
+  assert.match(card._studioPantry(), /name="name"[^>]* value="Basmati"/);
+  card._studioWrite = async () => true;
+  const del = { dataset: { action: "studio-pantry-delete", id: "p1" }, closest: () => del };
+  await card._handleClick({ target: del, preventDefault() {}, stopPropagation() {} });
+  assert.equal(card._pantryEdit, null);
+  assert.equal(card._pantryDraft, null);
 });

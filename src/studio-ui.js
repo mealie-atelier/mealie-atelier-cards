@@ -501,7 +501,12 @@ Object.assign(MealieAtelierCard.prototype, {
   _studioPantry() {
     const p = this._studio.pantry || [],
       needs = this._grocery || [],
-      editing = p.find((x) => x.id === this._pantryEdit),
+      stored = p.find((x) => x.id === this._pantryEdit),
+      // Values typed during an edit survive a re-render (a poll, a language change).
+      editing =
+        stored && this._pantryDraft?.id === stored.id
+          ? { ...stored, ...this._pantryDraft }
+          : stored,
       field = (value) => (value == null ? "" : ` value="${esc(value)}"`);
     return this._studioShell(
       this.t("studioPantryTitle"),
@@ -749,7 +754,7 @@ Object.assign(MealieAtelierCard.prototype, {
       )
       .join("");
     const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
-      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
+      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media screen and (max-width:840px){.page,.chapter{width:auto;min-height:0;margin:12px;padding:24px 18px}.cover{min-height:70vh}.cover h1{font-size:40px;max-width:none;overflow-wrap:anywhere}.toc h2,.chapter h2{font-size:28px;margin:12px 0 20px}.cols{grid-template-columns:1fr;gap:18px}.toolbar button{padding:10px 16px}}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
       </style></head><body><nav class="toolbar"><button type="button" onclick="window.print()">${esc(this.t("printSavePdf"))}</button> <button type="button" onclick="window.close()">${esc(this.t("close"))}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
     popup.document.open();
     popup.document.write(html);
@@ -1036,14 +1041,24 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           confirmLabel: this.t("studioRemove"),
           focusCancel: true,
         })
-      )
-        await this._studioWrite("pantry_delete", { id: el.dataset.id });
+      ) {
+        const removed = el.dataset.id;
+        if (await this._studioWrite("pantry_delete", { id: removed })) {
+          // Deleting the row under edit must not leave a stale edit target that a later submit would reuse.
+          if (this._pantryEdit === removed) {
+            this._pantryEdit = null;
+            this._pantryDraft = null;
+            this._render();
+          }
+        }
+      }
       return;
     }
     if (action === "studio-pantry-edit") {
       const v = this._studio.pantry.find((x) => x.id === el.dataset.id);
       if (!v) return;
       this._pantryEdit = v.id;
+      this._pantryDraft = null;
       this._render();
       const form = this.shadowRoot.querySelector('[data-form="studio-pantry"]');
       if (form) this._revealPantryForm(form);
@@ -1051,6 +1066,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     }
     if (action === "studio-pantry-edit-cancel") {
       this._pantryEdit = null;
+      this._pantryDraft = null;
       this._render();
       return;
     }
@@ -1409,6 +1425,7 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
         staple: values.staple === "on",
       });
       if (!ok) this._pantryEdit = editId;
+      else this._pantryDraft = null;
     }
     if (type === "studio-member")
       ok = await this._studioWrite("family_member", {
@@ -1468,6 +1485,18 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
 };
 const _atOriginalInput = MealieAtelierCard.prototype._handleInput;
 MealieAtelierCard.prototype._handleInput = function (event) {
+  const pantryForm = this._pantryEdit && event.target?.closest?.('[data-form="studio-pantry"]');
+  if (pantryForm?.elements) {
+    const field = (name) => pantryForm.elements[name];
+    this._pantryDraft = {
+      id: this._pantryEdit,
+      name: field("name")?.value ?? "",
+      amount: field("amount")?.value ?? "",
+      unit: field("unit")?.value,
+      expires: field("expires")?.value ?? "",
+      staple: !!field("staple")?.checked,
+    };
+  }
   if (event.target?.hasAttribute("data-book")) {
     if (!this._bookSelected) this._bookSelected = new Set();
     if (event.target.checked) this._bookSelected.add(event.target.dataset.book);
