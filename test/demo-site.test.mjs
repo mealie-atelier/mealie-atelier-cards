@@ -658,3 +658,90 @@ test("layout regressions: breadcrumb offset, story steps, footer order and note,
   assert.match(js, /classList\.add\("settling"\)/);
   assert.match(css, /\.ba\.settling\s*\{[^}]*transition:\s*--pos/);
 });
+
+test("light scheme and facts strip: no highlighter smear on labels, first cell on the content edge", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  assert.doesNotMatch(css, /\.fact > span \{[^}]*background/, "a fact label carries no tint");
+  assert.match(css, /\.fact:first-child \{[^}]*padding-left: 0/);
+  assert.match(css, /\.fact:nth-child\(odd\) \{\s*padding-left: 0/);
+});
+
+test("hero: one readable browser, a phone, no tablet, eyebrow breaks only between its phrases", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const hero = html.match(/<section class="hero"[\s\S]*?<\/section>/)[0];
+    assert.doesNotMatch(hero, /class="tablet"/, `${locale} hero keeps no tiny tablet`);
+    assert.equal((hero.match(/class="phone"/g) ?? []).length, 1);
+    assert.equal((hero.match(/class="browser"/g) ?? []).length, 1);
+    assert.doesNotMatch(hero, /class="browser" data-speed/, "the browser does not drift");
+    assert.equal((hero.match(/<span class="nw">/g) ?? []).length, 2, "eyebrow has two phrases");
+  }
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  assert.match(css, /\.nw \{\s*white-space: nowrap/);
+  assert.match(css, /\.stack \.browser \{[^}]*width: 92%/);
+  const js = read(join(builds.local, "assets/site.js"));
+  assert.match(js, /Math\.max\(-36, Math\.min\(36, raw\)\)/, "parallax is clamped");
+  assert.match(js, /box\.top - current/, "parallax measures without its own offset");
+});
+
+test("compare slider rests between two cards and the scroll story has no empty runway", () => {
+  const js = read(join(builds.local, "assets/site.js"));
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  assert.match(js, /phone\.matches \? 0 : 44/);
+  assert.match(css, /\.ba \{\s*--pos: 44%/);
+  for (const locale of ["de", "en"]) {
+    assert.match(landing(builds.local, locale), /<input type="range" min="0" max="100" value="44"/);
+  }
+  const step = css.match(/\.step \{[^}]*\}/)[0];
+  assert.match(step, /min-height: 56vh/);
+  assert.match(step, /padding-block: 4vh/);
+});
+
+test("recipe hero: the title block is as tall as the photo, the facts sit on its bottom edge", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  assert.match(css, /\.recipe-hero \.recipe-head \{\s*align-self: stretch;/);
+  assert.match(css, /\.recipe-hero \.recipe-metrics \{\s*align-self: end;/);
+});
+
+test("English route buttons stay short and one note says the guides are German", () => {
+  const en = landing(builds.local, "en");
+  assert.doesNotMatch(en, /Guide \(German\)/);
+  assert.equal((en.match(/Open the guide/g) ?? []).length, 2);
+  assert.equal((en.match(/class="guide-note/g) ?? []).length, 1);
+  assert.doesNotMatch(landing(builds.local, "de"), /guide-note/);
+});
+
+test("pantry quantities keep one line and the cooking dialog closes with a single focus ring", () => {
+  const css = readFileSync(new URL("../src/design-system/corners.css", import.meta.url), "utf8");
+  assert.match(css, /\.studio-grocery-line > strong \{[^}]*white-space: nowrap/);
+  assert.match(css, /\.icon-btn\.modal-close:focus-visible \{[^}]*outline-offset: 0/);
+  assert.match(css, /\.icon-btn\.modal-close:focus-visible \{[^}]*border-color: transparent/);
+  assert.match(css, /max-height: 800px\)[\s\S]*\.cook-content/);
+  const views = readFileSync(new URL("../src/components/views.js", import.meta.url), "utf8");
+  assert.match(
+    views,
+    /recipeImage\(meal\.recipe \|\| \{\}, "", true\)/,
+    "today photo loads eagerly",
+  );
+});
+
+test("sharp photos: large masters ship 1600w and 2400w srcset entries and every listed file exists", () => {
+  const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));
+  const large = Object.entries(manifest.photos).filter(([, entry]) => entry.width >= 2000);
+  assert.ok(large.length >= 5, "at least five photos have a master of 2000 px or more");
+  for (const [name, entry] of Object.entries(manifest.photos)) {
+    for (const width of entry.widths) {
+      assert.ok(
+        existsSync(join(builds.local, `showcase/photos/${name}-${width}.webp`)),
+        `${name} ${width}`,
+      );
+    }
+    assert.ok(existsSync(join(builds.local, `photos/${name}.webp`)), name);
+  }
+  const html = landing(builds.local, "de");
+  for (const [name, entry] of large) {
+    assert.ok(entry.widths.includes(1600), `${name} lists a 1600w variant`);
+    assert.ok(html.includes(`${name}-1600.webp 1600w`), `${name} srcset has 1600w`);
+  }
+  assert.match(html, /photos\/buttermilch-pancakes-mit-beeren\.webp 2400w/);
+});

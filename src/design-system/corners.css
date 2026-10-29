@@ -55,3 +55,38 @@
     border-radius: var(--at-r-panel);
   }
 }
+
+/* Quantities in the pantry shopping assistant stay on one line; the item name wraps instead. */
+.atelier .studio-grocery-line > strong {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* The close button takes one ring that hugs its border, not a border plus a detached outline. */
+.atelier .icon-btn.modal-close:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+/* Tablet landscape: the cooking step column fits with its timer panel, so the panel is not cut. */
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 900px) {
+  .atelier .modal:has(.cook-layout) .cook-content {
+    gap: 6px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .atelier .modal:has(.cook-layout) .cook-stage {
+    gap: 6px;
+  }
+}
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 800px) {
+  .atelier .modal:has(.cook-layout) .cook-content {
+    gap: 3px;
+    padding-top: 6px;
+    padding-bottom: 4px;
+  }
+  .atelier .modal:has(.cook-layout) .cook-stage h2 {
+    font-size: clamp(24px, 3vw, 30px);
+  }
+}

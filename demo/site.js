@@ -88,8 +88,12 @@ function parallax() {
       layer.style.removeProperty("--py");
       continue;
     }
+    // The box already includes the current translation, so take it out before measuring.
+    const current = Number.parseFloat(layer.style.getPropertyValue("--py")) || 0;
     const box = layer.getBoundingClientRect();
-    const offset = (box.top + box.height / 2 - innerHeight / 2) * Number(layer.dataset.speed);
+    const raw =
+      (box.top - current + box.height / 2 - innerHeight / 2) * Number(layer.dataset.speed);
+    const offset = Math.max(-36, Math.min(36, raw));
     layer.style.setProperty("--py", `${offset.toFixed(1)}px`);
   }
 }
@@ -117,7 +121,7 @@ for (const slider of document.querySelectorAll("[data-ba]")) {
   // On phones the two shots are different layouts, so any divider in the middle cuts text in
   // half. There the handle settles on a whole picture (the new interface first) when released.
   const phone = matchMedia("(max-width: 700px)");
-  const rest = () => (phone.matches ? 0 : 50);
+  const rest = () => (phone.matches ? 0 : 44);
   let swept = false;
   const set = (value) => {
     const position = Math.max(0, Math.min(100, Math.round(value)));

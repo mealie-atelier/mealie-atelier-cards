@@ -146,9 +146,13 @@ function stableImageSrc(recipe) {
   imageSrcCache.set(key, { src, at: now });
   return src;
 }
-function recipeImage(recipe, cls = "") {
+// Photos of the few meals on the Today view and the hero load eagerly, so no grey box shows while
+// scrolling to them; long lists stay lazy.
+function recipeImage(recipe, cls = "", eager = false) {
   const src = stableImageSrc(recipe);
-  return src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="">` : "";
+  return src
+    ? `<img class="${cls}" src="${esc(src)}" loading="${eager ? "eager" : "lazy"}" alt="">`
+    : "";
 }
 function mealName(entry) {
   return entry?.recipe?.name || entry?.title || entry?.text || "";

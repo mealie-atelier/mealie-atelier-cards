@@ -107,7 +107,7 @@ function install(ctx) {
         "<b>Add the card.</b> The visual editor finds the Bridge by itself.",
       ),
     ],
-    ext(links.setup, `${t("Zur Anleitung", "Guide (German)")}${icon("arrow")}`, "btn btn-primary"),
+    ext(links.setup, `${t("Zur Anleitung", "Open the guide")}${icon("arrow")}`, "btn btn-primary"),
     ext(
       links.bridge,
       `${icon("github")}${t("Bridge auf GitHub", "Bridge on GitHub")}`,
@@ -133,7 +133,7 @@ function install(ctx) {
     ],
     ext(
       links.setupWeb,
-      `${t("Zur Anleitung", "Guide (German)")}${icon("arrow")}`,
+      `${t("Zur Anleitung", "Open the guide")}${icon("arrow")}`,
       "btn btn-primary",
     ),
     ext(
@@ -142,7 +142,7 @@ function install(ctx) {
       "btn btn-ghost",
     ),
     " d1",
-  )}</div></div></section>`;
+  )}</div>${t("", '<p class="guide-note rv">Both guides are written in German for now. The setup steps above work the same either way.</p>')}</div></section>`;
 }
 
 function closing(ctx) {

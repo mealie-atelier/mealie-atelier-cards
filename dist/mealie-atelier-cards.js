@@ -11258,6 +11258,41 @@ ha-card {
     border-radius: var(--at-r-panel);
   }
 }
+
+/* Quantities in the pantry shopping assistant stay on one line; the item name wraps instead. */
+.atelier .studio-grocery-line > strong {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* The close button takes one ring that hugs its border, not a border plus a detached outline. */
+.atelier .icon-btn.modal-close:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 0;
+  border-color: transparent;
+}
+
+/* Tablet landscape: the cooking step column fits with its timer panel, so the panel is not cut. */
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 900px) {
+  .atelier .modal:has(.cook-layout) .cook-content {
+    gap: 6px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .atelier .modal:has(.cook-layout) .cook-stage {
+    gap: 6px;
+  }
+}
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 800px) {
+  .atelier .modal:has(.cook-layout) .cook-content {
+    gap: 3px;
+    padding-top: 6px;
+    padding-bottom: 4px;
+  }
+  .atelier .modal:has(.cook-layout) .cook-stage h2 {
+    font-size: clamp(24px, 3vw, 30px);
+  }
+}
 </style>`;
 // Every fetch signs image URLs anew (a 2 h signature). Reusing the first one per recipe photo keeps
 // re-renders on the browser cache instead of reloading every photo; a new photo changes `image`.
@@ -11275,9 +11310,13 @@ function stableImageSrc(recipe) {
   imageSrcCache.set(key, { src, at: now });
   return src;
 }
-function recipeImage(recipe, cls = "") {
+// Photos of the few meals on the Today view and the hero load eagerly, so no grey box shows while
+// scrolling to them; long lists stay lazy.
+function recipeImage(recipe, cls = "", eager = false) {
   const src = stableImageSrc(recipe);
-  return src ? `<img class="${cls}" src="${esc(src)}" loading="lazy" alt="">` : "";
+  return src
+    ? `<img class="${cls}" src="${esc(src)}" loading="${eager ? "eager" : "lazy"}" alt="">`
+    : "";
 }
 function mealName(entry) {
   return entry?.recipe?.name || entry?.title || entry?.text || "";
@@ -13417,7 +13456,7 @@ const viewMethods = {
       asArray(this._data.mealplan).find((e) => e.date === today);
     const title = entry ? mealName(entry) : this.t("headline");
     const name = entry?.recipe?.name;
-    const img = recipeImage(entry?.recipe || {}, "hero-food");
+    const img = recipeImage(entry?.recipe || {}, "hero-food", true);
     return `<section class="hero">${img}<div class="hero-copy"><div class="eyebrow">${esc(this.t("tonight"))}</div><h2>${esc(title)}</h2><p>${esc(entry ? this.t("featured") : this.t("greetingSub"))}</p>
       <button class="btn primary" data-action="${name ? "open-recipe" : "nav"}" data-value="${name ? esc(entry.recipe.slug) : "mealplan"}">${icon(name ? "book" : "plus", 15)} ${esc(this.t(name ? "viewRecipe" : "planNow"))} ${icon("arrow", 14)}</button></div>
       ${img ? "" : `<div class="hero-art" aria-hidden="true"><div class="plate"></div></div>`}</section>`;
@@ -13505,7 +13544,7 @@ const viewMethods = {
     );
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
-    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}) ? `<div class="meal-photo">${recipeImage(meal.recipe || {})}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this.t(meal.entryType) || meal.entryType)}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
+    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}, "", true) ? `<div class="meal-photo">${recipeImage(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this.t(meal.entryType) || meal.entryType)}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
     <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${esc(this.tp("openItems", open.length))}</h3>
     ${

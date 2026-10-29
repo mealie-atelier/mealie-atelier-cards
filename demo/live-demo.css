@@ -554,38 +554,36 @@ h2 em {
   height: 16px;
   color: var(--mint);
 }
-/* The browser keeps the upper part, the tablet, the timer toast and the phone share a free row
-   below it, so nothing covers the app heading or the sidebar of the desktop shot. */
+/* One large browser the visitor can read, a phone that only touches its bottom-right corner and
+   the timer toast in the free row beside the phone, so nothing covers app text. */
+.nw {
+  white-space: nowrap;
+}
 .stack {
   position: relative;
-  aspect-ratio: 16 / 15.6;
+  aspect-ratio: 1 / 0.8;
 }
 .stack > * {
   position: absolute;
 }
 .stack .browser {
   top: 0;
-  right: 0;
-  width: 94%;
-}
-.stack .tablet {
-  left: -4%;
-  bottom: 0;
-  width: 42%;
+  left: 0;
+  width: 92%;
 }
 .stack .phone {
-  right: -2%;
-  bottom: -4%;
-  width: 22%;
+  right: 0;
+  bottom: 0;
+  width: 20%;
 }
 .toast {
   z-index: 3;
-  left: 39.5%;
-  bottom: 1%;
+  left: 3%;
+  bottom: 4%;
   display: flex;
   gap: 10px;
   align-items: center;
-  padding: 10px 14px 10px 10px;
+  padding: 10px 16px 10px 10px;
   border-radius: 16px;
   background: rgba(23, 32, 26, 0.92);
   border: 1px solid var(--line2);
@@ -612,36 +610,48 @@ h2 em {
   color: var(--mint);
   font-variant-numeric: tabular-nums;
 }
+@media (min-width: 981px) {
+  .hero-grid {
+    grid-template-columns: minmax(0, 4.6fr) minmax(0, 7.4fr);
+  }
+}
+@media (min-width: 1280px) {
+  .stack {
+    margin-right: -40px;
+  }
+}
 @media (max-width: 980px) {
   .hero-grid {
     grid-template-columns: 1fr;
   }
   .stack {
     margin-top: 16px;
+    aspect-ratio: 1 / 0.8;
   }
 }
+/* Phone: no tiny browser, the app on a phone shown whole, with the timer toast beside it. */
 @media (max-width: 640px) {
   .stack {
-    aspect-ratio: 1 / 1.2;
+    aspect-ratio: auto;
+    display: grid;
+    justify-items: center;
+    padding-bottom: 8px;
+  }
+  .stack > * {
+    position: relative;
   }
   .stack .browser {
-    width: 100%;
-  }
-  .stack .tablet {
     display: none;
   }
   .stack .phone {
-    width: 36%;
-    right: 2%;
-    bottom: 0;
+    inset: auto;
+    width: min(64%, 250px);
   }
   .toast {
-    left: 0;
-    top: auto;
-    bottom: 0;
-    min-width: 0;
-    max-width: 58%;
-    white-space: normal;
+    inset: auto;
+    margin-top: -22px;
+    max-width: 100%;
+    white-space: nowrap;
   }
 }
 
@@ -663,6 +673,7 @@ h2 em {
 }
 .fact:first-child {
   border-left: 0;
+  padding-left: 0;
 }
 .fact b {
   font: 500 clamp(40px, 4.2vw, 58px) / 1 var(--serif);
@@ -692,6 +703,9 @@ h2 em {
   .fact:nth-child(even) {
     border-left: 1px solid var(--line);
   }
+  .fact:nth-child(odd) {
+    padding-left: 0;
+  }
   /* The fifth fact closes the strip as a full-width row: price next to its promise. */
   .fact:last-child {
     grid-column: 1 / -1;
@@ -699,7 +713,6 @@ h2 em {
     align-items: center;
     gap: 18px;
     padding-block: 22px;
-    background: linear-gradient(90deg, rgba(157, 203, 178, 0.1), transparent 70%);
   }
   .fact:last-child b {
     color: var(--mint2);
@@ -833,7 +846,7 @@ h2 em {
   initial-value: 50%;
 }
 .ba {
-  --pos: 50%;
+  --pos: 44%;
   position: relative;
   border-radius: var(--r-lg);
   overflow: hidden;
@@ -1121,11 +1134,11 @@ h2 em {
   display: grid;
 }
 .step {
-  min-height: 70vh;
+  min-height: 56vh;
   display: grid;
   align-content: center;
   gap: 18px;
-  padding-block: 6vh;
+  padding-block: 4vh;
   opacity: 0.55;
   transition: opacity 0.5s var(--ease);
 }
@@ -2291,6 +2304,12 @@ details[open] .chev {
 .route .btn-row {
   margin-top: 6px;
 }
+.guide-note {
+  margin-top: 18px;
+  text-align: center;
+  color: var(--faint);
+  font-size: 14px;
+}
 @media (max-width: 860px) {
   .routes {
     grid-template-columns: 1fr;
@@ -2714,6 +2733,16 @@ details[open] .chev {
   .recipe-figure {
     width: 100%;
   }
+  /* The title block is as tall as the photo, so the facts end on the photo's bottom edge
+     instead of leaving an empty band beside it. */
+  .recipe-hero .recipe-head {
+    align-self: stretch;
+    grid-template-rows: auto auto auto auto 1fr;
+  }
+  .recipe-hero .recipe-metrics {
+    align-self: end;
+    margin-bottom: 34px;
+  }
 }
 .photo-caption {
   margin: 10px 2px 0;
@@ -3031,9 +3060,6 @@ details[open] .chev {
   }
   .solo {
     background: linear-gradient(180deg, var(--bg), var(--bg2) 30%, var(--bg));
-  }
-  .fact > span {
-    background: linear-gradient(90deg, rgba(45, 118, 86, 0.1), transparent 70%);
   }
   .stage-inner::before {
     background: radial-gradient(closest-side, rgba(95, 156, 128, 0.2), transparent);

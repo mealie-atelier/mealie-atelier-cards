@@ -245,9 +245,9 @@
   },
   "photos": {
     "buttermilch-pancakes-mit-beeren": {
-      "width": 1200,
-      "height": 1200,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 2400,
+      "widths": [360, 800, 1600]
     },
     "gnocchi-alla-sorrentina": {
       "width": 1200,
@@ -255,9 +255,9 @@
       "widths": [360, 800]
     },
     "haehnchensalat-mit-parmesan-und-croutons": {
-      "width": 1200,
-      "height": 1500,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 3000,
+      "widths": [360, 800, 1600]
     },
     "kokos-curry-mit-kartoffeln-und-karotten": {
       "width": 1200,
@@ -265,18 +265,18 @@
       "widths": [360, 800]
     },
     "kuerbissuppe-mit-feta-und-kuerbiskernen": {
-      "width": 1200,
-      "height": 1500,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 3000,
+      "widths": [360, 800, 1600]
     },
     "penne-mit-artischocken-oliven-und-feta": {
-      "width": 1200,
-      "height": 1500,
-      "widths": [360, 800]
+      "width": 2162,
+      "height": 2702,
+      "widths": [360, 800, 1600]
     },
     "pfannen-eier-mit-tomaten-und-basilikum": {
-      "width": 1200,
-      "height": 1120,
+      "width": 1402,
+      "height": 1309,
       "widths": [360, 800]
     },
     "pizza-mit-schinken-und-champignons": {
@@ -290,9 +290,9 @@
       "widths": [360, 800]
     },
     "zitronen-focaccia-mit-rosmarin": {
-      "width": 1200,
-      "height": 1500,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 3000,
+      "widths": [360, 800, 1600]
     }
   }
 }
