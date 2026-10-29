@@ -18,7 +18,7 @@ const NATIVE_RESULT_LIMIT = 500;
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",
-  theme: "dark",
+  theme: "auto",
   accent: "#9dcbb2",
   density: "comfortable",
   columns: 3,
@@ -185,12 +185,6 @@ function dayString(locale, day, opts) {
 /** Dedicated print documents. No token/credentials or arbitrary HTML from Mealie is interpolated. */
 /* ATELIER_PRINT_DOCUMENT */
 
-/** Stub card title in the Home Assistant UI language (English fallback). */
-function stubTitle(hass, mode) {
-  const locale = resolveLanguage("auto", hass?.locale?.language || hass?.language, "");
-  return translateLabel(locale, `stubTitle.${mode}`);
-}
-
 class MealieAtelierCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement("mealie-atelier-card-editor");
@@ -198,8 +192,7 @@ class MealieAtelierCard extends HTMLElement {
   static getStubConfig() {
     return {
       mode: "dashboard",
-      title: "Mealie Atelier",
-      theme: "dark",
+      theme: "auto",
       accent: DEFAULTS.accent,
       columns: 3,
     };
@@ -331,11 +324,22 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature H: offline queue reconnect
     this._offlineOnHass(value);
     // END feature H
+    const darkBefore = this._hass?.themes?.darkMode;
     this._hass = value;
     if (this.isConnected && !this._didLoad) {
       this._didLoad = true;
       this._refresh();
-    }
+    } else if (
+      this.isConnected &&
+      this._design.theme === "auto" &&
+      darkBefore !== value?.themes?.darkMode
+    )
+      this._render();
+  }
+  /** Resolves the configured theme ("auto" follows the Home Assistant light or dark mode). */
+  _resolvedTheme(theme) {
+    if (theme === "light" || theme === "dark") return theme;
+    return this._hass?.themes?.darkMode === false ? "light" : "dark";
   }
   connectedCallback() {
     this.shadowRoot.addEventListener("click", this._boundClick);
@@ -771,8 +775,8 @@ class MealieAtelierCard extends HTMLElement {
   }
   _nav() {
     return `<aside class="sidebar">
-      <div class="identity"><div class="logo">${icon("leaf", 22)}</div><div><strong>MEALIE<br>ATELIER</strong><span>KITCHEN STUDIO</span></div></div>
-      <div class="nav-label">MENU</div><nav class="nav" aria-label="${esc(this.t("navKitchenLabel"))}">
+      <div class="identity"><div class="logo">${icon("leaf", 22)}</div><div><strong>MEALIE<br>ATELIER</strong><span>${esc(this.t("navStudioTagline"))}</span></div></div>
+      <div class="nav-label">${esc(this.t("navMenu"))}</div><nav class="nav" aria-label="${esc(this.t("navKitchenLabel"))}">
       ${MODES.filter((mode) =>
         this._providerActive === "home_assistant"
           ? mode === "recipes"
@@ -976,7 +980,7 @@ class MealieAtelierCard extends HTMLElement {
     // Hold the wake lock only while cook mode is open and the user keeps the toggle on.
     this._wakeLock.set(this._modal === "cook" && this._design.keep_awake !== false);
     const d = this._design,
-      theme = d.theme === "light" ? "light" : "dark";
+      theme = this._resolvedTheme(d.theme);
     const configuredAccent = colorOk(d.accent) ? d.accent : DEFAULTS.accent;
     const accent =
       theme === "light" && configuredAccent.toLowerCase() === DEFAULTS.accent
@@ -1428,7 +1432,7 @@ class MealieAtelierCard extends HTMLElement {
       return;
     if (field === "accent" && !colorOk(value)) return;
     if (field === "columns") value = Math.max(2, Math.min(4, Number(value) || 3));
-    if (field === "theme" && !["light", "dark"].includes(value)) return;
+    if (field === "theme" && !["auto", "light", "dark"].includes(value)) return;
     if (field === "language" && value !== "auto" && !Object.hasOwn(LABELS, value)) return;
     if (field === "density" && !["compact", "comfortable"].includes(value)) return;
     if (field === "motion" && !["expressive", "balanced", "off"].includes(value)) return;
@@ -2322,48 +2326,48 @@ MealieAtelierCard.prototype.disconnectedCallback = function () {
 /* END shopping sync routing */
 
 class AtelierTodayCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "today", title: stubTitle(hass, "today") };
+  static getStubConfig() {
+    return { mode: "today" };
   }
 }
 class AtelierRecipeCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "recipes", title: stubTitle(hass, "recipes") };
+  static getStubConfig() {
+    return { mode: "recipes" };
   }
 }
 class AtelierMealplanCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "mealplan", title: stubTitle(hass, "mealplan") };
+  static getStubConfig() {
+    return { mode: "mealplan" };
   }
 }
 class AtelierShoppingCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "shopping", title: stubTitle(hass, "shopping") };
+  static getStubConfig() {
+    return { mode: "shopping" };
   }
 }
 class AtelierDiscoverCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "discover", title: stubTitle(hass, "discover") };
+  static getStubConfig() {
+    return { mode: "discover" };
   }
 }
 class AtelierPantryCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "pantry", title: stubTitle(hass, "pantry") };
+  static getStubConfig() {
+    return { mode: "pantry" };
   }
 }
 class AtelierFamilyCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "family", title: stubTitle(hass, "family") };
+  static getStubConfig() {
+    return { mode: "family" };
   }
 }
 class AtelierCookbookCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "cookbook", title: stubTitle(hass, "cookbook") };
+  static getStubConfig() {
+    return { mode: "cookbook" };
   }
 }
 class AtelierManageCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "manage", title: stubTitle(hass, "manage") };
+  static getStubConfig() {
+    return { mode: "manage" };
   }
 }
 
@@ -2374,90 +2378,93 @@ const CARD_TYPES = [
   [
     "mealie-atelier-card",
     MealieAtelierCard,
-    "Mealie Atelier · Complete Kitchen",
-    "Recipe library, weekly planner, shopping and management in one beautiful kitchen",
+    "Mealie Atelier · Complete kitchen",
+    "Recipes, meal plan, shopping and management in one card",
   ],
   [
     "mealie-atelier-today",
     AtelierTodayCard,
     "Mealie Atelier · Today",
-    "A polished today card: meals, shopping, and next action",
+    "Today's meals and open groceries on one screen",
   ],
   [
     "mealie-atelier-recipes",
     AtelierRecipeCard,
     "Mealie Atelier · Recipes",
-    "Recipe gallery with search, details and cooking mode",
+    "Recipe collection, search, details and cooking mode",
   ],
   [
     "mealie-atelier-mealplan",
     AtelierMealplanCard,
-    "Mealie Atelier · Planner",
-    "Manage meals visually with a seven-day planner",
+    "Mealie Atelier · Meal plan",
+    "Weekly planner with a searchable recipe picker",
   ],
   [
     "mealie-atelier-shopping",
     AtelierShoppingCard,
     "Mealie Atelier · Shopping",
-    "An interactive Mealie shopping list",
+    "Shopping lists with tick, add and offline queue",
   ],
   [
     "mealie-atelier-discover",
     AtelierDiscoverCard,
     "Mealie Atelier · Discover",
-    "Personalized meal suggestions and a week optimization you can preview",
+    "Discover recipes and a proposed seven-day menu",
   ],
   [
     "mealie-atelier-pantry",
     AtelierPantryCard,
     "Mealie Atelier · Pantry",
-    "Pantry stock and smart grocery previews",
+    "Pantry and staples for grocery planning",
   ],
   [
     "mealie-atelier-family",
     AtelierFamilyCard,
     "Mealie Atelier · Family",
-    "Shared cooking sessions and helper tasks",
+    "Shared cooking sessions with helper tasks",
   ],
   [
     "mealie-atelier-cookbook",
     AtelierCookbookCard,
     "Mealie Atelier · Cookbook",
-    "A4 print-ready cookbook studio",
+    "A print-ready A4 cookbook",
   ],
   [
     "mealie-atelier-manage",
     AtelierManageCard,
     "Mealie Atelier · Manage",
-    "Create, import and edit recipe basics",
+    "Create, import and edit recipes with a structured editor",
   ],
 ];
 // German names for Home Assistant's card picker; the picker has no i18n hook of its own.
 const CARD_TYPES_DE = {
   "mealie-atelier-card": [
     "Mealie Atelier · Komplette Küche",
-    "Rezepte, Wochenplan, Einkauf und Verwaltung in einer Küche",
+    "Rezepte, Wochenplan, Einkauf und Verwaltung in einer Karte",
   ],
   "mealie-atelier-today": [
     "Mealie Atelier · Heute",
-    "Was heute auf dem Teller ist und was im Einkauf fehlt",
+    "Heutige Mahlzeiten und offene Einkäufe auf einem Bildschirm",
   ],
   "mealie-atelier-recipes": [
     "Mealie Atelier · Rezepte",
     "Rezeptgalerie mit Suche, Details und Kochmodus",
   ],
-  "mealie-atelier-mealplan": ["Mealie Atelier · Wochenplan", "Mahlzeiten für sieben Tage planen"],
+  "mealie-atelier-mealplan": [
+    "Mealie Atelier · Wochenplan",
+    "Wochenplan mit durchsuchbarer Rezeptauswahl",
+  ],
   "mealie-atelier-shopping": [
     "Mealie Atelier · Einkauf",
-    "Einkaufslisten zum Abhaken, auch offline",
+    "Einkaufslisten zum Abhaken und Ergänzen, auch offline",
   ],
   "mealie-atelier-discover": [
     "Mealie Atelier · Kochinspo",
-    "Kochideen und ein Vorschlag für die Woche",
+    "Rezeptideen und ein vorgeschlagenes Wochenmenü",
   ],
   "mealie-atelier-pantry": [
     "Mealie Atelier · Vorräte",
-    "Vorrat erfassen und den Einkauf vorausplanen",
+    "Vorräte und Basiszutaten für die Einkaufsplanung",
   ],
   "mealie-atelier-family": [
     "Mealie Atelier · Gemeinsam kochen",
@@ -2466,25 +2473,25 @@ const CARD_TYPES_DE = {
   "mealie-atelier-cookbook": ["Mealie Atelier · Kochbuch", "Ein druckfertiges Kochbuch in A4"],
   "mealie-atelier-manage": [
     "Mealie Atelier · Verwalten",
-    "Rezepte anlegen, importieren und bearbeiten",
+    "Rezepte anlegen, importieren und mit einem strukturierten Editor bearbeiten",
   ],
 };
-const pickerGerman = /^de\b/i.test(
-  globalThis.document?.documentElement?.lang || globalThis.navigator?.language || "",
-);
+// Read per access so an in-session language switch is reflected the next time the picker opens.
+const pickerGerman = () =>
+  /^de\b/i.test(globalThis.document?.documentElement?.lang || globalThis.navigator?.language || "");
 customElements.define("mealie-atelier-card-editor", MealieAtelierEditor);
 for (const [tag, ctor, englishName, englishDescription] of CARD_TYPES) {
-  const [name, description] = (pickerGerman && CARD_TYPES_DE[tag]) || [
-    englishName,
-    englishDescription,
-  ];
   if (!customElements.get(tag)) customElements.define(tag, ctor);
   window.customCards = window.customCards || [];
   if (!window.customCards.some((c) => c.type === tag))
     window.customCards.push({
       type: tag,
-      name,
-      description,
+      get name() {
+        return (pickerGerman() && CARD_TYPES_DE[tag]?.[0]) || englishName;
+      },
+      get description() {
+        return (pickerGerman() && CARD_TYPES_DE[tag]?.[1]) || englishDescription;
+      },
       preview: false,
       documentationURL: "https://alles-automatisch.de/lernen/mealie-atelier",
     });

@@ -12,7 +12,7 @@ function buildPrintDocument(
     method: t("instructions"),
     servings: t("servings"),
     time: t("printDocTotalTime"),
-    notes: t("journalNote"),
+    notes: kind === "recipe" ? t("journalNote") : t("printNotes"),
     items: t("items"),
     checked: t("done"),
     print: t("printSavePdf"),
@@ -139,7 +139,7 @@ function buildPrintDocument(
         ? weekStart
         : monday(new Date());
     const lastDate = addDays(mondayDate, 6);
-    const period = `${dayString(locale || "de-DE", mondayDate, { day: "numeric", month: "short" })} — ${dayString(locale || "de-DE", lastDate, { day: "numeric", month: "short", year: "numeric" })}`;
+    const period = `${dayString(locale || "de-DE", mondayDate, { day: "numeric", month: "short" })} – ${dayString(locale || "de-DE", lastDate, { day: "numeric", month: "short", year: "numeric" })}`;
     heading = `<div class="eyebrow">${esc(words.week)} · ${esc(words.created)}</div><h1>${esc(words.page)}</h1><p class="dek">${esc(period)}</p>`;
     const all = asArray(mealplan);
     body = `<section class="week-print">${Array.from({ length: 7 }, (_, i) => {
@@ -163,7 +163,7 @@ function buildPrintDocument(
   .sheet{width:210mm;min-height:297mm;margin:26px auto 40px;background:var(--paper);padding:17mm 17mm 14mm;box-shadow:0 22px 60px #1831222e}
   .sheet.landscape{width:297mm;min-height:210mm;padding:15mm 17mm}
   .masthead{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:30px;color:var(--soft);font-size:9px;font-weight:800;letter-spacing:2px}
-  .masthead .atelier-credit{font-size:8px;font-weight:600;letter-spacing:.35px;text-transform:none;white-space:nowrap;color:var(--soft)}.masthead .atelier-credit a{text-decoration:none}.atelier-credit-heart{color:#b66d67}
+  .masthead .atelier-credit{font-size:8px;font-weight:600;letter-spacing:.35px;text-transform:none;white-space:nowrap;color:var(--soft)}.masthead .atelier-credit a{text-decoration:none;color:inherit;border-bottom:1px solid currentColor}.atelier-credit-heart{color:#b66d67}
   .logo{font-size:12px;color:var(--ink);letter-spacing:1.7px}.logo b{color:#7c9c87}
   .eyebrow{color:#779583;font-weight:800;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:12px}
   h1{font-family:Georgia,"Times New Roman",serif;font-size:38px;font-weight:400;line-height:1.12;letter-spacing:-1.15px;max-width:700px;margin:0 0 12px}
@@ -220,6 +220,6 @@ function buildPrintDocument(
   `;
   return `<!DOCTYPE html><html lang="${esc(locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(pageName || "Mealie Atelier")}</title><style>${css}</style></head>
    <body><nav class="print-toolbar"><button type="button" class="primary" id="print-now">${esc(words.print)}</button><button type="button" id="close-print">${esc(words.close)}</button></nav>
-   <article class="sheet ${landscape ? "landscape" : ""} ${photo ? "has-photo" : ""} ${esc(style)}"><header class="masthead"><span class="logo">MEALIE <b>ATELIER</b></span><span>KITCHEN STUDIO · PRINT EDITION</span>${AtelierUI.attribution({ lead: t("creditMadeWith"), by: t("creditBy") })}</header>
+   <article class="sheet ${landscape ? "landscape" : ""} ${photo ? "has-photo" : ""} ${esc(style)}"><header class="masthead"><span class="logo">MEALIE <b>ATELIER</b></span><span>${esc(t("printEdition"))}</span>${AtelierUI.attribution({ lead: t("creditMadeWith"), by: t("creditBy") })}</header>
    <section class="document-heading">${heading}</section>${body}${kind === "recipe" && instructions.length > 18 ? "" : `<footer class="footer"><span>${esc(words.made)}</span><span>${esc(words.created)}</span></footer>`}</article></body></html>`;
 }

@@ -11,6 +11,10 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 ### Fixed
 
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
+- The card follows the Home Assistant light or dark mode by default (`theme: auto`); in the light theme the default accent swatch in the Design Studio is shown and named plum, matching the colour you see.
+- Card picker: one name per view in the picker, navigation and settings (Discover, Meal plan, Family, Manage), neutral parallel descriptions in English and German, and the picker follows a language switch without a reload. Stub configs no longer write an unused `title`.
+- German UI: sidebar, menu label, Print Studio and Design Studio headings and the print masthead are translated. Week and shopping prints no longer ask "How was it last time?", the print credit link matches the sheet colours, and the week range uses an en dash.
+- The start-view hint now says that only the overview keeps the navigation.
 - Shopping: quantity shown once, open items grouped by label with ticked items at the bottom, one print button per view, tidy toolbar on phones; Today items use a checkbox; footer credit link has a 44px touch target; English copy polished.
 - Shopping: items with a unit keep their amount ("1 kg Mehl"), unlabelled and ticked items get their own headings, a single toolbar button no longer stretches across the row.
 - The week view scrolls to today when the dashboard data arrives or you press the today button, and the plan dialog stays open after removing one of several entries. The German category filter label is plural like the tag label.

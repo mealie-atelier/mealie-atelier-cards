@@ -23,19 +23,18 @@ test("accent colours carry translated names, never raw hex labels", () => {
   assert.match(en, /value="#e5ad92"\s+selected\s*>Apricot</);
 });
 
-test("stub card titles follow the Home Assistant language with an English fallback", () => {
+test("stub configs name only the view, never an unused title", () => {
   const cards = loadCards();
-  const Today = cards.registry.get("mealie-atelier-today");
-  const Plan = cards.registry.get("mealie-atelier-mealplan");
-  assert.equal(Today.getStubConfig({ language: "de" }).title, "Mealie Atelier · Heute");
-  assert.equal(
-    Plan.getStubConfig({ locale: { language: "de" } }).title,
-    "Mealie Atelier · Wochenplan",
-  );
-  assert.equal(Plan.getStubConfig({ language: "en" }).title, "Mealie Atelier · Planner");
-  assert.equal(Plan.getStubConfig({ language: "fr" }).title, "Mealie Atelier · Planner");
-  assert.equal(Plan.getStubConfig().title, "Mealie Atelier · Planner");
-  assert.equal(Plan.getStubConfig().mode, "mealplan");
+  for (const [tag, mode] of [
+    ["mealie-atelier-today", "today"],
+    ["mealie-atelier-mealplan", "mealplan"],
+    ["mealie-atelier-manage", "manage"],
+    ["mealie-atelier-card", "dashboard"],
+  ]) {
+    const stub = cards.registry.get(tag).getStubConfig({ language: "de" });
+    assert.equal(stub.mode, mode);
+    assert.equal("title" in stub, false, tag);
+  }
 });
 
 test("a stored value outside the presets stays selected and labelled", () => {

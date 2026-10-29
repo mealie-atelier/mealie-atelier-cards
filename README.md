@@ -93,23 +93,23 @@ lovelace:
 
 | Card type                        | Purpose                                                  |
 | -------------------------------- | -------------------------------------------------------- |
-| `custom:mealie-atelier-card`     | The complete kitchen with navigation and every view      |
+| `custom:mealie-atelier-card`     | Recipes, meal plan, shopping and management in one card  |
 | `custom:mealie-atelier-today`    | Today's meals and open groceries on one screen           |
 | `custom:mealie-atelier-recipes`  | Recipe collection, search, details and cooking mode      |
 | `custom:mealie-atelier-mealplan` | Weekly planner with a searchable recipe picker           |
 | `custom:mealie-atelier-shopping` | Shopping lists with tick, add and offline queue          |
-| `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor |
 | `custom:mealie-atelier-discover` | Discover recipes and a proposed seven-day menu           |
 | `custom:mealie-atelier-pantry`   | Pantry and staples for grocery planning                  |
 | `custom:mealie-atelier-family`   | Shared cooking sessions with helper tasks                |
 | `custom:mealie-atelier-cookbook` | A print-ready A4 cookbook                                |
+| `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor |
 
 Every option is in the visual editor. The YAML equivalent looks like this:
 
 ```yaml
 type: custom:mealie-atelier-card
 mode: dashboard # or recipes, mealplan, shopping, discover, ...
-theme: dark # light or dark
+theme: auto # auto, light or dark
 language: en # auto, en or de
 accent: "#9dcbb2"
 density: comfortable # or compact
@@ -125,8 +125,8 @@ Every option is available in the visual editor; YAML is only needed if you prefe
 
 | Option                                                                                 | Values                                                                                                        | Default                                   | Purpose                                                                                                               |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `mode`                                                                                 | `dashboard`, `today`, `discover`, `recipes`, `mealplan`, `pantry`, `shopping`, `family`, `cookbook`, `manage` | `dashboard`                               | Start view of the complete kitchen card.                                                                              |
-| `theme`                                                                                | `light`, `dark`                                                                                               | `dark`                                    | Color scheme.                                                                                                         |
+| `mode`                                                                                 | `dashboard`, `today`, `discover`, `recipes`, `mealplan`, `pantry`, `shopping`, `family`, `cookbook`, `manage` | `dashboard`                               | Start view. `dashboard` shows the navigation to every view; any other value shows only that view without navigation.  |
+| `theme`                                                                                | `auto`, `light`, `dark`                                                                                       | `auto`                                    | Color scheme. `auto` follows the Home Assistant light or dark mode.                                                   |
 | `language`                                                                             | `auto`, `en`, `de`                                                                                            | `auto`                                    | `auto` follows the Home Assistant language and falls back to English.                                                 |
 | `accent`                                                                               | `#rrggbb`                                                                                                     | `#9dcbb2`                                 | Accent color.                                                                                                         |
 | `density`                                                                              | `comfortable`, `compact`                                                                                      | `comfortable`                             | Spacing.                                                                                                              |
