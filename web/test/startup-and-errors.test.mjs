@@ -255,3 +255,55 @@ test("a rejected USDA key carries its own error code", async () => {
     globalThis.fetch = original;
   }
 });
+
+test("/healthz is unauthenticated, checks the token server side and caches the result", async () => {
+  const stub = await mealieStub();
+  let hits = 0;
+  stub.server.on("request", () => hits++);
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const url = `http://127.0.0.1:${r.port}/healthz`;
+    const first = await fetch(url);
+    assert.equal(first.status, 200);
+    assert.deepEqual(await first.json(), { ok: true });
+    assert.equal((await fetch(url)).status, 200);
+    assert.equal(hits, 1, "second probe is served from the 60 s cache");
+    assert.equal((await fetch(`http://127.0.0.1:${r.port}/api/health`)).status, 401);
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("/healthz answers 503 without details when Mealie rejects the token", async () => {
+  const stub = await mealieStub({ tokenOk: false });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await fetch(`http://127.0.0.1:${r.port}/healthz`);
+    assert.equal(res.status, 503);
+    assert.deepEqual(await res.json(), { ok: false });
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("healthcheck.mjs exits 0 when healthy and 1 when not, without credentials", async () => {
+  for (const [tokenOk, code] of [
+    [true, 0],
+    [false, 1],
+  ]) {
+    const stub = await mealieStub({ tokenOk });
+    const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+    try {
+      const probe = spawn(process.execPath, [join(ROOT, "healthcheck.mjs")], {
+        env: { PATH: process.env.PATH, PORT: String(r.port) },
+      });
+      const [exit] = await once(probe, "exit");
+      assert.equal(exit, code);
+    } finally {
+      r.child.kill("SIGTERM");
+      stub.server.close();
+    }
+  }
+});

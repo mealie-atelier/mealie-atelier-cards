@@ -14,7 +14,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (`/api/health`, authenticated with your configured credentials), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
+Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (the unauthenticated `/healthz`, which verifies the Mealie token on the server, caches the result for 60 seconds and answers only 200 or 503 without details), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
 
 Optional **read-only** kiosk mode: add `ATELIER_READ_ONLY=true` to `.env` and restart. The server will reject all mutation commands, not just hide buttons.
 
