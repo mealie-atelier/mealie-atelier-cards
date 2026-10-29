@@ -332,3 +332,13 @@ test("the cook content has no bottom padding so the sticky bar stays on the dial
     /padding-bottom:\s*0;/,
   );
 });
+
+test("the display font token reuses the single --at-serif stack", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const tokens = await readFile(
+    new URL("../src/design-system/tokens.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(tokens, /--ds-font-display:\s*var\(--at-serif\);/);
+  assert.doesNotMatch(tokens, /Times New Roman/);
+});

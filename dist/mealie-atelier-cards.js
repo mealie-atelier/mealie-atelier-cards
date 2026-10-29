@@ -6332,7 +6332,7 @@ ha-card {
   --ds-select-clearance: 43px;
   --ds-field-gap: 8px;
   --ds-action-gap: 12px;
-  --ds-font-display: Georgia, "Times New Roman", serif;
+  --ds-font-display: var(--at-serif);
   --ds-font-ui:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --ds-font-xs: 12px;
