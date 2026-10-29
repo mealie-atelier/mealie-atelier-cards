@@ -232,6 +232,11 @@ export class AtelierAlarmClient {
     return result;
   }
 }
+export function formatConflictCount(t, problems) {
+  if (!problems) return "";
+  return problems === 1 ? t("offlineConflictOne") : t("offlineConflictCount", { count: problems });
+}
+
 export function attachOfflineUi(card, offline, alarms) {
   const t = (key, values) => card?.t?.(key, values) ?? key;
   const localizedError = (error) => {
@@ -323,12 +328,7 @@ export function attachOfflineUi(card, offline, alarms) {
   const update = () => {
     const offlineNow = !navigator.onLine,
       problems = offline.conflicts.length;
-    const conflicts =
-      problems === 1
-        ? t("offlineConflictOne")
-        : problems
-          ? t("offlineConflictCount", { count: problems })
-          : "";
+    const conflicts = formatConflictCount(t, problems);
     const syncing = offline.syncing ? t("offlineSyncing") : "";
     const status = t("offlineStatus", {
       connection: offlineNow ? "Offline" : "Online",

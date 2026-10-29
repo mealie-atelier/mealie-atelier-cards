@@ -10550,7 +10550,8 @@ ha-card {
     min-block-size: 44px;
     min-inline-size: 44px;
   }
-  .atelier .studio-choice {
+  .atelier .studio-choice,
+  .atelier .studio-cookbook-choices .studio-choice {
     min-inline-size: 44px;
   }
   .atelier .atelier-credit a {

@@ -206,3 +206,38 @@ test("touch devices get 44px targets for week buttons, choices and the credit li
     /@media \(pointer: coarse\) \{ \.atelier \.toolbar \.btn\.tiny \{ min-block-size: 44px/,
   );
 });
+
+test("the cookbook choice min-width reset does not override the 44px touch target", () => {
+  const css = read("../src/design-system/polish.css").replace(/\s+/g, " ");
+  assert.match(
+    css,
+    /@media \(pointer: coarse\) \{[^@]*\.atelier \.studio-cookbook-choices \.studio-choice \{ min-inline-size: 44px/,
+  );
+});
+
+test("the print document brand line is localized", () => {
+  for (const [language, line] of [
+    ["en", "KITCHEN STUDIO · PRINT EDITION"],
+    ["de", "KÜCHENSTUDIO · DRUCKAUSGABE"],
+  ]) {
+    const written = [];
+    const popup = {
+      document: {
+        write: (html) => written.push(html),
+        open() {},
+        close() {},
+        getElementById: () => null,
+      },
+      focus() {},
+    };
+    const cards = loadCards({ window: { open: () => popup } });
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._data.shopping = { lists: [{ id: "l1", name: "Market" }], items: [] };
+    card._activeList = "l1";
+    card._printKind = "shopping";
+    card._print();
+    const html = written.join("");
+    assert.match(html, new RegExp(`<span>${line}</span>`), language);
+    if (language === "de") assert.doesNotMatch(html, /PRINT EDITION/);
+  }
+});

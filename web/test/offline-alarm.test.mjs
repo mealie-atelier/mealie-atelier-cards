@@ -401,3 +401,15 @@ test("timer limits count only active timers and cap each account at 20", () =>
     await writeFile(join(dir, "alarms.json"), JSON.stringify(data));
     await timer("ada");
   }));
+
+test("conflict counts use the singular form for exactly one conflict", async () => {
+  globalThis.self ??= globalThis;
+  const channel = globalThis.BroadcastChannel;
+  globalThis.BroadcastChannel = undefined;
+  const { formatConflictCount } = await import("../public/offline-client.js");
+  globalThis.BroadcastChannel = channel;
+  const t = (key, values) => (values ? `${key}:${values.count}` : key);
+  assert.equal(formatConflictCount(t, 0), "");
+  assert.equal(formatConflictCount(t, 1), "offlineConflictOne");
+  assert.equal(formatConflictCount(t, 3), "offlineConflictCount:3");
+});

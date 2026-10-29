@@ -8,7 +8,7 @@ const INSTALL_COPY = {
     later: "Später",
     close: "Schließen",
     ios: [
-      "Öffne das Menü deines Browsers und tippe auf Teilen (ab iOS 16.4 in jedem Browser, ältere Versionen brauchen Safari).",
+      "Ab iOS 16.4 funktioniert die Installation in jedem Browser, ältere Versionen brauchen Safari.",
       "Tippe auf Teilen und wähle „Zum Home-Bildschirm“ aus. Falls nötig: „Mehr“ öffnen.",
       "Lass „Als Web-App öffnen“ aktiviert und tippe auf „Hinzufügen“.",
     ],
@@ -34,7 +34,7 @@ const INSTALL_COPY = {
     later: "Later",
     close: "Close",
     ios: [
-      "Open your browser’s menu and tap Share (any browser on iOS 16.4 or later, older versions need Safari).",
+      "Installing works in any browser on iOS 16.4 or later, older versions need Safari.",
       "Tap Share, then choose “Add to Home Screen”. Open “More” if needed.",
       "Keep “Open as Web App” enabled and tap “Add”.",
     ],

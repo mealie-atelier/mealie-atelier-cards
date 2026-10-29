@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { getInstallContext, getInstallCopy } from "../public/pwa-install.js";
+import { getInstallContext, getInstallCopy, initPwaInstall } from "../public/pwa-install.js";
 
 test("PWA install context recognizes iPhone, iPadOS and installed mode", () => {
   assert.equal(
@@ -123,4 +123,47 @@ test("install dialog localizes the later button, avoids the outdated iOS claim a
   assert.doesNotMatch(html, /beautiful recipes/);
   const css = await readFile(new URL("../public/pwa-install.css", import.meta.url), "utf8");
   assert.match(css, /min-height: 44px/);
+});
+
+test("iOS install steps do not tell the user to tap Share twice", () => {
+  for (const language of ["de", "en"]) {
+    const [first, second] = getInstallCopy(language, { isIOSBrowserWithoutPrompt: true }).steps;
+    assert.doesNotMatch(first, /Teilen|Share/);
+    assert.match(second, /Teilen|Share/);
+  }
+});
+
+test("rendering the install dialog fills the localized later button", () => {
+  const node = () => ({
+    textContent: "",
+    hidden: false,
+    attrs: {},
+    setAttribute(key, value) {
+      this.attrs[key] = value;
+    },
+    addEventListener() {},
+    replaceChildren() {},
+  });
+  const later = node();
+  const trigger = { ...node(), querySelector: () => node() };
+  const dialog = {
+    ...node(),
+    showModal() {},
+    querySelector: (selector) => (selector === "[data-install-later]" ? later : node()),
+    querySelectorAll: () => [],
+  };
+  const documentRef = {
+    querySelector: (selector) => (selector === "#pwa-install-trigger" ? trigger : dialog),
+    createElement: node,
+    documentElement: { lang: "de" },
+  };
+  const windowRef = { addEventListener() {}, removeEventListener() {} };
+  const handle = initPwaInstall({
+    documentRef,
+    navigatorRef: { language: "en-US", userAgent: "" },
+    windowRef,
+  });
+  assert.equal(later.textContent, "Later");
+  handle.refresh("de");
+  assert.equal(later.textContent, "Später");
 });
