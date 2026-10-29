@@ -455,3 +455,39 @@ test("the piece unit is shown translated, never as its stored key", () => {
     assert.doesNotMatch(html, /stück/, language);
   }
 });
+
+const aiClick = (card, action) => {
+  const el = { dataset: { action }, disabled: false, closest: () => el };
+  return card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
+};
+
+test("an ai_error rejection renders the translated errAiError text on the AI flows", async () => {
+  const aiError = () => Object.assign(new Error("AI provider HTTP 502 raw"), { code: "ai_error" });
+  const setup = () => {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
+    card._detail = { slug: "s", name: "Suppe" };
+    card._ws = async () => {
+      throw aiError();
+    };
+    card._atelierDialog = async (opts) => (opts.kind === "prompt" ? "Drachenfrucht" : true);
+    return card;
+  };
+  const text = /Der KI-Anbieter hat nicht geantwortet/;
+  let card = setup();
+  card._detail.name = "Suppe";
+  await aiClick(card, "studio-replacement");
+  assert.match(card._aiSwap, text);
+  assert.doesNotMatch(card._aiSwap, /raw/);
+
+  card = setup();
+  const flashed = [];
+  card._flash = (message) => flashed.push(message);
+  await aiClick(card, "studio-ai-audit");
+  assert.match(flashed.join("\n"), text);
+
+  card = setup();
+  card._nutrition = { busy: false, preview: { ai_enabled: true, slug: "s", hash: "h" }, rows: [] };
+  await aiClick(card, "nutri-ai");
+  assert.match(card._nutrition.notice, text);
+});

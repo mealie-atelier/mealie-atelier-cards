@@ -12691,7 +12691,8 @@ class MealieAtelierCard extends HTMLElement {
         });
         n.notice = this.t("uiAISuggestedSearchTermsReviewEveryDatabaseMatchYourself");
       } catch (error) {
-        n.notice = error?.message || this.t("error");
+        n.notice =
+          error?.code === "ai_error" ? this.t("errAiError") : error?.message || this.t("error");
       } finally {
         n.busy = false;
         this._render();
@@ -18736,7 +18737,9 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             " · " +
             answer.warning;
         } catch (error) {
-          output = this.t("studioSubstituteError", { error: error?.message || "" });
+          output = this.t("studioSubstituteError", {
+            error: error?.code === "ai_error" ? this.t("errAiError") : error?.message || "",
+          });
         }
       }
       this._aiSwap = output;
@@ -18759,7 +18762,11 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         this._aiAudit = result;
         this._render();
       } catch (error) {
-        this._flash(this.t("studioAiUnavailable", { error: error.message || "" }));
+        this._flash(
+          this.t("studioAiUnavailable", {
+            error: error?.code === "ai_error" ? this.t("errAiError") : error?.message || "",
+          }),
+        );
       }
       return;
     }

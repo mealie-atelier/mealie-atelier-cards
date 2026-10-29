@@ -349,3 +349,23 @@ test("Anthropic calls wait at least the minimum timeout, OpenAI keeps the given 
   assert.equal(ANTHROPIC_MIN_TIMEOUT_MS, 60000);
   assert.deepEqual(seen.slice(0, 2), [60000, 20000]);
 });
+
+test("transport failures and unreadable 200 bodies become ai_error 502 without leaking details", async () => {
+  const handlers = [
+    async () => {
+      throw new TypeError("fetch failed ECONNREFUSED sk-ant-test");
+    },
+    async () => new Response("<html>not json</html>", { status: 200 }),
+  ];
+  for (const handler of handlers) {
+    await withFetch(handler, async () => {
+      await assert.rejects(
+        callAiJson({ ai: ANTHROPIC, instructions: "x", input: "y", schema: {}, timeoutMs: 1000 }),
+        (e) =>
+          e.status === 502 &&
+          e.atelierCode === "ai_error" &&
+          !/sk-ant|ECONNREFUSED|html/.test(e.message),
+      );
+    });
+  }
+});

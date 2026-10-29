@@ -1475,7 +1475,8 @@ class MealieAtelierCard extends HTMLElement {
         });
         n.notice = this.t("uiAISuggestedSearchTermsReviewEveryDatabaseMatchYourself");
       } catch (error) {
-        n.notice = error?.message || this.t("error");
+        n.notice =
+          error?.code === "ai_error" ? this.t("errAiError") : error?.message || this.t("error");
       } finally {
         n.busy = false;
         this._render();

@@ -127,8 +127,10 @@ export async function callAiJson({
     }
     throw fail("AI response invalid");
   } catch (e) {
+    if (e?.atelierCode === "ai_error") throw e;
     if (e?.name === "AbortError") throw fail("AI request timed out");
-    throw e;
+    if (e instanceof SyntaxError) throw fail("AI answer could not be read");
+    throw fail("AI provider unavailable");
   } finally {
     clearTimeout(timer);
   }
