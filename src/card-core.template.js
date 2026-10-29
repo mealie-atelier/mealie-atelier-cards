@@ -416,6 +416,14 @@ class MealieAtelierCard extends HTMLElement {
     };
   }
   /** The user may view the kitchen but holds no write grant (the kitchen itself is not read-only). */
+  /** True inside the standalone web app, whose shell hands the card a hass shim with this flag. */
+  get _isWebApp() {
+    return this._hass?.atelierOfflineHost === true;
+  }
+  /** Notice for a reader: the grant lives in the HA options or in the web app's account role. */
+  get _noWriteGrantText() {
+    return this.t(this._isWebApp ? "uiNoWriteGrantWeb" : "uiNoWriteGrant");
+  }
   get _noWriteGrant() {
     const p = this._permissions;
     return (
@@ -879,7 +887,7 @@ class MealieAtelierCard extends HTMLElement {
     const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
-      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this.t("uiNoWriteGrant"))}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
+      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution()}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
@@ -1099,7 +1107,7 @@ class MealieAtelierCard extends HTMLElement {
       !this._permissions.can_write ||
       (action.startsWith("recipe") && !this._permissions.can_manage)
     ) {
-      this._error = this._noWriteGrant ? this.t("uiNoWriteGrant") : this.t("readOnlyHint");
+      this._error = this._noWriteGrant ? this._noWriteGrantText : this.t("readOnlyHint");
       this._render();
       return false;
     }

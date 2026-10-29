@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -141,6 +141,47 @@ test("HTTP two devices: sync, idempotency, conflicts, offline app assets and tim
     assert.match(after.alerts[0].message, /Closed browser alarm/);
     const alarmStatus = await bridge(api, "mealie_atelier/alarms");
     assert.equal(alarmStatus.body.alarms[0].status, "sent");
+  } finally {
+    await app?.close();
+    await mock?.close();
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+test("every file the service worker precaches and the manifest names is served with its type", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-static-"));
+  let mock, app;
+  try {
+    mock = await launch("test/mock-services.mjs");
+    app = await launch("server.mjs", {
+      PORT: "0",
+      HOST: "127.0.0.1",
+      MEALIE_URL: `http://127.0.0.1:${mock.port}`,
+      MEALIE_API_TOKEN: "LOCAL_TEST_TOKEN",
+      ATELIER_USERNAME: "atelier",
+      ATELIER_PASSWORD: "test-pass-long-enough",
+      ATELIER_DATA_DIR: dir,
+    });
+    const sw = await readFile(join(ROOT, "public", "sw.js"), "utf8");
+    const precache = sw
+      .match(/new Set\(\[([\s\S]*?)\]\)/)[1]
+      .match(/"\/[^"]*"/g)
+      .map((entry) => JSON.parse(entry));
+    const manifest = JSON.parse(
+      await readFile(join(ROOT, "public", "manifest.webmanifest"), "utf8"),
+    );
+    const paths = new Set([...precache, ...manifest.icons.map((icon) => icon.src)]);
+    assert.ok(paths.has("/icon-maskable-512.png") && paths.has("/pasta-with-tomatoes.jpg"));
+    const expected = { ".png": "image/png", ".jpg": "image/jpeg" };
+    for (const path of paths) {
+      const r = await fetch(`http://127.0.0.1:${app.port}${path}`, {
+        headers: { Authorization: basic },
+      });
+      assert.equal(r.status, 200, path);
+      assert.match(r.headers.get("cache-control") || "", /max-age/, path);
+      const ext = path.slice(path.lastIndexOf("."));
+      if (expected[ext]) assert.equal(r.headers.get("content-type"), expected[ext], path);
+      await r.arrayBuffer();
+    }
   } finally {
     await app?.close();
     await mock?.close();

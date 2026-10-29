@@ -73,7 +73,7 @@ Object.assign(MealieAtelierCard.prototype, {
     // The personal journal needs no write grant; only a read-only kitchen blocks it.
     const allowed = action === "journal_set" ? this._canJournal : this._permissions.can_write;
     if (!allowed) {
-      this._error = this._noWriteGrant ? this.t("uiNoWriteGrant") : this.t("readOnlyHint");
+      this._error = this._noWriteGrant ? this._noWriteGrantText : this.t("readOnlyHint");
       this._render();
       return false;
     }

@@ -261,6 +261,24 @@ test("recipe management and the editor stay hidden without can_admin", () => {
   assert.equal(admin.card._permissions.can_manage, true);
 });
 
+test("a reader sees the web app wording only inside the standalone web app", () => {
+  const grants = { can_read: true, can_write: false, can_manage: false };
+  const make = (hass) => {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass });
+    card._status = { entries: [{ entry_id: "e1", permissions: grants }] };
+    return card;
+  };
+  const web = make({ language: "en", atelierOfflineHost: true, callWS: async () => ({}) });
+  assert.equal(web._noWriteGrant, true);
+  assert.equal(web._noWriteGrantText, web.t("uiNoWriteGrantWeb"));
+  assert.doesNotMatch(web._noWriteGrantText, /Home Assistant/);
+  const german = make({ language: "de", atelierOfflineHost: true, callWS: async () => ({}) });
+  assert.match(german._noWriteGrantText, /Schreibrolle/);
+  const ha = make({ language: "en", callWS: async () => ({}) });
+  assert.match(ha._noWriteGrantText, /Home Assistant/);
+});
+
 test("a legacy status without permissions still drives the card", () => {
   const { card } = permissionCard({ can_write: true, can_manage: false });
   assert.equal(card._permissions.can_write, true);

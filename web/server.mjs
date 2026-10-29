@@ -935,6 +935,8 @@ const FILES = {
   "/icon.svg": ["icon.svg", "image/svg+xml"],
   "/icon-192.png": ["icon-192.png", "image/png"],
   "/icon-512.png": ["icon-512.png", "image/png"],
+  "/icon-maskable-512.png": ["icon-maskable-512.png", "image/png"],
+  "/pasta-with-tomatoes.jpg": ["pasta-with-tomatoes.jpg", "image/jpeg"],
   "/apple-touch-icon.png": ["apple-touch-icon.png", "image/png"],
   "/sw.js": ["sw.js", "text/javascript; charset=utf-8"],
   "/offline-core.js": ["offline-core.js", "text/javascript; charset=utf-8"],

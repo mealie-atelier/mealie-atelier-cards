@@ -42,6 +42,9 @@ test("web manifest includes installable and maskable raster icons", async () => 
   assert.match(html, /mealie-atelier-language-change/);
   assert.match(html, /syncShellTheme\(card\._design\.theme\)/);
   assert.match(html, /syncShellLanguage\(card\._language\)/);
+  assert.match(html, /id="foot-copy"/);
+  assert.match(html, /getElementById\("foot-copy"\)/);
+  assert.match(html, /PRIVATES KÜCHENSTUDIO/);
   const install = await readFile(new URL("../public/pwa-install.js", import.meta.url), "utf8");
   assert.match(install, /refresh\(nextLanguage = language\)/);
   const styles = await readFile(new URL("../public/pwa-install.css", import.meta.url), "utf8");

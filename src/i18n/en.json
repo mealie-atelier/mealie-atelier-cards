@@ -854,6 +854,7 @@
   "uiMutationFailed": "Could not save: {error} Your change was undone.",
   "uiSaving": "Saving…",
   "uiNoWriteGrant": "Your Home Assistant user may view this kitchen but not change it. An administrator can grant access in the Mealie Atelier options.",
+  "uiNoWriteGrantWeb": "You are signed in with read access. An administrator can give your account the writer role.",
   "errNotConfigured": "Mealie Atelier is not set up yet.",
   "errInvalidRequest": "That request was not valid. Check your input and try again.",
   "errMealieAuth": "Mealie refused the access token. Check the token in the settings.",

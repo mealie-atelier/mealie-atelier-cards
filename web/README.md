@@ -81,7 +81,7 @@ ATELIER_USERS='anna:admin:scrypt$16384$8$1$...$...;ben:reader:scrypt$16384$8$1$.
 | -------- | ------------------------------------------------------------------------------------------------- |
 | `admin`  | Everything: recipe create, edit, import, photos, nutrition save, ingredient editing.              |
 | `writer` | Shopping lists, meal plans and kitchen state; no recipe edits, no family members or helper tasks. |
-| `reader` | View only. Personal kitchen timers and the cooking journal still work.                            |
+| `reader` | View only. Personal kitchen timers still work. The shared cooking journal is read only.           |
 
 - `ATELIER_USERNAME` with `ATELIER_PASSWORD` keeps working unchanged and signs in as `admin`. You may use both; a name that appears in both is a startup error, as is any malformed entry (the message names the entry position, never the hash).
 - `ATELIER_READ_ONLY` still wins: nobody can write, whatever the role.
@@ -94,7 +94,7 @@ Generate the Web Push keys with `npm run vapid` and paste the three printed line
 
 - Every response carries a Content-Security-Policy (same-origin only; the single inline module script of `index.html` is allowed by hash, no remote hosts), a Permissions-Policy, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
 - Per-person passwords are stored only as scrypt hashes (`ATELIER_USERS`), verified in constant time. Unknown user names cost the same scrypt run as known ones.
-- Failed Basic auth attempts are counted per client address in memory. After 5 failures the address is locked out with HTTP 429 and `Retry-After`, doubling from 1 second up to 60 seconds; a correct sign-in clears the counter and a restart resets all counters. The server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty. IPv6 clients are counted by their /64 prefix. Behind a reverse proxy the server only sees the proxy address, so set `ATELIER_TRUSTED_PROXIES` (see below).
+- Failed Basic auth attempts are counted per client address in memory. The first 5 failures cost nothing; from the 6th failure on the address is locked out with HTTP 429 and `Retry-After`, for 1 second at first and doubling with every further failure up to 60 seconds; a correct sign-in clears the counter and a restart resets all counters. The server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty. IPv6 clients are counted by their /64 prefix. Behind a reverse proxy the server only sees the proxy address, so set `ATELIER_TRUSTED_PROXIES` (see below).
 - The AI disclaimer and the language of AI answers follow the request language (`Accept-Language`), German or English.
 - The service worker cache name is derived from the `version` in `package.json`, so each release invalidates the old offline shell.
 

@@ -854,6 +854,7 @@
   "uiMutationFailed": "Speichern fehlgeschlagen: {error} Deine Änderung wurde rückgängig gemacht.",
   "uiSaving": "Wird gespeichert…",
   "uiNoWriteGrant": "Dein Home-Assistant-Konto darf diese Küche ansehen, aber nicht ändern. Ein Administrator kann den Zugriff in den Mealie-Atelier-Optionen freigeben.",
+  "uiNoWriteGrantWeb": "Du bist mit Lesezugriff angemeldet. Ein Administrator kann deinem Konto die Schreibrolle geben.",
   "errNotConfigured": "Mealie Atelier ist noch nicht eingerichtet.",
   "errInvalidRequest": "Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.",
   "errMealieAuth": "Mealie hat den Zugriffstoken abgelehnt. Prüfe den Token in den Einstellungen.",

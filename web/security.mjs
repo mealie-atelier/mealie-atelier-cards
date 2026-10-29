@@ -47,7 +47,8 @@ export function securityHeaders(scriptHashes = []) {
 
 /**
  * In-memory failed Basic auth counter per client address. The first `freeAttempts` failures cost
- * nothing, every further failure doubles the lockout (baseMs, 2x, 4x, ...) up to maxMs. A correct
+ * nothing. The lockout starts with failure number freeAttempts + 1 at baseMs and doubles with
+ * every further failure (2x, 4x, ...) up to maxMs. A correct
  * login clears the entry, idle entries are dropped and the table is capped against memory abuse.
  */
 export function createAuthThrottle({
