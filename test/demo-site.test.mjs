@@ -582,7 +582,7 @@ test("page CSS keeps the footer wordmark off the rule and the metric grid divide
   assert.match(css, /\.ba-labels\s*\{/);
   for (const locale of ["de", "en"]) {
     const home = landing(builds.local, locale);
-    assert.match(home, /<div class="ba-labels rv" aria-hidden="true"><span class="tag l">/, locale);
+    assert.match(home, /<div class="ba-labels rv"><button class="tag l"/, locale);
     assert.doesNotMatch(
       home,
       /<div class="ba [^"]*" data-ba[\s\S]*?class="tag /,
@@ -637,10 +637,9 @@ test("recipe metrics stay an even grid at every width and the page offsets match
 test("layout regressions: breadcrumb offset, story steps, footer order and note, closing scrim, phone compare", () => {
   const css = read(join(builds.local, "assets/live-demo.css"));
   const js = read(join(builds.local, "assets/site.js"));
-  // The hero columns are top aligned, so the breadcrumb never drops with the title block height.
+  // The breadcrumb sits above the hero grid, so centring the title block cannot move it.
   const hero = css.match(/@media \(min-width: 900px\)\s*\{\s*\.recipe-hero\s*\{[^}]*\}/)[0];
-  assert.match(hero, /align-items:\s*start/);
-  assert.doesNotMatch(hero, /align-items:\s*center/);
+  assert.match(hero, /align-items:\s*center/);
   // Every story step keeps the same height, so the pinned stage and the observer band agree.
   assert.doesNotMatch(css, /\.step:last-child/);
   // The footer keeps one column order and the note shares the heading line.
@@ -684,23 +683,58 @@ test("hero: one readable browser, a phone, no tablet, eyebrow breaks only betwee
   assert.match(js, /box\.top - current/, "parallax measures without its own offset");
 });
 
-test("compare slider rests between two cards and the scroll story has no empty runway", () => {
-  const js = read(join(builds.local, "assets/site.js"));
-  const css = read(join(builds.local, "assets/live-demo.css"));
-  assert.match(js, /phone\.matches \? 0 : 44/);
-  assert.match(css, /\.ba \{\s*--pos: 44%/);
+test("compare: rest position, labels as toggles and a phone-sized capture pair in both locales", () => {
   for (const locale of ["de", "en"]) {
-    assert.match(landing(builds.local, locale), /<input type="range" min="0" max="100" value="44"/);
+    const html = landing(builds.local, locale);
+    assert.match(html, /<input type="range" min="0" max="100" value="46"/);
+    assert.match(html, /data-ba-show="before"[^>]*aria-pressed="false"/);
+    assert.match(html, /data-ba-show="after"[^>]*aria-pressed="false"/);
+    for (const name of [
+      "compare-desktop-mealie",
+      "compare-desktop-atelier",
+      "compare-phone-mealie",
+      "compare-phone-atelier",
+    ]) {
+      assert.ok(
+        existsSync(
+          join(
+            builds.local,
+            `showcase/${locale}/${name}-${name.includes("phone") ? 720 : 1600}.webp`,
+          ),
+        ),
+        name,
+      );
+    }
   }
-  const step = css.match(/\.step \{[^}]*\}/)[0];
-  assert.match(step, /min-height: 56vh/);
-  assert.match(step, /padding-block: 4vh/);
 });
 
-test("recipe hero: the title block is as tall as the photo, the facts sit on its bottom edge", () => {
+test("scroll story: step and pinned stage share one height, so the device is level with the step", () => {
   const css = read(join(builds.local, "assets/live-demo.css"));
-  assert.match(css, /\.recipe-hero \.recipe-head \{\s*align-self: stretch;/);
-  assert.match(css, /\.recipe-hero \.recipe-metrics \{\s*align-self: end;/);
+  assert.match(css.match(/\.step \{[^}]*\}/)[0], /min-height: var\(--step-h\)/);
+  const stage = css.match(/\.stage \{[^}]*\}/)[0];
+  assert.match(stage, /height: var\(--step-h\)/);
+  assert.match(stage, /top: calc\(50vh - var\(--step-h\) \/ 2\)/);
+});
+
+test("recipe page: crumbs sit above one centred hero block, no stretched gap", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  assert.doesNotMatch(css, /\.recipe-hero \.recipe-metrics \{\s*align-self: end;/);
+  assert.match(css, /\.recipe-hero \{[^}]*align-items: center/);
+});
+
+test("footer links never wrap on wide screens and route cards pin their buttons to the foot", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  assert.match(css, /min-width: 901px\) \{\s*\.foot-col a \{\s*white-space: nowrap/);
+  assert.match(css, /\.route \.btn-row \{[^}]*margin-top: auto/);
+  assert.match(landing(builds.local, "de"), /Node\.js&nbsp;22/);
+});
+
+test("live demo frame shows a placeholder until the card has rendered", () => {
+  assert.match(read(join(builds.local, "assets/site.js")), /data-ready/);
+  assert.match(
+    read(join(builds.local, "assets/live-demo.css")),
+    /\.live-frame:not\(\[data-ready\]\) mealie-atelier-card/,
+  );
 });
 
 test("English route buttons stay short and one note says the guides are German", () => {
@@ -725,10 +759,23 @@ test("pantry quantities keep one line and the cooking dialog closes with a singl
   );
 });
 
-test("sharp photos: large masters ship 1600w and 2400w srcset entries and every listed file exists", () => {
+function webpWidth(file) {
+  const buf = readFileSync(file);
+  if (buf.toString("ascii", 12, 16) === "VP8X") return 1 + buf.readUIntLE(24, 3);
+  if (buf.toString("ascii", 12, 16) === "VP8 ") return buf.readUInt16LE(26) & 0x3fff;
+  return buf.readUInt16LE(21) & 0x3fff;
+}
+
+test("sharp photos: every master is at least 2000 px wide and ships a 1600w variant", () => {
   const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));
-  const large = Object.entries(manifest.photos).filter(([, entry]) => entry.width >= 2000);
-  assert.ok(large.length >= 5, "at least five photos have a master of 2000 px or more");
+  for (const [name, entry] of Object.entries(manifest.photos)) {
+    assert.ok(
+      webpWidth(join(builds.local, `photos/${name}.webp`)) >= 2000,
+      `${name} master pixel width`,
+    );
+    assert.ok(entry.widths.includes(1600), `${name} has a 1600w variant`);
+    assert.ok(entry.width >= 2000, `${name} manifest width`);
+  }
   for (const [name, entry] of Object.entries(manifest.photos)) {
     for (const width of entry.widths) {
       assert.ok(
@@ -739,9 +786,10 @@ test("sharp photos: large masters ship 1600w and 2400w srcset entries and every 
     assert.ok(existsSync(join(builds.local, `photos/${name}.webp`)), name);
   }
   const html = landing(builds.local, "de");
-  for (const [name, entry] of large) {
-    assert.ok(entry.widths.includes(1600), `${name} lists a 1600w variant`);
-    assert.ok(html.includes(`${name}-1600.webp 1600w`), `${name} srcset has 1600w`);
+  for (const name of Object.keys(manifest.photos)) {
+    if (html.includes(`${name}-800.webp`)) {
+      assert.ok(html.includes(`${name}-1600.webp 1600w`), `${name} srcset has 1600w`);
+    }
   }
   assert.match(html, /photos\/buttermilch-pancakes-mit-beeren\.webp 2400w/);
 });

@@ -123,8 +123,8 @@ function install(ctx) {
         "<b>Create the configuration</b> with Mealie address, token and password.",
       ),
       t(
-        "<b>Container starten</b> mit Docker Compose oder direkt mit Node.js 22.",
-        "<b>Start the container</b> with Docker Compose or directly with Node.js 22.",
+        "<b>Container starten</b> mit Docker Compose oder direkt mit Node.js&nbsp;22.",
+        "<b>Start the container</b> with Docker Compose or directly with Node.js&nbsp;22.",
       ),
       t(
         "<b>Als App installieren</b> auf Handy und Küchentablet.",

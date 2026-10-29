@@ -11293,6 +11293,15 @@ ha-card {
     font-size: clamp(24px, 3vw, 30px);
   }
 }
+
+/* Portrait tablets: a shorter photo band lets the whole cooking step and its timer panel fit
+   without the dialog scrolling. */
+@media (orientation: portrait) and (min-width: 700px) and (max-width: 900px) and (min-height: 900px) and (max-height: 1100px) {
+  .atelier .modal:has(.cook-layout) .cook-visual {
+    height: 136px;
+    min-height: 136px;
+  }
+}
 </style>`;
 // Every fetch signs image URLs anew (a 2 h signature). Reusing the first one per recipe photo keeps
 // re-renders on the browser cache instead of reloading every photo; a new photo changes `image`.

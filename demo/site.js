@@ -121,12 +121,19 @@ for (const slider of document.querySelectorAll("[data-ba]")) {
   // On phones the two shots are different layouts, so any divider in the middle cuts text in
   // half. There the handle settles on a whole picture (the new interface first) when released.
   const phone = matchMedia("(max-width: 700px)");
-  const rest = () => (phone.matches ? 0 : 44);
+  const rest = () => (phone.matches ? 0 : 46);
+  const tags = [...document.querySelectorAll("[data-ba-show]")];
   let swept = false;
   const set = (value) => {
     const position = Math.max(0, Math.min(100, Math.round(value)));
     slider.style.setProperty("--pos", `${position}%`);
     input.value = String(position);
+    for (const tag of tags) {
+      tag.setAttribute(
+        "aria-pressed",
+        String(position === (tag.dataset.baShow === "before" ? 100 : 0)),
+      );
+    }
     input.setAttribute(
       "aria-valuetext",
       template.replace("{a}", String(position)).replace("{b}", String(100 - position)),
@@ -160,6 +167,14 @@ for (const slider of document.querySelectorAll("[data-ba]")) {
       setTimeout(() => slider.classList.remove("settling"), 420);
     }
   };
+  for (const tag of tags) {
+    tag.addEventListener("click", () => {
+      swept = true;
+      slider.classList.add("settling");
+      set(tag.dataset.baShow === "before" ? 100 : 0);
+      setTimeout(() => slider.classList.remove("settling"), 420);
+    });
+  }
   slider.addEventListener("pointerup", release);
   slider.addEventListener("pointercancel", release);
   set(rest());
@@ -226,4 +241,18 @@ if (countdown && !reduced()) {
     left = left > 0 ? left - 1 : total;
     countdown.textContent = format(left);
   }, 1000);
+}
+
+// Live demo frame: a calm placeholder until the card has rendered its first view.
+const liveFrame = document.querySelector(".live-frame");
+const liveCard = liveFrame?.querySelector("mealie-atelier-card");
+if (liveFrame && liveCard) {
+  const markReady = () => liveFrame.setAttribute("data-ready", "");
+  const started = performance.now();
+  const poll = () => {
+    const rendered = (liveCard.shadowRoot?.querySelectorAll("button").length ?? 0) > 2;
+    if (rendered || performance.now() - started > 8000) markReady();
+    else requestAnimationFrame(poll);
+  };
+  poll();
 }

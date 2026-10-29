@@ -1,6 +1,6 @@
 // Landing page, middle: a week in the kitchen (scroll stage), features and devices.
 import { icon, sectionIds, translator } from "./chrome.mjs";
-import { browser, host, phone, shot, tablet } from "./media.mjs";
+import { browser, host, phone, shot, shotSources, tablet } from "./media.mjs";
 import { SIZES } from "./sections-intro.mjs";
 
 const checks = (items) =>
@@ -192,8 +192,12 @@ function features(ctx) {
   const id = sectionIds[ctx.locale];
   const tile = (iconName, title, text, delay = "", extra = "") =>
     `<article class="tile rv${delay}${extra}"><span class="ico">${icon(iconName)}</span><h3>${title}</h3><p>${text}</p></article>`;
-  const imageTile = (iconName, title, text, label, name, alt, delay = "") =>
-    `<article class="tile wide img rv${delay}"><span class="ico">${icon(iconName)}</span><h3>${title}</h3><p>${text}</p>${browser(label, shot(ctx, name, alt, "(max-width: 1000px) 94vw, 580px"))}</article>`;
+  // Tablet-width captures on wide screens, the phone capture on small ones: the app text stays readable.
+  const imageTile = (iconName, title, text, label, names, alt, delay = "") => {
+    const phoneSource = shotSources(ctx, names.phone);
+    const picture = `<picture><source media="(max-width: 620px)" srcset="${phoneSource.srcset}" sizes="270px" width="${phoneSource.entry.width}" height="${phoneSource.entry.height}">${shot(ctx, names.wide, alt, "(max-width: 1000px) 94vw, 580px")}</picture>`;
+    return `<article class="tile wide img rv${delay}"><span class="ico">${icon(iconName)}</span><h3>${title}</h3><p>${text}</p>${browser(label, picture)}</article>`;
+  };
   return `<section class="sec" id="${id.features}" aria-labelledby="features-title"><div class="wrap"><div class="sec-head"><p class="kicker rv">${t("Alles in einer Karte", "All in one card")}</p><h2 id="features-title" class="rv d1">${t("Alles, was deine Küche <em>braucht</em>.", "Everything your kitchen <em>needs</em>.")}</h2><p class="lead rv d2">${t("Zehn Ansichten, ein Gefühl. Jede ist für einen Moment im Küchenalltag gebaut.", "Ten views, one feel. Each one is built for a moment in your kitchen day.")}</p></div><div class="bento">${imageTile(
     "cal",
     t("Wochenplan", "Week plan"),
@@ -202,7 +206,7 @@ function features(ctx) {
       "Seven days at a glance, plan dishes by search, print as A4 for the fridge.",
     ),
     t("Wochenplan", "Week plan"),
-    "app-desktop-mealplan",
+    { wide: "feature-mealplan", phone: "app-phone-mealplan" },
     t(
       "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
       "Week plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
@@ -215,7 +219,7 @@ function features(ctx) {
       "Tick off offline, synced cleanly later. With Home Assistant, on to Bring and other to-do lists if you like.",
     ),
     t("Einkaufsliste", "Shopping list"),
-    "app-desktop-shopping",
+    { wide: "feature-shopping", phone: "app-phone-shopping" },
     t(
       "Einkaufsliste Alles für den Einkauf mit abhakbaren Artikeln",
       "Shopping list with items to tick off",

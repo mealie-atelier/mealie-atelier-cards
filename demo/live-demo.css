@@ -649,7 +649,7 @@ h2 em {
   }
   .toast {
     inset: auto;
-    margin-top: -22px;
+    margin-top: 18px;
     max-width: 100%;
     white-space: nowrap;
   }
@@ -846,15 +846,15 @@ h2 em {
   initial-value: 50%;
 }
 .ba {
-  --pos: 44%;
+  --pos: 46%;
   position: relative;
   border-radius: var(--r-lg);
   overflow: hidden;
   border: 1px solid var(--line2);
   box-shadow: var(--shadow);
-  /* Cropped inside the second photo row: below it both shots cut a card title or a sidebar item
-     in half, here only photos meet the frame edge. */
-  aspect-ratio: 1600 / 888;
+  /* Both shots are cut at a gap between rows, so no card, title or menu item is clipped; the
+     rest position sits in the gutter between the first two cards of both interfaces. */
+  aspect-ratio: 1600 / 797;
   background: #000;
   user-select: none;
   -webkit-user-select: none;
@@ -945,6 +945,9 @@ h2 em {
   margin-bottom: 14px;
 }
 .ba-labels .tag {
+  appearance: none;
+  cursor: pointer;
+  color: inherit;
   padding: 8px 12px;
   border-radius: 10px;
   font: 700 12px/1 var(--sans);
@@ -958,6 +961,17 @@ h2 em {
 .ba-labels .tag.r {
   background: var(--mint);
   color: var(--mint-ink);
+}
+.hint-phone {
+  display: none;
+}
+@media (max-width: 700px) {
+  .hint-wide {
+    display: none;
+  }
+  .hint-phone {
+    display: inline;
+  }
 }
 .hint {
   display: flex;
@@ -988,20 +1002,39 @@ h2 em {
 }
 @media (max-width: 700px) {
   .ba {
-    /* Cropped a little at the foot: the Mealie phone shot ends in a row of chips that the plain
-       frame edge would cut in half, so the frame stops above that row. */
-    aspect-ratio: 720 / 1480;
+    /* On a phone the divider would cut the page text of one of two different layouts, so the
+       frame shows one whole screen at a time and a release settles on one of them. */
+    aspect-ratio: 720 / 1496;
     max-width: 420px;
     margin-inline: auto;
+  }
+  .ba .handle {
+    display: none;
   }
   .ba-labels {
     max-width: 420px;
     margin-inline: auto;
     margin-bottom: 12px;
+    padding: 4px;
+    gap: 4px;
+    border-radius: 14px;
+    background: var(--panel);
+    border: 1px solid var(--line2);
   }
-  .ba-labels .tag {
+  .ba-labels .tag.l,
+  .ba-labels .tag.r {
+    flex: 1;
     font-size: 11px;
-    padding: 7px 10px;
+    padding: 11px 8px;
+    text-align: center;
+    background: transparent;
+    border: 0;
+    color: var(--sub);
+  }
+  .ba-labels .tag.l[aria-pressed="true"],
+  .ba-labels .tag.r[aria-pressed="true"] {
+    background: var(--mint);
+    color: var(--mint-ink);
   }
   .ba-notes {
     grid-template-columns: 1fr;
@@ -1100,6 +1133,31 @@ h2 em {
   border-radius: 0 0 var(--r-lg) var(--r-lg);
   overflow: clip;
 }
+/* Until the card has rendered, a quiet shimmer holds the frame's space instead of an empty dark box. */
+html.js .live-frame:not([data-ready]) {
+  position: relative;
+}
+html.js .live-frame:not([data-ready]) mealie-atelier-card {
+  visibility: hidden;
+}
+html.js .live-frame:not([data-ready])::after {
+  content: "";
+  position: absolute;
+  inset: 40px 0 0;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  background:
+    linear-gradient(100deg, transparent 30%, rgba(157, 203, 178, 0.08) 50%, transparent 70%) 0 0 /
+      200% 100%,
+    #0d1410;
+  animation: live-shimmer 1.6s linear infinite;
+}
+@keyframes live-shimmer {
+  to {
+    background-position:
+      -200% 0,
+      0 0;
+  }
+}
 @media (max-width: 900px) {
   .live-head {
     grid-template-columns: 1fr;
@@ -1126,6 +1184,9 @@ h2 em {
 
 /* a week in the kitchen */
 .story {
+  /* One height for a step and for the pinned stage, both centred on the viewport middle, so the
+     device sits level with the active step at the first and the last step too. */
+  --step-h: min(84vh, 780px);
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   gap: clamp(32px, 5vw, 80px);
@@ -1134,7 +1195,7 @@ h2 em {
   display: grid;
 }
 .step {
-  min-height: 56vh;
+  min-height: var(--step-h);
   display: grid;
   align-content: center;
   gap: 18px;
@@ -1182,15 +1243,15 @@ html:not(.js) .step {
 }
 .stage {
   position: sticky;
-  top: 0;
-  height: 100vh;
+  top: calc(50vh - var(--step-h) / 2);
+  height: var(--step-h);
   display: grid;
   place-items: center;
 }
 .stage-inner {
   position: relative;
   width: 100%;
-  height: min(84vh, 780px);
+  height: var(--step-h);
 }
 /* A soft light behind the device, so each scene reads as one object on the dark page. */
 .stage-inner::before {
@@ -1343,6 +1404,16 @@ html:not(.js) .step {
   }
 }
 @media (max-width: 620px) {
+  /* Image tiles show the phone capture whole: no browser bar, the phone screen at a readable size. */
+  .tile.img .browser {
+    width: min(100%, 270px);
+    margin-inline: auto;
+    border-radius: 26px 26px 0 0;
+    border-inline: 1px solid var(--line2);
+  }
+  .tile.img .browser .bar {
+    display: none;
+  }
   .bento {
     gap: 10px;
   }
@@ -2234,9 +2305,9 @@ details[open] .chev {
   border-radius: var(--r-xl);
   border: 1px solid var(--line2);
   background: linear-gradient(160deg, var(--panel2), var(--panel) 60%);
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
-  align-content: start;
   overflow: hidden;
 }
 .route::after {
@@ -2266,6 +2337,7 @@ details[open] .chev {
   color: var(--mint);
 }
 .route h3 {
+  margin: 0;
   font-size: clamp(28px, 2.8vw, 38px);
 }
 .route ol {
@@ -2302,7 +2374,12 @@ details[open] .chev {
   font-weight: 650;
 }
 .route .btn-row {
-  margin-top: 6px;
+  /* Pinned to the card's foot, so the two cards' buttons share one line. */
+  margin-top: auto;
+  padding-top: 6px;
+}
+.route .ico {
+  flex: none;
 }
 .guide-note {
   margin-top: 18px;
@@ -2481,8 +2558,14 @@ details[open] .chev {
 }
 .foot-cols {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr) minmax(0, 1fr);
   gap: 28px;
+}
+/* Wide screens: no label wraps, so every row of the three columns sits on one line. */
+@media (min-width: 901px) {
+  .foot-col a {
+    white-space: nowrap;
+  }
 }
 .foot-col h3 {
   font: 700 12px/1 var(--sans);
@@ -2626,14 +2709,12 @@ details[open] .chev {
     margin-top: 0;
   }
 }
-/* Phone: the same Product, Guides, Open Source order as everywhere, the third column full width. */
+/* Phone: the same Product, Guides, Open Source order as everywhere. Each column takes the full
+   width, so no label wraps and no row is pushed out of line by a neighbour. */
 @media (max-width: 560px) {
   .foot-cols {
-    grid-template-columns: 1fr 1fr;
-    gap: 24px 20px;
-  }
-  .foot-cols > .foot-col:nth-child(3) {
-    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
   }
 }
 
@@ -2697,6 +2778,9 @@ details[open] .chev {
 }
 /* The hero shows the whole photo at its own ratio, so a plate rim or a bowl is never cut off.
    Wide screens put the photo beside the title block, narrow ones stack it. */
+.recipe-page .crumbs {
+  margin-bottom: 12px;
+}
 .recipe-hero {
   display: grid;
   gap: 28px;
@@ -2723,9 +2807,9 @@ details[open] .chev {
   .recipe-hero {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(40px, 6vw, 88px);
-    /* Top aligned: the breadcrumb sits at the same distance under the header on every recipe,
-       whatever the height of the title block or the photo. */
-    align-items: start;
+    /* The breadcrumb sits above the grid, so the title block can be centered against the photo
+       and reads as one composed block with it instead of leaving an empty band. */
+    align-items: center;
   }
   .recipe-hero .recipe-head h1 {
     font-size: clamp(36px, 4.4vw, 64px);
@@ -2733,15 +2817,17 @@ details[open] .chev {
   .recipe-figure {
     width: 100%;
   }
-  /* The title block is as tall as the photo, so the facts end on the photo's bottom edge
-     instead of leaving an empty band beside it. */
   .recipe-hero .recipe-head {
-    align-self: stretch;
-    grid-template-rows: auto auto auto auto 1fr;
+    gap: 22px;
   }
   .recipe-hero .recipe-metrics {
-    align-self: end;
-    margin-bottom: 34px;
+    margin-top: 10px;
+  }
+  .recipe-hero .recipe-metrics b {
+    font-size: 26px;
+  }
+  .recipe-hero .recipe-metrics div {
+    padding-block: 20px;
   }
 }
 .photo-caption {

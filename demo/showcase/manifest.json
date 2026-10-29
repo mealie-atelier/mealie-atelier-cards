@@ -90,16 +90,6 @@
       "height": 1558,
       "widths": [360, 720]
     },
-    "mealie-desktop-home": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "mealie-phone-recipe": {
-      "width": 720,
-      "height": 1558,
-      "widths": [360, 720]
-    },
     "ha-desktop-dashboard": {
       "width": 1600,
       "height": 1000,
@@ -118,6 +108,36 @@
     "ha-sync-setup": {
       "width": 1600,
       "height": 1000,
+      "widths": [800, 1600]
+    },
+    "compare-desktop-mealie": {
+      "width": 1600,
+      "height": 797,
+      "widths": [800, 1600]
+    },
+    "compare-desktop-atelier": {
+      "width": 1600,
+      "height": 797,
+      "widths": [800, 1600]
+    },
+    "compare-phone-mealie": {
+      "width": 720,
+      "height": 1496,
+      "widths": [360, 720]
+    },
+    "compare-phone-atelier": {
+      "width": 720,
+      "height": 1496,
+      "widths": [360, 720]
+    },
+    "feature-mealplan": {
+      "width": 1600,
+      "height": 1356,
+      "widths": [800, 1600]
+    },
+    "feature-shopping": {
+      "width": 1600,
+      "height": 1356,
       "widths": [800, 1600]
     }
   },
@@ -212,16 +232,6 @@
       "height": 1558,
       "widths": [360, 720]
     },
-    "mealie-desktop-home": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "mealie-phone-recipe": {
-      "width": 720,
-      "height": 1558,
-      "widths": [360, 720]
-    },
     "ha-desktop-dashboard": {
       "width": 1600,
       "height": 1000,
@@ -241,6 +251,36 @@
       "width": 1600,
       "height": 1000,
       "widths": [800, 1600]
+    },
+    "compare-desktop-mealie": {
+      "width": 1600,
+      "height": 797,
+      "widths": [800, 1600]
+    },
+    "compare-desktop-atelier": {
+      "width": 1600,
+      "height": 797,
+      "widths": [800, 1600]
+    },
+    "compare-phone-mealie": {
+      "width": 720,
+      "height": 1496,
+      "widths": [360, 720]
+    },
+    "compare-phone-atelier": {
+      "width": 720,
+      "height": 1496,
+      "widths": [360, 720]
+    },
+    "feature-mealplan": {
+      "width": 1600,
+      "height": 1356,
+      "widths": [800, 1600]
+    },
+    "feature-shopping": {
+      "width": 1600,
+      "height": 1356,
+      "widths": [800, 1600]
     }
   },
   "photos": {
@@ -250,9 +290,9 @@
       "widths": [360, 800, 1600]
     },
     "gnocchi-alla-sorrentina": {
-      "width": 1200,
-      "height": 1500,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 3000,
+      "widths": [360, 800, 1600]
     },
     "haehnchensalat-mit-parmesan-und-croutons": {
       "width": 2400,
@@ -260,9 +300,9 @@
       "widths": [360, 800, 1600]
     },
     "kokos-curry-mit-kartoffeln-und-karotten": {
-      "width": 1200,
-      "height": 1500,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 3000,
+      "widths": [360, 800, 1600]
     },
     "kuerbissuppe-mit-feta-und-kuerbiskernen": {
       "width": 2400,
@@ -270,24 +310,24 @@
       "widths": [360, 800, 1600]
     },
     "penne-mit-artischocken-oliven-und-feta": {
-      "width": 2162,
-      "height": 2702,
+      "width": 2400,
+      "height": 2999,
       "widths": [360, 800, 1600]
     },
     "pfannen-eier-mit-tomaten-und-basilikum": {
-      "width": 1402,
-      "height": 1309,
-      "widths": [360, 800]
+      "width": 2017,
+      "height": 1883,
+      "widths": [360, 800, 1600]
     },
     "pizza-mit-schinken-und-champignons": {
-      "width": 810,
-      "height": 1012,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 2998,
+      "widths": [360, 800, 1600]
     },
     "wan-tan-suppe-mit-pak-choi": {
-      "width": 1200,
-      "height": 1200,
-      "widths": [360, 800]
+      "width": 2400,
+      "height": 2400,
+      "widths": [360, 800, 1600]
     },
     "zitronen-focaccia-mit-rosmarin": {
       "width": 2400,
