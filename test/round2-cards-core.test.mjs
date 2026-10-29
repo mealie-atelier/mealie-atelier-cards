@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
@@ -243,4 +244,23 @@ test("each doc comment in the card template sits directly above the member it de
     src,
     /\/\*\* True when the current view has something worth printing[^\n]*\*\/\n\s*_printable\(\)/,
   );
+});
+
+test("shopping label groups sort by name and the done heading reads checked off", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  const items = [
+    { id: "1", display: "Milk", label: { name: "Zeta" } },
+    { id: "2", display: "Apples", label: { name: "Äpfel" } },
+    { id: "3", display: "Bread", label: { name: "Bakery" } },
+    { id: "4", display: "Salt", checked: true },
+  ];
+  const html = card._shoppingRows(items);
+  const titles = [...html.matchAll(/shopping-group-title">([^<]+)</g)].map((m) => m[1]);
+  assert.deepEqual(titles, ["Äpfel", "Bakery", "Zeta", "Checked off"]);
+});
+
+test("German settings copy uses the correct gender for light stone", () => {
+  const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
+  assert.equal(de.editorDeepGreenWarmLightEditorial, "Tiefgrün · Heller Stein · großzügig");
 });

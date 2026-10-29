@@ -222,7 +222,11 @@ test("print is offered once per view and today items use a checkbox control", ()
 });
 
 test("credit link has a 44px hit area and English copy is fixed", () => {
-  assert.match(file("src/design-system/layout.css"), /\.atelier-credit a \{[^}]*min-height: 44px/);
+  const rule = file("src/design-system/layout.css").match(/\.atelier-credit a \{[^}]*\}/)[0];
+  // The hit area comes from padding offset by negative margin, so the footer row keeps its height.
+  assert.match(rule, /padding-block: 14px/);
+  assert.match(rule, /margin-block: -14px/);
+  assert.doesNotMatch(rule, /min-height/);
   const en = JSON.parse(file("src/i18n/en.json"));
   assert.equal(en.list, "Shopping list");
   assert.match(en.syncModeMoveHint, /has confirmed/);

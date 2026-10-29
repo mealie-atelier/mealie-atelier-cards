@@ -144,7 +144,10 @@ export const viewMethods = {
       if (!groups.has(name)) groups.set(name, []);
       groups.get(name).push(item);
     }
-    const named = [...groups.keys()].filter(Boolean);
+    // The API gives items no label position, so groups sort by name for a stable order.
+    const named = [...groups.keys()]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, this._locale || undefined, { sensitivity: "base" }));
     const labelled = named.length > 0;
     const section = (name, list) =>
       `${name ? `<div class="shopping-group-title">${esc(name)}</div>` : ""}${list.map((i) => this._shoppingRow(i)).join("")}`;
