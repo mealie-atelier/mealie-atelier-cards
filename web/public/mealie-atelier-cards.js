@@ -9631,6 +9631,49 @@ ha-card {
   }
 }
 
+/* Laptop screens: the cooking dialog keeps its height, the photo column stays whole and only the
+   step column scrolls, with Back and Next pinned to its bottom edge. */
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 1000px) {
+  .atelier .modal.large:has(.cook-layout) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .atelier .modal:has(.cook-layout) .cook-layout {
+    min-height: 0;
+  }
+  .atelier .modal:has(.cook-layout) .cook-visual {
+    height: auto;
+    min-height: 0;
+  }
+  .atelier .modal:has(.cook-layout) .cook-content {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 0;
+  }
+  .atelier .modal:has(.cook-layout) .cook-controls {
+    display: contents;
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions {
+    order: 3;
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    margin: 0;
+    padding: 10px 0 14px;
+    background: linear-gradient(180deg, transparent, var(--at-surface) 26%);
+  }
+  .atelier .modal:has(.cook-layout) .cook-utility,
+  .atelier .modal:has(.cook-layout) .cook-note {
+    order: 4;
+  }
+  .atelier .modal:has(.cook-layout) .cook-footnote {
+    order: 5;
+    padding-bottom: 18px;
+  }
+}
+
 @media (orientation: portrait) and (max-height: 680px) {
   .atelier .modal:has(.cook-layout) {
     max-height: calc(100dvh - 16px);

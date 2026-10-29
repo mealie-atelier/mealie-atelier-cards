@@ -218,6 +218,22 @@ test("iPhone Duo outer and inner display poses have dedicated responsive layouts
   }
 });
 
+test("cooking dialog keeps Back and Next on screen at laptop heights", () => {
+  const text = compactCss(file("src/design-system/polish.css"));
+  const start = text.indexOf(
+    "@media (orientation:landscape) and (min-height:701px) and (max-height:1000px){",
+  );
+  assert.ok(start >= 0, "laptop-height cooking dialog layout");
+  const block = text.slice(start, text.indexOf("@media", start + 10));
+  for (const rule of [
+    ".atelier .modal.large:has(.cook-layout){display:grid;grid-template-rows:minmax(0,1fr);overflow:hidden;}",
+    ".atelier .modal:has(.cook-layout) .cook-controls{display:contents;}",
+    "position:sticky;bottom:0;",
+  ])
+    assert.ok(block.includes(rule), rule);
+  assert.match(block, /\.cook-content\{min-height:0;overflow-y:auto;/);
+});
+
 test("historical stylesheets and views are migrated into source-owned components", () => {
   for (const legacy of [
     "legacy-base.css",
