@@ -61,3 +61,86 @@ test("the built-in Mealie option is always listed, disabled with a hint without 
   assert.doesNotMatch(withNative, /value="home_assistant"[^>]*disabled/);
   assert.doesNotMatch(withNative, /atelier-provider-native-hint/);
 });
+
+function makeEditor(config, hass = { language: "en" }) {
+  const cards = loadCards();
+  const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+  Object.defineProperty(editor, "isConnected", { value: true });
+  editor._hass = hass;
+  editor._wizardMode = false;
+  const emitted = [];
+  const emit = editor._emitConfig.bind(editor);
+  editor._emitConfig = () => {
+    emit();
+    emitted.push(editor._emittedConfig());
+  };
+  editor.setConfig(config);
+  return { editor, emitted };
+}
+
+test("editor emits only the stub and changed keys, type first, without private flags", () => {
+  const { editor, emitted } = makeEditor({ type: "custom:mealie-atelier-card", mode: "recipes" });
+  editor._handleChange({ target: { dataset: { key: "theme" }, value: "light" } });
+  editor._handleChange({ target: { dataset: { key: "columns" }, value: "3" } });
+  editor._handleChange({
+    target: { dataset: { key: "cooking_volume" }, value: "0.3" },
+  });
+  const out = emitted.at(-1);
+  assert.deepEqual(Object.keys(out), ["type", "mode", "theme", "cooking_volume"]);
+  assert.equal(out.cooking_volume, 0.3);
+  editor._handleClick({
+    target: { closest: () => ({ dataset: { editorAction: "skip" } }) },
+    preventDefault() {},
+  });
+  assert.equal("_setup_complete" in editor._emittedConfig(), false);
+});
+
+test("the echo of the editor's own change does not rebuild the form", () => {
+  const { editor } = makeEditor({ type: "custom:mealie-atelier-card", mode: "recipes" });
+  editor._handleChange({
+    target: { dataset: { key: "print_image" }, checked: true, type: "checkbox" },
+  });
+  editor.shadowRoot.innerHTML = "sentinel";
+  editor.setConfig(editor._emittedConfig());
+  assert.equal(editor.shadowRoot.innerHTML, "sentinel");
+  editor.setConfig({ type: "custom:mealie-atelier-card", mode: "pantry" });
+  assert.notEqual(editor.shadowRoot.innerHTML, "sentinel");
+});
+
+test("a render restores the open advanced section and the focused control", () => {
+  const { editor } = makeEditor({ type: "custom:mealie-atelier-card", mode: "recipes" });
+  const details = { open: true };
+  let focused = null;
+  const root = editor.shadowRoot;
+  root.querySelector = (selector) => (selector === ".editor-advanced" ? details : null);
+  root.activeElement = { id: "atelier-theme" };
+  // Replacing the markup closes a fresh <details>, as the browser does.
+  Object.defineProperty(root, "innerHTML", {
+    configurable: true,
+    get: () => "",
+    set: () => {
+      details.open = false;
+    },
+  });
+  root.getElementById = (id) => ({ focus: () => (focused = id) });
+  editor._render();
+  assert.equal(focused, "atelier-theme");
+  assert.equal(details.open, true);
+});
+
+test("entity fields use neutral placeholders, suggestions and a domain warning", () => {
+  const { editor } = makeEditor(
+    { type: "custom:mealie-atelier-card", cooking_scene: "light.kitchen" },
+    { language: "en", states: { "scene.dinner": {}, "light.kitchen": {} } },
+  );
+  const html = editor.shadowRoot.innerHTML;
+  assert.match(html, /placeholder="scene\.kitchen_cooking"/);
+  assert.match(html, /placeholder="media_player\.kitchen"/);
+  assert.doesNotMatch(html, /kueche/);
+  assert.match(html, /<option value="scene\.dinner">/);
+  assert.doesNotMatch(html, /<option value="light\.kitchen">/);
+  assert.match(html, /id="atelier-cooking_scene-warning"/);
+  assert.doesNotMatch(html, /atelier-cooking_media_player-warning/);
+  assert.match(html, />10%</);
+  assert.doesNotMatch(html, /Cockpit/);
+});

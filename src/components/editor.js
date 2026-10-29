@@ -5,12 +5,25 @@ const COLOR_NAMES = {
   "#d3adcd": "editorColorLilac",
   "#d6c07d": "editorColorHoney",
 };
+const SETUP_KEY = "mealie-atelier:editor-setup";
+const ENTITY_FIELDS = {
+  cooking_scene: { domain: "scene", example: "scene.kitchen_cooking" },
+  cooking_media_player: { domain: "media_player", example: "media_player.kitchen" },
+  cooking_tts_engine: { domain: "tts", example: "tts.piper" },
+};
+function shallowEqual(a, b) {
+  const ka = Object.keys(a || {});
+  const kb = Object.keys(b || {});
+  return ka.length === kb.length && ka.every((key) => Object.hasOwn(b, key) && a[key] === b[key]);
+}
 // Home Assistant visual card editor; the first-run path stays short and skippable.
 class MealieAtelierEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._config = { ...DEFAULTS };
+    // The config as it lives in the dashboard YAML: only what the user (or the stub) set.
+    this._raw = {};
     this._entries = [];
     this._nativeEntries = [];
     this._entriesState = "loading";
@@ -22,11 +35,48 @@ class MealieAtelierEditor extends HTMLElement {
   }
   setConfig(config) {
     // A focused card type without mode starts in its own view, as the card does.
+    // Home Assistant echoes every emitted config back; rebuilding then would close the
+    // advanced section and drop keyboard focus, so the echo is ignored.
+    if (this._rendered && shallowEqual(config, this._raw)) return;
+    this._raw = { ...config };
     const tag = String(config?.type || "").replace(/^custom:/, "");
     const mode = customElements.get(tag)?.getStubConfig?.().mode;
     this._config = { ...DEFAULTS, ...(mode ? { mode } : {}), ...config };
-    if (this._config._setup_complete === true) this._wizardMode = false;
+    if (this._config._setup_complete === true || this._setupDone()) this._wizardMode = false;
     this._render();
+  }
+  _setupDone() {
+    try {
+      return localStorage.getItem(SETUP_KEY) === "1";
+    } catch {
+      return false;
+    }
+  }
+  _markSetup(done) {
+    try {
+      if (done) localStorage.setItem(SETUP_KEY, "1");
+      else localStorage.removeItem(SETUP_KEY);
+    } catch {
+      /* storage unavailable: the wizard simply shows again next time */
+    }
+  }
+  // Applies a change to the rendered config and to the YAML-bound config.
+  _patch(changes) {
+    this._config = { ...this._config, ...changes };
+    const raw = { ...this._raw };
+    for (const [key, value] of Object.entries(changes)) {
+      const isDefault =
+        Object.hasOwn(DEFAULTS, key) &&
+        String(DEFAULTS[key]) === String(value) &&
+        !["mode", "type", "title", "entry_id"].includes(key);
+      if (isDefault) delete raw[key];
+      else raw[key] = value;
+    }
+    this._raw = raw;
+  }
+  _emittedConfig() {
+    const { type, _setup_complete, ...rest } = this._raw;
+    return type ? { type, ...rest } : rest;
   }
   set hass(hass) {
     if (this._hass === hass) return;
@@ -44,7 +94,7 @@ class MealieAtelierEditor extends HTMLElement {
         this._entries = asArray(result?.entries);
         this._entriesState = "ready";
         if (this._entries.length === 1 && !this._config.entry_id) {
-          this._config = { ...this._config, entry_id: this._entries[0].entry_id };
+          this._patch({ entry_id: this._entries[0].entry_id });
           this._emitConfig();
         }
         this._detectNativeEntries();
@@ -109,9 +159,10 @@ class MealieAtelierEditor extends HTMLElement {
     return `<select id="atelier-${key}" data-key="${key}">${all.map(([value, label, disabled]) => `<option value="${esc(value)}" ${String(c[key]) === String(value) ? "selected" : ""} ${disabled ? "disabled" : ""}>${esc(label)}</option>`).join("")}</select>`;
   }
   _emitConfig() {
+    this._raw = this._emittedConfig();
     this.dispatchEvent(
       new CustomEvent("config-changed", {
-        detail: { config: { ...this._config } },
+        detail: { config: { ...this._raw } },
         bubbles: true,
         composed: true,
       }),
@@ -122,12 +173,10 @@ class MealieAtelierEditor extends HTMLElement {
     if (!key) return;
     let value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
     if (key === "columns") value = Number(value) || 3;
-    this._config = { ...this._config, [key]: value };
+    if (typeof DEFAULTS[key] === "number" && value !== "") value = Number(value);
+    this._patch({ [key]: value });
     this._emitConfig();
-    if (key === "mode" || key === "provider") {
-      this._render();
-      this.shadowRoot.querySelector(`#atelier-${key}`)?.focus({ preventScroll: true });
-    }
+    if (key === "mode" || key === "provider" || ENTITY_FIELDS[key]) this._render();
   }
   _handleClick(event) {
     const action = event.target.closest?.("[data-editor-action]")?.dataset.editorAction;
@@ -148,30 +197,27 @@ class MealieAtelierEditor extends HTMLElement {
     if (action === "preset") {
       const preset = event.target.closest("[data-preset]")?.dataset.preset;
       if (!preset) return;
-      this._config = {
-        ...this._config,
+      this._patch({
         ...(preset === "auto"
           ? { theme: "auto", density: "comfortable", motion: "balanced" }
           : preset === "light"
             ? { theme: "light", accent: "#e5ad92", density: "comfortable", motion: "balanced" }
             : { theme: "dark", accent: "#9dcbb2", density: "comfortable", motion: "balanced" }),
-      };
+      });
       this._emitConfig();
       this._render();
       return;
     }
     if (action === "finish" || action === "skip") {
-      this._config = { ...this._config, _setup_complete: true };
+      this._markSetup(true);
       this._wizardMode = false;
-      this._emitConfig();
       this._render();
       return;
     }
     if (action === "restart") {
       this._step = 0;
-      this._config = { ...this._config, _setup_complete: false };
+      this._markSetup(false);
       this._wizardMode = true;
-      this._emitConfig();
       this._render();
       return;
     }
@@ -185,7 +231,7 @@ class MealieAtelierEditor extends HTMLElement {
           this._entries = asArray(result?.entries);
           this._entriesState = "ready";
           if (this._entries.length === 1 && !this._config.entry_id) {
-            this._config = { ...this._config, entry_id: this._entries[0].entry_id };
+            this._patch({ entry_id: this._entries[0].entry_id });
             this._emitConfig();
           }
           this._detectNativeEntries();
@@ -345,27 +391,51 @@ class MealieAtelierEditor extends HTMLElement {
     <details class="editor-advanced"><summary>${tr("editorOptionalPrintAndKitchenSettings")}</summary><div class="section-head"><span>03</span><div><strong>${tr("editorPrintStudio")}</strong><p>${tr("editorPremiumA4LayoutsForRecipesAndLists")}</p></div></div><div class="group"><label for="atelier-print_style">${tr("editorPrintTemplate")}</label>${choose(
       "print_style",
       [
-        ["editorial", "Editorial"],
+        ["editorial", tr("uiPrintEditorial")],
         ["compact", tr("editorCompact")],
         ["minimal", tr("editorInkSaver")],
       ],
     )}</div>
     <label class="line"><input type="checkbox" data-key="print_image" ${c.print_image === true ? "checked" : ""}> ${tr("editorPrintRecipePhotosWhenAvailable")}</label><label class="line"><input type="checkbox" data-key="print_checkboxes" ${c.print_checkboxes !== false ? "checked" : ""}> ${tr("editorPrintCheckboxes")}</label><label class="line"><input type="checkbox" data-key="print_completed" ${c.print_completed === true ? "checked" : ""}> ${tr("editorPrintCompletedItems")}</label><label class="line"><input type="checkbox" data-key="print_nutrition" ${c.print_nutrition === true ? "checked" : ""}> ${tr("editorPrintStoredNutritionValues")}</label><label class="line"><input type="checkbox" data-key="print_notes" ${c.print_notes !== false ? "checked" : ""}> ${tr("editorPrintHandwritingSpace")}</label>
     <div class="section-head"><span>04</span><div><strong>${tr("editorKitchenTablet")}</strong><p>${tr("editorOptionalHomeAssistantActionsNothingTriggersAutomatically")}</p></div></div><label class="line"><input type="checkbox" data-key="kiosk_mode" ${c.kiosk_mode === true ? "checked" : ""}> ${tr("editorUseEnlargedTabletLayout")}</label>
-    <div class="group"><label for="atelier-cooking_scene">${tr("editorOptionalKitchenSceneHA")}</label><input id="atelier-cooking_scene" data-key="cooking_scene" value="${esc(c.cooking_scene || "")}" placeholder="scene.kueche_kochen"><p class="hint">${tr("editorOnlyTriggeredWhenYouTapTheCookingCockpitButton")}</p></div><div class="group"><label for="atelier-cooking_media_player">${tr("editorOptionalMediaPlayerHA")}</label><input id="atelier-cooking_media_player" data-key="cooking_media_player" value="${esc(c.cooking_media_player || "")}" placeholder="media_player.kueche"></div>
+    <div class="group"><label for="atelier-cooking_scene">${tr("editorOptionalKitchenSceneHA")}</label><input id="atelier-cooking_scene" data-key="cooking_scene" value="${esc(c.cooking_scene || "")}" placeholder="scene.kitchen_cooking" list="atelier-list-cooking_scene" autocomplete="off">${this._entityDatalist("cooking_scene")}${this._entityWarning("cooking_scene")}<p class="hint">${tr("editorOnlyTriggeredWhenYouTapTheCookingCockpitButton")}</p></div><div class="group"><label for="atelier-cooking_media_player">${tr("editorOptionalMediaPlayerHA")}</label><input id="atelier-cooking_media_player" data-key="cooking_media_player" value="${esc(c.cooking_media_player || "")}" placeholder="media_player.kitchen" list="atelier-list-cooking_media_player" autocomplete="off">${this._entityDatalist("cooking_media_player")}${this._entityWarning("cooking_media_player")}</div>
     <div class="group"><label for="atelier-cooking_volume">${tr("editorCookingVolume")}</label>${choose(
       "cooking_volume",
       [
-        [0.1, "10 %"],
-        [0.18, "18 %"],
-        [0.3, "30 %"],
-        [0.5, "50 %"],
+        [0.1, "10%"],
+        [0.18, "18%"],
+        [0.3, "30%"],
+        [0.5, "50%"],
       ],
-    )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper"><p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div></details>
+    )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper" list="atelier-list-cooking_tts_engine" autocomplete="off">${this._entityDatalist("cooking_tts_engine")}${this._entityWarning("cooking_tts_engine")}<p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div></details>
     <p class="hint editor-footer">${tr("editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio")}</p></div>`;
+  }
+  _entityDatalist(key) {
+    const { domain } = ENTITY_FIELDS[key];
+    const ids = Object.keys(this._hass?.states || {})
+      .filter((id) => id.startsWith(`${domain}.`))
+      .sort();
+    return `<datalist id="atelier-list-${key}">${ids.map((id) => `<option value="${esc(id)}"></option>`).join("")}</datalist>`;
+  }
+  // A wrong domain silently hides the cooking button, so say so next to the field.
+  _entityWarning(key) {
+    const value = String(this._config[key] || "").trim();
+    const { domain, example } = ENTITY_FIELDS[key];
+    if (!value || value.startsWith(`${domain}.`)) return "";
+    return `<p class="hint" role="alert" id="atelier-${key}-warning">${esc(translateLabel(this._locale(), "editorEntityDomainWarning", { domain, example }))}</p>`;
   }
   _render() {
     if (!this.isConnected) return;
-    this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style>${this._wizardMode ? this._wizardMarkup() : this._settingsMarkup()}`;
+    const root = this.shadowRoot;
+    // The whole tree is replaced, so remember the open section and the focused control.
+    const advancedOpen = root.querySelector?.(".editor-advanced")?.open === true;
+    const focusId = root.activeElement?.id || "";
+    root.innerHTML = `<style>${EDITOR_STYLE}</style>${this._wizardMode ? this._wizardMarkup() : this._settingsMarkup()}`;
+    this._rendered = true;
+    if (advancedOpen) {
+      const details = root.querySelector(".editor-advanced");
+      if (details) details.open = true;
+    }
+    if (focusId) root.getElementById?.(focusId)?.focus?.({ preventScroll: true });
   }
 }
