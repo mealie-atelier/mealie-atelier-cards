@@ -11,13 +11,15 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PASSWORD = "lengthy-test-password";
 
-async function mealieStub({ tokenOk = true } = {}) {
+async function mealieStub({ tokenOk = true, forbidden = false, html = false } = {}) {
   const posts = [];
   const server = createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => (raw += c));
     req.on("end", () => {
+      if (html) return res.writeHead(404, { "Content-Type": "text/html" }).end("<html></html>");
       res.setHeader("Content-Type", "application/json");
+      if (forbidden) return res.writeHead(403).end("{}");
       if (!tokenOk) return res.writeHead(401).end("{}");
       if (req.method === "POST") posts.push(JSON.parse(raw));
       res
@@ -70,6 +72,17 @@ for (const [name, env, message] of [
     { MEALIE_URL: "192.168.1.20:9925" },
     /MEALIE_URL must be an http\(s\)/,
   ],
+  ["negative PORT", { MEALIE_URL: "http://127.0.0.1:1", PORT: "-5" }, /PORT must be/],
+  [
+    "VAPID subject without mailto or https",
+    {
+      MEALIE_URL: "http://127.0.0.1:1",
+      ATELIER_VAPID_PUBLIC_KEY: "x",
+      ATELIER_VAPID_PRIVATE_KEY: "y",
+      ATELIER_VAPID_SUBJECT: "someone@example.com",
+    },
+    /ATELIER_VAPID_SUBJECT must start with/,
+  ],
   ["bad PORT", { MEALIE_URL: "http://127.0.0.1:1", PORT: "abc" }, /PORT must be/],
   [
     "bad trusted proxies",
@@ -121,6 +134,32 @@ test("wrong Mealie token is a translated-code 502 and status is not connected", 
     const status = await (await call(r.port, { type: "mealie_atelier/status" })).json();
     assert.equal(status.entries[0].connected, false);
     assert.equal(status.entries[0].features.ai, false);
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("a 403 from Mealie stays a permission error, not a token error", async () => {
+  const stub = await mealieStub({ forbidden: true });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await call(r.port, { type: "mealie_atelier/shopping" });
+    assert.equal(res.status, 403);
+    assert.notEqual((await res.json()).code, "mealie_auth");
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("an HTML answer from MEALIE_URL reports mealie_not_mealie", async () => {
+  const stub = await mealieStub({ html: true });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await call(r.port, { type: "mealie_atelier/shopping" });
+    assert.equal(res.status, 502);
+    assert.equal((await res.json()).code, "mealie_not_mealie");
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();

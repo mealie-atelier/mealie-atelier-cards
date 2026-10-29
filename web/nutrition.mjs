@@ -108,12 +108,17 @@ async function fdcCall(key, route, body) {
       redirect: "manual",
       signal: controller.signal,
     });
-    if (res.status !== 200)
-      throw Object.assign(new Error(`USDA returned HTTP ${res.status}`), { status: 502 });
+    if (res.status !== 200) {
+      const rejected = [401, 403].includes(res.status);
+      throw Object.assign(
+        new Error(rejected ? "USDA rejected the API key" : `USDA returned HTTP ${res.status}`),
+        { status: 502, atelierCode: rejected ? "usda_key_rejected" : "usda_error" },
+      );
+    }
     return await res.json();
   } catch (error) {
     if (error.name === "AbortError")
-      throw Object.assign(new Error("USDA timed out"), { status: 502 });
+      throw Object.assign(new Error("USDA timed out"), { status: 502, atelierCode: "usda_error" });
     throw error;
   } finally {
     clearTimeout(timer);

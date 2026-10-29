@@ -44,7 +44,11 @@ export function resolveLocale(acceptLanguage, explicit) {
 
 /** Explicit opt-in substitutions: recommendations only, always manually reviewed. */
 export async function aiSubstitute(key, ingredient, recipe, locale = "de") {
-  if (!key) throw Object.assign(new Error("AI is not configured"), { status: 400 });
+  if (!key)
+    throw Object.assign(new Error("AI is not configured"), {
+      status: 400,
+      atelierCode: "ai_not_configured",
+    });
   if (
     typeof ingredient !== "string" ||
     ingredient.length < 2 ||
@@ -99,7 +103,11 @@ export async function aiSubstitute(key, ingredient, recipe, locale = "de") {
 }
 
 export async function aiAudit(key, recipe, locale = "de") {
-  if (!key) throw Object.assign(new Error("AI is not configured"), { status: 400 });
+  if (!key)
+    throw Object.assign(new Error("AI is not configured"), {
+      status: 400,
+      atelierCode: "ai_not_configured",
+    });
   const name = String(recipe?.name || "").slice(0, 180),
     ingredients = (recipe?.recipeIngredient || [])
       .slice(0, 80)
