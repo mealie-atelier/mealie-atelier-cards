@@ -242,24 +242,29 @@ class MealieAtelierCard extends HTMLElement {
       if (event.target?.tagName === "IMG") event.target.remove();
     };
     this._boundKeyDown = this._handleKeyDown.bind(this);
-    // Standalone app: make the shortcut work before anything in the card has focus.
-    // In Home Assistant, never hijack its own global keyboard shortcuts.
+    // Make the shortcuts work before anything in the card has focus. In Home Assistant this only
+    // applies while nothing at all has focus (target is the body), so its own shortcuts and
+    // every other focused element keep working.
     this._boundPageKeyDown = (event) => {
-      if (
-        !this.isConnected ||
-        this._hass?.callService ||
-        this._config.mode !== "dashboard" ||
-        event.defaultPrevented
-      )
-        return;
+      if (!this.isConnected || event.defaultPrevented || typeof event.key !== "string") return;
       if (event.composedPath().includes(this)) return; // shadowRoot handler already handled it
-      if (document.querySelector("mealie-atelier-card") !== this) return;
-      if (event.target?.closest?.('input,textarea,select,[contenteditable="true"]')) return;
-      if (
-        ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") ||
-        event.key === "/"
-      )
-        this._handleKeyDown(event);
+      const target = event.target;
+      const bare = !target || target === document.body || target === document.documentElement;
+      const inHass = Boolean(this._hass?.callService);
+      if (inHass) {
+        if (!bare || !this.getClientRects().length) return;
+      } else {
+        if (document.querySelector("mealie-atelier-card") !== this) return;
+        if (target?.closest?.('input,textarea,select,[contenteditable="true"]')) return;
+      }
+      const shortcut =
+        ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") || event.key === "/";
+      // With a dialog open and focus lost to the body, keep Esc, arrows and Tab working.
+      const dialogKey =
+        Boolean(this._modal) &&
+        bare &&
+        ["Escape", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Tab"].includes(event.key);
+      if (shortcut || dialogKey) this._handleKeyDown(event);
     };
     this._boundPointerDown = this._handlePointerDown.bind(this);
     this._boundPointerUp = this._handlePointerUp.bind(this);
@@ -851,6 +856,7 @@ class MealieAtelierCard extends HTMLElement {
       this._modalReturn = { action: active.dataset.action, value: active.dataset.value || "" };
     }
     let restoreSelector = "";
+    let restoreIndex = 0;
     if (active && active !== this.shadowRoot.host) {
       const attr = [
         "data-action",
@@ -861,7 +867,13 @@ class MealieAtelierCard extends HTMLElement {
       ].find((k) => active.hasAttribute?.(k));
       if (attr) {
         const v = active.getAttribute(attr);
-        if (v && /^[a-z0-9_-]+$/i.test(v)) restoreSelector = `[${attr}="${v}"]`;
+        if (v && /^[a-z0-9_-]+$/i.test(v)) {
+          restoreSelector = `[${attr}="${v}"]`;
+          restoreIndex = Math.max(
+            0,
+            [...this.shadowRoot.querySelectorAll(restoreSelector)].indexOf(active),
+          );
+        }
       }
     }
     const scrollClasses = [
@@ -939,22 +951,50 @@ class MealieAtelierCard extends HTMLElement {
       }
     }
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
+    const closeButton = () =>
+      this.shadowRoot.querySelector('[role="dialog"] [data-action="close-modal"]');
     if (modalChanged && dialog) {
-      const target =
-        dialog.querySelector('[data-input="command-search"], [data-autofocus]') ||
-        dialog.querySelector('[data-action="close-modal"]');
-      target?.focus({ preventScroll: true });
+      this._focusAfterRender(
+        () =>
+          this.shadowRoot.querySelector(
+            '[role="dialog"] [data-input="command-search"], [role="dialog"] [data-autofocus]',
+          ) || closeButton(),
+      );
     } else if (modalChanged && !dialog && this._modalReturn) {
       const { action, value } = this._modalReturn;
-      const candidate = [...this.shadowRoot.querySelectorAll("[data-action]")].find(
-        (el) => el.dataset.action === action && (!value || el.dataset.value === value),
-      );
-      candidate?.focus({ preventScroll: true });
       this._modalReturn = null;
+      this._focusAfterRender(() =>
+        [...this.shadowRoot.querySelectorAll("[data-action]")].find(
+          (el) => el.dataset.action === action && (!value || el.dataset.value === value),
+        ),
+      );
     } else if (!modalChanged && restoreSelector) {
-      // Preserve keyboard position after re-rendering a setting, week or checked item.
-      this.shadowRoot.querySelector(restoreSelector)?.focus({ preventScroll: true });
+      // Preserve keyboard position after re-rendering a setting, week or checked item. The same
+      // nth match is restored, and an open dialog falls back to its close button so keyboard
+      // shortcuts keep working when the used control is gone or disabled.
+      this._focusAfterRender(() => {
+        const el = this.shadowRoot.querySelectorAll(restoreSelector)[restoreIndex];
+        return el && !el.disabled ? el : this._modal ? closeButton() : null;
+      });
     }
+  }
+  /**
+   * Focus an element after the subtree was swapped. Home Assistant's own ha-card renders its
+   * slot asynchronously, so the new content is not focusable (no layout box) during the render
+   * call itself and a single focus() silently does nothing. Retry on the next frames until the
+   * element really holds focus; a newer render cancels older attempts.
+   */
+  _focusAfterRender(find) {
+    const token = (this._focusToken = (this._focusToken || 0) + 1);
+    const attempt = (n) => {
+      if (token !== this._focusToken || !this.isConnected) return;
+      const el = find();
+      if (!el) return;
+      el.focus?.({ preventScroll: true });
+      if (this.shadowRoot.activeElement === el || n >= 10) return;
+      requestAnimationFrame(() => attempt(n + 1));
+    };
+    attempt(0);
   }
   _handlePointerDown(event) {
     if (
@@ -1063,7 +1103,11 @@ class MealieAtelierCard extends HTMLElement {
         ) || []),
       ].filter((el) => el.getClientRects().length);
       if (!nodes.length) return;
-      if (event.shiftKey && target === nodes[0]) {
+      if (!target || !dialog.contains(target)) {
+        // Focus escaped the dialog (or was never inside): pull it back in.
+        event.preventDefault();
+        (event.shiftKey ? nodes.at(-1) : nodes[0]).focus();
+      } else if (event.shiftKey && target === nodes[0]) {
         event.preventDefault();
         nodes.at(-1).focus();
       } else if (!event.shiftKey && target === nodes.at(-1)) {
