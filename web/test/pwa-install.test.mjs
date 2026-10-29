@@ -51,3 +51,30 @@ test("web manifest includes installable and maskable raster icons", async () => 
   assert.match(styles, /@starting-style/);
   assert.match(styles, /prefers-reduced-motion:\s*reduce/);
 });
+
+test("every icon path in the manifest and index.html exists and is served by server.mjs", async () => {
+  const manifest = JSON.parse(
+    await readFile(new URL("../public/manifest.webmanifest", import.meta.url)),
+  );
+  const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+  const server = await readFile(new URL("../server.mjs", import.meta.url), "utf8");
+  const sw = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+  const linked = [...html.matchAll(/<link[^>]+rel="(?:icon|apple-touch-icon)"[^>]*>/g)].map(
+    (m) => m[0].match(/href="([^"]+)"/)[1],
+  );
+  assert.ok(linked.length >= 3);
+  const paths = new Set([...manifest.icons.map((icon) => icon.src), ...linked]);
+  for (const path of paths) {
+    await readFile(new URL(`../public${path}`, import.meta.url));
+    assert.ok(server.includes(`"${path}": [`), `server.mjs does not serve ${path}`);
+  }
+  for (const entry of sw.match(/new Set\(\[([\s\S]*?)\]\)/)[1].match(/"\/[^"]*"/g)) {
+    const path = JSON.parse(entry);
+    if (path === "/") continue;
+    assert.ok(server.includes(`"${path}": [`), `server.mjs does not serve ${path}`);
+  }
+  assert.equal(manifest.background_color, "#14201A");
+  assert.equal(manifest.theme_color, "#14201A");
+  assert.doesNotMatch(JSON.stringify(manifest) + html, /#302632/i);
+  assert.doesNotMatch(manifest.name, /[—–]/);
+});

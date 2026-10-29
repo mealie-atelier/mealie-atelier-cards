@@ -16,7 +16,7 @@ Mealie Atelier uses one GitHub organization and two product repositories. The st
 - The Web app in `web/` is a standalone Node service. It keeps Mealie credentials on its server and works without Home Assistant.
 - The demo is generated from fictional bilingual recipes in `demo/data/recipes.json`. It stays static and browser-local; it must never use a household Mealie export or call live Mealie/Home Assistant services.
 - The Bridge owns Home Assistant-side credentials and durable integration state. Cards and Web must not contain secrets or depend on Bridge for standalone operation.
-- Shared photo assets have origin and rights notes in `brand/CREDITS.md`. Product icon and social-preview masters use the same original pasta-and-tomato photograph and square-edged artwork; export steps are in `brand/README.md`.
+- Product icon and social-preview artwork use the Week Dial mark; the masters live in the `mealie-atelier/.github` repository and export steps are in `brand/README.md`.
 
 ## Release checks
 

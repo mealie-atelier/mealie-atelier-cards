@@ -15,7 +15,9 @@ const STATIC = new Set([
   "/icon-512.png",
   "/icon-maskable-512.png",
   "/apple-touch-icon.png",
-  "/pasta-with-tomatoes.jpg",
+  "/favicon.svg",
+  "/favicon.ico",
+  "/favicon-32.png",
 ]);
 self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 self.addEventListener("activate", (e) =>
@@ -90,7 +92,7 @@ self.addEventListener("push", (event) => {
       tag: "atelier-timer-" + String(message.id).slice(0, 60),
       renotify: true,
       icon: "/icon-192.png",
-      badge: "/icon.svg",
+      badge: "/favicon.svg",
       vibrate: [200, 100, 200],
       data: { url: "/" },
       requireInteraction: true,

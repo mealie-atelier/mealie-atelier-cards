@@ -22,7 +22,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Web app: the footer has a side gutter on phones.
 - The Verwalten view no longer repeats the read-only notice that the global banner already shows.
 - AI failures show their own message instead of claiming Mealie is unreachable.
-- Web app: `icon-maskable-512.png` and `pasta-with-tomatoes.jpg`, which the manifest and the service worker precache list, are served now instead of answering 404.
+- Web app: `icon-maskable-512.png`, which the manifest lists, is served now instead of answering 404. The unused photo `pasta-with-tomatoes.jpg` left the precache list.
 - Web app: a reader sees "You are signed in with read access. An administrator can give your account the writer role." instead of the Home Assistant wording.
 - Web app: the footer line follows the app language (German or English).
 - Web app docs: a reader's shared cooking journal is read only (only personal timers still work), and the sign-in throttle allows 5 free failures and locks out from the 6th.

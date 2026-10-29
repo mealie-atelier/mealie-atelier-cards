@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <meta name="theme-color" content="#302632" />
+    <meta name="theme-color" content="#14201A" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -16,7 +16,9 @@
     <link rel="stylesheet" href="/pwa-install.css?v=0.10.0" />
     <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <title>Mealie Atelier — Dein Küchenstudio</title>
     <style>
       :root {
@@ -139,7 +141,7 @@
         document.documentElement.style.colorScheme = normalizedTheme;
         document
           .querySelector('meta[name="theme-color"]')
-          ?.setAttribute("content", normalizedTheme === "light" ? "#f4f1eb" : "#111613");
+          ?.setAttribute("content", normalizedTheme === "light" ? "#f4f1eb" : "#14201A");
       };
       syncShellTheme(card._design.theme);
       const syncShellLanguage = (language) => {
