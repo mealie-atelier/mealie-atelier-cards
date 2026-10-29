@@ -101,16 +101,17 @@
 }
 .atelier .sync-radio-card:has(input:checked) {
   border-color: var(--ds-ring);
-  border-width: 2px;
+  box-shadow: 0 0 0 1px var(--ds-ring);
 }
 .atelier .sync-radio-card:has(input:focus-visible) {
   outline: 2px solid var(--ds-ring);
   outline-offset: 2px;
 }
 .atelier .sync-radio-card input {
-  inline-size: 24px;
-  block-size: 24px;
   margin: 0;
+}
+.atelier .sync-radio-card input[type="radio"] {
+  border-radius: 50%;
 }
 .atelier .sync-radio-card small {
   display: block;
@@ -119,4 +120,18 @@
 }
 .atelier .sync-field-error {
   font-weight: 650;
+}
+.atelier .sync-panel .editor-card + .editor-card {
+  margin-block-start: var(--ds-space-3);
+}
+.atelier .sync-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.atelier .sync-back > svg {
+  transform: rotate(180deg);
 }

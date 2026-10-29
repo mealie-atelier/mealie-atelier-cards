@@ -287,9 +287,9 @@ test("setup shows the capability line and uses labelled fieldsets with real radi
   input(env.card, { input: "sync-destination" }, { value: "todo.plain" });
   const html = markup(env.cards);
   assert.match(html, /Supports notes: no/);
-  assert.match(html, /<fieldset class="sync-fieldset"><legend>Mode<\/legend>/);
+  assert.match(html, /<fieldset class="sync-fieldset"><legend class="sync-sr">Mode<\/legend>/);
   assert.equal((html.match(/<input type="radio"/g) || []).length, 5);
-  assert.match(html, /<option value="todo\.bring"[^>]*>Bring · bring<\/option>/);
+  assert.match(html, /<option value="todo\.bring"[^>]*>Bring<\/option>/);
   input(env.card, { input: "sync-destination" }, { value: "todo.bring" });
   assert.match(markup(env.cards), /Supports notes: yes/);
 });
@@ -456,7 +456,7 @@ test("a partial run result is announced as partial, a queued run as queued", asy
   await click(env.card, { action: "sync-run", value: "r1" });
   assert.match(
     markup(env.cards),
-    /Partly sent, some items need attention\. Sent 3, skipped 1, failed 1, still waiting 2\./,
+    /Partly sent, some items need attention: 3 sent, 1 skipped, 1 failed, 2 still waiting\./,
   );
   assert.doesNotMatch(markup(env.cards), /\bDone\b/);
   env.card._ws = async () => ({ queued: true });
@@ -636,4 +636,61 @@ test("the permission error re-fetches status once", async () => {
   await new Promise((resolve) => setTimeout(resolve, 5));
   assert.equal(statusCalls, 1);
   assert.equal(env.card._permissions.can_write, false);
+});
+
+test("setup shows neutral text until a destination is chosen and never a dangling arrow", async () => {
+  const env = syncCard();
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-setup-open", value: "" });
+  const html = markup(env.cards);
+  assert.match(html, /Save and send</);
+  assert.doesNotMatch(html, /Save and send \d+ items?/);
+  assert.doesNotMatch(html, /placeholder="[^"]*→/);
+  assert.equal(env.card._syncDraftRequest(env.card._syncData().setup).name, "Weekly groceries");
+});
+
+test("destination labels use friendly platform names and drop a repeated platform", async () => {
+  const env = syncCard({
+    handlers: {
+      sync_destinations: async () => ({
+        entities: [
+          { entity_id: "todo.sl", name: "Shopping list", platform: "shopping_list", supports: {} },
+          { entity_id: "todo.x", name: "Home", platform: "local_todo", supports: {} },
+        ],
+      }),
+    },
+  });
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-setup-open", value: "" });
+  const html = markup(env.cards);
+  assert.match(html, />Shopping list<\/option>/);
+  assert.match(html, />Home · Local todo<\/option>/);
+  assert.doesNotMatch(html, /shopping_list|local_todo/);
+});
+
+test("run result has no doubled word, shows a success icon and says just now", async () => {
+  const env = syncCard();
+  await openStatus(env, [withRule()]);
+  await click(env.card, { action: "sync-run", value: "r1" });
+  const html = markup(env.cards);
+  assert.match(html, /Sent: 1 sent, 0 skipped, 0 failed, 0 still waiting\./);
+  assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
+  assert.equal(env.card._syncRelative(new Date().toISOString()), "just now");
+  assert.match(html, /nothing waiting/);
+});
+
+test("review has one title, a distinct group heading and a back arrow that points back", async () => {
+  const env = syncCard({
+    handlers: {
+      sync_records: async () => ({
+        records: [{ key: "r1:a", rule_id: "r1", state: "failed", title: "Milk", description: "" }],
+      }),
+    },
+  });
+  await openStatus(env, [withRule({ counts: { failed: 1 } })]);
+  await click(env.card, { action: "sync-review", value: "r1" });
+  const html = markup(env.cards);
+  assert.equal((html.match(/Items to review/g) || []).length, 1);
+  assert.match(html, /<h3>Needs attention<\/h3>/);
+  assert.match(html, /class="btn sync-back"/);
 });
