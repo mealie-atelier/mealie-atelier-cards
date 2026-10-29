@@ -1057,7 +1057,7 @@
   "syncLastRun": "Last run {time}: {result}",
   "syncNeverRun": "No run yet",
   "syncRunQueued": "A run is already in progress. Another pass follows right after it.",
-  "syncRunResult": "{result}: {sent} item(s), {skipped} skipped, {failed} failed, {left} still waiting.",
+  "syncRunResult": "{result}. Sent: {sent}, skipped: {skipped}, failed: {failed}, still waiting: {left}.",
   "syncOutcomeSent": "Sent",
   "syncOutcomePartial": "Partly sent, some items need attention",
   "syncOutcomeFailed": "Not sent",

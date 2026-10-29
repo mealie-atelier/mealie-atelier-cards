@@ -132,3 +132,14 @@
 .atelier .sync-back > svg {
   transform: rotate(180deg);
 }
+
+/* Dialogs without a photo hero have no dark image behind the close button, so it follows the theme. */
+.atelier .modal:not(:has(> .modal-hero, .cook-layout)) > .modal-close {
+  background: var(--at-panel);
+  color: var(--at-ink);
+  border: 1px solid var(--at-line);
+  backdrop-filter: none;
+}
+.atelier .modal:not(:has(> .modal-hero, .cook-layout)) > .modal-close:hover {
+  background: var(--at-panel2);
+}

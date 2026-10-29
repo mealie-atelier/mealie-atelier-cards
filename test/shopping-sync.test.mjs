@@ -458,7 +458,7 @@ test("a partial run result is announced as partial, a queued run as queued", asy
   await click(env.card, { action: "sync-run", value: "r1" });
   assert.match(
     markup(env.cards),
-    /Partly sent, some items need attention: 3 item\(s\), 1 skipped, 1 failed, 2 still waiting\./,
+    /Partly sent, some items need attention\. Sent: 3, skipped: 1, failed: 1, still waiting: 2\./,
   );
   assert.doesNotMatch(markup(env.cards), /\bDone\b/);
   env.card._ws = async () => ({ queued: true });
@@ -675,7 +675,7 @@ test("run result has no doubled word, shows a success icon and says just now", a
   await openStatus(env, [withRule()]);
   await click(env.card, { action: "sync-run", value: "r1" });
   const html = markup(env.cards);
-  assert.match(html, /Sent: 1 item\(s\), 0 skipped, 0 failed, 0 still waiting\./);
+  assert.match(html, /Sent\. Sent: 1, skipped: 0, failed: 0, still waiting: 0\./);
   assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
   assert.equal(env.card._syncRelative(new Date().toISOString()), "just now");
   assert.match(html, /nothing waiting/);
@@ -720,4 +720,58 @@ test("rule card shows a separator in the state line and no repeated route", asyn
   const html = markup(env.cards);
   assert.match(html, /<\/strong> <span class="sync-muted" aria-hidden="true">·<\/span>/);
   assert.equal((html.match(/Weekly groceries → Bring/g) || []).length, 1);
+});
+
+test("run result labels every number, in both languages", async () => {
+  const env = syncCard({
+    handlers: {
+      sync_run: async () => ({ rule_id: "r1", outcome: "failed", sent: 0, failed: 1 }),
+    },
+  });
+  await openStatus(env, [withRule()]);
+  assert.match(
+    env.card._syncResultText({ outcome: "failed", sent: 0, failed: 1 }),
+    /^Not sent\. Sent: 0, skipped: 0, failed: 1, still waiting: 0\.$/,
+  );
+  env.card._hass.language = "de";
+  const de = env.card._syncResultText({ outcome: "failed", sent: 0, failed: 1 });
+  assert.equal(de, "Nicht gesendet. Gesendet: 0, übersprungen: 0, fehlgeschlagen: 1, offen: 0.");
+});
+
+test("the built-in Shopping list is shown by its localised name without a repeated pair", async () => {
+  const env = syncCard();
+  env.card._hass.language = "de";
+  const rule = withRule({
+    name: "Weekly groceries → Einkaufsliste",
+    destination: {
+      entity_id: "todo.sl",
+      name: "Shopping list",
+      platform: "shopping_list",
+      available: true,
+      supports: {},
+    },
+  });
+  await openStatus(env, [rule]);
+  const html = markup(env.cards);
+  assert.doesNotMatch(html, /Shopping list/);
+  assert.doesNotMatch(html, /Einkaufsliste · Einkaufsliste/);
+  assert.equal(env.card._syncDestinationLabel("Shopping list", "shopping_list"), "Einkaufsliste");
+});
+
+test("a rule named after its route still shows the platform that the title does not", () => {
+  const card = syncCard().card;
+  const named = (name) => withRule({ name });
+  assert.match(
+    card._syncRouteHtml(named("Weekly groceries → Home"), { platform: "local_todo" }, "Home"),
+    /<p class="sync-route">Local todo<\/p>/,
+  );
+  assert.equal(card._syncRouteHtml(named("Weekly groceries → Home"), {}, "Home"), "");
+  assert.match(
+    card._syncRouteHtml(named("Groceries"), { platform: "bring" }, "Bring"),
+    /<p class="sync-route">Weekly groceries → Bring<\/p>/,
+  );
+  assert.match(
+    card._syncRouteHtml(named("Groceries"), { platform: "local_todo" }, "Home"),
+    /Weekly groceries → Home \(Local todo\)/,
+  );
 });

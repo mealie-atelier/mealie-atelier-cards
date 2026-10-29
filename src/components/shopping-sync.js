@@ -86,8 +86,18 @@ export const shoppingSyncMethods = {
     const words = id.replace(/_/g, " ");
     return words.charAt(0).toUpperCase() + words.slice(1);
   },
+  // Home Assistant's built-in list is named "Shopping list" whatever the UI language is, so show it by its localised name.
+  _syncDestinationName(name, platform) {
+    const plain = String(name || "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]/gu, "");
+    return String(platform) === "shopping_list" && plain === "shoppinglist"
+      ? this._syncPlatformLabel(platform)
+      : String(name || "");
+  },
   // Destination name plus platform, dropping the platform when it only repeats the name.
-  _syncDestinationLabel(name, platform) {
+  _syncDestinationLabel(rawName, platform) {
+    const name = this._syncDestinationName(rawName, platform);
     const label = this._syncPlatformLabel(platform);
     const plain = (v) =>
       String(v)
@@ -241,12 +251,26 @@ export const shoppingSyncMethods = {
       ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="sync-setup-open" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
+  // Route line "source → destination (platform)". When the rule is already named after the route
+  // only the platform that the title does not show is kept.
+  _syncRouteHtml(rule, destination, destName) {
+    const platform =
+      destination.platform &&
+      this._syncDestinationLabel(destName, destination.platform) !== destName
+        ? this._syncPlatformLabel(destination.platform)
+        : "";
+    const route = `${rule.source_list_name} → ${destName}`;
+    if (rule.name === route) return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
+    return `<p class="sync-route">${esc(route)}${platform ? ` (${esc(platform)})` : ""}</p>`;
+  },
   _syncRuleHtml(rule, caps) {
     const sync = this._syncData();
     const counts = rule.counts || {};
     const issues = this._syncIssues(rule);
     const destination = rule.destination || {};
-    const destName = destination.name || rule.destination_entity_id;
+    const destName =
+      this._syncDestinationName(destination.name, destination.platform) ||
+      rule.destination_entity_id;
     const mode = rule.mode === "move" ? "Move" : "Copy";
     const state = !rule.activated ? "NotActivated" : rule.paused ? "Paused" : "Active";
     const stateIcon = state === "Active" ? icon("check", 15) : icon("clock", 15);
@@ -294,7 +318,7 @@ export const shoppingSyncMethods = {
         : "";
     return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
       <h3 id="sync-rule-${id}">${esc(rule.name)}</h3>
-${rule.name === `${rule.source_list_name} → ${destName}` ? "" : `<p class="sync-route">${esc(rule.source_list_name)} → ${esc(destName)}${destination.platform && this._syncDestinationLabel(destName, destination.platform) !== destName ? ` (${esc(this._syncPlatformLabel(destination.platform))})` : ""}</p>`}
+${this._syncRouteHtml(rule, destination, destName)}
       <p class="sync-mode">${esc(this.t(`syncMode${mode}`))}: ${esc(this.t(`syncMode${mode}Hint`))}</p>
       <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong> <span class="sync-muted" aria-hidden="true">·</span> <span class="sync-count sync-muted">${esc(this._syncWaiting(rule) ? this.tp("syncPending", this._syncWaiting(rule)) : this.t("syncPendingNone"))}</span></p>
       <p class="sync-last">${last ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRun", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}` : esc(this.t("syncNeverRun"))}</p>

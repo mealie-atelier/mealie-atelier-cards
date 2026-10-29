@@ -79,7 +79,7 @@ test("dark and neutral stone-light palettes share central tokens and theme trans
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--at-panel:\s*#fffdfa/s);
   assert.match(
     tokens,
-    /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*var\(--at-accent-ink, #fffdfa\)/s,
+    /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*var\(--at-brand-ink, var\(--at-accent-ink, #fffdfa\)\)/s,
   );
   assert.match(
     tokens,
@@ -332,4 +332,27 @@ test("enter animations do not hold their end frame, so text is not left on a blu
   for (const rule of uses) {
     assert.match(rule, /\bbackwards;$/, rule);
   }
+});
+
+test("in the light theme the ink on brand fills is chosen against the darkened brand, not the raw accent", () => {
+  const ink = (accent) => {
+    const cards = loadCards();
+    const card = makeCard(cards);
+    card._local = { ...card._local, accent, theme: "light" };
+    card._render();
+    return cards.document.markup.match(/--at-brand-ink:(#[0-9a-f]{6})/)?.[1];
+  };
+  // A mid tone whose raw accent takes dark ink but whose darkened light-theme brand needs light ink.
+  const raw = (accent) => {
+    const cards = loadCards();
+    const card = makeCard(cards);
+    card._local = { ...card._local, accent, theme: "light" };
+    card._render();
+    return cards.document.markup.match(/--at-accent-ink:(#[0-9a-f]{6})/)?.[1];
+  };
+  assert.equal(ink("#75465d"), "#fffdfa");
+  assert.equal(ink("#f2c94c"), "#12221b");
+  const probe = "#808080";
+  assert.equal(raw(probe), "#12221b");
+  assert.equal(ink(probe), "#fffdfa");
 });
