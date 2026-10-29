@@ -742,7 +742,7 @@ MealieAtelierCard.prototype._refresh = async function () {
 };
 MealieAtelierCard.prototype._body = function () {
   if (this._providerActive === "home_assistant" && this._view !== "recipes")
-    return `<section class="ds-surface"><span class="eyebrow">HOME ASSISTANT MEALIE</span><h2>${this.t("providerTitle")}</h2><p>${this.t("providerDescription")}</p><button class="btn primary" type="button" data-action="nav" data-value="recipes">${this.t("providerBrowse")}</button></section>`;
+    return `<section class="ds-surface"><span class="eyebrow">${this.t("providerEyebrow")}</span><h2>${this.t("providerTitle")}</h2><p>${this.t("providerDescription")}</p><button class="btn primary" type="button" data-action="nav" data-value="recipes">${this.t("providerBrowse")}</button></section>`;
   if (!this._studio) this._studio = atInitially();
   if (this._view === "discover") return this._studioDiscover();
   if (this._view === "pantry") return this._studioPantry();

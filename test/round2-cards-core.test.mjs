@@ -114,3 +114,26 @@ test("print document titles are not all caps", () => {
   assert.match(printed("shopping", "de"), /<title>Einkaufsliste<\/title>/);
   assert.match(printed("mealplan", "en"), /<title>Weekly plan<\/title>/);
 });
+
+test("theme auto without Home Assistant themes follows prefers-color-scheme", () => {
+  for (const [matchesLight, expected] of [
+    [true, "light"],
+    [false, "dark"],
+  ]) {
+    const cards = loadCards({ window: { matchMedia: () => ({ matches: matchesLight }) } });
+    const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+    assert.equal(card._resolvedTheme("auto"), expected);
+  }
+});
+
+test("family title, provider eyebrow and recipe print word are translated", () => {
+  const cards = loadCards();
+  const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+  assert.equal(card.t("familyTitle"), "Family");
+  assert.equal(card.t("printDocRecipe"), "Recipe");
+  assert.notEqual(card.t("providerEyebrow"), "providerEyebrow");
+  assert.notEqual(
+    card.t("editorFollowsHomeAssistantLightOrDark"),
+    "editorFollowsHomeAssistantLightOrDark",
+  );
+});

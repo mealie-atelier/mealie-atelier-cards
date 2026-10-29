@@ -135,7 +135,7 @@
         language: "auto",
       });
       const syncShellTheme = (theme) => {
-        const normalizedTheme = theme === "light" ? "light" : "dark";
+        const normalizedTheme = card._resolvedTheme(theme);
         document.documentElement.dataset.theme = normalizedTheme;
         document.documentElement.style.colorScheme = normalizedTheme;
         document

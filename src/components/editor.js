@@ -150,9 +150,11 @@ class MealieAtelierEditor extends HTMLElement {
       if (!preset) return;
       this._config = {
         ...this._config,
-        ...(preset === "light"
-          ? { theme: "light", accent: "#e5ad92", density: "comfortable", motion: "balanced" }
-          : { theme: "dark", accent: "#9dcbb2", density: "comfortable", motion: "balanced" }),
+        ...(preset === "auto"
+          ? { theme: "auto", density: "comfortable", motion: "balanced" }
+          : preset === "light"
+            ? { theme: "light", accent: "#e5ad92", density: "comfortable", motion: "balanced" }
+            : { theme: "dark", accent: "#9dcbb2", density: "comfortable", motion: "balanced" }),
       };
       this._emitConfig();
       this._render();
@@ -256,6 +258,7 @@ class MealieAtelierEditor extends HTMLElement {
       )}</div><div class="setup-live-preview"><div class="setup-preview-art" aria-hidden="true"><span></span><i></i><b></b></div><div><small>${tr("editorYOURATELIEROPENSTO")}</small><strong>${esc(activeTitle)}</strong><span>${esc(startLabels[c.mode] || startLabels.dashboard)}</span></div></div>`;
     if (this._step === 2)
       panel = `<div class="setup-kicker">${tr("editorSTEP3THEFEEL")}</div><h2 class="setup-step-title" tabindex="-1">${tr("editorMakeItFeelLikeYourKitchen")}</h2><p class="setup-description">${tr("editorChooseALookNowYouCanFineTuneEveryDetailLater")}</p><div class="setup-presets" role="group" aria-label="${tr("editorChooseAnAppearance")}">
+      <button class="setup-preset ${c.theme === "auto" ? "selected" : ""}" type="button" data-editor-action="preset" data-preset="auto" aria-pressed="${c.theme === "auto"}"><span class="preset-art preset-auto"><i></i><b></b><em></em></span><strong>${tr("editorAutomatic")}</strong><small>${tr("editorFollowsHomeAssistantLightOrDark")}</small></button>
       <button class="setup-preset ${c.theme === "dark" ? "selected" : ""}" type="button" data-editor-action="preset" data-preset="dark" aria-pressed="${c.theme === "dark"}"><span class="preset-art preset-dark"><i></i><b></b><em></em></span><strong>${tr("editorEveningStudio")}</strong><small>${tr("editorDeepGreenWarmLightEditorial")}</small></button>
       <button class="setup-preset ${c.theme === "light" ? "selected" : ""}" type="button" data-editor-action="preset" data-preset="light" aria-pressed="${c.theme === "light"}"><span class="preset-art preset-light"><i></i><b></b><em></em></span><strong>${tr("editorDaylightKitchen")}</strong><small>${tr("editorFreshSurfacesOpenAndBright")}</small></button>
       </div><p class="setup-reassure">${tr("editorYourRecipesAndMealieDataAreNeverChangedByTheseChoices")}</p>`;

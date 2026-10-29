@@ -339,7 +339,12 @@ class MealieAtelierCard extends HTMLElement {
   /** Resolves the configured theme ("auto" follows the Home Assistant light or dark mode). */
   _resolvedTheme(theme) {
     if (theme === "light" || theme === "dark") return theme;
-    return this._hass?.themes?.darkMode === false ? "light" : "dark";
+    const darkMode = this._hass?.themes?.darkMode;
+    if (typeof darkMode === "boolean") return darkMode ? "dark" : "light";
+    // Outside Home Assistant (standalone web app) follow the system colour scheme.
+    const query =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    return query?.matches ? "light" : "dark";
   }
   connectedCallback() {
     this.shadowRoot.addEventListener("click", this._boundClick);
