@@ -48,11 +48,11 @@
 
 Mealie Atelier Cards is submitted to the default catalog (`hacs/default`) that the Home Assistant Marketplace and HACS both read. Pick one route:
 
-| Route                                                                        | Steps                                                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Home Assistant Marketplace** (Home Assistant 2026.11 and newer)            | Open the Marketplace, search for **Mealie Atelier Cards** and download it. Available as soon as the catalog listing is merged.                                                                                                                              |
-| **HACS custom repository** (Home Assistant 2026.10 and newer, available now) | Add the repository as a custom repository of type **Dashboard**, then download it. The button below does this in one click.                                                                                                                                 |
-| **Manual**                                                                   | Download `mealie-atelier-cards.js` from the [latest release](https://github.com/mealie-atelier/mealie-atelier-cards/releases/latest), copy it to `<config>/www/community/mealie-atelier-cards/` and register the resource as shown [below](#yaml-resource). |
+- **Home Assistant Marketplace** (Home Assistant 2026.11 and newer): open the Marketplace, search for **Mealie Atelier Cards** and download it. Available as soon as the catalog listing is merged. Until then, use **Add from link**, paste `https://github.com/mealie-atelier/mealie-atelier-cards` and complete the one-time **Connect GitHub** login (a free GitHub account is needed).
+- **HACS** (classic): add the repository as a custom repository of type **Dashboard**, then download it.
+- **Manual**: download `mealie-atelier-cards.js` from the [latest release](https://github.com/mealie-atelier/mealie-atelier-cards/releases/latest) and copy it to the `www/community/mealie-atelier-cards/` folder of your Home Assistant config. Then register it as a resource, either [in the UI](#ui-resource) or [in YAML](#yaml-resource).
+
+The button below opens the add dialog for this repository (it still needs the GitHub connection on Home Assistant 2026.11).
 
 [![Open the repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-cards&category=plugin)
 
@@ -69,16 +69,22 @@ Pick one:
 
 ### 3. Add a card
 
-Open **Edit dashboard → Add card**, search for **Mealie Atelier** and pick **Complete kitchen** or a focused card. The visual editor finds your Mealie connection and walks you through view and appearance. No YAML needed.
+Open **Edit dashboard → Add card**, switch to the **By card** tab (the cards create no entities, so **By entity** finds nothing), search for **Mealie Atelier** and pick **Complete kitchen** or a focused card. The visual editor finds your Mealie connection and walks you through view and appearance. No YAML needed.
 
 Step-by-step guides in German: [setup](https://alles-automatisch.de/lernen/mealie-atelier-einrichten) and [troubleshooting](https://alles-automatisch.de/lernen/mealie-atelier-fehlerbehebung). Answers to common questions are in the [FAQ](docs/FAQ.md).
+
+<a id="ui-resource"></a>
+
+### Manual install on UI-managed dashboards
+
+Turn on **Advanced mode** in your user profile, open **Settings → Dashboards**, choose the three dots → **Resources**, add `/local/community/mealie-atelier-cards/mealie-atelier-cards.js` as a **JavaScript module** and hard-reload the browser. A `lovelace: resources:` block in `configuration.yaml` is ignored on UI-managed dashboards.
 
 <a id="yaml-resource"></a>
 
 <details>
-<summary>Dashboards in YAML mode and manual installs</summary>
+<summary>Dashboards in YAML mode (resource_mode: yaml)</summary>
 
-Add the module resource yourself:
+Only for dashboards in YAML mode, add the module resource yourself:
 
 ```yaml
 lovelace:
@@ -104,7 +110,7 @@ lovelace:
 | `custom:mealie-atelier-cookbook` | A print-ready A4 cookbook                                |
 | `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor |
 
-Every option is in the visual editor. The YAML equivalent looks like this:
+Most options are in the visual editor. The YAML equivalent looks like this:
 
 ```yaml
 type: custom:mealie-atelier-card
@@ -121,7 +127,7 @@ show_images: true
 <details>
 <summary>All card options (YAML)</summary>
 
-Every option is available in the visual editor; YAML is only needed if you prefer it. Colors and layout set here are defaults. Choices made in the Design Studio of a card are stored in that browser and take priority on that device.
+Most options are available in the visual editor; `keep_awake` is YAML only. YAML is otherwise only needed if you prefer it. Colors and layout set here are defaults. Choices made in the Design Studio of a card are stored in that browser and take priority on that device.
 
 | Option                                                                                 | Values                                                                                                        | Default                                   | Purpose                                                                                                               |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -135,7 +141,8 @@ Every option is available in the visual editor; YAML is only needed if you prefe
 | `columns`                                                                              | `2` to `4`                                                                                                    | `3`                                       | Recipe grid columns.                                                                                                  |
 | `photo_ratio`                                                                          | `portrait`, `square`, `landscape`                                                                             | `portrait`                                | Recipe photo shape.                                                                                                   |
 | `show_images`                                                                          | `true`, `false`                                                                                               | `true`                                    | Show recipe photos.                                                                                                   |
-| `keep_awake`                                                                           | `true`, `false`                                                                                               | `true`                                    | Keep the screen awake in cooking mode.                                                                                |
+| `keep_awake`                                                                           | `true`, `false`                                                                                               | `true`                                    | Keep the screen awake in cooking mode (YAML only).                                                                    |
+| `kiosk_mode`                                                                           | `true`, `false`                                                                                               | `false`                                   | Enlarged tablet layout.                                                                                               |
 | `provider`                                                                             | `auto`, `atelier`, `home_assistant`                                                                           | `auto`                                    | Data source. `auto` prefers the Bridge and falls back to the built-in Mealie integration for read-only recipe access. |
 | `entry_id`                                                                             | Bridge config entry ID                                                                                        | first entry                               | Choose a Bridge connection if you have several.                                                                       |
 | `mealie_entry_id`                                                                      | built-in Mealie config entry ID                                                                               | first entry                               | Choose a built-in Mealie connection if you have several.                                                              |
@@ -143,7 +150,7 @@ Every option is available in the visual editor; YAML is only needed if you prefe
 | `print_image`, `print_checkboxes`, `print_notes`, `print_completed`, `print_nutrition` | `true`, `false`                                                                                               | `false`, `true`, `true`, `false`, `false` | What a printed recipe or list includes.                                                                               |
 | `cooking_scene`                                                                        | `scene.*` entity ID                                                                                           | none                                      | Optional scene to turn on from cooking mode.                                                                          |
 | `cooking_media_player`                                                                 | `media_player.*` entity ID                                                                                    | none                                      | Optional speaker for the quiet-kitchen and read-aloud actions.                                                        |
-| `cooking_volume`                                                                       | `0` to `1`                                                                                                    | `0.18`                                    | Volume set by the quiet-kitchen action.                                                                               |
+| `cooking_volume`                                                                       | `0` to `1`                                                                                                    | `0.18`                                    | Volume set by the quiet-kitchen action. The editor offers presets (10, 18, 30, 50 %); YAML accepts any value.         |
 | `cooking_tts_engine`                                                                   | `tts.*` entity ID                                                                                             | none                                      | Optional text-to-speech engine for reading a step aloud.                                                              |
 
 The cooking actions only run when you press them. Nothing triggers automatically.
@@ -166,17 +173,22 @@ The cards also run without Home Assistant. The [standalone web app](web/README.m
 
 Build the demo locally with `npm run build:demo` and serve `demo/public-site/`.
 
+## Uninstall
+
+1. Remove every Mealie Atelier card from your dashboards first. Leftover cards show a bare "Configuration error" once the files are gone.
+2. If you use the Bridge, delete its entry under **Settings → Devices & services**. This also deletes its backups and outbox.
+3. Uninstall the cards in the Marketplace or HACS, or remove the resource (**Settings → Dashboards → Resources**) and delete the `mealie-atelier-cards` folder from `www/community/`.
+4. Restart Home Assistant and hard-reload the browser.
+
 ## Documentation
 
-| Topic                                                        | Where                                                                                                                                                                                         |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Questions and answers                                        | [FAQ](docs/FAQ.md)                                                                                                                                                                            |
-| Standalone web app (Docker, accounts, environment variables) | [web/README.md](web/README.md)                                                                                                                                                                |
-| Architecture and security boundaries                         | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                                                                                                                                                  |
-| Design system and control rules                              | [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md), [docs/CONTROL_SYSTEM.md](docs/CONTROL_SYSTEM.md)                                                                                              |
-| Repository layout and releases                               | [docs/REPOSITORY_MAP.md](docs/REPOSITORY_MAP.md), [docs/MARKETPLACE.md](docs/MARKETPLACE.md)                                                                                                  |
-| Home Assistant integration (Bridge)                          | [Bridge README](https://github.com/mealie-atelier/mealie-atelier-bridge#readme), [installation guide](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/INSTALLATION.md) |
-| Guides (German)                                              | [alles-automatisch.de/lernen/mealie-atelier](https://alles-automatisch.de/lernen/mealie-atelier)                                                                                              |
+- **Questions and answers:** [FAQ](docs/FAQ.md)
+- **Standalone web app (Docker, accounts, environment variables):** [web/README.md](web/README.md)
+- **Architecture and security boundaries:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- **Design system and control rules:** [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md), [docs/CONTROL_SYSTEM.md](docs/CONTROL_SYSTEM.md)
+- **Repository layout and releases:** [docs/REPOSITORY_MAP.md](docs/REPOSITORY_MAP.md), [docs/MARKETPLACE.md](docs/MARKETPLACE.md)
+- **Home Assistant integration (Bridge):** [Bridge README](https://github.com/mealie-atelier/mealie-atelier-bridge#readme), [installation guide](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/INSTALLATION.md)
+- **Guides (German):** [alles-automatisch.de/lernen/mealie-atelier](https://alles-automatisch.de/lernen/mealie-atelier)
 
 ## Development
 
