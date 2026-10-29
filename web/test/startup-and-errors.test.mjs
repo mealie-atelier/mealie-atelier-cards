@@ -148,6 +148,8 @@ test("wrong Mealie token is a translated-code 502 and status is not connected", 
     const status = await (await call(r.port, { type: "mealie_atelier/status" })).json();
     assert.equal(status.entries[0].connected, false);
     assert.equal(status.entries[0].features.ai, false);
+    assert.equal(status.entries[0].ai_enabled, false);
+    assert.equal(status.entries[0].ai_provider, "none");
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();
@@ -308,6 +310,22 @@ test("/healthz is unauthenticated, checks the token server side and caches the r
     assert.equal((await fetch(url)).status, 200);
     assert.equal(hits, 1, "second probe is served from the 60 s cache");
     assert.equal((await fetch(`http://127.0.0.1:${r.port}/api/health`)).status, 401);
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("status names the configured AI provider", async () => {
+  const stub = await mealieStub({ tokenOk: true });
+  const r = await start({
+    MEALIE_URL: `http://127.0.0.1:${stub.port}`,
+    ANTHROPIC_API_KEY: "sk-ant-test",
+  });
+  try {
+    const status = await (await call(r.port, { type: "mealie_atelier/status" })).json();
+    assert.equal(status.entries[0].ai_enabled, true);
+    assert.equal(status.entries[0].ai_provider, "anthropic");
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();

@@ -46,6 +46,20 @@ test("removing a timer the server no longer knows or has just started sending dr
   }
 });
 
+test("cancel never matches on message text, only on the error code", async () => {
+  const { card, flashes } = setup();
+  card._ws = async () => {
+    throw Object.assign(new Error("Timer not found, already been dispatched"), {
+      code: "timer_not_permitted",
+    });
+  };
+  card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+  await click(card, "timer-remove", "t1");
+  assert.equal(card._timers.length, 1);
+  assert.equal(flashes.length, 1);
+  assert.match(flashes[0].text, /another person/);
+});
+
 test("a failed cancel of a running timer keeps it and reports the error", async () => {
   const { card, flashes } = setup();
   card._ws = async () => {

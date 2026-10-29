@@ -909,6 +909,7 @@
   "errUploadInvalid": "The photo was rejected. Use a JPEG, PNG or WebP image within the size limit.",
   "errUploadExpired": "The upload expired. Start it again.",
   "errUploadBusy": "Too many uploads are open. Wait a moment and try again.",
+  "errShoppingItemNotFound": "This item no longer exists in Mealie.",
   "errStepNotFound": "That step no longer exists. Reload the recipe.",
   "errSyncRuleNotFound": "This sync rule no longer exists. Reload the status and try again.",
   "errSyncDestinationUnsupported": "This list cannot be used as a destination. Choose a to-do list that supports adding items and is not a Mealie list.",
@@ -1185,5 +1186,18 @@
   "nutriUsdaKeyMissingHa": "USDA API key not configured. Add it in the integration options.",
   "syncReadOnly": "This dashboard is in read-only mode.",
   "editorEntityDomainWarning": "Expected an entity from the {domain} domain, for example {example}.",
-  "studioAiAuditBodyProvider": "This recipe’s ingredients, amounts and steps will be sent to {provider}. Nothing will be changed automatically."
+  "studioAiAuditBodyProvider": "This recipe’s ingredients, amounts and steps will be sent to {provider}. Nothing will be changed automatically.",
+  "shoppingEditItem": "Edit: {item}",
+  "shoppingDeleteItem": "Delete: {item}",
+  "shoppingEditTitle": "Edit item",
+  "shoppingEditTip": "Change the name, quantity or note. Only what you change is sent to Mealie.",
+  "shoppingItemName": "Name",
+  "shoppingItemQuantity": "Quantity",
+  "shoppingItemNote": "Note",
+  "shoppingItemGone": "This item no longer exists.",
+  "shoppingCancel": "Cancel",
+  "shoppingClearTicked": "Clear ticked",
+  "shoppingClearTitle": "Clear ticked items?",
+  "shoppingClearConfirm.one": "1 ticked item will be removed from this list. This cannot be undone.",
+  "shoppingClearConfirm.other": "{count} ticked items will be removed from this list. This cannot be undone."
 }

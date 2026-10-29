@@ -4,8 +4,8 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { validateSubscription, subscriptionId } from "./web-push.mjs";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const err = (status, message, code) =>
-  Object.assign(new Error(message), code ? { status, code } : { status });
+const err = (status, message, atelierCode) =>
+  Object.assign(new Error(message), { status, ...(atelierCode ? { atelierCode } : {}) });
 const mayAccess = (alarm, access) =>
   !access || access.admin === true || (!!alarm.owner && alarm.owner === access.name);
 const initial = () => ({ alarms: [], subscriptions: [] });
@@ -105,9 +105,7 @@ export class AlarmStore {
       const a = d.alarms.find((x) => x.id === id);
       if (!a) throw err(404, "Timer not found", "timer_not_found");
       if (!mayAccess(a, access))
-        throw Object.assign(err(403, "Only the owner or an admin can cancel this timer"), {
-          code: "timer_not_permitted",
-        });
+        throw err(403, "Only the owner or an admin can cancel this timer", "timer_not_permitted");
       if (a.status === "sent" || a.status === "sending")
         throw err(409, "Timer has already been dispatched", "timer_dispatched");
       a.status = "cancelled";

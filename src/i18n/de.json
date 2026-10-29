@@ -905,6 +905,7 @@
   "errUploadInvalid": "Das Foto wurde abgelehnt. Nutze ein JPEG-, PNG- oder WebP-Bild innerhalb der Größenbeschränkung.",
   "errUploadExpired": "Der Upload ist abgelaufen. Starte ihn erneut.",
   "errUploadBusy": "Es sind zu viele Uploads offen. Warte einen Moment und versuche es erneut.",
+  "errShoppingItemNotFound": "Dieser Eintrag existiert in Mealie nicht mehr.",
   "errStepNotFound": "Dieser Schritt existiert nicht mehr. Lade das Rezept neu.",
   "errSyncRuleNotFound": "Diese Sync-Regel gibt es nicht mehr. Lade den Status neu und versuche es erneut.",
   "errSyncDestinationUnsupported": "Diese Liste kann nicht als Ziel dienen. Wähle eine To-do-Liste, die das Hinzufügen von Artikeln unterstützt und keine Mealie-Liste ist.",
@@ -1185,5 +1186,18 @@
   "studioDiscoverForPeople.one": "Für 1 Portion",
   "studioDiscoverForPeople.other": "Für {people} Portionen",
   "editorEntityDomainWarning": "Erwartet wird eine Entität der Domäne {domain}, zum Beispiel {example}.",
-  "studioAiAuditBodyProvider": "Die Zutaten, Mengen und Kochschritte dieses Rezepts werden an {provider} übertragen. Es erfolgt keine automatische Änderung."
+  "studioAiAuditBodyProvider": "Die Zutaten, Mengen und Kochschritte dieses Rezepts werden an {provider} übertragen. Es erfolgt keine automatische Änderung.",
+  "shoppingEditItem": "Bearbeiten: {item}",
+  "shoppingDeleteItem": "Löschen: {item}",
+  "shoppingEditTitle": "Artikel bearbeiten",
+  "shoppingEditTip": "Ändere Name, Menge oder Notiz. Nur was du änderst, wird an Mealie gesendet.",
+  "shoppingItemName": "Name",
+  "shoppingItemQuantity": "Menge",
+  "shoppingItemNote": "Notiz",
+  "shoppingItemGone": "Diesen Artikel gibt es nicht mehr.",
+  "shoppingCancel": "Abbrechen",
+  "shoppingClearTicked": "Erledigte entfernen",
+  "shoppingClearTitle": "Erledigte Artikel entfernen?",
+  "shoppingClearConfirm.one": "1 erledigter Artikel wird aus dieser Liste entfernt. Das lässt sich nicht rückgängig machen.",
+  "shoppingClearConfirm.other": "{count} erledigte Artikel werden aus dieser Liste entfernt. Das lässt sich nicht rückgängig machen."
 }

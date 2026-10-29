@@ -202,13 +202,13 @@ test("card picker descriptions are parallel in English and German and match the 
   const source = readFileSync(new URL("../src/card-core.template.js", import.meta.url), "utf8");
   const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
   for (const text of [
-    "Shopping lists to tick off and add to, also offline",
+    "Shopping lists to tick off, add to and edit, also offline",
     "Recipe gallery with search, details and cooking mode",
-    "Einkaufslisten zum Abhaken und Ergänzen, auch offline",
+    "Einkaufslisten zum Abhaken, Ergänzen und Bearbeiten, auch offline",
     "Rezeptgalerie mit Suche, Details und Kochmodus",
   ])
     assert.ok(source.includes(`"${text}"`), text);
-  assert.match(readme, /Shopping lists to tick off and add to, also offline/);
+  assert.match(readme, /Shopping lists to tick off, add to and edit, also offline/);
   assert.match(readme, /Recipe gallery with search, details and cooking mode/);
 });
 

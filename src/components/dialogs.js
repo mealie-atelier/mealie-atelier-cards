@@ -264,6 +264,28 @@ export const dialogMethods = {
     if (this._modal === "create-list")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("listName"))}</div><form class="editor-form" data-form="create-list"><label class="field"><span>${esc(this.t("listName"))} *</span><input name="name" maxlength="100" required data-autofocus placeholder="${this.t("uieGWeeklyGroceries")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("createList"))}</button></div></form></section></div>`;
+    if (this._modal === "shopping-edit") {
+      const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
+        (x) => String(x.id) === String(this._shoppingEditId),
+      );
+      const from = item ? this._shoppingEditFields(item) : null;
+      content = from
+        ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t("shoppingEditTip"))}</p></div><div class="editor-stamp">${icon("edit", 27)}</div></div>
+      <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("itemFallback"))}</div><form class="editor-form" data-form="shopping-edit"><label class="field"><span>${esc(this.t("shoppingItemName"))} *</span><input name="name" maxlength="250" required data-autofocus value="${esc(from.name)}"></label>
+      <label class="field"><span>${esc(this.t("shoppingItemQuantity"))}</span><input name="quantity" type="number" inputmode="decimal" min="0" max="99999" step="any" value="${esc(from.quantity || "")}"></label>
+      ${from.freeText ? "" : `<label class="field"><span>${esc(this.t("shoppingItemNote"))}</span><input name="note" maxlength="250" value="${esc(from.note)}"></label>`}
+      <div class="form-actions"><button type="button" class="btn" data-action="close-modal">${esc(this.t("shoppingCancel"))}</button><button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></form></section></div>`
+        : `<div class="modal-content"><p class="notice">${esc(this.t("shoppingItemGone"))}</p><div class="form-actions"><button type="button" class="btn primary" data-action="close-modal">${esc(this.t("close"))}</button></div></div>`;
+    }
+    if (this._modal === "shopping-clear") {
+      const count = this._shoppingClearable(
+        this._offlineItems(asArray(this._data.shopping?.items)).filter(
+          (x) => String(x.shoppingListId) === String(this._activeList),
+        ),
+      );
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingClearTitle"))}</h2><p>${esc(this.tp("shoppingClearConfirm", count))}</p></div><div class="editor-stamp">${icon("trash", 27)}</div></div>
+      <section class="editor-card"><div class="form-actions"><button type="button" class="btn" data-action="close-modal" data-autofocus>${esc(this.t("shoppingCancel"))}</button><button type="button" class="btn primary" data-action="shopping-clear-confirm" ${count ? "" : "disabled"}>${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button></div></section></div>`;
+    }
     if (this._modal === "recipe-to-list" && this._detail) {
       const lists = asArray(this._data.shopping?.lists);
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
@@ -410,6 +432,8 @@ export const dialogMethods = {
       import: this.t("import"),
       edit: this.t("edit"),
       "create-list": this.t("createList"),
+      "shopping-edit": this.t("shoppingEditTitle"),
+      "shopping-clear": this.t("shoppingClearTitle"),
       "recipe-to-list": this.t("shoppingFromRecipe"),
       print: this.t("uiPrintStudioSettings"),
       settings: this.t("settings"),

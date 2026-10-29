@@ -31,7 +31,7 @@ export const shoppingSyncMethods = {
       supported: !native && entry.features?.shopping_sync === true,
       standalone: !native && entry.features?.shopping_sync === false,
       readOnly: entry.read_only === true,
-      write: (grants.can_write ?? entry.can_write) === true,
+      write: entry.read_only !== true && (grants.can_write ?? entry.can_write) === true,
       admin: (grants.can_admin ?? entry.can_manage) === true,
     };
   },

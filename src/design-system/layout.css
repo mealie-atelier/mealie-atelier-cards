@@ -484,6 +484,25 @@
   justify-content: end;
   margin-block: 0 var(--ds-space-4);
 }
+/* Per-item edit and delete controls stay at the row end; the name keeps the remaining width. */
+.atelier .shopping-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--ds-space-1);
+  margin-inline-start: auto;
+}
+.atelier .shopping-action {
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-muted);
+}
+.atelier .shopping-action:hover,
+.atelier .shopping-action:focus-visible {
+  background: color-mix(in srgb, var(--ds-brand) 12%, transparent);
+  color: var(--ds-text);
+}
 .atelier .shopping-form {
   align-items: stretch;
   gap: var(--ds-space-3);

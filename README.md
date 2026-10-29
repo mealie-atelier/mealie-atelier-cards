@@ -97,18 +97,18 @@ lovelace:
 
 ## Card types
 
-| Card type                        | Purpose                                                  |
-| -------------------------------- | -------------------------------------------------------- |
-| `custom:mealie-atelier-card`     | Recipes, meal plan, shopping and management in one card  |
-| `custom:mealie-atelier-today`    | Today's meals and open groceries on one screen           |
-| `custom:mealie-atelier-recipes`  | Recipe gallery with search, details and cooking mode     |
-| `custom:mealie-atelier-mealplan` | Weekly planner with a searchable recipe picker           |
-| `custom:mealie-atelier-shopping` | Shopping lists to tick off and add to, also offline      |
-| `custom:mealie-atelier-discover` | Discover recipes and a proposed seven-day menu           |
-| `custom:mealie-atelier-pantry`   | Pantry and staples for grocery planning                  |
-| `custom:mealie-atelier-family`   | Shared cooking sessions with helper tasks                |
-| `custom:mealie-atelier-cookbook` | A print-ready A4 cookbook                                |
-| `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor |
+| Card type                        | Purpose                                                   |
+| -------------------------------- | --------------------------------------------------------- |
+| `custom:mealie-atelier-card`     | Recipes, meal plan, shopping and management in one card   |
+| `custom:mealie-atelier-today`    | Today's meals and open groceries on one screen            |
+| `custom:mealie-atelier-recipes`  | Recipe gallery with search, details and cooking mode      |
+| `custom:mealie-atelier-mealplan` | Weekly planner with a searchable recipe picker            |
+| `custom:mealie-atelier-shopping` | Shopping lists to tick off, add to and edit, also offline |
+| `custom:mealie-atelier-discover` | Discover recipes and a proposed seven-day menu            |
+| `custom:mealie-atelier-pantry`   | Pantry and staples for grocery planning                   |
+| `custom:mealie-atelier-family`   | Shared cooking sessions with helper tasks                 |
+| `custom:mealie-atelier-cookbook` | A print-ready A4 cookbook                                 |
+| `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor  |
 
 Most options are in the visual editor. The YAML equivalent looks like this:
 
@@ -164,7 +164,7 @@ The cooking actions only run when you press them. Nothing triggers automatically
 - **Print Studio:** A4 layouts for recipes, shopping lists, the week plan and a whole cookbook, in Editorial, Compact or Ink saver style.
 - **Nutrition Lab:** match ingredients against USDA data, confirm grams and store per-serving values in Mealie. AI name suggestions are optional and off by default.
 - **Smart Shopping Sync:** rule-based sync from a Mealie list to a Home Assistant To-do list such as Bring!, with a preview before the first batch (Bridge).
-- **Offline shopping:** ticks and new items made without a connection are kept on the device and replayed in order, exactly once, when the connection returns.
+- **Offline shopping:** ticks, new items, edits, deletions and "clear ticked" made without a connection are kept on the device and replayed in order, exactly once, when the connection returns.
 - **Accessibility:** keyboard navigation and focus management in every dialog, screen reader labels and reduced motion support.
 
 ## Standalone web app and demo
