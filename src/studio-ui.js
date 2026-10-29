@@ -733,7 +733,7 @@ MealieAtelierCard.prototype._refresh = async function () {
         id: x.id,
         label: x.label,
         deadline: x.deadline,
-        done: false,
+        done: previous.get(String(x.id))?.done ?? false,
         serverArmed: true,
       })),
     ];
@@ -1244,13 +1244,13 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     // Starting a different recipe must never destroy shared tasks/timers silently.
     const replace = Boolean(
       active &&
-        !existed &&
-        this._permissions.can_write &&
-        (await this._atelierDialog({
-          title: this.t("studioSessionReplaceTitle"),
-          body: this.t("studioSessionReplaceBody", { name: active.name }),
-          confirmLabel: this.t("studioSessionReplaceConfirm"),
-        })),
+      !existed &&
+      this._permissions.can_write &&
+      (await this._atelierDialog({
+        title: this.t("studioSessionReplaceTitle"),
+        body: this.t("studioSessionReplaceBody", { name: active.name }),
+        confirmLabel: this.t("studioSessionReplaceConfirm"),
+      })),
     );
     // The dialog awaited above, so the original event no longer targets the button.
     await _atOriginalClick.call(this, { target: el });

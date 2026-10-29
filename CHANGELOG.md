@@ -13,6 +13,8 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
 - Finished kitchen timers can be removed again, an invalid duration says which values are allowed, one minute reads "1 minute", and the timer keeps running in the card when background delivery is unavailable (for example in the web app without Web Push). Timers of several cards on one dashboard no longer overwrite each other.
 - A timer that runs out raises a visible alert with a short beep and vibration where supported.
+- Kitchen timers: removed timers no longer come back from another card on the same page, and a finished timer alerts only once. The beep works on iOS Safari (audio is unlocked by the start click) and a late tick of a background tab still alerts. A refused background alarm says in your language that the timer keeps running on this device, an invalid duration keeps what you typed and moves focus to the field, and removing a timer the server no longer knows works.
+- URLs in quotes are linked correctly, and links in the cooking step text are clickable.
 - Escape and the close button in cooking mode return to the recipe, and a "Back to recipe" button was added.
 - The recipe detail shows the category, tags, notes, source link and ingredient group headings, links in the description are clickable, and the nutrition chips read "612 kcal" and include fibre, sugar and sodium.
 - Quick actions find views and actions by name again, say "1 result" in the singular, and announce recipe results in the card language.

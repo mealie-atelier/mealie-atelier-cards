@@ -15,7 +15,7 @@ const click = (card, action, value = "") => {
   return card._handleClick({ target: { closest: () => button }, preventDefault() {} });
 };
 
-test("removing a finished server-armed timer works without calling alarm_cancel", async () => {
+test("removing a finished server-armed timer still tries to cancel and drops it when already dispatched", async () => {
   const calls = [];
   const { card } = setup(async (msg) => calls.push(msg.type));
   card._ws = async (op) => {
@@ -27,7 +27,34 @@ test("removing a finished server-armed timer works without calling alarm_cancel"
   ];
   await click(card, "timer-remove", "t1");
   assert.equal(card._timers.length, 0);
-  assert.deepEqual(calls, []);
+  assert.deepEqual(calls, ["alarm_cancel"]);
+});
+
+test("removing a timer the server no longer knows or has just started sending drops it", async () => {
+  for (const [error, offset] of [
+    [Object.assign(new Error("Timer not found"), { code: "timer_not_found" }), 600000],
+    [new Error("busy"), 20000],
+  ]) {
+    const { card, flashes } = setup();
+    card._ws = async () => {
+      throw error;
+    };
+    card._timers = [{ id: "t1", label: "x", deadline: Date.now() + offset, serverArmed: true }];
+    await click(card, "timer-remove", "t1");
+    assert.equal(card._timers.length, 0);
+    assert.equal(flashes.length, 0);
+  }
+});
+
+test("a failed cancel of a running timer keeps it and reports the error", async () => {
+  const { card, flashes } = setup();
+  card._ws = async () => {
+    throw new Error("offline");
+  };
+  card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+  await click(card, "timer-remove", "t1");
+  assert.equal(card._timers.length, 1);
+  assert.equal(flashes[0].kind, "error");
 });
 
 test("an invalid timer duration explains the allowed range", async () => {
@@ -159,4 +186,144 @@ test("recipe detail shows category, notes, tags, source, ingredient groups and f
   assert.match(html, /Sugar 3/);
   assert.match(html, /Sodium 400 mg/);
   assert.match(html, /<a href="https:\/\/example\.org\/a" target="_blank"/);
+});
+
+test("an invalid duration marks and focuses the re-rendered input and keeps the typed value", async () => {
+  const { card } = setup();
+  const make = (value) => {
+    const attrs = {};
+    return {
+      value,
+      attrs,
+      focused: false,
+      setAttribute: (k, v) => (attrs[k] = v),
+      removeAttribute() {},
+      focus() {
+        this.focused = true;
+      },
+    };
+  };
+  let current = make("181");
+  const label = { value: "Pasta" };
+  card.shadowRoot.querySelector = (s) =>
+    s === "[data-timer-minutes]" ? current : s === "[data-timer-label]" ? label : null;
+  // A flash re-renders the card: the old input is detached and a fresh one carries the default value.
+  card._flash = () => {
+    current = make("10");
+  };
+  const old = current;
+  await click(card, "timer-start");
+  assert.equal(old.attrs["aria-invalid"], undefined);
+  assert.equal(current.attrs["aria-invalid"], "true");
+  assert.equal(current.focused, true);
+  assert.equal(current.value, "181");
+});
+
+test("the audio context is created inside the start click", async () => {
+  let created = 0;
+  const cards = loadCards({
+    globals: {
+      crypto: { randomUUID: () => "id-1" },
+      AudioContext: class {
+        constructor() {
+          created++;
+        }
+        resume() {}
+      },
+    },
+  });
+  const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+  card._render = () => {};
+  card._flash = () => {};
+  const input = { value: "5", setAttribute() {}, removeAttribute() {}, focus() {} };
+  card.shadowRoot.querySelector = (s) => (s === "[data-timer-minutes]" ? input : null);
+  await click(card, "timer-start");
+  assert.equal(created, 1);
+});
+
+test("a late tick still alerts a timer that ran out while the card was open", () => {
+  const { card, flashes } = setup();
+  card._timers = [{ id: "t", label: "Pasta", deadline: Date.now() - 90000, done: false }];
+  card._timerWatchSince = Date.now() - 300000;
+  card._tickTimers();
+  assert.equal(flashes.length, 1);
+});
+
+test("a timer that expired before the card existed does not alert", () => {
+  const { card, flashes } = setup();
+  card._timers = [{ id: "t", label: "Pasta", deadline: Date.now() - 90000, done: false }];
+  card._tickTimers();
+  assert.equal(flashes.length, 0);
+});
+
+test("a timer alerts once even when two cards hold it", () => {
+  const cards = loadCards({ globals: { crypto: { randomUUID: () => "id-1" } } });
+  const t = { id: "x", label: "Pasta", deadline: Date.now() - 100, done: false };
+  cards.storage.set("mealie-atelier:timers", JSON.stringify([t]));
+  const a = makeCard(cards);
+  const b = makeCard(cards);
+  let flashes = 0;
+  for (const card of [a, b]) {
+    card._render = () => {};
+    card._flash = () => flashes++;
+    card._tickTimers();
+  }
+  assert.equal(flashes, 1);
+});
+
+test("a timer removed in one card does not come back from another card", () => {
+  const cards = loadCards({ globals: { crypto: { randomUUID: () => "id-1" } } });
+  const t = { id: "x", label: "Pasta", deadline: Date.now() + 600000 };
+  cards.storage.set("mealie-atelier:timers", JSON.stringify([t]));
+  const a = makeCard(cards);
+  const b = makeCard(cards);
+  a._timers = [];
+  a._persistTimers();
+  b._persistTimers();
+  assert.deepEqual(JSON.parse(cards.storage.get("mealie-atelier:timers")), []);
+  assert.equal(b._timers.length, 0);
+});
+
+test("a refused background alarm without a known code shows the translated local notice", async () => {
+  const { card, flashes } = setup();
+  card._ws = async () => {
+    throw new Error("No background notification destination. Configure Home Assistant notify.");
+  };
+  const input = { value: "5", setAttribute() {}, removeAttribute() {}, focus() {} };
+  card.shadowRoot.querySelector = (s) => (s === "[data-timer-minutes]" ? input : null);
+  await click(card, "timer-start");
+  assert.equal(card._timers.length, 1);
+  assert.equal(flashes[0].text, "The timer runs on this device only.");
+});
+
+test("a URL in quotes is linked without the quote", () => {
+  const { card } = setup();
+  card._detail = {
+    slug: "s",
+    name: "S",
+    description: 'See "https://example.org/a" and https://example.org/b?x=1&y=2.',
+    recipeInstructions: [{ text: "a" }],
+  };
+  card._modal = "recipe";
+  const html = card._modalHtml();
+  assert.match(
+    html,
+    /<a href="https:\/\/example\.org\/a" target="_blank"[^>]*>https:\/\/example\.org\/a<\/a>&quot;/,
+  );
+  assert.match(html, /href="https:\/\/example\.org\/b\?x=1&amp;y=2"/);
+});
+
+test("a URL in the cooking step text is linked", () => {
+  const { card } = setup();
+  card._detail = {
+    slug: "s",
+    name: "S",
+    recipeInstructions: [{ text: "Watch https://example.org/v now" }],
+  };
+  card._modal = "cook";
+  card._cookIndex = 0;
+  assert.match(
+    card._modalHtml(),
+    /<a href="https:\/\/example\.org\/v" target="_blank" rel="noopener noreferrer">/,
+  );
 });

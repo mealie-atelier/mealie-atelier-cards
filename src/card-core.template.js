@@ -160,13 +160,17 @@ function ingredientName(row) {
       .trim()
   );
 }
-/** Escapes text and turns plain http(s) URLs into safe external links. */
+/** Escapes text and turns plain http(s) URLs into safe external links (matched on the raw text). */
 function linkify(text) {
-  return esc(text).replace(/https?:\/\/[^\s<>"']+/g, (match) => {
-    const url = match.replace(/(?:&amp;|[.,;:!?)\]])+$/, "");
-    const tail = match.slice(url.length);
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>${tail}`;
-  });
+  const raw = String(text ?? "");
+  let out = "",
+    last = 0;
+  for (const match of raw.matchAll(/https?:\/\/[^\s<>"']+/g)) {
+    const url = match[0].replace(/[.,;:!?)\]]+$/, "");
+    out += `${esc(raw.slice(last, match.index))}<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a>`;
+    last = match.index + url.length;
+  }
+  return out + esc(raw.slice(last));
 }
 function instructionText(row) {
   return typeof row === "string" ? row : row?.text || "";
@@ -295,6 +299,7 @@ class MealieAtelierCard extends HTMLElement {
         (x) => x?.deadline > Date.now() - 3600000,
       );
       this._timerIds = new Set(this._timers.map((x) => String(x.id)));
+      this._timerWatchSince = Date.now() - 15000;
     } catch {
       this._timers = [];
     }
@@ -825,18 +830,36 @@ class MealieAtelierCard extends HTMLElement {
       localStorage.setItem("mealie-atelier:journal", JSON.stringify(this._journal));
     } catch {}
   }
+  /** Reads the shared timer list, or null when nothing was stored yet or it is unreadable. */
+  _storedTimers() {
+    try {
+      const raw = localStorage.getItem("mealie-atelier:timers");
+      if (raw === null) return null;
+      const list = JSON.parse(raw);
+      return Array.isArray(list) ? list.filter((x) => x && x.id !== undefined) : null;
+    } catch {
+      return null;
+    }
+  }
+  /** Cards share one storage key: drop timers another card removed and pick up its alert marks. */
+  _syncTimersFromStorage() {
+    const stored = this._storedTimers();
+    if (!stored) return false;
+    const known = (this._timerIds ||= new Set());
+    const byId = new Map(stored.map((x) => [String(x.id), x]));
+    const before = this._timers.length;
+    this._timers = this._timers.filter((x) => !known.has(String(x.id)) || byId.has(String(x.id)));
+    for (const timer of this._timers) if (byId.get(String(timer.id))?.alerted) timer.alerted = true;
+    return this._timers.length !== before;
+  }
   _persistTimers() {
     try {
-      // Cards share one storage key: keep local timers that another card wrote and this one never held.
+      // Keep local timers that another card wrote and this one never held.
       const known = (this._timerIds ||= new Set());
-      let stored = [];
-      try {
-        stored = JSON.parse(localStorage.getItem("mealie-atelier:timers") || "[]");
-      } catch {}
+      this._syncTimersFromStorage();
       const mine = new Set(this._timers.map((x) => String(x.id)));
-      const foreign = (Array.isArray(stored) ? stored : []).filter(
+      const foreign = (this._storedTimers() || []).filter(
         (x) =>
-          x &&
           !x.serverArmed &&
           x.deadline > Date.now() - 3600000 &&
           !mine.has(String(x.id)) &&
@@ -846,6 +869,30 @@ class MealieAtelierCard extends HTMLElement {
       localStorage.setItem("mealie-atelier:timers", JSON.stringify([...foreign, ...this._timers]));
     } catch {}
   }
+  /** Creates and resumes the audio context; call it inside a user gesture so iOS Safari allows the beep. */
+  _prepareAudio() {
+    try {
+      const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
+      if (!Ctx) return;
+      this._audio ||= new Ctx();
+      this._audio.resume?.();
+    } catch {}
+  }
+  /** True once per timer across all cards on the page (the first card to ask marks it in storage). */
+  _claimTimerAlert(timer) {
+    if (timer.alerted) return false;
+    timer.alerted = true;
+    const stored = this._storedTimers();
+    const entry = stored?.find((x) => String(x.id) === String(timer.id));
+    if (entry?.alerted) return false;
+    if (entry) {
+      entry.alerted = true;
+      try {
+        localStorage.setItem("mealie-atelier:timers", JSON.stringify(stored));
+      } catch {}
+    }
+    return true;
+  }
   /** Toast, short beep and vibration for a timer that just finished, visible outside cooking mode. */
   _alertTimerDone(timer) {
     this._flash(this.t("uiTimerDone", { label: timer.label }), "error");
@@ -853,11 +900,9 @@ class MealieAtelierCard extends HTMLElement {
       globalThis.navigator?.vibrate?.([200, 100, 200]);
     } catch {}
     try {
-      const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
-      if (!Ctx) return;
-      this._audio ||= new Ctx();
+      this._prepareAudio();
       const ctx = this._audio;
-      ctx.resume?.();
+      if (!ctx) return;
       const osc = ctx.createOscillator(),
         gain = ctx.createGain();
       osc.frequency.value = 880;
@@ -870,21 +915,22 @@ class MealieAtelierCard extends HTMLElement {
   }
   _tickTimers() {
     const now = Date.now();
-    let finished = false;
+    let finished = this._syncTimersFromStorage();
     const alerts = [];
     for (const timer of this._timers) {
       if (!timer.done && timer.deadline <= now) {
         timer.done = true;
         finished = true;
-        // Only alert for timers that just ran out, not for ones that expired while the page was closed.
-        if (now - timer.deadline < 15000) alerts.push(timer);
+        // Alert for timers that ran out while this card was alive (even if a throttled tab ticked late),
+        // not for ones that expired while the page was closed.
+        if (timer.deadline >= (this._timerWatchSince ?? 0)) alerts.push(timer);
       }
     }
     if (finished) {
       this._persistTimers();
       this._render();
     }
-    for (const timer of alerts) this._alertTimerDone(timer);
+    for (const timer of alerts) if (this._claimTimerAlert(timer)) this._alertTimerDone(timer);
     for (const span of this.shadowRoot.querySelectorAll("[data-timer-remaining]")) {
       const timer = this._timers.find((x) => String(x.id) === span.dataset.timerRemaining);
       if (timer) {
@@ -1532,14 +1578,24 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (action === "timer-start") {
       const input = this.shadowRoot.querySelector("[data-timer-minutes]");
-      const minutes = Number(input?.value);
+      const rawMinutes = input?.value;
+      const minutes = Number(rawMinutes);
       if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
-        input?.setAttribute?.("aria-invalid", "true");
+        const rawLabel = this.shadowRoot.querySelector("[data-timer-label]")?.value;
         this._flash(this.t("uiTimerMinutesRange"), "error");
-        input?.focus?.({ preventScroll: true });
+        // The flash re-renders the card: mark and focus the new input and keep what was typed.
+        const fresh = this.shadowRoot.querySelector("[data-timer-minutes]");
+        if (fresh) {
+          if (rawMinutes !== undefined) fresh.value = rawMinutes;
+          fresh.setAttribute?.("aria-invalid", "true");
+          fresh.focus?.({ preventScroll: true });
+        }
+        const freshLabel = this.shadowRoot.querySelector("[data-timer-label]");
+        if (freshLabel && rawLabel !== undefined) freshLabel.value = rawLabel;
         return;
       }
-      input?.removeAttribute?.("aria-invalid");
+      // Create the audio context inside this click so iOS Safari lets the alert beep later.
+      this._prepareAudio();
       const now = Date.now(),
         label =
           this.shadowRoot.querySelector("[data-timer-label]")?.value.trim() ||
@@ -1572,7 +1628,13 @@ class MealieAtelierCard extends HTMLElement {
         this._persistTimers();
         this._render();
         if (armError) {
-          this._flash(this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) }));
+          // A refusal without a known code (default web app, read-only) is raw English: show the local notice.
+          const translated = this._errorText(armError) !== armError?.message;
+          this._flash(
+            translated
+              ? this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) })
+              : this.t("uiLocalTimerEnabled"),
+          );
         } else {
           this._flash(
             this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"),
@@ -1597,12 +1659,16 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (action === "timer-remove") {
       const timer = this._timers.find((x) => String(x.id) === v);
-      // A finished timer has already been dispatched, so there is nothing left to cancel.
-      if (timer?.serverArmed && !timer.done && timer.deadline > Date.now()) {
+      if (timer?.serverArmed) {
         try {
           await this._ws("alarm_cancel", { timer_id: timer.id });
         } catch (error) {
-          if (!(timer.deadline <= Date.now())) {
+          // Gone or already dispatched (or due within clock skew): nothing is left to cancel.
+          const settled =
+            error?.code === "timer_not_found" ||
+            /already been dispatched/i.test(String(error?.message || "")) ||
+            timer.deadline <= Date.now() + 60000;
+          if (!settled) {
             this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");
             return;
           }
