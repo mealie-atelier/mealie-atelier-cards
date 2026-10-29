@@ -1,0 +1,318 @@
+{
+  "de": {
+    "app-desktop-dashboard": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-recipes": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-mealplan": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-shopping": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-discover": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-family": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-pantry": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-cookbook": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-cook": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-tablet-cook": {
+      "width": 1600,
+      "height": 1112,
+      "widths": [800, 1600]
+    },
+    "app-tablet-today": {
+      "width": 1600,
+      "height": 1112,
+      "widths": [800, 1600]
+    },
+    "app-tablet-mealplan": {
+      "width": 1600,
+      "height": 1112,
+      "widths": [800, 1600]
+    },
+    "app-phone-today": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-recipe": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-discover": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-shopping": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-family": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-mealplan": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-cook": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "mealie-desktop-home": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "mealie-phone-recipe": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "ha-desktop-dashboard": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "ha-phone-dashboard": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "ha-integration": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "ha-sync-status": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "ha-sync-setup": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    }
+  },
+  "en": {
+    "app-desktop-dashboard": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-recipes": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-mealplan": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-shopping": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-discover": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-family": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-pantry": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-cookbook": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-desktop-cook": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "app-tablet-cook": {
+      "width": 1600,
+      "height": 1112,
+      "widths": [800, 1600]
+    },
+    "app-tablet-today": {
+      "width": 1600,
+      "height": 1112,
+      "widths": [800, 1600]
+    },
+    "app-tablet-mealplan": {
+      "width": 1600,
+      "height": 1112,
+      "widths": [800, 1600]
+    },
+    "app-phone-today": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-recipe": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-discover": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-shopping": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-family": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-mealplan": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-cook": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "mealie-desktop-home": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "mealie-phone-recipe": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "ha-desktop-dashboard": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "ha-phone-dashboard": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "ha-integration": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "ha-sync-status": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    },
+    "ha-sync-setup": {
+      "width": 1600,
+      "height": 1000,
+      "widths": [800, 1600]
+    }
+  },
+  "photos": {
+    "buttermilch-pancakes-mit-beeren": {
+      "width": 1200,
+      "height": 1200,
+      "widths": [360, 800]
+    },
+    "gnocchi-alla-sorrentina": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    },
+    "haehnchensalat-mit-parmesan-und-croutons": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    },
+    "kokos-curry-mit-champignons-und-gruenkohl": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    },
+    "kuerbissuppe-mit-feta-und-kuerbiskernen": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    },
+    "penne-mit-artischocken-oliven-und-feta": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    },
+    "pfannen-eier-mit-tomaten-und-basilikum": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    },
+    "pizza-mit-schinken-und-champignons": {
+      "width": 1067,
+      "height": 1600,
+      "widths": [360, 800]
+    },
+    "wan-tan-suppe-mit-pak-choi": {
+      "width": 1200,
+      "height": 1200,
+      "widths": [360, 800]
+    },
+    "zitronen-focaccia-mit-rosmarin": {
+      "width": 1200,
+      "height": 1500,
+      "widths": [360, 800]
+    }
+  }
+}
