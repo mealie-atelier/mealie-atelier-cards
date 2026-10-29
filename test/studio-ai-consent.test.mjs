@@ -108,6 +108,21 @@ test("the substitute helper sends the card language and skips the server without
   assert.equal((t.card._aiSwap.match(/API-Key/g) || []).length, 1);
 });
 
+test("an older Bridge without AI state gets no language key", async () => {
+  // Bridge 0.10.x validates the websocket payload strictly and rejects unknown keys.
+  const t = setup("de", {});
+  t.card._ws = async (type, payload) => {
+    t.calls.ws.push([type, payload]);
+    return { alternatives: [{ name: "Mango", adjustment: "gleich viel" }], warning: "prüfen" };
+  };
+  await click(t.card, "studio-replacement");
+  await click(t.card, "studio-ai-audit");
+  assert.deepEqual(plain(t.calls.ws), [
+    ["studio_substitute", { ingredient: "Drachenfrucht", recipe: "Suppe" }],
+    ["studio_ai_audit", { slug: "soup" }],
+  ]);
+});
+
 test("the review toast shows the localized message for a coded server error", async () => {
   const { card, calls } = setup("de", { ai_enabled: true, ai_provider: "openai" });
   card._ws = async () => {

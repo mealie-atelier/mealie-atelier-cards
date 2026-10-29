@@ -815,6 +815,18 @@ MealieAtelierCard.prototype._aiInfo = function () {
   const enabled = named === "none" ? false : (flag ?? true);
   return { enabled, provider: enabled ? provider || "" : "" };
 };
+// Bridges before 0.11 reject unknown websocket keys, so the card language is sent only when the
+// status entry shows a Bridge that reports AI state (and therefore accepts `language`).
+MealieAtelierCard.prototype._aiLanguageField = function () {
+  const entry = this._statusEntry || {};
+  const reports =
+    typeof entry.ai_enabled === "boolean" ||
+    typeof entry.ai_provider === "string" ||
+    typeof entry.features?.ai === "boolean" ||
+    typeof this._status?.ai_enabled === "boolean" ||
+    typeof this._status?.ai_provider === "string";
+  return reports && this._language ? { language: this._language } : {};
+};
 // A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
 MealieAtelierCard.prototype._aiErrorText = function (error) {
   const translated = this._errorText(error);
@@ -1247,7 +1259,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           const answer = await this._ws("studio_substitute", {
             ingredient: raw.slice(0, 160),
             recipe: this._detail.name.slice(0, 200),
-            language: this._language,
+            ...this._aiLanguageField(),
           });
           output =
             answer.alternatives.map((x) => `${x.name}: ${x.adjustment}`).join(" · ") +
@@ -1284,7 +1296,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       try {
         const result = await this._ws("studio_ai_audit", {
           slug: this._detail.slug,
-          language: this._language,
+          ...this._aiLanguageField(),
         });
         this._aiAudit = result;
         this._render();
