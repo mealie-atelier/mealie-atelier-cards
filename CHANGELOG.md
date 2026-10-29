@@ -51,7 +51,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Changed
 
-- Demo photos: seven of the ten photos are new daylight shots on light wood, stone, marble, white or jute (pancakes, chicken salad, pumpkin soup, pesto farfalle, coconut curry, beef pho, lemon focaccia), the brand engraving on the shakshuka pan handle is retouched away, and every fictional recipe now matches its photo. The Greek salad, chicken soup, lemon pasta, paneer curry, roasted vegetables and ramen gave way to the new dishes, the pizza became ham and mushroom, the chicken salad lists the red onion it shows, and the shakshuka, gnocchi and pancake recipes and all alt texts describe exactly what their photos show.
+- Demo photos: eight of the ten photos are new (pancakes, skillet eggs, chicken salad, pumpkin soup, penne with artichokes, wonton soup, coconut curry, lemon focaccia), the gnocchi and pizza photos stay, and every fictional recipe now matches its photo. The shakshuka, Greek salad, chicken soup, lemon pasta, paneer curry, ramen and roasted vegetables gave way to the new dishes, the pizza became ham and mushroom, and the gnocchi and pancake recipes and all alt texts describe exactly what their photos show.
 - The overview tiles "Rezepte", "Geplant" and "Offene Artikel" are buttons that open the recipes, the week plan and the shopping list.
 - A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.
 - Recipe photos appear in the week grid, in today's plan and in the cookbook list.

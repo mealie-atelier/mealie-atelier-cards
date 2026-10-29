@@ -3,99 +3,93 @@
   "updatedAt": "2026-10-29",
   "recipes": [
     {
-      "id": "shakshuka",
-      "slug": "shakshuka-mit-paprika",
+      "id": "skillet-eggs",
+      "slug": "pfannen-eier-mit-tomaten-und-basilikum",
       "title": {
-        "de": "Shakshuka mit Paprika",
-        "en": "Shakshuka with peppers"
+        "de": "Pfannen-Eier mit Tomaten und Basilikum",
+        "en": "Skillet eggs with tomatoes and basil"
       },
       "description": {
-        "de": "Zwei Eier garen in einer würzigen Tomaten-Paprika-Sauce. Mit Petersilie und geröstetem Sauerteigbrot wird daraus ein schnelles Abendessen für zwei.",
-        "en": "Two eggs simmer in a warmly spiced tomato and pepper sauce. Finish with parsley and serve with toasted sourdough for an easy supper for two."
+        "de": "Vier Eier stocken in einer Pfanne auf weich gedünsteten Zwiebeln und frischen Tomatenstücken. Ein paar Basilikumblätter obenauf, dazu knuspriges Knäckebrot: ein Frühstück für zwei in einer Viertelstunde.",
+        "en": "Four eggs set in a pan on softened onions and chunks of fresh tomato. A few basil leaves on top and crisp crackers on the side make breakfast for two in about fifteen minutes."
       },
       "category": {
-        "de": "Pfannengericht",
-        "en": "One-pan meal"
+        "de": "Frühstück",
+        "en": "Breakfast"
       },
       "cuisine": {
-        "de": "Nordafrikanisch inspiriert",
-        "en": "North African inspired"
+        "de": "Hausmannskost",
+        "en": "Home cooking"
       },
       "tags": ["vegetarian", "one-pan", "quick"],
       "servings": 2,
-      "prepMinutes": 10,
-      "cookMinutes": 20,
+      "prepMinutes": 5,
+      "cookMinutes": 12,
       "ingredients": {
         "de": [
           "1 EL Olivenöl",
-          "1 kleine Zwiebel, fein gewürfelt",
-          "1 rote Paprika, gewürfelt",
-          "1 Knoblauchzehe, fein gehackt",
-          "400 g gehackte Tomaten",
-          "½ TL Kreuzkümmel",
-          "½ TL edelsüßes Paprikapulver",
-          "2 Eier",
-          "1 EL gehackte Petersilie",
-          "2 Scheiben Sauerteigbrot"
+          "1 Zwiebel, in dünnen Streifen",
+          "3 reife Tomaten, grob gewürfelt",
+          "4 Eier",
+          "1 Handvoll Basilikumblätter",
+          "Salz und schwarzer Pfeffer",
+          "4 Scheiben Knäckebrot"
         ],
         "en": [
           "1 tbsp olive oil",
-          "1 small onion, finely diced",
-          "1 red bell pepper, diced",
-          "1 garlic clove, finely chopped",
-          "400 g chopped tomatoes",
-          "½ tsp ground cumin",
-          "½ tsp sweet paprika",
-          "2 eggs",
-          "1 tbsp chopped parsley",
-          "2 slices sourdough bread"
+          "1 onion, thinly sliced",
+          "3 ripe tomatoes, roughly diced",
+          "4 eggs",
+          "1 handful basil leaves",
+          "Salt and black pepper",
+          "4 crispbread crackers"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Gemüse anschwitzen",
-            "summary": "Zwiebel und Paprika weich dünsten",
-            "text": "Olivenöl in einer kleinen Pfanne (etwa 20 cm) erhitzen. Zwiebel und Paprika bei mittlerer Hitze 6–7 Minuten weich dünsten. Knoblauch, Kreuzkümmel und Paprikapulver einrühren und 30 Sekunden rösten."
+            "title": "Zwiebel dünsten",
+            "summary": "Zwiebelstreifen weich werden lassen",
+            "text": "Olivenöl in einer Pfanne (etwa 24 cm) erhitzen. Zwiebelstreifen bei mittlerer Hitze 4–5 Minuten glasig dünsten."
           },
           {
-            "title": "Sauce köcheln lassen",
-            "summary": "Tomaten einkochen",
-            "text": "Tomaten samt Saft in die Pfanne geben, salzen und pfeffern. Offen 8–10 Minuten leise köcheln lassen, bis die Sauce sämig ist. Zwei Mulden hineindrücken."
+            "title": "Tomaten zugeben",
+            "summary": "Kurz mitgaren, nicht zerkochen",
+            "text": "Tomatenwürfel zugeben, salzen und pfeffern. 2 Minuten mitgaren, bis sie etwas Saft ziehen, aber noch Biss haben. Vier Mulden freischieben."
           },
           {
             "title": "Eier stocken lassen",
-            "summary": "Mit Brot und Petersilie servieren",
-            "text": "Eier in die Mulden schlagen. Abdecken und 5–7 Minuten garen, bis das Eiweiß gestockt und das Eigelb noch weich ist. Inzwischen das Brot in einer zweiten Pfanne goldbraun rösten. Petersilie über die Shakshuka streuen und mit dem Brot servieren."
+            "summary": "Mit Basilikum und Knäckebrot servieren",
+            "text": "Eier in die Mulden schlagen. Abdecken und 4–5 Minuten garen, bis das Eiweiß gestockt und das Eigelb noch weich ist. Basilikumblätter darauflegen, leicht salzen und direkt aus der Pfanne mit Knäckebrot servieren."
           }
         ],
         "en": [
           {
-            "title": "Soften the vegetables",
-            "summary": "Cook the onion and pepper",
-            "text": "Heat the olive oil in a small pan (about 20 cm). Cook the onion and bell pepper over medium heat for 6–7 minutes until soft. Stir in the garlic, cumin and paprika and cook for 30 seconds."
+            "title": "Soften the onion",
+            "summary": "Cook the onion until soft",
+            "text": "Heat the olive oil in a pan (about 24 cm). Cook the onion over medium heat for 4–5 minutes until translucent."
           },
           {
-            "title": "Simmer the sauce",
-            "summary": "Reduce the tomatoes",
-            "text": "Add the tomatoes and their juices, season with salt and pepper, and simmer uncovered for 8–10 minutes until thick. Make two wells in the sauce."
+            "title": "Add the tomatoes",
+            "summary": "Warm them through, keep some bite",
+            "text": "Add the diced tomatoes and season with salt and pepper. Cook for 2 minutes until they release a little juice but still hold their shape. Push the vegetables aside to make four wells."
           },
           {
             "title": "Set the eggs",
-            "summary": "Finish with parsley and bread",
-            "text": "Crack an egg into each well. Cover and cook for 5–7 minutes, until the whites are set and the yolks are still soft. Meanwhile toast the bread in a second pan until golden. Scatter the parsley over the shakshuka and serve with the bread."
+            "summary": "Finish with basil and crispbread",
+            "text": "Crack an egg into each well. Cover and cook for 4–5 minutes, until the whites are set and the yolks are still soft. Scatter over the basil, season lightly and serve straight from the pan with the crispbread."
           }
         ]
       },
       "image": {
-        "file": "../photos/shakshuka-mit-paprika.webp",
+        "file": "../photos/pfannen-eier-mit-tomaten-und-basilikum.webp",
         "alt": {
-          "de": "Shakshuka mit zwei Eiern und Petersilie in einer kleinen Pfanne, daneben geröstetes Brot auf einem Holzbrett",
-          "en": "Shakshuka with two eggs and parsley in a small pan, toasted bread on a wooden board beside it"
+          "de": "Vier Eier mit Tomatenstücken, Zwiebelstreifen und Basilikumblättern in einer schwarzen Pfanne auf einem sonnigen Holztisch, dahinter ein Teller mit Knäckebrot und ein Glas roter Beerensaft",
+          "en": "Four eggs with chunks of tomato, sliced onion and basil leaves in a black pan on a sunlit wooden table, with a plate of crispbread and a glass of red berry juice behind it"
         },
-        "photographer": "Toa Heftiba",
-        "photographerUrl": "https://unsplash.com/@heftiba?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/cooked-food-on-pan-gWkvURhoMlA"
+        "photographer": "Ivan Cherepanov",
+        "photographerUrl": "https://unsplash.com/@theveryday?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/a-skillet-with-eggs-and-tomatoes-on-a-wooden-table-BMlJ5SxzG2o"
       }
     },
     {
@@ -392,8 +386,8 @@
         "en": "Ham and mushroom pizza"
       },
       "description": {
-        "de": "Ein dünner Boden mit luftigem, leicht angekohltem Rand, belegt mit Tomate, Mozzarella, Kochschinken und Champignons. Der Teig braucht Zeit, die aktive Arbeit bleibt kurz.",
-        "en": "A thin base with an airy, lightly charred crust, topped with tomato, mozzarella, cooked ham and mushrooms. The dough takes time, but the hands-on work is short."
+        "de": "Ein dünner Boden mit luftigem, leicht angekohltem Rand, belegt mit Tomate, Mozzarella, hauchdünnem Schinken und halbierten kleinen Champignons. Der Teig braucht Zeit, die aktive Arbeit bleibt kurz.",
+        "en": "A thin base with an airy, lightly charred crust, topped with tomato, mozzarella, wafer-thin ham and halved small mushrooms. The dough takes time, but the hands-on work is short."
       },
       "category": {
         "de": "Pizza",
@@ -415,8 +409,8 @@
           "1 TL Salz",
           "150 g passierte Tomaten",
           "150 g Mozzarella",
-          "60 g Kochschinken, in dünnen Scheiben",
-          "80 g kleine Champignons, in Scheiben",
+          "60 g Schinken, hauchdünn geschnitten",
+          "8 kleine Champignons, halbiert",
           "1 EL Olivenöl"
         ],
         "en": [
@@ -426,8 +420,8 @@
           "1 tsp salt",
           "150 g passata",
           "150 g mozzarella",
-          "60 g thinly sliced cooked ham",
-          "80 g small mushrooms, sliced",
+          "60 g wafer-thin sliced ham",
+          "8 small mushrooms, halved",
           "1 tbsp olive oil"
         ]
       },
@@ -441,12 +435,12 @@
           {
             "title": "Belag vorbereiten",
             "summary": "Ofen und Blech kräftig vorheizen",
-            "text": "Backofen mit einem umgedrehten Blech auf höchster Stufe mindestens 30 Minuten vorheizen. Passata mit Olivenöl und einer Prise Salz würzen. Mozzarella gut abtropfen lassen, Champignons in dünne Scheiben schneiden."
+            "text": "Backofen mit einem umgedrehten Blech auf höchster Stufe mindestens 30 Minuten vorheizen. Passata mit Olivenöl und einer Prise Salz würzen. Mozzarella gut abtropfen lassen, Champignons halbieren."
           },
           {
             "title": "Pizza backen",
             "summary": "Frisch aus dem Ofen servieren",
-            "text": "Teig auf wenig Mehl dünn ausziehen. Mit Tomatensauce bestreichen. Mozzarella zupfen und mit Schinken und Champignons darauf verteilen. 8–12 Minuten backen, bis der Rand kräftig gebräunt ist."
+            "text": "Teig auf wenig Mehl dünn ausziehen. Mit Tomatensauce bestreichen. Mozzarella zupfen und mit locker gefaltetem Schinken und den Champignonhälften darauf verteilen. 8–12 Minuten backen, bis der Rand kräftig gebräunt ist."
           }
         ],
         "en": [
@@ -458,20 +452,20 @@
           {
             "title": "Prepare the toppings",
             "summary": "Preheat the oven and tray thoroughly",
-            "text": "Heat the oven with an inverted baking tray at its highest setting for at least 30 minutes. Season the passata with olive oil and a pinch of salt. Drain the mozzarella well and slice the mushrooms thinly."
+            "text": "Heat the oven with an inverted baking tray at its highest setting for at least 30 minutes. Season the passata with olive oil and a pinch of salt. Drain the mozzarella well and halve the mushrooms."
           },
           {
             "title": "Bake the pizza",
             "summary": "Serve straight from the oven",
-            "text": "Stretch the dough thinly on a little flour. Spread with tomato sauce, tear over the mozzarella and add the ham and mushrooms. Bake for 8–12 minutes until the crust is deeply browned."
+            "text": "Stretch the dough thinly on a little flour. Spread with tomato sauce, tear over the mozzarella and add the loosely draped ham and the mushroom halves. Bake for 8–12 minutes until the crust is deeply browned."
           }
         ]
       },
       "image": {
         "file": "../photos/pizza-mit-schinken-und-champignons.webp",
         "alt": {
-          "de": "Pizza mit Tomatensauce, Mozzarella, Kochschinken und Champignons auf einem weißen Teller, von oben auf einem hellen Tisch fotografiert",
-          "en": "Pizza with tomato sauce, mozzarella, cooked ham and mushrooms on a white plate, shot from above on a light table"
+          "de": "Pizza mit Tomatensauce, Mozzarella, hauchdünnem Schinken und halbierten kleinen Champignons auf einem weißen Teller, von oben auf einem hellen Tisch fotografiert",
+          "en": "Pizza with tomato sauce, mozzarella, wafer-thin ham and halved small mushrooms on a white plate, shot from above on a light table"
         },
         "photographer": "Luke Oslizlo",
         "photographerUrl": "https://unsplash.com/@lukaszmtw?utm_source=mealie_atelier&utm_medium=referral",
@@ -479,95 +473,97 @@
       }
     },
     {
-      "id": "pesto-farfalle",
-      "slug": "farfalle-mit-pesto-und-kirschtomaten",
+      "id": "artichoke-penne",
+      "slug": "penne-mit-artischocken-oliven-und-feta",
       "title": {
-        "de": "Farfalle mit Pesto und Kirschtomaten",
-        "en": "Farfalle with pesto and cherry tomatoes"
+        "de": "Penne mit Artischocken, Oliven und Feta",
+        "en": "Penne with artichokes, olives and feta"
       },
       "description": {
-        "de": "Farfalle in frischem Basilikumpesto mit halbierten Kirschtomaten, auf jungem Blattsalat angerichtet. Schmeckt warm als schnelles Abendessen oder kalt als Nudelsalat.",
-        "en": "Farfalle tossed in fresh basil pesto with halved cherry tomatoes, served on young salad leaves. Good warm as a quick dinner or cold as a pasta salad."
+        "de": "Penne mit Artischockenherzen, Kalamata-Oliven, gerösteter Paprika, knusprigem Speck und zerbröseltem Feta, gewürzt mit Oregano und Pfeffer. Schmeckt warm als schnelles Abendessen oder kalt als Nudelsalat.",
+        "en": "Penne with artichoke hearts, Kalamata olives, roasted red pepper, crisp bacon and crumbled feta, seasoned with oregano and black pepper. Good warm as a quick dinner or cold as a pasta salad."
       },
       "category": {
         "de": "Pasta",
         "en": "Pasta"
       },
       "cuisine": {
-        "de": "Italienisch",
-        "en": "Italian"
+        "de": "Mediterran inspiriert",
+        "en": "Mediterranean inspired"
       },
-      "tags": ["vegetarian", "quick", "family-friendly"],
+      "tags": ["quick", "family-friendly"],
       "servings": 4,
       "prepMinutes": 10,
-      "cookMinutes": 12,
+      "cookMinutes": 15,
       "ingredients": {
         "de": [
-          "400 g Farfalle",
-          "250 g Kirschtomaten",
-          "75 g junger Blattsalat (Rucola und rote Salatblätter)",
-          "2 Bund Basilikum",
-          "40 g Pinienkerne",
-          "1 Knoblauchzehe",
-          "40 g Parmesan, fein gerieben",
-          "100 ml Olivenöl"
+          "400 g Penne",
+          "4 Scheiben Frühstücksspeck",
+          "280 g Artischockenherzen aus dem Glas, abgetropft",
+          "200 g geröstete rote Paprika aus dem Glas, in Streifen",
+          "100 g Kalamata-Oliven",
+          "150 g Feta",
+          "3 EL Olivenöl",
+          "1 TL getrockneter Oregano",
+          "Salz und schwarzer Pfeffer"
         ],
         "en": [
-          "400 g farfalle",
-          "250 g cherry tomatoes",
-          "75 g young salad leaves (rocket and red lettuce)",
-          "2 bunches basil",
-          "40 g pine nuts",
-          "1 garlic clove",
-          "40 g Parmesan, finely grated",
-          "100 ml olive oil"
+          "400 g penne",
+          "4 rashers bacon",
+          "280 g jarred artichoke hearts, drained",
+          "200 g jarred roasted red peppers, cut into strips",
+          "100 g Kalamata olives",
+          "150 g feta",
+          "3 tbsp olive oil",
+          "1 tsp dried oregano",
+          "Salt and black pepper"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Farfalle kochen",
+            "title": "Penne kochen",
             "summary": "In Salzwasser al dente garen",
-            "text": "Farfalle in reichlich Salzwasser nach Packungsangabe al dente kochen. Vor dem Abgießen eine halbe Tasse Nudelwasser abschöpfen."
+            "text": "Penne in reichlich Salzwasser nach Packungsangabe al dente kochen und abgießen."
           },
           {
-            "title": "Pesto mixen",
-            "summary": "Basilikum, Pinienkerne und Parmesan pürieren",
-            "text": "Pinienkerne in einer trockenen Pfanne hell anrösten. Mit Basilikumblättern, Knoblauch, Parmesan und Olivenöl zu einem groben Pesto mixen und mit Salz abschmecken."
+            "title": "Speck auslassen",
+            "summary": "Knusprig braten und zerbröseln",
+            "text": "Inzwischen den Speck in einer großen Pfanne ohne Fett knusprig braten, auf Küchenpapier abtropfen lassen und in kleine Stücke brechen. Artischockenherzen vierteln."
           },
           {
             "title": "Vermengen und anrichten",
-            "summary": "Mit Tomaten auf Blattsalat servieren",
-            "text": "Farfalle mit dem Pesto und etwas Nudelwasser mischen, bis sie glänzen. Kirschtomaten halbieren und unterheben. Blattsalat auf Teller verteilen und die Nudeln darauf anrichten."
+            "summary": "Mit Feta und Oregano servieren",
+            "text": "Penne mit Olivenöl, Artischocken, Paprikastreifen, Oliven und Speck mischen. Mit Oregano, Salz und Pfeffer würzen, Feta darüberbröseln und warm oder abgekühlt servieren."
           }
         ],
         "en": [
           {
-            "title": "Cook the farfalle",
+            "title": "Cook the penne",
             "summary": "Boil until al dente",
-            "text": "Cook the farfalle in plenty of salted water according to the packet until al dente. Scoop out half a cup of pasta water before draining."
+            "text": "Cook the penne in plenty of salted water according to the packet until al dente, then drain."
           },
           {
-            "title": "Blend the pesto",
-            "summary": "Purée basil, pine nuts and Parmesan",
-            "text": "Toast the pine nuts in a dry pan until pale golden. Blend with the basil leaves, garlic, Parmesan and olive oil into a coarse pesto and season with salt."
+            "title": "Crisp the bacon",
+            "summary": "Fry until crisp and break it up",
+            "text": "Meanwhile fry the bacon in a large dry pan until crisp, drain on kitchen paper and break into small pieces. Quarter the artichoke hearts."
           },
           {
             "title": "Toss and serve",
-            "summary": "Serve with tomatoes on salad leaves",
-            "text": "Toss the farfalle with the pesto and a little pasta water until glossy. Halve the cherry tomatoes and fold them in. Spread the salad leaves on plates and pile the pasta on top."
+            "summary": "Finish with feta and oregano",
+            "text": "Toss the penne with the olive oil, artichokes, pepper strips, olives and bacon. Season with oregano, salt and pepper, crumble over the feta and serve warm or at room temperature."
           }
         ]
       },
       "image": {
-        "file": "../photos/farfalle-mit-pesto-und-kirschtomaten.webp",
+        "file": "../photos/penne-mit-artischocken-oliven-und-feta.webp",
         "alt": {
-          "de": "Farfalle in grünem Basilikumpesto mit halbierten Kirschtomaten auf Rucola und roten Salatblättern in einer weißen Schale auf hellem Marmor",
-          "en": "Farfalle in green basil pesto with halved cherry tomatoes on rocket and red lettuce leaves in a white bowl on pale marble"
+          "de": "Penne mit Artischockenherzen, Kalamata-Oliven, gerösteten Paprikastreifen, Speckstückchen und Feta in einer weißen Schale mit Gabel auf einem hellen Tisch, dahinter ein Glas Wasser mit Eis und eine Grünpflanze",
+          "en": "Penne with artichoke hearts, Kalamata olives, roasted pepper strips, bits of bacon and feta in a white bowl with a fork on a pale table, a glass of iced water and a green plant behind it"
         },
-        "photographer": "Eaters Collective",
-        "photographerUrl": "https://unsplash.com/@eaterscollective?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/pesto-pasta-with-sliced-tomatoes-served-on-white-ceramic-plate-12eHC6FxPyg"
+        "photographer": "Paula Hayes",
+        "photographerUrl": "https://unsplash.com/@phayes007?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/pasta-with-cheese-on-white-ceramic-plate-oeulo_9RRO0"
       }
     },
     {
@@ -763,109 +759,99 @@
       }
     },
     {
-      "id": "beef-pho",
-      "slug": "pho-mit-rindfleisch-und-kraeutern",
+      "id": "wonton-soup",
+      "slug": "wan-tan-suppe-mit-pak-choi",
       "title": {
-        "de": "Pho mit Rindfleisch und Kräutern",
-        "en": "Beef pho with fresh herbs"
+        "de": "Wan-Tan-Suppe mit Pak Choi",
+        "en": "Wonton soup with bok choy"
       },
       "description": {
-        "de": "Eine klare, würzige Rinderbrühe über Reisbandnudeln mit zarter Rinderbrust. Obenauf kommen viel Koriander, Minze, Frühlingszwiebeln, rote Zwiebel, Sojasprossen, Chili und ein Stück Limette.",
-        "en": "A clear, fragrant beef broth over flat rice noodles with tender beef brisket. Plenty of coriander, mint, spring onions, red onion, bean sprouts, chilli and a lime wedge go on top."
+        "de": "Zarte Wan Tans mit Hackfleischfüllung in einer klaren, goldenen Hühnerbrühe, dazu Pak Choi, Frühlingszwiebeln und knusprig gerösteter Knoblauch. Die Teigtaschen lassen sich gut auf Vorrat falten und einfrieren.",
+        "en": "Silky pork wontons in a clear, golden chicken broth with bok choy, spring onions and crisp fried garlic. The wontons are easy to fold ahead and freeze."
       },
       "category": {
-        "de": "Nudelsuppe",
-        "en": "Noodle soup"
+        "de": "Suppe",
+        "en": "Soup"
       },
       "cuisine": {
-        "de": "Vietnamesisch inspiriert",
-        "en": "Vietnamese inspired"
+        "de": "Chinesisch inspiriert",
+        "en": "Chinese inspired"
       },
-      "tags": ["dairy-free", "make-ahead"],
+      "tags": ["dairy-free", "make-ahead", "freezer-friendly"],
       "servings": 4,
-      "prepMinutes": 20,
-      "cookMinutes": 90,
+      "prepMinutes": 30,
+      "cookMinutes": 15,
       "ingredients": {
         "de": [
-          "1,5 l Rinderbrühe",
-          "500 g Rinderbrust",
-          "1 Zwiebel, halbiert",
-          "1 Stück Ingwer (etwa 4 cm)",
-          "2 Sternanis",
-          "1 Zimtstange",
-          "2 EL Fischsauce",
-          "250 g breite Reisbandnudeln",
-          "100 g Sojasprossen",
-          "1 rote Zwiebel, in feinen Ringen",
-          "3 Frühlingszwiebeln",
-          "1 Bund Koriander",
-          "1 Handvoll Minze",
-          "1 rote Chilischote, in Ringen",
-          "1 Limette, geviertelt"
+          "250 g Schweinehackfleisch",
+          "1 Stück Ingwer (etwa 2 cm), fein gerieben",
+          "2 EL helle Sojasauce",
+          "1 TL Sesamöl",
+          "24 Wan-Tan-Teigblätter",
+          "1,2 l Hühnerbrühe",
+          "2 kleine Pak Choi",
+          "3 Frühlingszwiebeln, in feinen Ringen",
+          "3 Knoblauchzehen, fein gehackt",
+          "2 EL neutrales Öl"
         ],
         "en": [
-          "1.5 l beef stock",
-          "500 g beef brisket",
-          "1 onion, halved",
-          "1 piece fresh ginger (about 4 cm)",
-          "2 star anise",
-          "1 cinnamon stick",
-          "2 tbsp fish sauce",
-          "250 g flat rice noodles",
-          "100 g bean sprouts",
-          "1 red onion, thinly sliced",
-          "3 spring onions",
-          "1 bunch coriander",
-          "1 handful mint leaves",
-          "1 red chilli, sliced",
-          "1 lime, cut into wedges"
+          "250 g minced pork",
+          "1 piece fresh ginger (about 2 cm), finely grated",
+          "2 tbsp light soy sauce",
+          "1 tsp sesame oil",
+          "24 wonton wrappers",
+          "1.2 l chicken stock",
+          "2 small heads bok choy",
+          "3 spring onions, thinly sliced",
+          "3 garlic cloves, finely chopped",
+          "2 tbsp neutral oil"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Brühe ansetzen",
-            "summary": "Rinderbrust mit Gewürzen garen",
-            "text": "Zwiebel und Ingwer in einer trockenen Pfanne kräftig anrösten. Mit Brühe, Sternanis, Zimt und Rinderbrust in einen Topf geben und zugedeckt bei kleiner Hitze 80–90 Minuten sieden lassen, bis das Fleisch weich ist. Brühe durch ein Sieb gießen und mit Fischsauce abschmecken."
+            "title": "Wan Tans füllen",
+            "summary": "Füllung mischen, Teigtaschen falten",
+            "text": "Hackfleisch mit Ingwer, 1 EL Sojasauce, Sesamöl und einem Drittel der Frühlingszwiebeln verkneten. Je einen Teelöffel Füllung auf ein Teigblatt setzen, die Ränder anfeuchten, zum Dreieck falten und die Spitzen zusammendrücken."
           },
           {
-            "title": "Einlagen vorbereiten",
-            "summary": "Fleisch aufschneiden, Kräuter zupfen",
-            "text": "Rinderbrust quer zur Faser in dünne Scheiben schneiden. Reisbandnudeln nach Packungsangabe einweichen oder garen. Frühlingszwiebeln in Ringe schneiden, Koriander und Minze zupfen."
+            "title": "Knoblauch rösten",
+            "summary": "Goldbraun und knusprig braten",
+            "text": "Öl in einer kleinen Pfanne erhitzen und den Knoblauch unter Rühren 1–2 Minuten goldbraun rösten. Auf Küchenpapier abtropfen lassen."
           },
           {
-            "title": "Schalen füllen",
-            "summary": "Mit heißer Brühe übergießen",
-            "text": "Nudeln und Fleisch auf vier Schalen verteilen und mit der kochend heißen Brühe übergießen. Sojasprossen, rote Zwiebel, Frühlingszwiebeln, Kräuter und Chili darauflegen und je ein Stück Limette dazugeben."
+            "title": "Suppe garen",
+            "summary": "Wan Tans und Pak Choi in der Brühe ziehen lassen",
+            "text": "Brühe mit der restlichen Sojasauce aufkochen. Pak Choi längs vierteln. Wan Tans in die leise siedende Brühe geben und 4–5 Minuten garen, Pak Choi in den letzten 2 Minuten zugeben. In Schalen verteilen und mit Frühlingszwiebeln und geröstetem Knoblauch bestreuen."
           }
         ],
         "en": [
           {
-            "title": "Start the broth",
-            "summary": "Simmer the brisket with spices",
-            "text": "Char the onion and ginger in a dry pan. Put them in a pot with the stock, star anise, cinnamon and brisket, cover and simmer over low heat for 80–90 minutes until the meat is tender. Strain the broth and season with fish sauce."
+            "title": "Fill the wontons",
+            "summary": "Mix the filling, fold the wontons",
+            "text": "Mix the pork with the ginger, 1 tbsp soy sauce, the sesame oil and a third of the spring onions. Place a teaspoon of filling on each wrapper, moisten the edges, fold into a triangle and press the corners together."
           },
           {
-            "title": "Prepare the toppings",
-            "summary": "Slice the meat, pick the herbs",
-            "text": "Slice the brisket thinly against the grain. Soak or cook the rice noodles according to the packet. Slice the spring onions and pick the coriander and mint leaves."
+            "title": "Fry the garlic",
+            "summary": "Fry until golden and crisp",
+            "text": "Heat the oil in a small pan and fry the garlic, stirring, for 1–2 minutes until golden. Drain on kitchen paper."
           },
           {
-            "title": "Fill the bowls",
-            "summary": "Pour over the hot broth",
-            "text": "Divide the noodles and beef among four bowls and pour over the boiling broth. Top with bean sprouts, red onion, spring onions, herbs and chilli, and add a lime wedge to each bowl."
+            "title": "Cook the soup",
+            "summary": "Poach the wontons and bok choy in the broth",
+            "text": "Bring the stock to the boil with the remaining soy sauce. Quarter the bok choy lengthways. Slide the wontons into the gently simmering broth and cook for 4–5 minutes, adding the bok choy for the last 2 minutes. Ladle into bowls and top with the spring onions and fried garlic."
           }
         ]
       },
       "image": {
-        "file": "../photos/pho-mit-rindfleisch-und-kraeutern.webp",
+        "file": "../photos/wan-tan-suppe-mit-pak-choi.webp",
         "alt": {
-          "de": "Pho mit einer Scheibe Rinderbrust, Reisbandnudeln, Koriander, Minze, Frühlingszwiebeln, roten Zwiebelringen, Sojasprossen, Chili und einer Limettenscheibe in einer weißen Schale auf hellem Holz, quer darüber helle Essstäbchen",
-          "en": "Pho with a slice of beef brisket, flat rice noodles, coriander, mint, spring onions, red onion rings, bean sprouts, chilli and a lime slice in a white bowl on light wood, with pale chopsticks across it"
+          "de": "Wan Tans mit Pak Choi, Frühlingszwiebeln und geröstetem Knoblauch in klarer Brühe in einer weißen Schale auf einem hellen Tisch, quer darüber helle Essstäbchen",
+          "en": "Wontons with bok choy, spring onions and fried garlic in clear broth in a white bowl on a pale table, with pale chopsticks across it"
         },
-        "photographer": "Sergei Mironov",
-        "photographerUrl": "https://unsplash.com/@svmironov?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/a-bowl-of-food-with-chopsticks-on-a-table-LdMOXLJWfQ4"
+        "photographer": "K Soma",
+        "photographerUrl": "https://unsplash.com/@ksoma?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/white-ceramic-bowl-with-soup-oKcCxOuy0_0"
       }
     },
     {

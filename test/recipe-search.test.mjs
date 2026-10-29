@@ -35,10 +35,10 @@ function catalog(locale) {
 
 test("demo recipe search finds ingredient matches, not only titles", () => {
   const { recipes, details } = catalog("en");
-  const matches = searchDemoRecipes(recipes, details, "bean sprouts");
+  const matches = searchDemoRecipes(recipes, details, "minced pork");
   assert.deepEqual(
     matches.map((recipe) => recipe.slug),
-    ["pho-mit-rindfleisch-und-kraeutern"],
+    ["wan-tan-suppe-mit-pak-choi"],
   );
 });
 
