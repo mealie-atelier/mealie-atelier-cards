@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadCards, makeCard } from "./support/card-harness.mjs";
 
 const source = fileURLToPath(new URL("../src/i18n/", import.meta.url));
 const locales = Object.fromEntries(
@@ -414,4 +415,11 @@ test("stylesheets carry no words: CSS content cannot be translated", () => {
       .map(([match]) => match);
     assert.deepEqual(words, [], `${name} has text in CSS content`);
   }
+});
+
+test("the open item count reads in singular and plural", () => {
+  const cards = loadCards();
+  const card = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
+  assert.equal(card.tp("openItems", 1), "1 offener Artikel");
+  assert.equal(card.tp("openItems", 4), "4 offene Artikel");
 });

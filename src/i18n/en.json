@@ -1078,12 +1078,15 @@
   "cookSwipeHint": "← swipe →",
   "studioKicker": "ATELIER / KITCHEN STUDIO",
   "studioDailyExpiringOne": "1 pantry item should be used soon.",
-  "openItems": "{count} open items",
   "openItemsLabel": "Open items",
   "recipesSub": "Every recipe from your Mealie in one place.",
   "mealplanSub": "Plan the week and see at a glance what is cooking when.",
   "shoppingSub": "Tick off what is in the cart. The list stays in sync with Mealie.",
   "manageSub": "Create and import recipes and keep base data tidy.",
   "journalKicker": "COOKING JOURNAL",
-  "nutritionKicker": "NUTRITION LAB"
+  "nutritionKicker": "NUTRITION LAB",
+  "openItems.one": "1 open item",
+  "openItems.other": "{count} open items",
+  "importKicker": "IMPORT",
+  "shoppingKicker": "SHOPPING"
 }

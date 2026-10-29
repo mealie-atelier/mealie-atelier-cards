@@ -1078,12 +1078,15 @@
   "cookSwipeHint": "← wischen →",
   "studioKicker": "ATELIER / KÜCHENSTUDIO",
   "studioDailyExpiringOne": "1 Vorrat sollte bald verbraucht werden.",
-  "openItems": "{count} offene Artikel",
   "openItemsLabel": "Offene Artikel",
   "recipesSub": "Alle Rezepte aus deinem Mealie an einem Ort.",
   "mealplanSub": "Plane die Woche und sieh auf einen Blick, was wann auf den Tisch kommt.",
   "shoppingSub": "Hake ab, was im Wagen liegt. Die Liste bleibt mit Mealie abgeglichen.",
   "manageSub": "Rezepte anlegen, importieren und Basisdaten pflegen.",
   "journalKicker": "KOCHJOURNAL",
-  "nutritionKicker": "NÄHRWERTLABOR"
+  "nutritionKicker": "NÄHRWERTLABOR",
+  "openItems.one": "1 offener Artikel",
+  "openItems.other": "{count} offene Artikel",
+  "importKicker": "IMPORT",
+  "shoppingKicker": "EINKAUF"
 }
