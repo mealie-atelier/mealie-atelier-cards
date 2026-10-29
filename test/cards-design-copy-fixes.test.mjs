@@ -251,5 +251,8 @@ test("the short landscape cooking bar keeps its labels on one line so the row st
   const start = polish.indexOf("@media (orientation: landscape) and (max-height: 700px) {");
   const block = polish.slice(start, polish.indexOf("@media (orientation: portrait)", start));
   assert.match(block, /\.cook-actions \.btn \{[^}]*white-space:\s*nowrap/);
-  assert.match(block, /\.cook-actions \{\s*grid-template-columns:[^;]*max-content/);
+  // Content-sized flex items cannot be forced wider than the bar by max-content grid minimums.
+  assert.doesNotMatch(block, /minmax\(max-content/);
+  assert.match(block, /\.cook-actions \{\s*display:\s*flex;\s*gap:\s*6px/);
+  assert.match(block, /\.cook-actions \.btn \{[^}]*flex:\s*1 1 auto/);
 });

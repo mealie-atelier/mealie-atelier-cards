@@ -9771,15 +9771,19 @@ ha-card {
   .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
     grid-column: auto;
   }
-  /* Tight side padding and no wrapping keep every label on one line, so the three buttons stay one level row. */
+  /* A flex row sized by content: every label stays on one line and the three buttons share the bar, never wider than it. */
   .atelier .modal:has(.cook-layout) .cook-actions {
-    grid-template-columns:
-      minmax(max-content, 1fr) minmax(max-content, 1.3fr)
-      minmax(max-content, 1fr);
+    display: flex;
+    gap: 6px;
   }
   .atelier .modal:has(.cook-layout) .cook-actions .btn {
-    padding-inline: 8px;
+    flex: 1 1 auto;
+    width: auto;
+    padding-inline: 6px;
     white-space: nowrap;
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
+    flex-grow: 1.3;
   }
   .atelier .modal:has(.cook-layout) .cook-utility,
   .atelier .modal:has(.cook-layout) .cook-note {
