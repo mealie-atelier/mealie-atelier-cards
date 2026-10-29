@@ -12094,7 +12094,6 @@ class MealieAtelierCard extends HTMLElement {
       /failed to fetch|networkerror|load failed/i.test(String(err?.message || ""))
     );
   }
-  /** True when the bridge or built-in Mealie integration is missing altogether. */
   /** True when the current view has something worth printing (no empty PDF offered). */
   _printable() {
     if (this._view === "mealplan") return asArray(this._data.mealplan).length > 0;
@@ -12104,6 +12103,7 @@ class MealieAtelierCard extends HTMLElement {
       ? items.some((i) => String(i.shoppingListId) === this._activeList)
       : items.length > 0;
   }
+  /** True when the bridge or built-in Mealie integration is missing altogether. */
   get _setupMissing() {
     return this._errorCode === "not_configured";
   }

@@ -226,3 +226,16 @@ test("an empty library drops the collection subtitle on the dashboard", () => {
   card._data.recipes = { total: 1, items: [{ slug: "a", name: "Soup" }] };
   assert.match(card._body(), /Every recipe from your Mealie/);
 });
+
+test("each doc comment in the card template sits directly above the member it describes", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const src = await readFile(new URL("../src/card-core.template.js", import.meta.url), "utf8");
+  assert.match(
+    src,
+    /\/\*\* True when the bridge or built-in Mealie integration is missing altogether\. \*\/\n\s*get _setupMissing\(\)/,
+  );
+  assert.match(
+    src,
+    /\/\*\* True when the current view has something worth printing[^\n]*\*\/\n\s*_printable\(\)/,
+  );
+});
