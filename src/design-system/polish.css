@@ -1578,6 +1578,16 @@
   .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
     grid-column: auto;
   }
+  /* Tight side padding and no wrapping keep every label on one line, so the three buttons stay one level row. */
+  .atelier .modal:has(.cook-layout) .cook-actions {
+    grid-template-columns:
+      minmax(max-content, 1fr) minmax(max-content, 1.3fr)
+      minmax(max-content, 1fr);
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions .btn {
+    padding-inline: 8px;
+    white-space: nowrap;
+  }
   .atelier .modal:has(.cook-layout) .cook-utility,
   .atelier .modal:has(.cook-layout) .cook-note {
     order: 4;

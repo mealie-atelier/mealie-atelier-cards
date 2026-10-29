@@ -1535,11 +1535,15 @@
   }
 }
 
-/* The step number is the real toggle control (a link in the step text cannot sit inside a button). */
-.atelier .step-toggle {
+/* The step number is the real toggle control (a link in the step text cannot sit inside a button).
+   Specific enough to beat the later global button rules (min-height, sans font, pill radius). */
+.atelier .detail-cols .step-number.step-toggle {
+  min-height: 0;
   padding: 0;
+  border-radius: 50%;
   font-family: var(--at-serif);
   font-size: 13px;
+  line-height: 1;
   color: var(--ds-brand);
   cursor: pointer;
   appearance: none;

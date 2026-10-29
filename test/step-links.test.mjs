@@ -35,3 +35,12 @@ test("clicking a link in a step does not toggle it, clicking elsewhere does", as
   await click(card, null);
   assert.equal(card._checkedSteps.has(2), false);
 });
+
+test("the step toggle rule is specific enough to keep the round serif badge", () => {
+  const css = readFileSync(new URL("../src/design-system/editorial.css", import.meta.url), "utf8");
+  const rule =
+    css.match(/\.atelier \.detail-cols \.step-number\.step-toggle \{([^}]*)\}/)?.[1] || "";
+  assert.match(rule, /min-height:\s*0/);
+  assert.match(rule, /border-radius:\s*50%/);
+  assert.match(rule, /font-family:\s*var\(--at-serif\)/);
+});

@@ -3327,11 +3327,15 @@ ha-card {
   }
 }
 
-/* The step number is the real toggle control (a link in the step text cannot sit inside a button). */
-.atelier .step-toggle {
+/* The step number is the real toggle control (a link in the step text cannot sit inside a button).
+   Specific enough to beat the later global button rules (min-height, sans font, pill radius). */
+.atelier .detail-cols .step-number.step-toggle {
+  min-height: 0;
   padding: 0;
+  border-radius: 50%;
   font-family: var(--at-serif);
   font-size: 13px;
+  line-height: 1;
   color: var(--ds-brand);
   cursor: pointer;
   appearance: none;
@@ -9766,6 +9770,16 @@ ha-card {
   /* One row of three: the short-landscape rule above would otherwise stretch Next over its own row. */
   .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
     grid-column: auto;
+  }
+  /* Tight side padding and no wrapping keep every label on one line, so the three buttons stay one level row. */
+  .atelier .modal:has(.cook-layout) .cook-actions {
+    grid-template-columns:
+      minmax(max-content, 1fr) minmax(max-content, 1.3fr)
+      minmax(max-content, 1fr);
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions .btn {
+    padding-inline: 8px;
+    white-space: nowrap;
   }
   .atelier .modal:has(.cook-layout) .cook-utility,
   .atelier .modal:has(.cook-layout) .cook-note {
