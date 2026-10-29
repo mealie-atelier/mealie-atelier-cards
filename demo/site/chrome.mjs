@@ -168,7 +168,12 @@ export function renderSiteFooter(ctx) {
   const column = (title, rows) =>
     `<div class="foot-col"><h3>${title}</h3><ul>${rows.join("")}</ul></div>`;
   const heart = `<span class="heart" role="img" aria-label="${t("Liebe", "love")}">♥</span>`;
-  return `<footer class="site-footer"><div class="foot-glow" aria-hidden="true"></div><div class="wrap foot-top"><div class="foot-brand"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}">${brandMark()}<b>Mealie Atelier</b></a><p class="promise">${t("Eine ruhige Küche für dein Mealie. Jeden Tag.", "A calm kitchen for your Mealie. Every day.")}</p><p class="foot-sub">${t("Kostenlos, Open Source und selbst gehostet. Für Home Assistant oder als eigene Web-App.", "Free, open source and self-hosted. For Home Assistant or as a web app of its own.")}</p><div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>Alles Automatisch · YouTube</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>Ko-fi</small></span>`, "support-link")}</div></div><div class="foot-cols">${column(
+  // The landing page closes with the same two tiles right above the footer, so only the pages
+  // without that closing section show them here.
+  const support = ctx.onLanding
+    ? ""
+    : `<div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>${t("Alles Automatisch auf YouTube", "Alles Automatisch on YouTube")}</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>${t("Unterstützen über Ko-fi", "Support on Ko-fi")}</small></span>`, "support-link")}</div>`;
+  return `<footer class="site-footer"><div class="foot-glow" aria-hidden="true"></div><div class="wrap foot-top"><div class="foot-brand"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}">${brandMark()}<b>Mealie Atelier</b></a><p class="promise">${t("Eine ruhige Küche für dein Mealie. Jeden Tag.", "A calm kitchen for your Mealie. Every day.")}</p><p class="foot-sub">${t("Kostenlos, Open Source und selbst gehostet. Für Home Assistant oder als eigene Web-App.", "Free, open source and self-hosted. For Home Assistant or as a web app of its own.")}</p>${support}</div><div class="foot-cols">${column(
     t("Produkt", "Product"),
     [
       local("demo", t("Live-Demo", "Live demo")),
@@ -187,5 +192,5 @@ export function renderSiteFooter(ctx) {
     remote(links.bridge, "Bridge", "github"),
     remote(links.discussions, t("Fragen und Ideen", "Questions and ideas")),
     remote(links.changelog, t("Änderungen", "Changelog")),
-  ])}</div></div><p class="wordmark" aria-hidden="true">Atelier</p><div class="wrap foot-base"><p>© 2026 Mealie Atelier · ${t("MIT-Lizenz", "MIT license")} · <a class="foot-credits" href="${escapeHtml(ctx.creditsUrl)}">${t("Bildnachweise", "Photo credits")}</a> · ${t("Inoffizielle Ergänzung, nicht mit Mealie oder Home Assistant verbunden.", "Unofficial companion, not affiliated with Mealie or Home Assistant.")}</p>${languageSwitch(ctx, "lang-switch foot-lang")}<p class="made">${t(`Mit ${heart} gemacht von`, `Made with ${heart} by`)} ${ext(links.author, "Daniel")}</p></div></footer>`;
+  ])}</div></div><p class="wordmark" aria-hidden="true">Atelier</p><div class="wrap foot-base"><div class="legal"><p>© 2026 Mealie Atelier · ${t("MIT-Lizenz", "MIT license")} · <a class="foot-credits" href="${escapeHtml(ctx.creditsUrl)}">${t("Bildnachweise", "Photo credits")}</a></p><p class="disclaimer">${t("Inoffizielle Ergänzung, nicht mit Mealie oder Home Assistant verbunden.", "Unofficial companion, not affiliated with Mealie or Home Assistant.")}</p></div>${languageSwitch(ctx, "lang-switch foot-lang")}<p class="made">${t(`Mit ${heart} gemacht von`, `Made with ${heart} by`)} ${ext(links.author, "Daniel")}</p></div></footer>`;
 }

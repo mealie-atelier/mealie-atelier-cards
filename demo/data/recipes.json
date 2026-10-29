@@ -5,6 +5,7 @@
     {
       "id": "skillet-eggs",
       "slug": "pfannen-eier-mit-tomaten-und-basilikum",
+      "slugEn": "skillet-eggs-with-tomatoes-and-basil",
       "title": {
         "de": "Pfannen-Eier mit Tomaten und Basilikum",
         "en": "Skillet eggs with tomatoes and basil"
@@ -95,6 +96,7 @@
     {
       "id": "gnocchi-sorrentina",
       "slug": "gnocchi-alla-sorrentina",
+      "slugEn": "gnocchi-alla-sorrentina",
       "title": {
         "de": "Gnocchi alla Sorrentina",
         "en": "Gnocchi alla Sorrentina"
@@ -187,6 +189,7 @@
     {
       "id": "chicken-salad",
       "slug": "haehnchensalat-mit-parmesan-und-croutons",
+      "slugEn": "chicken-salad-with-parmesan-and-croutons",
       "title": {
         "de": "Hähnchensalat mit Parmesan und Croutons",
         "en": "Chicken salad with Parmesan and croutons"
@@ -287,6 +290,7 @@
     {
       "id": "pumpkin-soup",
       "slug": "kuerbissuppe-mit-feta-und-kuerbiskernen",
+      "slugEn": "pumpkin-soup-with-feta-and-pumpkin-seeds",
       "title": {
         "de": "Kürbissuppe mit Feta und Kürbiskernen",
         "en": "Pumpkin soup with feta and pumpkin seeds"
@@ -300,8 +304,8 @@
         "en": "Soup"
       },
       "cuisine": {
-        "de": "Herbstküche",
-        "en": "Autumn cooking"
+        "de": "Europäisch",
+        "en": "European"
       },
       "tags": ["vegetarian", "make-ahead", "freezer-friendly"],
       "servings": 4,
@@ -381,6 +385,7 @@
     {
       "id": "ham-mushroom-pizza",
       "slug": "pizza-mit-schinken-und-champignons",
+      "slugEn": "ham-and-mushroom-pizza",
       "title": {
         "de": "Pizza mit Schinken und Champignons",
         "en": "Ham and mushroom pizza"
@@ -475,6 +480,7 @@
     {
       "id": "artichoke-penne",
       "slug": "penne-mit-artischocken-oliven-und-feta",
+      "slugEn": "penne-with-artichokes-olives-and-feta",
       "title": {
         "de": "Penne mit Artischocken, Oliven und Feta",
         "en": "Penne with artichokes, olives and feta"
@@ -569,6 +575,7 @@
     {
       "id": "pancakes",
       "slug": "buttermilch-pancakes-mit-beeren",
+      "slugEn": "buttermilk-pancakes-with-berries",
       "title": {
         "de": "Buttermilch-Pancakes mit Beeren",
         "en": "Buttermilk pancakes with berries"
@@ -663,6 +670,7 @@
     {
       "id": "coconut-curry",
       "slug": "kokos-curry-mit-champignons-und-gruenkohl",
+      "slugEn": "coconut-curry-with-mushrooms-and-kale",
       "title": {
         "de": "Kokos-Curry mit Champignons und Grünkohl",
         "en": "Coconut curry with mushrooms and kale"
@@ -761,6 +769,7 @@
     {
       "id": "wonton-soup",
       "slug": "wan-tan-suppe-mit-pak-choi",
+      "slugEn": "wonton-soup-with-bok-choy",
       "title": {
         "de": "Wan-Tan-Suppe mit Pak Choi",
         "en": "Wonton soup with bok choy"
@@ -857,6 +866,7 @@
     {
       "id": "lemon-focaccia",
       "slug": "zitronen-focaccia-mit-rosmarin",
+      "slugEn": "lemon-and-rosemary-focaccia",
       "title": {
         "de": "Zitronen-Focaccia mit Rosmarin",
         "en": "Lemon and rosemary focaccia"

@@ -68,8 +68,10 @@ async function validateCatalog() {
   assert(Array.isArray(rows) && rows.length === 10, "expected exactly ten recipes");
   assert(new Set(rows.map((row) => row.id)).size === 10, "recipe IDs must be unique");
   assert(new Set(rows.map((row) => row.slug)).size === 10, "recipe slugs must be unique");
+  assert(new Set(rows.map((row) => row.slugEn)).size === 10, "English recipe slugs must be unique");
   for (const recipe of rows) {
     assert(/^[a-z0-9-]+$/.test(recipe.slug), `${recipe.id} has an unsafe slug`);
+    assert(/^[a-z0-9-]+$/.test(recipe.slugEn ?? ""), `${recipe.id} needs a safe English slug`);
     assert(recipe.servings > 0, `${recipe.id} needs a serving count`);
     assert(recipe.prepMinutes >= 0 && recipe.cookMinutes >= 0, `${recipe.id} needs valid times`);
     assert(Array.isArray(recipe.tags) && recipe.tags.length, `${recipe.id} needs searchable tags`);
@@ -238,8 +240,10 @@ function recipeStructuredData(recipe, locale, url, prefix) {
   };
 }
 
+// English pages use an English slug (slugEn) so the URL reads like the title; the photo and the
+// internal id keep the German slug.
 function recipePath(locale, recipe) {
-  return locale === "de" ? `de/rezepte/${recipe.slug}/` : `en/recipes/${recipe.slug}/`;
+  return locale === "de" ? `de/rezepte/${recipe.slug}/` : `en/recipes/${recipe.slugEn}/`;
 }
 
 function creditsPath(locale) {
@@ -295,7 +299,7 @@ function renderIndexPage(locale) {
     manifest: showcase,
     recipes: catalog.recipes,
     recipeUrl: (recipe) =>
-      locale === "de" ? `./rezepte/${recipe.slug}/` : `./recipes/${recipe.slug}/`,
+      locale === "de" ? `./rezepte/${recipe.slug}/` : `./recipes/${recipe.slugEn}/`,
     home: { de: deUrl, en: enUrl },
     alternate: { de: deUrl, en: enUrl },
     creditsUrl: locale === "de" ? "./bildnachweise/" : "./credits/",
@@ -405,7 +409,7 @@ function renderRecipePage(locale, recipe) {
   const steps = recipe.steps[locale]
     .map(
       (step, index) =>
-        `<li><span class="step-no" aria-hidden="true">${index + 1}</span><div><h3>${index + 1}. ${escapeHtml(step.title)}</h3><p class="step-summary">${escapeHtml(step.summary)}</p><p>${escapeHtml(step.text)}</p></div></li>`,
+        `<li><span class="step-no" aria-hidden="true">${index + 1}</span><div><h3>${escapeHtml(step.title)}</h3><p class="step-summary">${escapeHtml(step.summary)}</p><p>${escapeHtml(step.text)}</p></div></li>`,
     )
     .join("");
   const structured = safeJson({
@@ -431,7 +435,8 @@ function renderRecipePage(locale, recipe) {
   const title = `${escapeHtml(recipe.title[locale])} · Mealie Atelier`;
   const description = escapeHtml(recipe.description[locale]);
   const ogImage = escapeHtml(photoUrl(recipe, "../../../"));
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${description}"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:image" content="${ogImage}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}"><meta name="twitter:image" content="${ogImage}">${iconLinks("../../../assets/")}${canonical}${hreflang("de", absolute.de)}${hreflang("en", absolute.en)}${hreflang("x-default", absolute.de)}<link rel="stylesheet" href="../../../assets/live-demo.css"><title>${title}</title><script type="application/ld+json">${structured}</script></head><body class="recipe-body">${renderSiteHeader(ctx)}<main id="main" class="recipe-page"><article><header class="wrap recipe-head"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><a href="${escapeHtml(`${demoHome[locale]}#${locale === "de" ? "rezepte" : "recipes"}`)}">${t("Rezepte", "Recipes")}</a></nav><p class="kicker"><span class="dot"></span>${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="lead">${description}</p><div class="recipe-metrics">${metrics}</div></header><figure class="wrap recipe-figure">${image}<figcaption>${photoCaption(ctx, recipe)}</figcaption></figure><div class="wrap recipe-grid"><section class="recipe-ingredients" aria-labelledby="ingredients-title"><h2 id="ingredients-title">${words.recipeIngredients}</h2><p class="meta">${recipe.servings} ${words.servings}</p><ul>${ingredients}</ul></section><section class="recipe-method" aria-labelledby="method-title"><h2 id="method-title">${words.recipeSteps}</h2><ol>${steps}</ol></section></div><aside class="wrap recipe-cta"><div class="recipe-cta-inner">${brandMark()}<div><h2>${words.tryInDemo}</h2><p>${t("Kochmodus mit Timer, Wochenplan und Einkaufsliste: alles in der echten Karte, direkt im Browser.", "Cooking mode with timers, week plan and shopping list: all in the real card, right in your browser.")}</p></div><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(`${demoHome[locale]}#live-demo`)}">${words.backToDemo}</a><a class="btn btn-ghost" href="${escapeHtml(counterpartUrl)}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${words.otherLanguage}</a></div></div></aside></article></main>${renderSiteFooter(ctx)}<script type="module" src="../../../assets/site.js"></script></body></html>`;
+  const recipeOgUrl = pageUrl ? `<meta property="og:url" content="${escapeHtml(pageUrl)}">` : "";
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${description}"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:image" content="${ogImage}">${recipeOgUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}"><meta name="twitter:image" content="${ogImage}">${iconLinks("../../../assets/")}${canonical}${hreflang("de", absolute.de)}${hreflang("en", absolute.en)}${hreflang("x-default", absolute.de)}<link rel="stylesheet" href="../../../assets/live-demo.css"><title>${title}</title><script type="application/ld+json">${structured}</script></head><body class="recipe-body">${renderSiteHeader(ctx)}<main id="main" class="recipe-page"><article><header class="wrap recipe-head"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><a href="${escapeHtml(`${demoHome[locale]}#${locale === "de" ? "rezepte" : "recipes"}`)}">${t("Rezepte", "Recipes")}</a></nav><p class="kicker"><span class="dot"></span>${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="lead">${description}</p><div class="recipe-metrics">${metrics}</div></header><figure class="wrap recipe-figure">${image}<figcaption>${photoCaption(ctx, recipe)}</figcaption></figure><div class="wrap recipe-grid"><section class="recipe-ingredients" aria-labelledby="ingredients-title"><h2 id="ingredients-title">${words.recipeIngredients}</h2><p class="meta">${recipe.servings} ${words.servings}</p><ul>${ingredients}</ul></section><section class="recipe-method" aria-labelledby="method-title"><h2 id="method-title">${words.recipeSteps}</h2><ol>${steps}</ol></section></div><aside class="wrap recipe-cta"><div class="recipe-cta-inner">${brandMark()}<div><h2>${words.tryInDemo}</h2><p>${t("Kochmodus mit Timer, Wochenplan und Einkaufsliste: alles in der echten Karte, direkt im Browser.", "Cooking mode with timers, week plan and shopping list: all in the real card, right in your browser.")}</p></div><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(`${demoHome[locale]}#live-demo`)}">${words.backToDemo}</a><a class="btn btn-ghost" href="${escapeHtml(counterpartUrl)}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${words.otherLanguage}</a></div></div></aside></article></main>${renderSiteFooter(ctx)}<script type="module" src="../../../assets/site.js"></script></body></html>`;
 }
 
 // The one complete credits list, linked from every footer.
@@ -461,6 +466,8 @@ function renderCreditsPage(locale) {
     "Every photo on Mealie Atelier comes from Unsplash. Here are the photographers with links to the originals.",
   );
   const title = `${heading} · Mealie Atelier`;
+  const ogImage = escapeHtml(photoUrl(catalog.recipes[0], "../../"));
+  const ogUrl = pageUrl ? `<meta property="og:url" content="${escapeHtml(pageUrl)}">` : "";
   const canonical = pageUrl ? `<link rel="canonical" href="${escapeHtml(pageUrl)}">` : "";
   const hreflang = (code, href) =>
     `<link rel="alternate" hreflang="${code}" href="${escapeHtml(href)}">`;
@@ -472,7 +479,7 @@ function renderCreditsPage(locale) {
     `Alle Rezeptfotos auf dieser Seite stammen von Unsplash und stehen unter der ${licenseLink}. Danke an die Fotografinnen und Fotografen.`,
     `Every recipe photo on this site comes from Unsplash and is used under the ${licenseLink}. Thanks to the photographers.`,
   );
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(description)}"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">${iconLinks("../../assets/")}${canonical}${hreflang("de", pageUrls.de)}${hreflang("en", pageUrls.en)}${hreflang("x-default", pageUrls.de)}<link rel="stylesheet" href="../../assets/live-demo.css"><title>${escapeHtml(title)}</title></head><body class="credits-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page"><div class="wrap"><header class="recipe-head"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><span aria-current="page">${heading}</span></nav><h1>${heading}</h1><p class="lead">${lead}</p></header><ul class="credit-list">${rows}</ul><p class="credits-switch"><a class="textlink" href="${escapeHtml(pageUrls[counterpartLocale])}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${t("Photo credits in English", "Bildnachweise auf Deutsch")}</a></p></div></main>${renderSiteFooter(ctx)}<script type="module" src="../../assets/site.js"></script></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(description)}"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:image" content="${ogImage}">${ogUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(title)}"><meta name="twitter:description" content="${escapeHtml(description)}"><meta name="twitter:image" content="${ogImage}">${iconLinks("../../assets/")}${canonical}${hreflang("de", pageUrls.de)}${hreflang("en", pageUrls.en)}${hreflang("x-default", pageUrls.de)}<link rel="stylesheet" href="../../assets/live-demo.css"><title>${escapeHtml(title)}</title></head><body class="credits-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page"><div class="wrap"><header class="recipe-head"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><span aria-current="page">${heading}</span></nav><h1>${heading}</h1><p class="lead">${lead}</p></header><ul class="credit-list">${rows}</ul><p class="credits-switch"><a class="textlink" href="${escapeHtml(pageUrls[counterpartLocale])}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${t("Photo credits in English", "Bildnachweise auf Deutsch")}</a></p></div></main>${renderSiteFooter(ctx)}<script type="module" src="../../assets/site.js"></script></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {
@@ -512,7 +519,9 @@ await writeFile(join(siteRoot, "index.html"), rootIndex());
 // Pages of recipes that left the catalog must not linger in a reused output folder.
 async function removeStaleRecipePages(locale) {
   const parent = join(siteRoot, locale, locale === "de" ? "rezepte" : "recipes");
-  const current = new Set(catalog.recipes.map((recipe) => recipe.slug));
+  const current = new Set(
+    catalog.recipes.map((recipe) => (locale === "de" ? recipe.slug : recipe.slugEn)),
+  );
   const entries = await readdir(parent, { withFileTypes: true }).catch((error) => {
     if (error.code === "ENOENT") return [];
     throw error;

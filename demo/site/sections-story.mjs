@@ -142,7 +142,7 @@ function everyday(ctx) {
       visual: scene(ctx, "phone", "app-phone-family-helper", alt.family),
     },
     {
-      num: t("06 · Samstag, Blick in die Speisekammer", "06 · Saturday, a look in the pantry"),
+      num: t("06 · Samstag, Speisekammer", "06 · Saturday, the pantry"),
       title: t("Wissen, was noch da ist.", "Know what is still there."),
       text: t(
         "Trag Vorräte mit Mindesthaltbarkeit ein. Die Übersicht zeigt, was bald verbraucht werden sollte. Die Einkaufsvorschau zieht Vorräte mit gleicher Einheit ab.",

@@ -108,7 +108,8 @@ p {
 
 /* type */
 .kicker {
-  font: 700 12px/1.3 var(--sans);
+  text-wrap: balance;
+  font: 700 12px/1.5 var(--sans);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--mint);
@@ -502,7 +503,7 @@ h2 em {
 /* hero */
 .hero {
   position: relative;
-  padding: clamp(124px, 14vw, 170px) 0 clamp(64px, 8vw, 116px);
+  padding: clamp(124px, 14vw, 170px) 0 clamp(96px, 9vw, 132px);
   overflow: clip;
   isolation: isolate;
 }
@@ -553,9 +554,11 @@ h2 em {
   height: 16px;
   color: var(--mint);
 }
+/* The browser keeps the upper part, the tablet, the timer toast and the phone share a free row
+   below it, so nothing covers the app heading or the sidebar of the desktop shot. */
 .stack {
   position: relative;
-  aspect-ratio: 16 / 12.4;
+  aspect-ratio: 16 / 15.6;
 }
 .stack > * {
   position: absolute;
@@ -568,7 +571,7 @@ h2 em {
 .stack .tablet {
   left: -4%;
   bottom: 0;
-  width: 46%;
+  width: 42%;
 }
 .stack .phone {
   right: -2%;
@@ -577,19 +580,19 @@ h2 em {
 }
 .toast {
   z-index: 3;
-  left: 34%;
-  top: 50%;
+  left: 39.5%;
+  bottom: 1%;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  padding: 12px 16px 12px 12px;
+  padding: 10px 14px 10px 10px;
   border-radius: 16px;
   background: rgba(23, 32, 26, 0.92);
   border: 1px solid var(--line2);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   font-size: 13px;
   line-height: 1.35;
-  min-width: 220px;
+  white-space: nowrap;
 }
 .toast .ic {
   width: 38px;
@@ -602,7 +605,7 @@ h2 em {
 }
 .toast b {
   display: block;
-  font-size: 14px;
+  font-size: 13.5px;
 }
 .toast time {
   font: 600 15px/1 var(--mono);
@@ -619,7 +622,7 @@ h2 em {
 }
 @media (max-width: 640px) {
   .stack {
-    aspect-ratio: 1 / 1.02;
+    aspect-ratio: 1 / 1.2;
   }
   .stack .browser {
     width: 100%;
@@ -628,16 +631,17 @@ h2 em {
     display: none;
   }
   .stack .phone {
-    width: 40%;
+    width: 36%;
     right: 2%;
     bottom: 0;
   }
   .toast {
     left: 0;
     top: auto;
-    bottom: 10%;
+    bottom: 0;
     min-width: 0;
     max-width: 58%;
+    white-space: normal;
   }
 }
 
@@ -824,7 +828,9 @@ h2 em {
   overflow: hidden;
   border: 1px solid var(--line2);
   box-shadow: var(--shadow);
-  aspect-ratio: 1600 / 1000;
+  /* Cropped inside the second photo row: below it both shots cut a card title or a sidebar item
+     in half, here only photos meet the frame edge. */
+  aspect-ratio: 1600 / 888;
   background: #000;
   user-select: none;
   -webkit-user-select: none;
@@ -899,23 +905,25 @@ h2 em {
   outline: 3px solid #fff;
   outline-offset: 4px;
 }
-.ba .tag {
-  position: absolute;
-  top: 16px;
-  z-index: 2;
+/* The labels sit above the frame, so they never cover the app's own logo or content. */
+.ba-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ba-labels .tag {
   padding: 8px 12px;
   border-radius: 10px;
   font: 700 12px/1 var(--sans);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  pointer-events: none;
 }
-.ba .tag.l {
-  left: 16px;
-  background: rgba(8, 12, 10, 0.82);
+.ba-labels .tag.l {
+  background: #1b231e;
+  border: 1px solid var(--line2);
 }
-.ba .tag.r {
-  right: 16px;
+.ba-labels .tag.r {
   background: var(--mint);
   color: var(--mint-ink);
 }
@@ -952,16 +960,14 @@ h2 em {
     max-width: 420px;
     margin-inline: auto;
   }
-  .ba .tag {
-    top: 12px;
+  .ba-labels {
+    max-width: 420px;
+    margin-inline: auto;
+    margin-bottom: 12px;
+  }
+  .ba-labels .tag {
     font-size: 11px;
     padding: 7px 10px;
-  }
-  .ba .tag.l {
-    left: 12px;
-  }
-  .ba .tag.r {
-    right: 12px;
   }
   .ba-notes {
     grid-template-columns: 1fr;
@@ -1107,8 +1113,9 @@ html:not(.js) .step {
   opacity: 1;
 }
 .step .num {
-  font: 500 15px/1 var(--mono);
+  font: 500 15px/1.5 var(--mono);
   color: var(--mint);
+  text-wrap: balance;
 }
 .step h3 {
   font-size: clamp(28px, 3.2vw, 44px);
@@ -1746,12 +1753,21 @@ html:not(.js) .step {
   padding-left: 10px;
   background: none;
 }
+/* Commands and settings never break inside a token: smaller type on phones, scroll as a last resort. */
 .term pre {
   margin: 0;
   padding: 18px 20px;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: pre;
+  overflow-x: auto;
   font: inherit;
+}
+@media (max-width: 480px) {
+  .term {
+    font-size: 12px;
+  }
+  .term pre {
+    padding: 16px;
+  }
 }
 .term .c {
   color: var(--faint);
@@ -2408,7 +2424,17 @@ details[open] .chev {
   max-width: 42ch;
 }
 .foot-support {
+  grid-template-columns: 1fr;
+  gap: 10px;
+  max-width: 380px;
   margin-top: 4px;
+}
+.foot-support .support-link {
+  padding: 14px 18px;
+}
+.foot-support .support-link b,
+.foot-support .support-link small {
+  white-space: nowrap;
 }
 .foot-cols {
   display: grid;
@@ -2479,7 +2505,8 @@ details[open] .chev {
   -webkit-text-stroke: 1px rgba(157, 203, 178, 0.24);
   white-space: nowrap;
   text-align: center;
-  margin: 0 0 -0.12em;
+  /* Clear of the rule below: the letters end well above the hairline, nothing crosses them. */
+  margin: 0 0 clamp(18px, 3vw, 40px);
   user-select: none;
   pointer-events: none;
 }
@@ -2495,8 +2522,17 @@ details[open] .chev {
   color: var(--faint);
   font-size: 14px;
 }
-.foot-base p:first-child {
+.foot-base p {
+  margin: 0;
+}
+.legal {
   flex: 1 1 380px;
+  display: grid;
+  gap: 4px;
+}
+.disclaimer {
+  max-width: 56ch;
+  text-wrap: balance;
 }
 .foot-base a {
   color: var(--sub);
@@ -2575,6 +2611,7 @@ details[open] .chev {
 }
 .recipe-metrics div {
   display: grid;
+  align-content: start;
   gap: 2px;
   padding: 14px 28px 14px 0;
   margin-right: 28px;
@@ -2589,6 +2626,26 @@ details[open] .chev {
 .recipe-metrics span {
   color: var(--faint);
   font-size: 13px;
+}
+/* Small screens: an even two column grid, so a divider never dangles at the end of a row. */
+@media (max-width: 860px) {
+  .recipe-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .recipe-metrics div {
+    margin-right: 0;
+    padding: 14px 0 14px 18px;
+    border-right: 0;
+    border-left: 1px solid var(--line);
+  }
+  .recipe-metrics div:nth-child(odd) {
+    padding: 14px 18px 14px 0;
+    border-left: 0;
+  }
+  .recipe-metrics div:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
 }
 .recipe-figure {
   position: relative;
@@ -2778,10 +2835,6 @@ details[open] .chev {
   }
 }
 @media (max-width: 560px) {
-  .recipe-metrics div {
-    padding-right: 18px;
-    margin-right: 18px;
-  }
   .recipe-method li {
     grid-template-columns: 1fr;
     gap: 10px;

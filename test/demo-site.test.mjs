@@ -262,13 +262,14 @@ test("every page shares the designed footer in its own language without photo cr
     const ids = sectionIds[locale];
     assert.ok(footer.includes(`#${ids.homeAssistant}"`), `${page} links the HA route`);
     assert.ok(footer.includes(`#${ids.webApp}"`), `${page} links the web app route`);
+    // The landing page shows the support tiles in its closing section, so its footer omits them.
+    const onLanding = /\/(de|en)\/index\.html$/.test(page);
     for (const link of [
       links.cards,
       links.bridge,
       links.guide,
       links.setup,
-      links.youtube,
-      links.kofi,
+      ...(onLanding ? [] : [links.youtube, links.kofi]),
     ]) {
       assert.ok(footer.includes(`href="${link}"`), `${page} footer lacks ${link}`);
     }
@@ -407,12 +408,14 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
     assert.match(html, /<header class="top"/, page);
     assert.match(
       html,
-      /<figure class="wrap recipe-figure"><img [^>]*fetchpriority="high"[^>]*><figcaption><p class="photo-caption">Foto|Photo/,
+      /<figure class="wrap recipe-figure"><img [^>]*fetchpriority="high"[^>]*><figcaption><p class="photo-caption">(?:Foto|Photo)/,
       page,
     );
     const method = html.match(/<section class="recipe-method"[\s\S]*?<\/section>/)[0];
     assert.doesNotMatch(method, /<h2>/, page);
-    assert.match(method, /<h3>1\. /, page);
+    // The numbered circle is the only step number: headings carry the title alone.
+    assert.doesNotMatch(method, /<h3>\d+\. /, page);
+    assert.match(method, /<span class="step-no" aria-hidden="true">1<\/span><div><h3>[^<\d]/, page);
     assert.match(html, /<h2 id="ingredients-title">/, page);
     assert.match(html, /<h2 id="method-title">/, page);
     assert.match(html, /<meta property="og:site_name" content="Mealie Atelier">/, page);
@@ -463,5 +466,106 @@ test("a reused output folder loses the pages of recipes that left the catalog", 
   assert.equal(listFiles(join(builds.local, "en/recipes"), ".html").length, 10);
   for (const page of contentPages(builds.local)) {
     assert.doesNotMatch(read(page), /old leaf page/, page);
+  }
+});
+
+test("favicon and page mark come from one family: the plate with the herb leaf", () => {
+  for (const file of ["favicon.svg", "mealie-atelier-mark.svg"]) {
+    const svg = readFileSync(join(builds.local, "assets", file), "utf8");
+    const glyph = svg.match(/class="glyph"[^>]*d="([^"]*)"/)?.[1] ?? "";
+    assert.ok(glyph, `${file} carries a glyph`);
+    // One leaf is one or two closed shapes; the Cards grid is four squares.
+    assert.ok((glyph.match(/Z/g) ?? []).length <= 2, `${file} glyph is the leaf`);
+    assert.doesNotMatch(svg, /M5\.4 5L6\.6 5/, `${file} is not the Cards card grid`);
+  }
+});
+
+const catalogData = JSON.parse(readFileSync("demo/data/recipes.json", "utf8"));
+
+test("English recipe pages use English slugs and the catalog holds real cuisines", () => {
+  const english = readdirSync(join(builds.local, "en/recipes")).sort();
+  assert.deepEqual(english, catalogData.recipes.map((recipe) => recipe.slugEn).sort());
+  for (const recipe of catalogData.recipes) {
+    assert.match(recipe.slugEn, /^[a-z0-9-]+$/);
+    if (recipe.slugEn !== recipe.slug) {
+      assert.ok(!english.includes(recipe.slug), `${recipe.slug} must not leak into en/recipes`);
+    }
+    assert.doesNotMatch(recipe.cuisine.en, /autumn|season/i, `${recipe.id} cuisine is no season`);
+    assert.doesNotMatch(recipe.cuisine.de, /herbst|saison/i, `${recipe.id} cuisine is no season`);
+  }
+  assert.match(
+    landing(builds.local, "en"),
+    /href="\.\/recipes\/pumpkin-soup-with-feta-and-pumpkin-seeds\/"/,
+  );
+});
+
+test("credits pages carry the same social tags as the other pages", () => {
+  for (const [build, base] of [
+    [builds.deployed, baseUrl],
+    [builds.local, ""],
+  ]) {
+    for (const path of ["de/bildnachweise", "en/credits"]) {
+      const html = read(join(build, path, "index.html"));
+      assert.match(html, /<meta property="og:image" content="[^"]*photos\/[^"]+\.webp">/, path);
+      assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, path);
+      assert.match(html, /<meta name="twitter:title" content="[^"]+">/, path);
+      assert.match(html, /<meta name="twitter:description" content="[^"]+">/, path);
+      assert.match(html, /<meta name="twitter:image" content="[^"]*photos\//, path);
+      if (base) {
+        assert.ok(html.includes(`<meta property="og:url" content="${base}${path}/">`), path);
+        assert.ok(html.includes(`<meta property="og:image" content="${base}photos/`), path);
+      }
+    }
+  }
+});
+
+test("support tiles appear once per page: closing section on the landing, footer elsewhere", () => {
+  for (const locale of ["de", "en"]) {
+    const home = landing(builds.local, locale);
+    assert.equal((home.match(/ko-fi\.com\/allesautomatisch/g) ?? []).length, 1, locale);
+    assert.doesNotMatch(footerOf(home), /support-link/, `${locale} landing footer`);
+    const recipePage = listFiles(join(builds.local, locale), ".html").find((page) =>
+      read(page).includes('<body class="recipe-body">'),
+    );
+    assert.match(footerOf(read(recipePage)), /class="foot-support"/, `${locale} recipe footer`);
+  }
+});
+
+test("footer legal line keeps the disclaimer in its own balanced block", () => {
+  for (const page of contentPages(builds.local)) {
+    const footer = footerOf(read(page));
+    assert.match(
+      footer,
+      /<div class="legal"><p>© 2026 Mealie Atelier · [^<]+<a [^>]*>[^<]+<\/a><\/p><p class="disclaimer">/,
+      page,
+    );
+  }
+});
+
+test("page CSS keeps the footer wordmark off the rule and the metric grid dividers whole", () => {
+  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
+  const wordmark = css.match(/\.wordmark\s*\{[^}]*\}/)[0];
+  assert.doesNotMatch(wordmark, /margin:[^;]*-\d/, "wordmark margin must not be negative");
+  assert.match(wordmark, /margin:\s*0 0 clamp\(/);
+  assert.match(css, /\.recipe-metrics div:nth-child\(odd\)\s*\{[^}]*border-left:\s*0/);
+  assert.match(css, /\.term pre\s*\{[^}]*white-space:\s*pre;/);
+  assert.match(css, /\.ba-labels\s*\{/);
+  for (const locale of ["de", "en"]) {
+    const home = landing(builds.local, locale);
+    assert.match(home, /<div class="ba-labels rv" aria-hidden="true"><span class="tag l">/, locale);
+    assert.doesNotMatch(
+      home,
+      /<div class="ba [^"]*" data-ba[\s\S]*?class="tag /,
+      `${locale} no tag inside the frame`,
+    );
+  }
+});
+
+test("the page is dark only by design: both colour schemes render the same page", () => {
+  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
+  assert.doesNotMatch(css, /prefers-color-scheme/);
+  assert.match(css, /color-scheme:\s*dark/);
+  for (const page of contentPages(builds.local)) {
+    assert.match(read(page), /<meta name="color-scheme" content="dark"/, page);
   }
 });
