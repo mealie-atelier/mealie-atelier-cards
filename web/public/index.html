@@ -119,8 +119,9 @@
       import { initPwaInstall } from "/pwa-install.js";
       const pwaInstall = initPwaInstall();
       await import("/mealie-atelier-cards.js?v=0.10.0");
-      const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi } =
-        await import("/offline-client.js");
+      const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi } = await import(
+        "/offline-client.js"
+      );
       const registrationPromise =
         "serviceWorker" in navigator
           ? navigator.serviceWorker.register("/sw.js").catch(() => null)

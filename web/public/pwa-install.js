@@ -61,8 +61,8 @@ export function getInstallContext(navigatorRef = {}, windowRef = {}) {
     (platform === "MacIntel" && (navigatorRef.maxTouchPoints || 0) > 1);
   const isStandalone = Boolean(
     navigatorRef.standalone ||
-    windowRef.matchMedia?.("(display-mode: standalone)")?.matches ||
-    windowRef.matchMedia?.("(display-mode: fullscreen)")?.matches,
+      windowRef.matchMedia?.("(display-mode: standalone)")?.matches ||
+      windowRef.matchMedia?.("(display-mode: fullscreen)")?.matches,
   );
   return {
     isAppleMobile,

@@ -541,8 +541,8 @@ class MealieAtelierCard extends HTMLElement {
   get _hasNativeMealie() {
     return Boolean(
       this._hass?.services?.mealie?.get_recipes &&
-      this._hass?.services?.mealie?.get_recipe &&
-      this._nativeMealieEntryIds.length,
+        this._hass?.services?.mealie?.get_recipe &&
+        this._nativeMealieEntryIds.length,
     );
   }
   async _nativeAction(action, data = {}) {

@@ -18,10 +18,10 @@ export const viewMethods = {
     const recipes = this._data.recipes;
     return Boolean(
       recipes &&
-      !this._loadFailed &&
-      !this._query &&
-      (recipes.total ?? asArray(recipes.items).length) === 0 &&
-      !asArray(recipes.items).length,
+        !this._loadFailed &&
+        !this._query &&
+        (recipes.total ?? asArray(recipes.items).length) === 0 &&
+        !asArray(recipes.items).length,
     );
   },
   _stats() {
