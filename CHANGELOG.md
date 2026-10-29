@@ -68,6 +68,8 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The system check no longer repeats each status, shows a result heading after a run and spaces the status line.
 - The nutrition dialog has a German title, a USDA API key hint that fits the web app, lowercase "servings" and "per 100 g". The AI review reports a missing AI key in your language.
 - The shopping sync dialog says "read-only mode" instead of blaming your permissions when the dashboard is read-only.
+- The phone week toolbar buttons now really reach 44px, the install dialog "Later" button keeps its visible text as accessible name, and the iOS install step 1 reads as an action.
+
 - The web app install dialog translates its "Later" button and no longer claims that only Safari can install on iPhone; the install button, week toolbar, Kochinspo choices and credit link reach 44px touch targets.
 - The web app icons (SVG and PNG, including the leaf vein) are a small leaf vector (no "Cards" wordmark, no 1 MB favicon), and the manifest, theme color and static page text are German or neutral, match the shell colors and use no dashes as punctuation.
 - The sidebar and print brand lines are localized, the iOS install steps no longer repeat Share, offline conflict counts use proper singular and plural, and the sync status reads "wird synchronisiert".
