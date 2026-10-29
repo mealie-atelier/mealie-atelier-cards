@@ -404,24 +404,30 @@ const AtelierStudio = (() => {
       all = names.join(" ");
     const tagged = (...terms) => tags.some((tag) => terms.some((term) => tag.includes(term)));
     const has = (pattern) => pattern.test(all);
-    // German puts the animal anywhere in a compound (Hähnchenbrust, Miesmuscheln, Seelachs), so meat
-    // and fish stems match inside words. Plant products and look-alikes (Fleischtomaten, Hühnereier,
-    // Parmesanrinde, Austernpilze, vegane Bratwurst) are removed per ingredient before matching.
+    // German puts the animal anywhere in a compound (Hähnchenbrust, Miesmuscheln, Seelachs), so most
+    // meat and fish stems match inside words. A plant product never counts as animal, and look-alikes
+    // (Kürbisfleisch, Hühnereier, Parmesanrinde, Steakpfeffer, Hirschhornsalz) are removed first.
+    const plant =
+      /\b(?:vegan\w*|vegetari\w*|veggie\w*|pflanzlich\w*|plant based|fleischfrei\w*|fleischlos\w*|fleischersatz|meatless|beyond|tofu\w*|seitan|tempeh|\w*protein)\b|\bsoja(?!\s?(?:sauce|sose|soße|sosse))\w*/;
+    const plantDairy =
+      /\b(?:hafer|soja|mandel|kokos|reis|cashew|erbsen|dinkel|oat|almond|soy|coconut|rice|peanut|cocoa|nut)\s?(?:milch|sahne|drink|joghurt|butter|cuisine|creme|cream|milk|yogurt)\b/g;
     const lookalike =
-      /\b(?:vegan\w*|vegetari\w*|veggie\w*|pflanzlich\w*|fleischfrei\w*|fleischlos\w*|meatless|plant based|soja|tofu|seitan|tempeh|\w*protein)\s+\w+|\b(?:soja|tofu|seitan|veggie|vegan|fleischersatz)\w*|\w*fruchtfleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten)\s+rinds?\b|\bauster\w*pilz\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\b(?:cauliflower|celeriac|mushroom|portobello|cabbage)\s+steaks?\b|\blamb\s?s\s+lettuce\b/g;
-    const flesh = names.map((name) => name.replace(lookalike, " "));
+      /\w*(?:frucht|kurbis|mango|kokos|melonen?|avocado|papaya|ananas)fleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\brinds? of\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten|parmesan|cheese|melon|watermelon)\s+rinds?\b|\bauster\w*\s?(?:pilz|seitling)\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\w*gewu(?:e)?rz(?:mischung|salz)?\b|\w+\s+gewu(?:e)?rz(?:mischung)?\b|\b(?:chicken|poultry|steak|beef)\s+(?:seasoning|spice|rub)\b|\bsteak(?:pfeffer|salz|sauce|sose|soße)\b|\bhirschhorn\w*|\blamb\s?s\s+lettuce\b|(?<=\b(?:cauliflower|celeriac|mushroom|portobello|cabbage|tofu|tuna|salmon|swordfish|sellerie|blumenkohl|kohl|kohlrabi|rotkohl|weisskohl|weißkohl|auberginen?|pilz|kurbis|thunfisch|lachs|in)\s)steaks?\b/g;
+    const animalSide = names.filter((name) => !plant.test(name));
+    const flesh = animalSide.map((name) => name.replace(lookalike, " "));
+    const dairy = animalSide.map((name) => name.replace(plantDairy, " "));
     const eats = (pattern) => flesh.some((name) => pattern.test(name));
     const meat =
-      /fleisch|wurst|schinken|speck|salami|chorizo|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|(?<!g)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb|venison|rabbit|goose|mutton|sausage|(?<!(?:crab|lobster)\s?)meat|steak|rumpsteak|roastbeef)|\b(?:ham|mince)\b|\bgehacktes$|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild\b(?!\s+(?:rice|garlic|mushroom|berr|blue|rocket|herb|salmon|honey|strawberr))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
+      /fleisch|wurst|schinken|speck|salami|chorizo|salsiccia|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|gyros|(?<!g|tama)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb(?!rusco)|venison|rabbit|goose(?!berr)|mutton|sausage|rumpsteak|huftsteak|roastbeef)|(?<!(?:crab|lobster|coconut)\s?)\bmeat|\b(?:ham|mince|steaks?)\b|\bgehacktes(?:$|\s+(?:halb|gemischt|vom|aus|rind|schwein))|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild(?:$|\s+(?:vom|aus|gewurfelt|oder|tiefgekuhlt))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
     const seafood =
-      /fisch|(?<!f)lachs|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
+      /fisch|(?<!f)lachs(?!schinken)|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|pangasius|tilapia|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
     const animal =
-      /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b/;
+      /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\beiernudel\w*|\beiwei(?:ss|ß)/;
     if (
       style === "vegan" &&
       (eats(meat) ||
         eats(seafood) ||
-        has(animal) ||
+        dairy.some((name) => animal.test(name)) ||
         (!tagged("vegan") && (!rows.length || names.length !== rows.length)))
     )
       return false;
