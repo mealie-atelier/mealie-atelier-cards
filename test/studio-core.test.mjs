@@ -634,4 +634,16 @@ test("Kochinspo keeps every option of a line and named cheeses out of plant diet
     assert.equal(style(line), "vegetarian", line);
   assert.equal(style("400 ml Kokosmilch"), "vegetarian,vegan");
   assert.equal(style("200 ml Hafersahne"), "vegetarian,vegan");
+  for (const line of [
+    "500 ml Pflanzenmilch",
+    "200 ml Pflanzensahne",
+    "400 ml Kokosnussmilch",
+    "200 ml Haferkochsahne",
+    "500 ml Haselnussmilch",
+    "500 ml Hanfmilch",
+    "150 g Lupinenjoghurt",
+    "200 ml Kokos-Schlagsahne",
+  ])
+    assert.equal(style(line), "vegetarian,vegan", line);
+  assert.equal(style("200 ml Kondensmilch"), "vegetarian");
 });
