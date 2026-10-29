@@ -417,7 +417,7 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
     assert.match(html, /<header class="top"/, page);
     assert.match(
       html,
-      /<figure class="wrap recipe-figure"><img [^>]*fetchpriority="high"[^>]*><figcaption><p class="photo-caption">(?:Foto|Photo)/,
+      /<figure class="recipe-figure"><img [^>]*fetchpriority="high"[^>]*><figcaption><p class="photo-caption">(?:Foto|Photo)/,
       page,
     );
     const method = html.match(/<section class="recipe-method"[\s\S]*?<\/section>/)[0];
@@ -589,4 +589,25 @@ test("the page is dark only by design: both colour schemes render the same page"
   for (const page of contentPages(builds.local)) {
     assert.match(read(page), /<meta name="color-scheme" content="dark"/, page);
   }
+});
+
+test("the recipe hero shows the whole photo instead of cropping it to a fixed ratio", () => {
+  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
+  const rule = css.match(/\.recipe-photo\s*\{[^}]*\}/)[0];
+  assert.doesNotMatch(rule, /aspect-ratio|object-fit/, "a fixed ratio would cut plate rims");
+  assert.match(rule, /height:\s*auto/);
+  for (const page of listFiles(builds.local, ".html")) {
+    const html = read(page);
+    if (!html.includes('<body class="recipe-body">')) continue;
+    assert.match(html, /<div class="wrap recipe-hero"><header class="recipe-head">/, page);
+  }
+});
+
+test("recipe photos carry no clutter claims in their alt text", () => {
+  const catalog = JSON.parse(read(new URL("../demo/data/recipes.json", import.meta.url)));
+  const alts = catalog.recipes.map((recipe) => `${recipe.image.alt.de} ${recipe.image.alt.en}`);
+  assert.doesNotMatch(
+    alts.join("\n"),
+    /Beere am|red berry|Knäckebrot|crispbread|Frühlingszwiebelring|sliced spring onion/,
+  );
 });
