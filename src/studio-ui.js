@@ -204,6 +204,8 @@ Object.assign(MealieAtelierCard.prototype, {
     kind = "confirm",
     confirmLabel = "",
     initialValue = "",
+    secondaryLabel = "",
+    focusCancel = false,
   } = {}) {
     return new Promise((resolve) => {
       const dlg = document.createElement("dialog");
@@ -215,7 +217,7 @@ Object.assign(MealieAtelierCard.prototype, {
         kind === "prompt"
           ? `<label class="at-prompt-label">${esc(this.t("studioDialogPromptLabel"))}<input type="text" class="at-prompt-input" maxlength="160" value="${esc(initialValue)}" placeholder="${esc(this.t("studioDialogPromptPlaceholder"))}" required></label>`
           : "";
-      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(this.t("studioCancel"))}</button>`}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
+      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(this.t("studioCancel"))}</button>`}${secondaryLabel && kind !== "info" ? `<button class="btn" type="submit" value="secondary">${esc(secondaryLabel)}</button>` : ""}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
       const previous = this.shadowRoot.activeElement;
       const surface = this.shadowRoot.querySelector(".atelier");
       if (surface) {
@@ -240,7 +242,11 @@ Object.assign(MealieAtelierCard.prototype, {
         () => {
           const result = dlg.returnValue === "confirm";
           const value =
-            kind === "prompt" && result ? dlg.querySelector("input")?.value.trim() || "" : result;
+            kind === "prompt" && result
+              ? dlg.querySelector("input")?.value.trim() || ""
+              : dlg.returnValue === "secondary"
+                ? "secondary"
+                : result;
           dlg.remove();
           if (previous?.isConnected) previous.focus?.({ preventScroll: true });
           resolve(value);
@@ -250,6 +256,8 @@ Object.assign(MealieAtelierCard.prototype, {
       try {
         dlg.showModal();
         if (input) dlg.querySelector("input")?.focus();
+        else if (focusCancel && kind !== "info")
+          dlg.querySelector('button[value="cancel"]')?.focus();
         else dlg.querySelector(".btn.primary")?.focus();
       } catch {
         dlg.remove();
@@ -263,14 +271,14 @@ Object.assign(MealieAtelierCard.prototype, {
     const display = records
       .map(
         (r) =>
-          `<div class="studio-diagnostic-row"><span>${esc(r.name)}</span><span class="studio-diagnostic-status ${r.ok ? "ok" : "fail"}">${r.ok ? this.t("studioDiagnosticsReachable") : this.t("studioDiagnosticsCheck")}</span><small>${esc(r.detail || "")}</small></div>`,
+          `<div class="studio-diagnostic-row"><span>${esc(r.name)}</span><span class="studio-diagnostic-status ${r.ok ? "ok" : "fail"}">${r.ok ? this.t("studioDiagnosticsReachable") : this.t("studioDiagnosticsCheck")}</span>${r.detail ? `<small>${esc(r.detail)}</small>` : ""}</div>`,
       )
       .join("");
     return `<section class="studio-panel studio-diagnostics" aria-labelledby="atelier-system-title">
-      ${AtelierUI.sectionHeading({ id: "atelier-system-title", kicker: this.t("studioDiagnosticsKicker"), title: this.t("studioDiagnosticsTitle"), description: this.t("studioDiagnosticsDescription") })}
+      ${AtelierUI.sectionHeading({ id: "atelier-system-title", kicker: this.t("studioDiagnosticsKicker"), title: this.t(records.length && records.every((r) => r.ok) ? "studioDiagnosticsPassed" : "studioDiagnosticsTitle"), description: this.t("studioDiagnosticsDescription") })}
       <div class="studio-actions"><button class="btn primary" data-action="studio-check-health" ${this._diagnosticsBusy ? "disabled" : ""}>${icon("refresh", 14)} ${this._diagnosticsBusy ? this.t("studioDiagnosticsRunning") : this.t("studioDiagnosticsCheck")}</button><button class="btn" data-action="studio-export">${icon("book", 14)} ${this.t("studioDiagnosticsExport")}</button></div>
       <div class="studio-diagnostic-grid" role="status" aria-live="polite">${display || `<p class="studio-muted">${esc(this.t("studioDiagnosticsEmpty"))}</p>`}</div>
-      <p class="studio-muted">Status: ${p.can_manage ? this.t("studioDiagnosticsAdmin") : p.can_write ? this.t("studioDiagnosticsEdit") : this.t("studioDiagnosticsReadOnly")} · ${this.t("version")} ${esc(this._status?.version || "—")} · ${this.t("studioDiagnosticsBackup")}</p>
+      <p class="studio-muted studio-diagnostic-footer">Status: ${p.can_manage ? this.t("studioDiagnosticsAdmin") : p.can_write ? this.t("studioDiagnosticsEdit") : this.t("studioDiagnosticsReadOnly")} · ${this.t("version")} ${esc(this._status?.version || "—")} · ${this.t("studioDiagnosticsBackup")}</p>
     </section>`;
   },
   async _studioDiagnostics() {
@@ -297,7 +305,7 @@ Object.assign(MealieAtelierCard.prototype, {
         results.push({
           name,
           ok: valid,
-          detail: valid ? this.t("studioDiagnosticsReachable") : this.t("studioDiagnosticsNoData"),
+          detail: valid ? "" : this.t("studioDiagnosticsNoData"),
         });
       } catch (error) {
         results.push({
@@ -330,7 +338,7 @@ Object.assign(MealieAtelierCard.prototype, {
       const address = URL.createObjectURL(data);
       const link = document.createElement("a");
       link.href = address;
-      link.download = `mealie-atelier-profil-${dateYmd(new Date())}.json`;
+      link.download = `mealie-atelier-profile-${dateYmd(new Date())}.json`;
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
@@ -548,7 +556,7 @@ Object.assign(MealieAtelierCard.prototype, {
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
       }</div></section>
-      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2>${this.tp("cookbookSelected", selected.size)}</h2></div>
+      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2 data-book-selected-count>${this.tp("cookbookSelected", selected.size)}</h2></div>
       <form class="studio-form" data-form="studio-book"><label>${this.t("cookbookTitleLabel")}<input name="title" maxlength="100" value="${this.t("cookbookTitleDefault")}" required></label><label>${this.t("cookbookSubtitleLabel")}<input name="subtitle" maxlength="160" value="${this.t("cookbookSubtitleDefault")}"></label>
       <label class="studio-inline"><input type="checkbox" name="photos"> ${this.t("cookbookPhotos")}</label>
       <button class="btn primary" type="submit" ${!selected.size ? "disabled" : ""}>${icon("print", 15)} ${this.t("cookbookPrint")}</button></form>
@@ -771,6 +779,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
     const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
     html = html.replace(/<section class="cook-utility"[^>]*>/, (open) => open + voice);
     if (connected && session.timers.length) {
+      html = html.replace(/<div class="cook-timers-empty">.*?<\/div>/s, "");
       html = html.replace(
         /<div class="cook-timers"[^>]*>/,
         (open) =>
@@ -791,7 +800,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
               .slice(0, 3)
               .join(" · ")
           : this.t("studioRecipeAuditNone")
-      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}</b> – ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
+      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}:</b> ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
     );
   }
   return html;
@@ -1007,6 +1016,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           title: this.t("familyEndConfirmTitle"),
           body: this.t("familyEndConfirmBody"),
           confirmLabel: this.t("familyEnd"),
+          focusCancel: true,
         }))
       )
         await this._studioWrite("session_end", { session_id: session.id });
@@ -1189,7 +1199,12 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             answer.warning;
         } catch (error) {
           output = this.t("studioSubstituteError", {
-            error: error?.code === "ai_error" ? this.t("errAiError") : error?.message || "",
+            error:
+              error?.code === "ai_error"
+                ? this.t("errAiError")
+                : /not configured/i.test(error?.message || "")
+                  ? this.t("studioAiNotConfigured")
+                  : error?.message || "",
           });
         }
       }
@@ -1215,7 +1230,12 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       } catch (error) {
         this._flash(
           this.t("studioAiUnavailable", {
-            error: error?.code === "ai_error" ? this.t("errAiError") : error?.message || "",
+            error:
+              error?.code === "ai_error"
+                ? this.t("errAiError")
+                : /not configured/i.test(error?.message || "")
+                  ? this.t("studioAiNotConfigured")
+                  : error?.message || "",
           }),
         );
       }
@@ -1243,16 +1263,19 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     const active = this._studio?.family?.session;
     const existed = active?.slug === slug;
     // Starting a different recipe must never destroy shared tasks/timers silently.
-    const replace = Boolean(
-      active &&
-      !existed &&
-      this._permissions.can_write &&
-      (await this._atelierDialog({
+    // Cancel (or Escape) starts nothing; "secondary" cooks the new recipe on this device only.
+    let choice = true;
+    if (active && !existed && this._permissions.can_write) {
+      choice = await this._atelierDialog({
         title: this.t("studioSessionReplaceTitle"),
         body: this.t("studioSessionReplaceBody", { name: active.name }),
         confirmLabel: this.t("studioSessionReplaceConfirm"),
-      })),
-    );
+        secondaryLabel: this.t("studioSessionReplaceLocal"),
+        focusCancel: true,
+      });
+      if (!choice) return;
+    }
+    const replace = Boolean(active && !existed && choice === true);
     // The dialog awaited above, so the original event no longer targets the button.
     await _atOriginalClick.call(this, { target: el });
     if (this._permissions.can_write && !existed && (!active || replace))
@@ -1378,7 +1401,8 @@ MealieAtelierCard.prototype._handleInput = function (event) {
     if (event.target.checked) this._bookSelected.add(event.target.dataset.book);
     else this._bookSelected.delete(event.target.dataset.book);
     const count = this.shadowRoot.querySelector("[data-book-selected-count]");
-    if (this._view === "cookbook" && count) count.textContent = String(this._bookSelected.size);
+    if (this._view === "cookbook" && count)
+      count.textContent = this.tp("cookbookSelected", this._bookSelected.size);
     const submit = this.shadowRoot.querySelector('[data-form="studio-book"] button[type="submit"]');
     if (submit) submit.disabled = !this._bookSelected.size;
     return;

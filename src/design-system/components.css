@@ -362,6 +362,20 @@
   gap: var(--ds-space-2);
   min-width: 0;
 }
+.atelier .cook-timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  min-width: 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-surface) 92%, var(--ds-brand) 8%);
+}
+.atelier .cook-timer strong {
+  font-variant-numeric: tabular-nums;
+}
 .atelier .cook-timer-card {
   display: grid;
   grid-template-columns: 60px minmax(0, 1fr) 44px;

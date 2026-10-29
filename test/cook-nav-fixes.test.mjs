@@ -22,8 +22,15 @@ function cookCard(dialogAnswer) {
   return { card, writes, target };
 }
 
-test("cancelling the replace dialog cooks the recipe locally and leaves the shared session alone", async () => {
+test("cancelling the replace dialog starts nothing", async () => {
   const { card, writes, target } = cookCard(false);
+  await card._handleClick({ target, preventDefault() {} });
+  assert.notEqual(card._modal, "cook");
+  assert.equal(writes.length, 0);
+});
+
+test("choosing to cook here only opens cooking mode and leaves the shared session alone", async () => {
+  const { card, writes, target } = cookCard("secondary");
   await card._handleClick({ target, preventDefault() {} });
   assert.equal(card._modal, "cook");
   assert.equal(writes.length, 0);
