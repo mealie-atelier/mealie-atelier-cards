@@ -514,7 +514,16 @@ class MealieAtelierCard extends HTMLElement {
       const known = [
         [/recipe changed since preview/i, "recipe_changed"],
         [/valid serving count/i, "recipe_servings_invalid"],
-        [/incomplete basic nutritional information/i, "usda_food_incomplete"],
+        [
+          /incomplete basic nutritional information|missing essential nutrition data/i,
+          "usda_food_incomplete",
+        ],
+        [/USDA (?:FoodData Central )?API key is not configured/i, "usda_key_missing"],
+        [/search query must contain|invalid food search query/i, "nutrition_query_invalid"],
+        [
+          /choose a USDA food|grams must be confirmed|confirm grams and a USDA match|match each recipe ingredient/i,
+          "nutrition_match_required",
+        ],
       ].find(([pattern]) => pattern.test(err.message));
       if (known) return this._errorText({ code: known[1] });
       if (this._language === "en") return err.message;

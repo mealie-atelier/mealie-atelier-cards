@@ -342,6 +342,43 @@
   opacity: 0;
   pointer-events: none;
 }
+/* The strip is a child of the button's stacking context and would paint over the button's own background. So the
+   button paints its tile on ::after (later in tree order, same layer) and keeps its own background transparent. */
+.atelier .modal.modal > .modal-close,
+.atelier .modal.modal > .modal-close:is(:hover, :active):not(:disabled) {
+  --at-close-tile: rgba(23, 29, 23, 0.8);
+  --at-close-edge: #ffffff3b;
+  background: transparent;
+  border-color: transparent;
+  backdrop-filter: none;
+}
+.atelier .modal.modal > .modal-close:is(:hover, :active):not(:disabled) {
+  --at-close-tile: rgba(23, 29, 23, 0.92);
+  color: #fbfaf2;
+}
+.atelier .modal.modal.sync-modal > .modal-close,
+.atelier .modal.modal.sync-modal > .modal-close:is(:hover, :active):not(:disabled) {
+  --at-close-tile: var(--at-panel);
+  --at-close-edge: var(--at-line);
+}
+.atelier .modal.modal.sync-modal > .modal-close:is(:hover, :active):not(:disabled) {
+  --at-close-tile: var(--at-panel2);
+  color: var(--at-ink);
+}
+.atelier .modal > .modal-close::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid var(--at-close-edge);
+  background: var(--at-close-tile);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+.atelier .modal.sync-modal > .modal-close::after {
+  backdrop-filter: none;
+}
 @supports (animation-timeline: scroll()) {
   .atelier .modal > .modal-close::before {
     animation: at-close-strip linear both;

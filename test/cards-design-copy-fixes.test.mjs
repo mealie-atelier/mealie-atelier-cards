@@ -77,6 +77,21 @@ test("a scroll-driven header strip keeps content from being cut by the sticky cl
   );
 });
 
+test("the close button paints its tile above the header strip, in light and dark", () => {
+  const tile = rule(refinement, ".atelier .modal > .modal-close::after");
+  assert.match(tile, /z-index:\s*-1/);
+  assert.match(tile, /background:\s*var\(--at-close-tile\)/);
+  assert.match(
+    refinement,
+    /\.atelier \.modal\.modal > \.modal-close,[^{]*\{[^}]*background:\s*transparent/,
+  );
+  assert.ok(
+    refinement.indexOf(".atelier .modal > .modal-close::after") >
+      refinement.indexOf(".atelier .modal > .modal-close::before"),
+    "the tile comes after the strip so it paints on top",
+  );
+});
+
 test("the header strip never takes clicks, leaves no 1px gap and is not re-enabled under @supports", () => {
   const strip = rule(refinement, ".atelier .modal > .modal-close::before");
   assert.match(strip, /pointer-events:\s*none/);
@@ -464,13 +479,36 @@ test("nutrition keeps the specific reason for a bare invalid_request and transla
       "USDA item 5 has incomplete basic nutritional information",
       /Nährwertangaben/,
     ],
+    ["de", "invalid_request", "Search query must contain 2–100 characters", /zwischen 2 und 100/],
+    ["de", "invalid_request", "Invalid food search query", /zwischen 2 und 100/],
+    ["en", "invalid_request", "Invalid food search query", /^Enter between 2 and 100/],
     [
       "de",
       "invalid_request",
-      "Search query must contain 2–100 characters",
-      /^Die Anfrage war ungültig/,
+      "USDA FoodData Central API key is not configured",
+      /kein USDA-API-Key eingerichtet/,
     ],
-    ["en", "invalid_request", "Search query must contain 2–100 characters", /^Search query must/],
+    ["de", "invalid_request", "USDA API key is not configured", /kein USDA-API-Key eingerichtet/],
+    ["de", "invalid_request", "Ingredient 2: choose a USDA food", /Wähle für jede Zutat/],
+    [
+      "de",
+      "invalid_request",
+      "Ingredient 2: grams must be confirmed (0–50,000 g)",
+      /Wähle für jede Zutat/,
+    ],
+    [
+      "de",
+      "invalid_request",
+      "Ingredient 2: confirm grams and a USDA match",
+      /Wähle für jede Zutat/,
+    ],
+    ["de", "invalid_request", "Match each recipe ingredient", /Wähle für jede Zutat/],
+    [
+      "en",
+      "invalid_request",
+      "Search query must contain 2–100 characters",
+      /^Enter between 2 and 100/,
+    ],
     ["en", "invalid_request", "Recipe changed since preview. Reopen it", /changed elsewhere/],
     ["en", "invalid_request", "Recipe must have a valid serving count", /no valid serving count/],
     ["de", "recipe_servings_invalid", "raw", /Portionsangabe/],
@@ -497,7 +535,10 @@ test("nutrition keeps the specific reason for a bare invalid_request and transla
     if (code !== "invalid_request")
       assert.doesNotMatch(card._nutrition.notice, /ungültig\. Prüfe|not valid\. Check/);
     if (language === "de")
-      assert.doesNotMatch(card._nutrition.notice, /\b(Recipe|Search|USDA item)\b/);
+      assert.doesNotMatch(
+        card._nutrition.notice,
+        /\b(Recipe|Search|USDA item|Ingredient|Match|Invalid)\b|ungültig\. Prüfe/,
+      );
   }
 });
 
