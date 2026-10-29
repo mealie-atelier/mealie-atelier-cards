@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
+import { readFileSync } from "node:fs";
 
 const RULE = {
   id: "r1",
@@ -670,12 +671,12 @@ test("destination labels use friendly platform names and drop a repeated platfor
   assert.doesNotMatch(html, /shopping_list|local_todo/);
 });
 
-test("run result has no doubled word, shows a success icon and says just now", async () => {
+test("run result has no repeated word, shows a success icon and says just now", async () => {
   const env = syncCard();
   await openStatus(env, [withRule()]);
   await click(env.card, { action: "sync-run", value: "r1" });
   const html = markup(env.cards);
-  assert.match(html, /Sent\. Sent: 1, skipped: 0, failed: 0, still waiting: 0\./);
+  assert.match(html, /Sent: 1, skipped: 0, failed: 0, still waiting: 0\./);
   assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
   assert.equal(env.card._syncRelative(new Date().toISOString()), "just now");
   assert.match(html, /nothing waiting/);
@@ -774,4 +775,74 @@ test("a rule named after its route still shows the platform that the title does 
     card._syncRouteHtml(named("Groceries"), { platform: "local_todo" }, "Home"),
     /Weekly groceries → Home \(Local todo\)/,
   );
+});
+
+const BUILT_IN = {
+  entities: [
+    {
+      entity_id: "todo.sl",
+      name: "Shopping list",
+      platform: "shopping_list",
+      available: true,
+      supports: { create: true, description: false, update: false },
+    },
+  ],
+};
+
+test("setup in German names the built-in list in the default rule name and the send button", async () => {
+  const env = syncCard({ handlers: { sync_destinations: async () => BUILT_IN } });
+  env.card._hass.language = "de";
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-setup-open", value: "" });
+  input(env.card, { input: "sync-destination" }, { value: "todo.sl" });
+  const draft = env.card._syncData().setup;
+  assert.equal(env.card._syncDraftRequest(draft).name, "Weekly groceries → Einkaufsliste");
+  await click(env.card, { action: "sync-preview" });
+  const html = markup(env.cards);
+  assert.match(html, /an Einkaufsliste senden/);
+  assert.doesNotMatch(html, /Shopping list/);
+});
+
+test("a rule card never shows the built-in list under two names", async () => {
+  const env = syncCard();
+  env.card._hass.language = "de";
+  const destination = {
+    entity_id: "todo.sl",
+    name: "Shopping list",
+    platform: "shopping_list",
+    available: true,
+    supports: {},
+  };
+  for (const name of ["Weekly groceries → Shopping list", "Weekly groceries → Einkaufsliste"]) {
+    await openStatus(env, [withRule({ name, destination })]);
+    const html = markup(env.cards);
+    assert.match(html, /<h3 id="sync-rule-r1">Weekly groceries → Einkaufsliste<\/h3>/);
+    assert.doesNotMatch(html, /Shopping list/);
+    assert.equal((html.match(/Weekly groceries → Einkaufsliste/g) || []).length, 1);
+  }
+});
+
+test("a plain success does not repeat the word Sent", () => {
+  const card = syncCard().card;
+  assert.equal(
+    card._syncResultText({ outcome: "sent", sent: 3 }),
+    "Sent: 3, skipped: 0, failed: 0, still waiting: 0.",
+  );
+  card._hass.language = "de";
+  assert.equal(
+    card._syncResultText({ outcome: "sent", sent: 3 }),
+    "Gesendet: 3, übersprungen: 0, fehlgeschlagen: 0, offen: 0.",
+  );
+});
+
+test("the sync dialog carries the class that scopes its round close button", async () => {
+  const env = syncCard();
+  await openStatus(env, [withRule()]);
+  assert.match(env.card._syncModalHtml(), /class="modal sync-modal /);
+  const css = readFileSync(
+    new URL("../src/design-system/shopping-sync.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(css, /\.modal\.sync-modal > \.modal-close \{[^}]*border-radius: 50%/);
+  assert.doesNotMatch(css, /:not\(:has\(> \.modal-hero/);
 });

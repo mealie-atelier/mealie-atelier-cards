@@ -133,14 +133,19 @@ export const shoppingSyncMethods = {
   },
   _syncResultText(result) {
     if (result?.queued) return this.t("syncRunQueued");
-    return this.t("syncRunResult", {
-      result: this._syncOutcomeText(result?.outcome, {
-        needs_reconciliation: result?.needs_reconciliation,
-      }),
+    const counts = this.t("syncRunCounts", {
       sent: result?.sent ?? 0,
       skipped: (result?.skipped_duplicates ?? 0) + (result?.merged ?? 0),
       failed: (result?.failed ?? 0) + (result?.needs_reconciliation ?? 0),
       left: result?.pending_left ?? 0,
+    });
+    // A plain success already says "Sent" in the counts, so the outcome label would only repeat it.
+    if (result?.outcome === "sent" && !(result?.needs_reconciliation > 0)) return counts;
+    return this.t("syncRunResult", {
+      result: this._syncOutcomeText(result?.outcome, {
+        needs_reconciliation: result?.needs_reconciliation,
+      }),
+      counts,
     });
   },
 
@@ -222,7 +227,7 @@ export const shoppingSyncMethods = {
       size = "large";
       content = this._syncSetupHtml();
     } else content = this._syncSyncHtml();
-    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
+    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
   },
   _syncLead(title, text) {
     return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp">${icon("cart", 26)}</div></div>`;
@@ -251,6 +256,11 @@ export const shoppingSyncMethods = {
       ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="sync-setup-open" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
+  // A rule saved with the raw built-in list name ("Shopping list") is titled with the localised route.
+  _syncRuleTitle(rule, destination, destName) {
+    const raw = `${rule.source_list_name} → ${destination.name}`;
+    return rule.name === raw ? `${rule.source_list_name} → ${destName}` : rule.name;
+  },
   // Route line "source → destination (platform)". When the rule is already named after the route
   // only the platform that the title does not show is kept.
   _syncRouteHtml(rule, destination, destName) {
@@ -260,7 +270,8 @@ export const shoppingSyncMethods = {
         ? this._syncPlatformLabel(destination.platform)
         : "";
     const route = `${rule.source_list_name} → ${destName}`;
-    if (rule.name === route) return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
+    if (this._syncRuleTitle(rule, destination, destName) === route)
+      return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
     return `<p class="sync-route">${esc(route)}${platform ? ` (${esc(platform)})` : ""}</p>`;
   },
   _syncRuleHtml(rule, caps) {
@@ -317,7 +328,7 @@ export const shoppingSyncMethods = {
         ? `<div class="notice error" role="alert"><span>${esc(this.t("syncDeleteConfirm"))}</span><div class="form-actions"><button class="btn tiny" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button><button class="btn tiny" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button></div></div>`
         : "";
     return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
-      <h3 id="sync-rule-${id}">${esc(rule.name)}</h3>
+      <h3 id="sync-rule-${id}">${esc(this._syncRuleTitle(rule, destination, destName))}</h3>
 ${this._syncRouteHtml(rule, destination, destName)}
       <p class="sync-mode">${esc(this.t(`syncMode${mode}`))}: ${esc(this.t(`syncMode${mode}Hint`))}</p>
       <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong> <span class="sync-muted" aria-hidden="true">·</span> <span class="sync-count sync-muted">${esc(this._syncWaiting(rule) ? this.tp("syncPending", this._syncWaiting(rule)) : this.t("syncPendingNone"))}</span></p>
@@ -376,7 +387,10 @@ ${this._syncRouteHtml(rule, destination, destName)}
     const name = String(draft.name || "").trim();
     return {
       name: (
-        name || (destination ? `${source?.name || ""} → ${destination.name}` : source?.name || "")
+        name ||
+        (destination
+          ? `${source?.name || ""} → ${this._syncDestinationName(destination.name, destination.platform)}`
+          : source?.name || "")
       ).slice(0, 60),
       source_list_id: draft.source_list_id,
       destination_entity_id: draft.destination_entity_id,
@@ -490,7 +504,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     const confirmLabel = destination
       ? this.tp("syncConfirmSend", sendCount, {
           source: sourceName,
-          destination: destination.name,
+          destination: this._syncDestinationName(destination.name, destination.platform),
         })
       : this.t("syncConfirmSendNeutral");
     return `<div class="modal-content sync-panel atelier-editor">${this._syncLead(this.t(d.rule_id ? "syncEditRule" : "syncSetup"))}

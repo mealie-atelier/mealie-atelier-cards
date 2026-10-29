@@ -133,13 +133,14 @@
   transform: rotate(180deg);
 }
 
-/* Dialogs without a photo hero have no dark image behind the close button, so it follows the theme. */
-.atelier .modal:not(:has(> .modal-hero, .cook-layout)) > .modal-close {
+/* The sync dialogs have no photo hero behind the close button, so it follows the theme and is round like the other round controls. */
+.atelier .modal.sync-modal > .modal-close {
   background: var(--at-panel);
   color: var(--at-ink);
   border: 1px solid var(--at-line);
+  border-radius: 50%;
   backdrop-filter: none;
 }
-.atelier .modal:not(:has(> .modal-hero, .cook-layout)) > .modal-close:hover {
+.atelier .modal.sync-modal > .modal-close:hover {
   background: var(--at-panel2);
 }
