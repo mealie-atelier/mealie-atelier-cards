@@ -501,7 +501,7 @@
   "editorAKitchenThatFeelsLikeYours": "A kitchen that feels like yours.",
   "editorThreeSmallChoicesYourKitchenReady": "Three small choices. Your kitchen, ready.",
   "editorSetUpLater": "Set up later",
-  "editorTheSetupWizardIsRememberedPerBrowser": "Setup is remembered per browser. In a new browser, or after you run the setup wizard again, the guided start shows once more.",
+  "editorTheSetupWizardIsRememberedPerBrowser": "Only the note that setup is done is kept per browser, not your card settings. Running the setup wizard again on one card shows the guided start on every card in this browser, and a new browser shows it once.",
   "editorSetupNavigation": "Setup navigation",
   "editorBack": "Back",
   "editorContinue": "Continue",

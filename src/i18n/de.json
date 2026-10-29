@@ -497,7 +497,7 @@
   "editorAKitchenThatFeelsLikeYours": "Dein Küchenstudio. Ganz deins.",
   "editorThreeSmallChoicesYourKitchenReady": "Drei kleine Entscheidungen. Dann ist deine Küche startklar.",
   "editorSetUpLater": "Später einrichten",
-  "editorTheSetupWizardIsRememberedPerBrowser": "Die Einrichtung wird pro Browser gespeichert. In einem neuen Browser oder nach erneutem Start des Assistenten erscheint der geführte Start noch einmal.",
+  "editorTheSetupWizardIsRememberedPerBrowser": "Nur der Vermerk, dass die Einrichtung abgeschlossen ist, gilt pro Browser, nicht deine Karteneinstellungen. Startest du den Assistenten bei einer Karte erneut, erscheint die geführte Einrichtung bei allen Karten in diesem Browser wieder, und ein neuer Browser zeigt sie einmal.",
   "editorSetupNavigation": "Einrichtung navigieren",
   "editorBack": "Zurück",
   "editorContinue": "Weiter",

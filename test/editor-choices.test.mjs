@@ -225,8 +225,8 @@ test("every editor Mealie label says connection, never instance", () => {
 
 test("the editor explains that the setup wizard is remembered per browser", () => {
   for (const [language, text] of [
-    ["en", /remembered per browser/],
-    ["de", /pro Browser gespeichert/],
+    ["en", /kept per browser, not your card settings.*on every card in this browser/],
+    ["de", /gilt pro Browser, nicht deine Karteneinstellungen.*bei allen Karten in diesem Browser/],
   ]) {
     const { editor } = makeEditor({ type: "custom:mealie-atelier-card" }, { language });
     assert.match(editor.shadowRoot.innerHTML, text);
