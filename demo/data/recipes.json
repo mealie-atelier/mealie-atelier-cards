@@ -11,8 +11,8 @@
         "en": "Skillet eggs with tomatoes and basil"
       },
       "description": {
-        "de": "Vier Eier stocken in einer Pfanne auf weich gedünsteten Zwiebeln und frischen Tomatenstücken. Ein paar Basilikumblätter obenauf, dazu knuspriges Knäckebrot: ein Frühstück für zwei in einer Viertelstunde.",
-        "en": "Four eggs set in a pan on softened onions and chunks of fresh tomato. A few basil leaves on top and crisp crackers on the side make breakfast for two in about fifteen minutes."
+        "de": "Vier Eier stocken in einer Pfanne auf weich gedünsteten Zwiebeln und frischen Tomatenstücken. Ein paar Basilikumblätter obenauf, direkt aus der Pfanne gelöffelt: ein Frühstück für zwei in einer Viertelstunde.",
+        "en": "Four eggs set in a pan on softened onions and chunks of fresh tomato. A few basil leaves on top, served straight from the pan: breakfast for two in about fifteen minutes."
       },
       "category": {
         "de": "Frühstück",
@@ -33,8 +33,7 @@
           "3 reife Tomaten, grob gewürfelt",
           "4 Eier",
           "1 Handvoll Basilikumblätter",
-          "Salz und schwarzer Pfeffer",
-          "4 Scheiben Knäckebrot"
+          "Salz und schwarzer Pfeffer"
         ],
         "en": [
           "1 tbsp olive oil",
@@ -42,8 +41,7 @@
           "3 ripe tomatoes, roughly diced",
           "4 eggs",
           "1 handful basil leaves",
-          "Salt and black pepper",
-          "4 crispbread crackers"
+          "Salt and black pepper"
         ]
       },
       "steps": {
@@ -60,8 +58,8 @@
           },
           {
             "title": "Eier stocken lassen",
-            "summary": "Mit Basilikum und Knäckebrot servieren",
-            "text": "Eier in die Mulden schlagen. Abdecken und 4–5 Minuten garen, bis das Eiweiß gestockt und das Eigelb noch weich ist. Basilikumblätter darauflegen, leicht salzen und direkt aus der Pfanne mit Knäckebrot servieren."
+            "summary": "Mit Basilikum servieren",
+            "text": "Eier in die Mulden schlagen. Abdecken und 4–5 Minuten garen, bis das Eiweiß gestockt und das Eigelb noch weich ist. Basilikumblätter darauflegen, leicht salzen und direkt aus der Pfanne servieren."
           }
         ],
         "en": [
@@ -77,8 +75,8 @@
           },
           {
             "title": "Set the eggs",
-            "summary": "Finish with basil and crispbread",
-            "text": "Crack an egg into each well. Cover and cook for 4–5 minutes, until the whites are set and the yolks are still soft. Scatter over the basil, season lightly and serve straight from the pan with the crispbread."
+            "summary": "Finish with basil",
+            "text": "Crack an egg into each well. Cover and cook for 4–5 minutes, until the whites are set and the yolks are still soft. Scatter over the basil, season lightly and serve straight from the pan."
           }
         ]
       },

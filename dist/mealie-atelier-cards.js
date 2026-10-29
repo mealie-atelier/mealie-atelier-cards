@@ -1953,6 +1953,9 @@ ha-card {
   max-width: 535px;
   text-wrap: balance;
 }
+.atelier .hero .eyebrow {
+  text-shadow: 0 1px 10px rgba(8, 16, 11, 0.85);
+}
 .atelier .hero p {
   font-size: 12px;
   color: #d4dacb;
@@ -5635,8 +5638,8 @@ ha-card {
     background: linear-gradient(
       0deg,
       rgba(10, 20, 14, 0.95) 0%,
-      rgba(10, 20, 14, 0.53) 60%,
-      rgba(10, 20, 14, 0.11) 100%
+      rgba(10, 20, 14, 0.74) 60%,
+      rgba(10, 20, 14, 0.5) 100%
     );
   }
   .atelier .hero .hero-food {

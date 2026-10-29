@@ -162,6 +162,9 @@
   max-width: 535px;
   text-wrap: balance;
 }
+.atelier .hero .eyebrow {
+  text-shadow: 0 1px 10px rgba(8, 16, 11, 0.85);
+}
 .atelier .hero p {
   font-size: 12px;
   color: #d4dacb;

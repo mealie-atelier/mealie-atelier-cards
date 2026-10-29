@@ -622,6 +622,25 @@ test("recipe photos carry no clutter claims in their alt text", () => {
   );
 });
 
+test("the skillet eggs recipe promises nothing the photo does not show", () => {
+  const catalog = JSON.parse(read(new URL("../demo/data/recipes.json", import.meta.url)));
+  const recipe = catalog.recipes.find((item) => item.id === "skillet-eggs");
+  assert.doesNotMatch(JSON.stringify(recipe), /Knäckebrot|crispbread|crackers/i);
+});
+
+test("the skillet eggs recipe promises nothing the photo does not show", () => {
+  const catalog = JSON.parse(read(new URL("../demo/data/recipes.json", import.meta.url)));
+  const recipe = catalog.recipes.find((item) => item.id === "skillet-eggs");
+  assert.doesNotMatch(JSON.stringify(recipe), /Knäckebrot|crispbread|crackers/i);
+});
+
+test("the card hero keeps its eyebrow readable on bright photos", () => {
+  const editorial = read(new URL("../src/design-system/editorial.css", import.meta.url));
+  const adaptive = read(new URL("../src/design-system/adaptive.css", import.meta.url));
+  assert.match(editorial, /\.atelier \.hero \.eyebrow \{\s*text-shadow:/);
+  assert.match(adaptive, /rgba\(10, 20, 14, 0\.5\) 100%/, "the phone scrim stays dense at the top");
+});
+
 test("recipe metrics stay an even grid at every width and the page offsets match", () => {
   const css = read(new URL("../demo/live-demo.css", import.meta.url));
   const metrics = css.match(/\.recipe-metrics \{[^}]*\}/)[0];
