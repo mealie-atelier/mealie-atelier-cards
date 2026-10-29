@@ -222,7 +222,10 @@ function cookRender({ index, disabledIndex = -1, primary = null }) {
     selector === '[role="dialog"]'
       ? {}
       : selector.includes(".btn.primary")
-        ? primaryEl
+        ? // The step buttons live in .cook-actions; a plain .btn.primary would hit the timer first.
+          selector.includes(".cook-actions .btn.primary")
+          ? primaryEl
+          : world.make("timer-start")
         : selector.includes("close-modal")
           ? close
           : null;

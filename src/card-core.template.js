@@ -975,15 +975,17 @@ class MealieAtelierCard extends HTMLElement {
     } else if (!modalChanged && restoreSelector) {
       // Preserve keyboard position after re-rendering a setting, week or checked item. The same
       // nth match is restored. When the used control is gone or disabled (Next turned into Done,
-      // Back disabled on step one), an open dialog moves focus to its enabled primary button, and
-      // only then to the close button, so a repeated Enter never closes the dialog by accident.
+      // Back disabled on step one), focus moves to the enabled primary step button (never the
+      // timer button, which comes first in the markup) and only then to the close button, so a
+      // repeated Enter neither closes cooking mode nor starts timers by accident.
       this._focusAfterRender(() => {
         const el = this.shadowRoot.querySelectorAll(restoreSelector)[restoreIndex];
         if (el && !el.disabled) return el;
         if (!this._modal) return null;
         return (
-          this.shadowRoot.querySelector('[role="dialog"] .btn.primary:not([disabled])') ||
-          closeButton()
+          this.shadowRoot.querySelector(
+            '[role="dialog"] .cook-actions .btn.primary:not([disabled])',
+          ) || closeButton()
         );
       });
     }
