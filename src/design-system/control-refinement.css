@@ -163,3 +163,67 @@
     row-gap: 10px;
   }
 }
+/* Tile meta keeps clear of the round open button, even for long duration labels. */
+.atelier .tile-meta {
+  flex-wrap: wrap;
+  padding-right: 40px;
+}
+/* Narrow tiles show three title lines so ordinary recipe names stay readable. */
+@container atelier-card (max-width: 640px) {
+  .atelier .tile-body h3 {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    max-width: 100%;
+  }
+}
+/* Meal rows: badge and photo share one leading column so text starts on one line. */
+.atelier .today-meal .meal-badge {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+}
+/* Day tiles in a swipe strip: the date sits next to the weekday, never in the clipped peek. */
+@container atelier-card (max-width: 760px) {
+  .atelier .week-grid .day-head {
+    justify-content: flex-start;
+    gap: var(--ds-space-2);
+  }
+}
+/* Narrow cards: icon toolbar stays on one line, action rows wrap into evenly filled rows. */
+@container atelier-card (max-width: 430px) {
+  .atelier .topbar {
+    flex-wrap: nowrap;
+  }
+  .atelier .topbar .breadcrumb {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .atelier .topbar .toolbar {
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+    gap: var(--ds-space-1);
+  }
+  .atelier .topbar .toolbar .icon-btn,
+  .atelier .topbar .command-launch {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn,
+  .atelier .shopping-toolbar .btn {
+    flex: 1 1 auto;
+  }
+  .atelier .shopping-toolbar {
+    justify-content: stretch;
+  }
+}

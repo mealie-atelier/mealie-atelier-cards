@@ -103,3 +103,36 @@ test("checked shopping rows keep full opacity, disabled primary buttons stay leg
   );
   assert.match(read("../src/design-system/editorial.css"), /\.photo-index \{[^}]*background: rgba/);
 });
+
+test("recipe tiles clamp the placeholder title and keep the meta row clear of the open button", () => {
+  assert.match(
+    read("../src/design-system/editorial.css"),
+    /\.tile-image \.placeholder \{[^}]*-webkit-line-clamp: 4;[^}]*overflow: hidden;[^}]*overflow-wrap: anywhere/,
+  );
+  const refine = read("../src/design-system/control-refinement.css");
+  assert.match(refine, /\.atelier \.tile-meta \{[^}]*padding-right: 40px/);
+  assert.match(refine, /\.tile-body h3 \{[^}]*-webkit-line-clamp: 3/);
+});
+
+test("today meal badges use the same leading column as meal photos", () => {
+  const refine = read("../src/design-system/control-refinement.css");
+  assert.match(refine, /\.today-meal \.meal-badge \{[^}]*width: 96px;[^}]*aspect-ratio: 4 \/ 3/);
+});
+
+test("mealplan toolbar buttons meet the 44px touch target and the tablet week stays readable", () => {
+  const adaptive = read("../src/design-system/adaptive.css");
+  assert.match(adaptive, /\.toolbar \.btn \{[^}]*min-height: 44px/);
+  assert.doesNotMatch(adaptive, /minmax\(93px, 1fr\)/);
+  assert.match(adaptive, /repeat\(7, minmax\(140px, 1fr\)\)/);
+  assert.match(
+    read("../src/design-system/polish.css"),
+    /\.day-meal-name \{[^}]*hyphens: auto;[^}]*hyphenate-limit-chars: 10 4 4/,
+  );
+});
+
+test("narrow cards keep the topbar on one line and fill wrapped action rows evenly", () => {
+  const refine = read("../src/design-system/control-refinement.css");
+  assert.match(refine, /\.topbar \.toolbar \{[^}]*flex-wrap: nowrap/);
+  assert.match(refine, /\.shopping-toolbar \.btn \{[^}]*flex: 1 1 auto/);
+  assert.match(refine, /\.week-grid \.day-head \{[^}]*justify-content: flex-start/);
+});

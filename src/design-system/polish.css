@@ -2374,4 +2374,5 @@
   overflow: hidden;
   overflow-wrap: anywhere;
   hyphens: auto;
+  hyphenate-limit-chars: 10 4 4;
 }

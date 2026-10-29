@@ -298,11 +298,17 @@
   display: none;
 }
 .atelier .tile-image .placeholder {
-  display: grid;
-  place-items: center;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  align-content: center;
   text-align: center;
-  padding: 35px;
+  padding: 40px 16px 14px;
   min-height: 130px;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   position: relative;
   z-index: 1;
   width: 100%;

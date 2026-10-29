@@ -2090,11 +2090,17 @@ ha-card {
   display: none;
 }
 .atelier .tile-image .placeholder {
-  display: grid;
-  place-items: center;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  align-content: center;
   text-align: center;
-  padding: 35px;
+  padding: 40px 16px 14px;
   min-height: 130px;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   position: relative;
   z-index: 1;
   width: 100%;
@@ -5397,7 +5403,7 @@ ha-card {
     padding: 12px;
   }
   .atelier .week-grid {
-    grid-template-columns: repeat(7, minmax(93px, 1fr));
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
   }
   .atelier .recipe-grid {
     grid-template-columns: repeat(min(var(--at-cols), 3), minmax(0, 1fr));
@@ -6107,7 +6113,7 @@ ha-card {
   }
   .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn {
     flex: 0 0 auto;
-    min-height: 42px;
+    min-height: 44px;
     white-space: nowrap;
   }
   .atelier .week-swipe-hint {
@@ -10508,6 +10514,7 @@ ha-card {
   overflow: hidden;
   overflow-wrap: anywhere;
   hyphens: auto;
+  hyphenate-limit-chars: 10 4 4;
 }
 
 /* Atelier Control Refinement 0.9.5: single geometric contract.
@@ -10673,6 +10680,70 @@ ha-card {
 @container atelier-card (max-width: 420px) {
   .atelier :is(.toolbar, .form-actions, .studio-actions, .studio-daily-actions, .cook-actions) {
     row-gap: 10px;
+  }
+}
+/* Tile meta keeps clear of the round open button, even for long duration labels. */
+.atelier .tile-meta {
+  flex-wrap: wrap;
+  padding-right: 40px;
+}
+/* Narrow tiles show three title lines so ordinary recipe names stay readable. */
+@container atelier-card (max-width: 640px) {
+  .atelier .tile-body h3 {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    max-width: 100%;
+  }
+}
+/* Meal rows: badge and photo share one leading column so text starts on one line. */
+.atelier .today-meal .meal-badge {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+}
+/* Day tiles in a swipe strip: the date sits next to the weekday, never in the clipped peek. */
+@container atelier-card (max-width: 760px) {
+  .atelier .week-grid .day-head {
+    justify-content: flex-start;
+    gap: var(--ds-space-2);
+  }
+}
+/* Narrow cards: icon toolbar stays on one line, action rows wrap into evenly filled rows. */
+@container atelier-card (max-width: 430px) {
+  .atelier .topbar {
+    flex-wrap: nowrap;
+  }
+  .atelier .topbar .breadcrumb {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .atelier .topbar .toolbar {
+    flex-wrap: nowrap;
+    flex: 0 0 auto;
+    gap: var(--ds-space-1);
+  }
+  .atelier .topbar .toolbar .icon-btn,
+  .atelier .topbar .command-launch {
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+  .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn,
+  .atelier .shopping-toolbar .btn {
+    flex: 1 1 auto;
+  }
+  .atelier .shopping-toolbar {
+    justify-content: stretch;
   }
 }
 
