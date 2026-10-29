@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ## [Unreleased]
 
+### Added
+
+- The web app's AI helpers also work with an Anthropic API key (`ANTHROPIC_API_KEY`); `ATELIER_AI_PROVIDER` picks one when both keys are set.
+
 ### Fixed
 
 - Text no longer sits on a blurred compositing layer after a view change: the enter animations stop holding their end frame, which left Safari rendering the whole view slightly soft.

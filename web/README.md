@@ -55,7 +55,9 @@ All settings are environment variables (see `.env.example`).
 | `ATELIER_DATA_DIR`                                                               | `./data`  | no       | Persistent state directory. Compose and the image use `/app/data`.                                                                                               |
 | `ATELIER_STRUCTURED_EDITS`                                                       | `false`   | no       | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x.                                                                                |
 | `USDA_FDC_API_KEY`                                                               | empty     | no       | Enables USDA matching in the Nutrition Lab.                                                                                                                      |
-| `OPENAI_API_KEY`                                                                 | empty     | no       | Enables opt-in AI suggestions, substitutes and recipe checks.                                                                                                    |
+| `OPENAI_API_KEY`                                                                 | empty     | no       | Enables opt-in AI suggestions, substitutes and recipe checks with OpenAI.                                                                                        |
+| `ANTHROPIC_API_KEY`                                                              | empty     | no       | The same AI helpers with Anthropic Claude.                                                                                                                       |
+| `ATELIER_AI_PROVIDER`                                                            | empty     | no       | `openai` or `anthropic`. Required when both keys are set; the server refuses to start otherwise.                                                                 |
 | `ATELIER_ALARM_CHANNEL`                                                          | `both`    | no       | Timer notification channel: `both`, `push` or `ha`.                                                                                                              |
 | `ATELIER_VAPID_PUBLIC_KEY`, `ATELIER_VAPID_PRIVATE_KEY`, `ATELIER_VAPID_SUBJECT` | empty     | no       | Web Push for timers; all three together, subject is `mailto:` or `https://`.                                                                                     |
 | `ATELIER_HA_URL`, `ATELIER_HA_TOKEN`, `ATELIER_HA_NOTIFY_SERVICE`                | empty     | no       | Home Assistant timer notifications; all three together, service like `notify.mobile_app_phone`.                                                                  |
@@ -98,7 +100,7 @@ Generate the Web Push keys with `npm run vapid` and paste the three printed line
 
 ## Third-party hosts
 
-The browser only talks to this server. The server contacts, only when configured and triggered: your Mealie instance (`MEALIE_URL`), `api.nal.usda.gov` (USDA lookups, `USDA_FDC_API_KEY`), `api.openai.com` (AI features, `OPENAI_API_KEY`), your Home Assistant (`ATELIER_HA_URL`) and the Web Push endpoint of each subscribed browser. USDA result links point to `fdc.nal.usda.gov`. The web app does not load recipes or photos from Unsplash or any other third-party host.
+The browser only talks to this server. The server contacts, only when configured and triggered: your Mealie instance (`MEALIE_URL`), `api.nal.usda.gov` (USDA lookups, `USDA_FDC_API_KEY`), `api.openai.com` or `api.anthropic.com` (AI features, `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`), your Home Assistant (`ATELIER_HA_URL`) and the Web Push endpoint of each subscribed browser. USDA result links point to `fdc.nal.usda.gov`. The web app does not load recipes or photos from Unsplash or any other third-party host.
 
 ## Tests
 
@@ -124,19 +126,19 @@ Recipe detail, shopping lists and the planner open the same **Print Studio** as 
 
 ## Nutrition Lab
 
-Put `USDA_FDC_API_KEY=...` in your private `.env` to enable USDA food matching and per-serving nutrition calculations. To **optionally** use AI to suggest USDA English search terms, provide your own `OPENAI_API_KEY=...`. Both keys remain on the web backend. **Only an explicit click** sends ingredient text to OpenAI; nutritional values are not taken from the language model.
+Put `USDA_FDC_API_KEY=...` in your private `.env` to enable USDA food matching and per-serving nutrition calculations. To **optionally** use AI to suggest USDA English search terms, provide your own `OPENAI_API_KEY=...` or `ANTHROPIC_API_KEY=...` (with both set, `ATELIER_AI_PROVIDER=openai|anthropic` picks one). Both keys remain on the web backend. **Only an explicit click** sends ingredient text to the AI provider; nutritional values are not taken from the language model.
 
 Opening the Nutrition Lab fetches recipe data, then lets you confirm each USDA match and actual gram weight. Save to Mealie requires a fresh recipe hash, server-side recalculation, and explicit replacement consent for any existing nutrition. `ATELIER_READ_ONLY=true` rejects writes on the server. Recipes and nutrient values differ in Mealie releases: please test with a backed-up test instance first. The browser-only Cooking Cockpit timers/journal are not multi-device-synced.
 
-**Privacy:** USDA lookup sends your ingredient search query to USDA; AI name suggestions send ingredient text to OpenAI on demand. The app does not store AI input in an application database; the provider's privacy rules still apply. Do not post public API keys in issues or screenshots.
+**Privacy:** USDA lookup sends your ingredient search query to USDA; AI name suggestions send ingredient text to the AI provider (OpenAI or Anthropic) on demand. The app does not store AI input in an application database; the provider's privacy rules still apply. Do not post public API keys in issues or screenshots.
 
 ## Kitchen state and persistence
 
 `ATELIER_DATA_DIR=/app/data` is the persistent JSON store for profile, pantry, cooking journal, family members and cooking sessions. The Docker Compose configuration includes a named volume `atelier_data`, which survives container recreation. Protect this volume and back it up together with Mealie. Atomic writes and monotonic revision numbers prevent stale clients from silently overwriting newer state.
 
-Per-person accounts (`ATELIER_USERS`) control who may write, but the kitchen state itself is shared by the household; for per-user journals use Home Assistant with individual accounts. The child helper view is not an authorization barrier. Off-device timer notifications need Web Push or Home Assistant to be configured (see Configuration) and are not guaranteed. AI quality checks and ingredient substitutes are opt-in and require your private `OPENAI_API_KEY`.
+Per-person accounts (`ATELIER_USERS`) control who may write, but the kitchen state itself is shared by the household; for per-user journals use Home Assistant with individual accounts. The child helper view is not an authorization barrier. Off-device timer notifications need Web Push or Home Assistant to be configured (see Configuration) and are not guaranteed. AI quality checks and ingredient substitutes are opt-in and require your private `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`.
 
-Run the automated tests with `npm test`. They cover private-state persistence, server restart, stale-revision rejection, read-only, protected Mealie proxy endpoints and ingredient checks using fake services. USDA/OpenAI live calls remain unverified.
+Run the automated tests with `npm test`. They cover private-state persistence, server restart, stale-revision rejection, read-only, protected Mealie proxy endpoints and ingredient checks using fake services. USDA and AI provider live calls remain unverified.
 
 ## Support
 

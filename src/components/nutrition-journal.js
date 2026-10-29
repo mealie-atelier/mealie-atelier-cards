@@ -25,7 +25,7 @@ export const nutritionJournalMethods = {
       <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong>${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.t("servings"))}</span></div>
       ${!n.preview.fdc_enabled ? `<div class="nutri-alert">${this.t("uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv")}</div>` : ""}
       ${existing ? `<div class="nutri-alert">${this.t("uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt")}</div>` : ""}
-      <div class="nutri-tools"><button class="btn" data-action="nutri-ai" ${!n.preview.ai_enabled || n.busy ? "disabled" : ""}>${icon("spark", 16)} ${esc(this.t("nutriAi"))}</button><span>${n.preview.ai_enabled ? this.t("uiSendsIngredientTextToOpenAINoInventedMacros") : this.t("uiOptionalConfigureOpenAIAPIKey")}</span></div>
+      <div class="nutri-tools"><button class="btn" data-action="nutri-ai" ${!n.preview.ai_enabled || n.busy ? "disabled" : ""}>${icon("spark", 16)} ${esc(this.t("nutriAi"))}</button><span>${n.preview.ai_enabled ? this.t("uiSendsIngredientTextToAIProviderNoInventedMacros") : this.t("uiOptionalConfigureAIAPIKey")}</span></div>
       <div class="nutri-table"><div class="eyebrow">01 / ${this.t("uiREVIEWINGREDIENTS")}</div>
       ${n.rows
         .map(

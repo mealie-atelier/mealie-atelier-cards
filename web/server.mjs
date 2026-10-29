@@ -27,6 +27,7 @@ import {
 } from "./nutrition.mjs";
 import { load as loadStudio, update as updateStudio } from "./studio-state.mjs";
 import { aiSubstitute, aiAudit, resolveLocale } from "./studio-ai.mjs";
+import { resolveAiConfig } from "./ai-client.mjs";
 import { OfflineLedger } from "./offline-ledger.mjs";
 import { AlarmStore } from "./alarm-store.mjs";
 import { createDelivery } from "./alarm-delivery.mjs";
@@ -65,7 +66,13 @@ const READ_ONLY = ["1", "true", "yes"].includes(
   String(process.env.ATELIER_READ_ONLY || "").toLowerCase(),
 );
 const USDA_KEY = process.env.USDA_FDC_API_KEY || "";
-const AI_KEY = process.env.OPENAI_API_KEY || "";
+let AI_KEY = null;
+try {
+  AI_KEY = resolveAiConfig(process.env);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const VALID_ID = /^[a-zA-Z0-9_-]{1,150}$/;
 const VALID_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const DATA_DIR = resolve(process.env.ATELIER_DATA_DIR || join(ROOT, "data"));
