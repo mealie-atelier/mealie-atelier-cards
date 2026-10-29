@@ -23,6 +23,7 @@ const BRIDGE_CODES = [
   "usda_rate_limited",
   "ai_not_configured",
   "read_only",
+  "shopping_item_not_found",
 ];
 const camel = (code) => "err" + code.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase());
 

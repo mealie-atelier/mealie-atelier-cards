@@ -902,6 +902,7 @@
   "errUploadInvalid": "Das Foto wurde abgelehnt. Nutze ein JPEG-, PNG- oder WebP-Bild innerhalb der Größenbeschränkung.",
   "errUploadExpired": "Der Upload ist abgelaufen. Starte ihn erneut.",
   "errUploadBusy": "Es sind zu viele Uploads offen. Warte einen Moment und versuche es erneut.",
+  "errShoppingItemNotFound": "Dieser Eintrag existiert in Mealie nicht mehr.",
   "errStepNotFound": "Dieser Schritt existiert nicht mehr. Lade das Rezept neu.",
   "errSyncRuleNotFound": "Diese Sync-Regel gibt es nicht mehr. Lade den Status neu und versuche es erneut.",
   "errSyncDestinationUnsupported": "Diese Liste kann nicht als Ziel dienen. Wähle eine To-do-Liste, die das Hinzufügen von Artikeln unterstützt und keine Mealie-Liste ist.",

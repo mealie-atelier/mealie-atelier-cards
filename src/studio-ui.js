@@ -803,7 +803,6 @@ MealieAtelierCard.prototype._openRecipe = async function (slug) {
     this._catalogDetail = this._detail;
   }
 };
-// A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
 /** False when the status says no AI key is set (Bridge `ai_enabled`, web app `features.ai`); undefined when unknown. */
 Object.defineProperty(MealieAtelierCard.prototype, "_aiAvailable", {
   get() {
@@ -821,6 +820,7 @@ Object.defineProperty(MealieAtelierCard.prototype, "_aiProviderName", {
     return this.t("studioAiProviderGeneric");
   },
 });
+// A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
 MealieAtelierCard.prototype._aiErrorText = function (error) {
   const translated = this._errorText(error);
   if (translated !== error?.message) return translated;

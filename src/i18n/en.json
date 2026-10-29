@@ -906,6 +906,7 @@
   "errUploadInvalid": "The photo was rejected. Use a JPEG, PNG or WebP image within the size limit.",
   "errUploadExpired": "The upload expired. Start it again.",
   "errUploadBusy": "Too many uploads are open. Wait a moment and try again.",
+  "errShoppingItemNotFound": "This item no longer exists in Mealie.",
   "errStepNotFound": "That step no longer exists. Reload the recipe.",
   "errSyncRuleNotFound": "This sync rule no longer exists. Reload the status and try again.",
   "errSyncDestinationUnsupported": "This list cannot be used as a destination. Choose a to-do list that supports adding items and is not a Mealie list.",
