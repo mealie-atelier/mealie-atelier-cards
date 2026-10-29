@@ -6,19 +6,35 @@ import { SIZES } from "./sections-intro.mjs";
 const checks = (items) =>
   `<ul class="checks">${items.map((item) => `<li>${icon("check")}${item}</li>`).join("")}</ul>`;
 
+// A scene is one device: a phone, or the tablet for cooking mode. The stage copy is decorative
+// (the stage is aria-hidden); the inline copy carries the alt text.
+function scene(ctx, kind, name, alt) {
+  if (kind === "tablet")
+    return {
+      kind,
+      inline: tablet(shot(ctx, name, alt, SIZES.tablet)),
+      stage: tablet(shot(ctx, name, "", "(max-width: 1240px) 52vw, 680px")),
+    };
+  return {
+    kind,
+    inline: phone(shot(ctx, name, alt, "(max-width: 640px) 72vw, 320px")),
+    stage: phone(shot(ctx, name, "", "340px")),
+  };
+}
+
 function everyday(ctx) {
   const t = translator(ctx.locale);
   const id = sectionIds[ctx.locale];
-  const h = host(ctx);
-  // Each step: number, title, text, bullets, inline visual (phones and small screens), stage visual.
+  // Each step: number, title, text, bullets and one device. Small screens show the device inline,
+  // wide screens in the sticky stage. One large device per scene keeps the app UI readable.
   const alt = {
     mealplan: t(
-      "Wochenplan mit einem Gericht pro Tag und Fotos",
-      "Week plan with one dish per day and photos",
+      "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
+      "Week plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
     ),
     discover: t(
-      "Kochinspo fragt, was euch schmeckt: alles offen, vegetarisch, vegan, Fleisch oder Fisch",
-      "Cook ideas asks what you fancy: anything, vegetarian, vegan, meat or fish",
+      "Kochinspo schlägt Pfannen-Eier mit Tomaten und Basilikum vor: 17 Minuten, für 2 Personen, aus euren Rezepten",
+      "Cook ideas suggests skillet eggs with tomatoes and basil: 17 minutes, for 2 people, from your recipes",
     ),
     shopping: t(
       "Einkaufsliste Wocheneinkauf auf dem Smartphone mit einem abgehakten Artikel",
@@ -29,16 +45,16 @@ function everyday(ctx) {
       "Cooking mode on a tablet with step, photo and kitchen timer",
     ),
     family: t(
-      "Gemeinsam kochen: Wer hilft mit, mit der Option Kind für freigegebene Aufgaben",
-      "Family cooking: who is helping, with a child option for approved tasks",
+      "Gemeinsam kochen in der einfachen Helferansicht: Alex und ein Küchenhelfer im Helfermodus",
+      "Family cooking in the simple helper view: Alex and a little helper in helper mode",
     ),
     pantry: t(
-      "Vorräte und Einkauf: was noch da ist, mit Mindesthaltbarkeit",
-      "Pantry and shopping: what is still there, with best-before dates",
+      "Einkaufsassistent: was für die geplanten Gerichte wirklich fehlt, sortiert nach Kühlregal, Vorrat und Gemüse",
+      "Shopping assistant: what the planned meals really need, sorted into chilled, pantry and produce",
     ),
     cookbook: t(
-      "Dein eigenes Kochbuch: Rezepte auswählen, Titel und Untertitel festlegen",
-      "Your own cookbook: pick recipes, set title and subtitle",
+      "Dein eigenes Kochbuch auf dem Smartphone: Rezepte mit Fotos für das Buch auswählen",
+      "Your own cookbook on a phone: pick recipes with photos for the book",
     ),
   };
   const steps = [
@@ -57,8 +73,7 @@ function everyday(ctx) {
         t("Zutaten direkt auf die Einkaufsliste", "Ingredients straight to the shopping list"),
         t("Wochenplan als A4 für den Kühlschrank drucken", "Print the week as A4 for the fridge"),
       ],
-      inline: browser(h, shot(ctx, "app-desktop-mealplan", alt.mealplan, SIZES.wide)),
-      stage: browser(h, shot(ctx, "app-desktop-mealplan", "", "720px")),
+      visual: scene(ctx, "phone", "app-phone-mealplan", alt.mealplan),
     },
     {
       num: t("02 · Montag, 17 Uhr", "02 · Monday, 5 pm"),
@@ -71,8 +86,7 @@ function everyday(ctx) {
         t("Vegetarisch, vegan, mit Fleisch oder Fisch", "Vegetarian, vegan, with meat or fish"),
         t("Nach Zeit und Vorrat gefiltert", "Filtered by time and pantry"),
       ],
-      inline: phone(shot(ctx, "app-phone-discover", alt.discover, SIZES.phone)),
-      stage: `<div class="pair">${browser(h, shot(ctx, "app-desktop-discover", "", "600px"))}${phone(shot(ctx, "app-phone-discover", "", "220px"))}</div>`,
+      visual: scene(ctx, "phone", "app-phone-discover-results", alt.discover),
     },
     {
       num: t("03 · Dienstag im Supermarkt", "03 · Tuesday at the supermarket"),
@@ -95,8 +109,7 @@ function everyday(ctx) {
           "A preview before the first batch is sent",
         ),
       ],
-      inline: phone(shot(ctx, "app-phone-shopping", alt.shopping, SIZES.phone)),
-      stage: `<div class="pair">${browser("Home Assistant", shot(ctx, "ha-sync-status", "", "600px"))}${phone(shot(ctx, "app-phone-shopping", "", "220px"))}</div>`,
+      visual: scene(ctx, "phone", "app-phone-shopping", alt.shopping),
     },
     {
       num: t("04 · Mittwoch am Herd", "04 · Wednesday at the stove"),
@@ -113,8 +126,7 @@ function everyday(ctx) {
         t("Mehrere benannte Timer gleichzeitig", "Several named timers at once"),
         t("Notizen für das nächste Mal", "Notes for next time"),
       ],
-      inline: tablet(shot(ctx, "app-tablet-cook", alt.cook, SIZES.tablet)),
-      stage: tablet(shot(ctx, "app-tablet-cook", "", "700px")),
+      visual: scene(ctx, "tablet", "app-tablet-cook", alt.cook),
     },
     {
       num: t("05 · Freitag mit den Kindern", "05 · Friday with the kids"),
@@ -127,8 +139,7 @@ function everyday(ctx) {
         t("Einfache Helferansicht für Kinder", "A simple helper view for children"),
         t("Gemeinsame Timer und Aufgaben", "Shared timers and tasks"),
       ],
-      inline: phone(shot(ctx, "app-phone-family", alt.family, SIZES.phone)),
-      stage: `<div class="pair">${browser(h, shot(ctx, "app-desktop-family", "", "600px"))}${phone(shot(ctx, "app-phone-family", "", "220px"))}</div>`,
+      visual: scene(ctx, "phone", "app-phone-family-helper", alt.family),
     },
     {
       num: t("06 · Samstag, Blick in die Speisekammer", "06 · Saturday, a look in the pantry"),
@@ -141,8 +152,7 @@ function everyday(ctx) {
         t("Mindesthaltbarkeit im Blick", "Best-before dates at a glance"),
         t("Basisvorrat wie Salz und Öl einmal festlegen", "Set staples like salt and oil once"),
       ],
-      inline: browser(h, shot(ctx, "app-desktop-pantry", alt.pantry, SIZES.wide)),
-      stage: browser(h, shot(ctx, "app-desktop-pantry", "", "720px")),
+      visual: scene(ctx, "phone", "app-phone-pantry-assist", alt.pantry),
     },
     {
       num: t("07 · Für immer", "07 · For ever"),
@@ -158,20 +168,19 @@ function everyday(ctx) {
         ),
         t("Editorial, Kompakt oder tintensparend", "Editorial, compact or ink saver"),
       ],
-      inline: browser(h, shot(ctx, "app-desktop-cookbook", alt.cookbook, SIZES.wide)),
-      stage: browser(h, shot(ctx, "app-desktop-cookbook", "", "720px")),
+      visual: scene(ctx, "phone", "app-phone-cookbook", alt.cookbook),
     },
   ];
   const articles = steps
     .map(
       (step, index) =>
-        `<article class="step" data-step="${index}"><span class="num">${step.num}</span><h3>${step.title}</h3><p>${step.text}</p>${checks(step.list)}<div class="inline">${step.inline}</div></article>`,
+        `<article class="step" data-step="${index}"><span class="num">${step.num}</span><h3>${step.title}</h3><p>${step.text}</p>${checks(step.list)}<div class="inline">${step.visual.inline}</div></article>`,
     )
     .join("");
   const shots = steps
     .map(
       (step, index) =>
-        `<div class="shot${index ? "" : " active"}" data-shot="${index}">${step.stage}</div>`,
+        `<div class="shot shot-${step.visual.kind}${index ? "" : " active"}" data-shot="${index}">${step.visual.stage}</div>`,
     )
     .join("");
   const dots = steps.map((_, index) => `<i${index ? "" : ' class="on"'}></i>`).join("");
@@ -195,8 +204,8 @@ function features(ctx) {
     t("Wochenplan", "Week plan"),
     "app-desktop-mealplan",
     t(
-      "Wochenplan mit einem Gericht pro Tag und Fotos",
-      "Week plan with one dish per day and photos",
+      "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
+      "Week plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
     ),
   )}${imageTile(
     "cart",

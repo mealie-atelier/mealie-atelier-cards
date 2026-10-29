@@ -694,8 +694,21 @@ h2 em {
   .fact:nth-child(even) {
     border-left: 1px solid var(--line);
   }
+  /* The fifth fact closes the strip as a full-width row: price next to its promise. */
   .fact:last-child {
     grid-column: 1 / -1;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 18px;
+    padding-block: 22px;
+    background: linear-gradient(90deg, rgba(157, 203, 178, 0.1), transparent 70%);
+  }
+  .fact:last-child b {
+    color: var(--mint2);
+  }
+  .fact:last-child > span {
+    color: var(--ink);
+    font-size: 16px;
   }
 }
 
@@ -754,9 +767,10 @@ h2 em {
 .dish .name {
   position: absolute;
   inset: auto 0 0 0;
-  padding: 56px 18px 48px;
-  background: linear-gradient(transparent, rgba(5, 8, 6, 0.82));
+  padding: 72px 18px 18px;
+  background: linear-gradient(180deg, transparent, rgba(5, 8, 6, 0.62) 42%, rgba(5, 8, 6, 0.94));
   font: 500 clamp(18px, 1.6vw, 22px) / 1.2 var(--serif);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
 }
 .dish .name a {
   text-decoration: none;
@@ -764,8 +778,10 @@ h2 em {
 .dish .name a:hover {
   color: var(--mint2);
 }
+/* The credit sits in the top corner so it never crowds the dish name. */
 .dish .credit {
-  left: 16px;
+  inset: 12px 12px auto auto;
+  max-width: calc(100% - 24px);
 }
 .dish.f1 {
   grid-column: 1 / 6;
@@ -821,12 +837,11 @@ h2 em {
     grid-column: 1 / -1;
   }
   .dish .name {
-    padding: 40px 14px 42px;
-    font-size: 17px;
+    padding: 56px 14px 14px;
+    font-size: 18px;
   }
   .dish .credit {
-    left: 10px;
-    bottom: 10px;
+    inset: 10px 10px auto auto;
     font-size: 11px;
   }
 }
@@ -1089,16 +1104,6 @@ h2 em {
   border-radius: 0 0 var(--r-lg) var(--r-lg);
   overflow: clip;
 }
-/* On wide screens the demo behaves like an app window with its own scroll, so the page
-   does not stretch by the card's full dashboard height. Overflow keeps fixed dialogs intact. */
-@media (min-width: 901px) and (min-height: 600px) {
-  .live-frame mealie-atelier-card {
-    height: min(860px, calc(100vh - 150px));
-    min-height: 0;
-    overflow-y: auto;
-    scrollbar-color: var(--panel3) transparent;
-  }
-}
 @media (max-width: 900px) {
   .live-head {
     grid-template-columns: 1fr;
@@ -1188,7 +1193,16 @@ html:not(.js) .step {
 .stage-inner {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 11.5;
+  height: min(84vh, 780px);
+}
+/* A soft light behind the device, so each scene reads as one object on the dark page. */
+.stage-inner::before {
+  content: "";
+  position: absolute;
+  inset: 12% 14%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(157, 203, 178, 0.16), transparent);
+  filter: blur(20px);
 }
 .shot {
   position: absolute;
@@ -1205,28 +1219,13 @@ html:not(.js) .step {
   opacity: 1;
   transform: none;
 }
-.shot > .browser {
+/* Phones at about 85 % of their real size, so the app text stays readable. */
+.shot-phone > .phone {
+  width: min(100%, calc(min(84vh, 780px) * 0.45));
+  max-width: 350px;
+}
+.shot-tablet > .tablet {
   width: 100%;
-}
-.shot > .tablet {
-  width: 96%;
-}
-.pair {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-.pair .browser {
-  position: absolute;
-  top: 4%;
-  left: 0;
-  width: 84%;
-}
-.pair .phone {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 28%;
 }
 .stage-dots {
   position: absolute;
@@ -1267,7 +1266,7 @@ html:not(.js) .step {
     margin-top: 14px;
   }
   .step .inline > .phone {
-    width: min(64%, 300px);
+    width: min(78%, 320px);
     margin-inline: auto;
   }
 }
@@ -1379,12 +1378,15 @@ html:not(.js) .step {
   border-block: 1px solid var(--line);
   overflow: clip;
 }
+/* The device row steps out of the text column on wide screens, so the screens get more pixels. */
 .dev-stage {
+  --dev-width: min(100vw - 2 * var(--gut), 1400px);
   display: grid;
-  grid-template-columns: 0.62fr 1.5fr 2fr;
+  grid-template-columns: 0.66fr 1.5fr 2.1fr;
   align-items: end;
-  gap: clamp(14px, 2.4vw, 40px);
-  margin-bottom: 56px;
+  gap: clamp(14px, 2.2vw, 36px);
+  width: var(--dev-width);
+  margin: 0 0 56px calc(50% - var(--dev-width) / 2);
 }
 .dev-stage figure {
   margin: 0;
@@ -1593,6 +1595,11 @@ html:not(.js) .step {
 .timeline span {
   color: var(--sub);
   font-size: 15px;
+}
+.notif-note {
+  margin-top: 10px;
+  color: var(--sub);
+  font-size: 13px;
 }
 .notif-phone {
   position: relative;
@@ -2490,11 +2497,12 @@ details[open] .chev {
   display: grid;
   gap: 2px;
 }
+/* Inline links so the external arrow follows the last word, also when a label wraps. The
+   padding keeps a 44 px touch target. */
 .foot-col a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
+  display: inline-block;
+  padding-block: 11px;
+  line-height: 22px;
   text-decoration: none;
   font-size: 16px;
   opacity: 0.86;
@@ -2506,10 +2514,27 @@ details[open] .chev {
   opacity: 1;
   color: var(--mint2);
 }
-.foot-col .trail {
+.foot-col a > svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -3px;
+}
+.foot-col a > svg.trail {
   width: 13px;
   height: 13px;
+  margin: 0 0 0 6px;
+  vertical-align: -1px;
   opacity: 0.55;
+}
+.foot-col .col-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--sub);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 .wordmark {
   position: relative;

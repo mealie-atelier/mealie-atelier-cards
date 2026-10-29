@@ -13,6 +13,12 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Fixed
 
+- Demo site: the timer notification mockup shows the German text the Bridge really sends ("Mealie Atelier · Küchentimer", "… ist fertig!") on both pages; the English page says that the notification is German for now.
+- Demo site: the English install card no longer calls the Cards and the Bridge an add-on, and the English footer lists the German-only guides under one "in German" note instead of a "(DE)" after every link. Footer links keep the external arrow right after the last word.
+- Demo site: the live card has its natural height instead of a scroll window inside the page, and it opens on "Today" so it does not repeat the page headline.
+- Demo site: each "week in your kitchen" scene shows one large phone (or the tablet for cooking mode) with real content, such as Cook ideas with a suggestion, the shopping assistant and the helper view, instead of small desktop and phone pairs. The device row of the devices section is wider.
+- Demo site: dish names on the food photos sit on a stronger scrim with the photo credit in the top corner, and the fifth fact closes the facts strip as a full-width row on narrow screens.
+- Demo photos: the skillet eggs and the pizza are cropped tight on the dish (no drink, almost no crispbread, no empty table), and all product screenshots were captured again with them.
 - Cooking mode on laptop-height screens (landscape, 701 to 1000 px tall): Back and Next sit right under the step and stay pinned to the bottom of the step column, the photo column keeps its full height with the recipe title readable, and only the step column scrolls. At 1440 × 900 the buttons were cut off at the dialog edge.
 - Opening a dialog in Home Assistant puts keyboard focus inside it again: Home Assistant renders `ha-card` asynchronously, so the one-shot `focus()` hit content without a layout box and silently did nothing. Focus is retried until it holds, so Esc, Ctrl+K typing and Tab (kept inside the open dialog) work right away, and focus returns to the opener on close.
 - Cooking mode keeps focus on the control you used (next, back, timers) after every re-render, so the arrow keys step through repeatedly. When that control is gone or disabled, focus moves to the primary step button (Next or Done), so a repeated Enter neither ends cooking nor starts a timer by accident.

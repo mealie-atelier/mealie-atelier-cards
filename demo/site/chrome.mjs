@@ -157,7 +157,6 @@ export function renderSiteFooter(ctx) {
   const local = (key, label) => `<li><a href="${anchor(ctx, key)}">${label}</a></li>`;
   const remote = (href, label, iconName = "ext") =>
     `<li>${ext(href, iconName === "ext" ? `${label}${icon("ext", "trail")}` : `${icon(iconName)}${label}`)}</li>`;
-  const german = t("", " (DE)");
   const column = (title, rows) =>
     `<div class="foot-col"><h3>${title}</h3><ul>${rows.join("")}</ul></div>`;
   const heart = `<span class="heart" role="img" aria-label="${t("Liebe", "love")}">♥</span>`;
@@ -170,11 +169,11 @@ export function renderSiteFooter(ctx) {
       local("webApp", t("Ohne Home Assistant", "Without Home Assistant")),
       local("recipes", t("Rezepte", "Recipes")),
     ],
-  )}${column(t("Anleitungen", "Guides"), [
-    remote(links.guide, t("Überblick", "Overview") + german),
-    remote(links.setup, t("Mit Home Assistant einrichten", "Set up with Home Assistant") + german),
-    remote(links.setupWeb, t("Web-App einrichten", "Set up the web app") + german),
-    remote(links.troubleshooting, t("Fehlerbehebung", "Troubleshooting") + german),
+  )}${column(t("Anleitungen", 'Guides <span class="col-note">in German</span>'), [
+    remote(links.guide, t("Überblick", "Overview")),
+    remote(links.setup, t("Mit Home Assistant einrichten", "Set up with Home Assistant")),
+    remote(links.setupWeb, t("Web-App einrichten", "Set up the web app")),
+    remote(links.troubleshooting, t("Fehlerbehebung", "Troubleshooting")),
   ])}${column("Open Source", [
     remote(links.cards, "Cards", "github"),
     remote(links.bridge, "Bridge", "github"),

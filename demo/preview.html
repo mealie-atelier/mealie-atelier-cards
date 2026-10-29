@@ -483,7 +483,9 @@
             ].some((name) => type === "mealie_atelier/" + name)
           )
             throw Error(
-              "Demo: Dieser Vorgang wird nur mit einer echten Mealie-Installation gespeichert.",
+              demoLanguage === "de"
+                ? "Demo: Dieser Vorgang wird nur mit einer echten Mealie-Installation gespeichert."
+                : "Demo: this is only saved with a real Mealie installation.",
             );
           if (type === "mealie_atelier/mutate") {
             if (req.action === "shopping_toggle") {
@@ -549,6 +551,13 @@
           throw Error("Unbekannte Aktion " + type);
         },
       };
+      // Open on "Today": the overview greets with the same line as the page hero right above it.
+      const openToday = (tries = 0) => {
+        const tab = card.shadowRoot?.querySelector('[data-action="nav"][data-value="today"]');
+        if (tab) tab.click();
+        else if (tries < 120) requestAnimationFrame(() => openToday(tries + 1));
+      };
+      openToday();
     </script>
   </body>
 </html>

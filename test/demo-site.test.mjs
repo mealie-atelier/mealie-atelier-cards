@@ -102,6 +102,84 @@ test("landing pages state the install route and setup facts correctly", () => {
   }
 });
 
+test("the timer notification mockup shows the text the Bridge really sends", () => {
+  // mealie-atelier-bridge alarms.py sends this German title and "<label> ist fertig!" only.
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const mockup = html.match(/<div class="notif-phone"[\s\S]*?<\/article>/)?.[0] ?? "";
+    assert.match(mockup, /lang="de"/, locale);
+    assert.equal(mockup.match(/Mealie Atelier · Küchentimer/g)?.length, 3, locale);
+    assert.match(mockup, /Tomatensauce ist fertig!/, locale);
+  }
+  const en = landing(builds.local, "en");
+  assert.doesNotMatch(en, /kitchen timer<\/b>|is done!/);
+  assert.match(
+    en,
+    /<p class="notif-note">The Bridge sends this notification in German for now\.<\/p>/,
+  );
+  assert.doesNotMatch(landing(builds.local, "de"), /notif-note/);
+});
+
+test("English pages do not call the Cards or the Bridge an add-on", () => {
+  // In Home Assistant an add-on is a Supervisor app; the Cards are a dashboard resource and the
+  // Bridge is an integration.
+  for (const page of contentPages(builds.local)) {
+    const html = read(page);
+    if (!html.includes('<html lang="en">')) continue;
+    assert.doesNotMatch(html.replace(/<script[\s\S]*?<\/script>/g, ""), /add-on/i, page);
+  }
+});
+
+test("English footers group the German-only guides under one note", () => {
+  let english = 0;
+  for (const page of contentPages(builds.local)) {
+    const html = read(page);
+    const footer = footerOf(html);
+    assert.doesNotMatch(footer, /\(DE\)/, page);
+    if (!html.includes('<html lang="en">')) continue;
+    english += 1;
+    assert.match(footer, /<h3>Guides <span class="col-note">in German<\/span><\/h3>/, page);
+  }
+  assert.equal(english, 11);
+});
+
+test("each story scene shows one large device with real content", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const stage = html.match(
+      /<div class="stage" aria-hidden="true">[\s\S]*?<div class="stage-dots">/,
+    )?.[0];
+    assert.ok(stage, `${locale} story stage`);
+    const shots = stage.split('<div class="shot ').slice(1);
+    assert.equal(shots.length, 7, locale);
+    for (const scene of shots) {
+      const devices = scene.match(/class="(?:phone|tablet|browser)"/g) ?? [];
+      assert.equal(devices.length, 1, `${locale}: one device per scene`);
+    }
+    for (const name of [
+      "app-phone-discover-results",
+      "app-phone-pantry-assist",
+      "app-phone-family-helper",
+    ])
+      assert.ok(stage.includes(`showcase/${locale}/${name}-`), `${locale} uses ${name}`);
+  }
+});
+
+test("the live card has no scroll window of its own and opens on Today", () => {
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const rules = css.match(/\.live-frame mealie-atelier-card\s*\{[^}]*\}/g) ?? [];
+  assert.ok(rules.length > 0);
+  for (const rule of rules) {
+    assert.doesNotMatch(rule, /overflow-y:\s*auto/, "no nested scroll area inside the page");
+    assert.doesNotMatch(rule, /(?:^|[\s;{])height:/, "the card keeps its natural height");
+  }
+  for (const locale of ["de", "en"])
+    assert.match(
+      landing(builds.local, locale),
+      /\[data-action="nav"\]\[data-value="today"\]'\);\s*if \(tab\) tab\.click\(\);/,
+    );
+});
+
 test("landing pages carry the links, social tags and JSON-LD", () => {
   for (const locale of ["de", "en"]) {
     const html = landing(builds.deployed, locale);
