@@ -8,7 +8,7 @@ const INSTALL_COPY = {
     later: "Später",
     close: "Schließen",
     ios: [
-      "Öffne diese Seite in Safari. Andere iPhone-Browser bieten diese Installation meist nicht an.",
+      "Öffne das Menü deines Browsers und tippe auf Teilen (ab iOS 16.4 in jedem Browser, ältere Versionen brauchen Safari).",
       "Tippe auf Teilen und wähle „Zum Home-Bildschirm“ aus. Falls nötig: „Mehr“ öffnen.",
       "Lass „Als Web-App öffnen“ aktiviert und tippe auf „Hinzufügen“.",
     ],
@@ -28,13 +28,13 @@ const INSTALL_COPY = {
   en: {
     label: "Install app",
     title: "Your kitchen studio, always close.",
-    intro: "Add Mealie Atelier to your home screen and open it like an app.",
+    intro: "Add Mealie Atelier to your Home Screen and open it like an app.",
     note: "Installing does not change your Mealie account or private server address.",
     action: "Install now",
     later: "Later",
     close: "Close",
     ios: [
-      "Open this page in Safari. Other iPhone browsers usually cannot add web apps to the Home Screen.",
+      "Open your browser’s menu and tap Share (any browser on iOS 16.4 or later, older versions need Safari).",
       "Tap Share, then choose “Add to Home Screen”. Open “More” if needed.",
       "Keep “Open as Web App” enabled and tap “Add”.",
     ],
@@ -101,6 +101,7 @@ export function initPwaInstall({
     title: dialog.querySelector("[data-install-title]"),
     intro: dialog.querySelector("[data-install-intro]"),
     note: dialog.querySelector("[data-install-note]"),
+    later: dialog.querySelector("[data-install-later]"),
   };
   const context = getInstallContext(navigatorRef, windowRef);
   let language = navigatorRef.language || documentRef.documentElement.lang || "de";

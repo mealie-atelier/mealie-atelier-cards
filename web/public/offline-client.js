@@ -323,7 +323,12 @@ export function attachOfflineUi(card, offline, alarms) {
   const update = () => {
     const offlineNow = !navigator.onLine,
       problems = offline.conflicts.length;
-    const conflicts = problems ? t("offlineConflictCount", { count: problems }) : "";
+    const conflicts =
+      problems === 1
+        ? t("offlineConflictOne")
+        : problems
+          ? t("offlineConflictCount", { count: problems })
+          : "";
     const syncing = offline.syncing ? t("offlineSyncing") : "";
     const status = t("offlineStatus", {
       connection: offlineNow ? "Offline" : "Online",

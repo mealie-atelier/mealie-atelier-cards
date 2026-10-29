@@ -2375,3 +2375,21 @@
   -webkit-hyphenate-limit-before: 4;
   -webkit-hyphenate-limit-after: 4;
 }
+
+/* Touch devices: every tap target reaches 44px. */
+@media (pointer: coarse) {
+  .atelier .toolbar .btn.tiny {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+  }
+  .atelier .studio-choice {
+    min-inline-size: 44px;
+  }
+  .atelier .atelier-credit a {
+    display: inline-block;
+    padding-block: 14px;
+    margin-block: -14px;
+    padding-inline: 6px;
+    margin-inline: -6px;
+  }
+}

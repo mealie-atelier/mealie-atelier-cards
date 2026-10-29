@@ -187,3 +187,22 @@ test("recipe tiles render the title placeholder only when there is no photo", ()
   };
   assert.doesNotMatch(card._recipes(6), /class="placeholder"/);
 });
+
+test("sidebar brand line, conflict plurals and the audit list are localized and dash free", () => {
+  const cards = loadCards();
+  const de = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
+  assert.match(de._nav(), /<span>KÜCHENSTUDIO<\/span>/);
+  assert.doesNotMatch(de._nav(), /KITCHEN STUDIO/);
+  assert.equal(de.t("offlineConflictOne"), " · 1 Konflikt");
+  assert.equal(de.t("offlineConflictCount", { count: 3 }), " · 3 Konflikte");
+  assert.equal(de.t("offlineSyncing"), " · wird synchronisiert");
+  assert.doesNotMatch(read("../src/studio-ui.js"), /<\/b> – \$\{esc\(x\.suggestion\)\}/);
+});
+
+test("touch devices get 44px targets for week buttons, choices and the credit link", () => {
+  const css = read("../src/design-system/polish.css").replace(/\s+/g, " ");
+  assert.match(
+    css,
+    /@media \(pointer: coarse\) \{ \.atelier \.toolbar \.btn\.tiny \{ min-block-size: 44px/,
+  );
+});

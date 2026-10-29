@@ -99,3 +99,28 @@ test("the notification badge is a monochrome 96 px PNG that is served and precac
   assert.equal(png.readUInt32BE(20), 96);
   assert.equal(png[25], 6, "RGBA colour type, so Android can use the alpha channel");
 });
+
+test("install dialog localizes the later button, avoids the outdated iOS claim and em dashes", async () => {
+  const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.match(html, /data-install-later/);
+  const install = await readFile(new URL("../public/pwa-install.js", import.meta.url), "utf8");
+  assert.match(install, /later: dialog\.querySelector\("\[data-install-later\]"\)/);
+  for (const language of ["de", "en"]) {
+    const copy = getInstallCopy(language, { isIOSBrowserWithoutPrompt: true });
+    assert.doesNotMatch(copy.steps[0], /meist nicht|usually cannot/);
+    assert.match(copy.steps[0], /16\.4/);
+  }
+  const manifest = await readFile(
+    new URL("../public/manifest.webmanifest", import.meta.url),
+    "utf8",
+  );
+  for (const text of [html, manifest]) assert.doesNotMatch(text, /[\u2013\u2014]|\\u2014/);
+  const parsed = JSON.parse(manifest);
+  assert.equal(parsed.theme_color, "#101613");
+  assert.equal(parsed.background_color, "#101613");
+  const icon = await readFile(new URL("../public/icon.svg", import.meta.url));
+  assert.ok(icon.length < 20000, "favicon stays small");
+  assert.doesNotMatch(html, /beautiful recipes/);
+  const css = await readFile(new URL("../public/pwa-install.css", import.meta.url), "utf8");
+  assert.match(css, /min-height: 44px/);
+});
