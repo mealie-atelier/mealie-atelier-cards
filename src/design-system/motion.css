@@ -519,9 +519,6 @@
 .atelier .shopping-row:hover {
   background: color-mix(in srgb, var(--at-accent) 6%, transparent);
 }
-.atelier .shopping-row.checked {
-  opacity: 0.68;
-}
 .atelier .shopping-row.checked .shopping-name {
   text-decoration: line-through;
   text-decoration-color: var(--at-sub);

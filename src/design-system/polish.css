@@ -58,6 +58,8 @@
   font-weight: 750;
   letter-spacing: 0.16em;
   line-height: 1.45;
+  text-transform: uppercase;
+  color: var(--ds-brand-text, var(--ds-brand));
 }
 .atelier .ds-page-header {
   margin: 0 0 var(--ds-space-7, 28px);
@@ -373,6 +375,8 @@
   box-shadow: 0 8px 21px color-mix(in srgb, var(--ds-brand) 13%, transparent);
 }
 .atelier .btn.primary:disabled {
+  background: color-mix(in srgb, var(--ds-muted) 16%, var(--ds-surface));
+  border-color: color-mix(in srgb, var(--ds-muted) 45%, var(--ds-surface));
   color: var(--ds-muted);
   box-shadow: none;
 }
@@ -2091,7 +2095,7 @@
   overflow-wrap: anywhere;
 }
 .atelier .studio-discover-book-match {
-  margin: -var(--ds-space-2) 0 var(--ds-space-3);
+  margin: calc(-1 * var(--ds-space-2)) 0 var(--ds-space-3);
   color: var(--ds-muted);
   font-size: var(--ds-font-xs);
 }

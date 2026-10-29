@@ -39,7 +39,7 @@ test("accent swatches get a translated colour name as accessible name", () => {
 
 test("disabled primary buttons keep the muted disabled text colour", () => {
   const css = read("../src/design-system/polish.css").replace(/\s+/g, " ");
-  assert.match(css, /\.atelier \.btn\.primary:disabled \{ color: var\(--ds-muted\);/);
+  assert.match(css, /\.atelier \.btn\.primary:disabled \{[^}]*color: var\(--ds-muted\);/);
 });
 
 test("the web app phone footer has a side gutter", () => {
@@ -53,4 +53,43 @@ test("the Verwalten view does not repeat the global read-only notice", () => {
   assert.equal(card._manage(), "");
   const writer = makeCard(cards, { permissions: { can_write: true, can_manage: false } });
   assert.match(writer._manage(), /class="notice"/);
+});
+
+test("design system CSS defines every font token it uses and avoids invalid negative var margins", () => {
+  const css = ["tokens", "polish", "foundation", "components", "editorial", "controls", "motion"]
+    .map((n) => read(`../src/design-system/${n}.css`))
+    .join("\n");
+  const defined = new Set([...css.matchAll(/(--ds-font-[a-z]+)\s*:/g)].map((m) => m[1]));
+  for (const m of css.matchAll(/var\((--ds-font-[a-z]+)/g)) assert.ok(defined.has(m[1]), m[1]);
+  assert.doesNotMatch(css, /-var\(/);
+});
+
+test("eyebrows are uppercased by CSS and use a readable light-theme text colour", () => {
+  assert.match(
+    read("../src/design-system/polish.css"),
+    /\.atelier \.eyebrow \{[^}]*text-transform: uppercase;[^}]*--ds-brand-text/,
+  );
+  assert.match(
+    read("../src/design-system/tokens.css"),
+    /--ds-brand-text: color-mix\(in srgb, var\(--at-accent\) 40%/,
+  );
+  assert.match(
+    read("../src/design-system/foundation.css"),
+    /\.hero \.eyebrow \{[^}]*text-transform: uppercase/,
+  );
+});
+
+test("checked shopping rows keep full opacity, disabled primary buttons stay legible, notice buttons never wrap", () => {
+  const foundation = read("../src/design-system/foundation.css");
+  assert.doesNotMatch(foundation, /shopping-row\.checked \.shopping-name \{[^}]*opacity/);
+  assert.doesNotMatch(
+    read("../src/design-system/motion.css"),
+    /\.shopping-row\.checked \{\s*opacity/,
+  );
+  assert.match(read("../src/design-system/polish.css"), /\.btn\.primary:disabled \{\s*background:/);
+  assert.match(
+    read("../src/design-system/components.css"),
+    /\.notice > \.btn \{[^}]*white-space: nowrap/,
+  );
+  assert.match(read("../src/design-system/editorial.css"), /\.photo-index \{[^}]*background: rgba/);
 });
