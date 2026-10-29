@@ -1,45 +1,54 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-10-28",
+  "updatedAt": "2026-10-29",
   "recipes": [
     {
       "id": "shakshuka",
       "slug": "shakshuka-mit-paprika",
-      "title": { "de": "Shakshuka mit Paprika", "en": "Shakshuka with peppers" },
-      "description": {
-        "de": "Eier garen in einer würzigen Tomaten-Paprika-Sauce. Mit Petersilie und Brot wird daraus ein unkompliziertes Abendessen.",
-        "en": "Eggs simmer in a warmly spiced tomato and pepper sauce. Finish with parsley and serve with bread for an easy supper."
+      "title": {
+        "de": "Shakshuka mit Paprika",
+        "en": "Shakshuka with peppers"
       },
-      "category": { "de": "Pfannengericht", "en": "One-pan meal" },
-      "cuisine": { "de": "Nordafrikanisch inspiriert", "en": "North African inspired" },
-      "tags": ["vegetarian", "one-pan", "family-friendly"],
-      "servings": 4,
-      "prepMinutes": 15,
-      "cookMinutes": 25,
+      "description": {
+        "de": "Zwei Eier garen in einer würzigen Tomaten-Paprika-Sauce. Mit Petersilie und geröstetem Sauerteigbrot wird daraus ein schnelles Abendessen für zwei.",
+        "en": "Two eggs simmer in a warmly spiced tomato and pepper sauce. Finish with parsley and serve with toasted sourdough for an easy supper for two."
+      },
+      "category": {
+        "de": "Pfannengericht",
+        "en": "One-pan meal"
+      },
+      "cuisine": {
+        "de": "Nordafrikanisch inspiriert",
+        "en": "North African inspired"
+      },
+      "tags": ["vegetarian", "one-pan", "quick"],
+      "servings": 2,
+      "prepMinutes": 10,
+      "cookMinutes": 20,
       "ingredients": {
         "de": [
-          "2 EL Olivenöl",
-          "1 Zwiebel, fein gewürfelt",
+          "1 EL Olivenöl",
+          "1 kleine Zwiebel, fein gewürfelt",
           "1 rote Paprika, gewürfelt",
-          "2 Knoblauchzehen, fein gehackt",
+          "1 Knoblauchzehe, fein gehackt",
           "400 g gehackte Tomaten",
-          "1 TL Kreuzkümmel",
-          "1 TL edelsüßes Paprikapulver",
-          "4 Eier",
-          "2 EL gehackte Petersilie",
-          "4 Scheiben Sauerteigbrot"
+          "½ TL Kreuzkümmel",
+          "½ TL edelsüßes Paprikapulver",
+          "2 Eier",
+          "1 EL gehackte Petersilie",
+          "2 Scheiben Sauerteigbrot"
         ],
         "en": [
-          "2 tbsp olive oil",
-          "1 onion, finely diced",
+          "1 tbsp olive oil",
+          "1 small onion, finely diced",
           "1 red bell pepper, diced",
-          "2 garlic cloves, finely chopped",
+          "1 garlic clove, finely chopped",
           "400 g chopped tomatoes",
-          "1 tsp ground cumin",
-          "1 tsp sweet paprika",
-          "4 eggs",
-          "2 tbsp chopped parsley",
-          "4 slices sourdough bread"
+          "½ tsp ground cumin",
+          "½ tsp sweet paprika",
+          "2 eggs",
+          "1 tbsp chopped parsley",
+          "2 slices sourdough bread"
         ]
       },
       "steps": {
@@ -47,42 +56,42 @@
           {
             "title": "Gemüse anschwitzen",
             "summary": "Zwiebel und Paprika weich dünsten",
-            "text": "Olivenöl in einer großen, ofenfesten Pfanne erhitzen. Zwiebel und Paprika bei mittlerer Hitze 7–8 Minuten weich dünsten. Knoblauch, Kreuzkümmel und Paprikapulver einrühren und 30 Sekunden rösten."
+            "text": "Olivenöl in einer kleinen Pfanne (etwa 20 cm) erhitzen. Zwiebel und Paprika bei mittlerer Hitze 6–7 Minuten weich dünsten. Knoblauch, Kreuzkümmel und Paprikapulver einrühren und 30 Sekunden rösten."
           },
           {
             "title": "Sauce köcheln lassen",
             "summary": "Tomaten einkochen",
-            "text": "Tomaten samt Saft in die Pfanne geben, salzen und pfeffern. Offen 10–12 Minuten leise köcheln lassen, bis die Sauce sämig ist. Vier Mulden hineindrücken."
+            "text": "Tomaten samt Saft in die Pfanne geben, salzen und pfeffern. Offen 8–10 Minuten leise köcheln lassen, bis die Sauce sämig ist. Zwei Mulden hineindrücken."
           },
           {
             "title": "Eier stocken lassen",
             "summary": "Mit Brot und Petersilie servieren",
-            "text": "Eier in die Mulden schlagen. Abdecken und 5–7 Minuten garen, bis das Eiweiß gestockt und das Eigelb noch weich ist. Petersilie darüberstreuen und mit geröstetem Sauerteigbrot servieren."
+            "text": "Eier in die Mulden schlagen. Abdecken und 5–7 Minuten garen, bis das Eiweiß gestockt und das Eigelb noch weich ist. Inzwischen das Brot in einer zweiten Pfanne goldbraun rösten. Petersilie über die Shakshuka streuen und mit dem Brot servieren."
           }
         ],
         "en": [
           {
             "title": "Soften the vegetables",
             "summary": "Cook the onion and pepper",
-            "text": "Heat the olive oil in a large ovenproof pan. Cook the onion and bell pepper over medium heat for 7–8 minutes until soft. Stir in the garlic, cumin and paprika and cook for 30 seconds."
+            "text": "Heat the olive oil in a small pan (about 20 cm). Cook the onion and bell pepper over medium heat for 6–7 minutes until soft. Stir in the garlic, cumin and paprika and cook for 30 seconds."
           },
           {
             "title": "Simmer the sauce",
             "summary": "Reduce the tomatoes",
-            "text": "Add the tomatoes and their juices, season with salt and pepper, and simmer uncovered for 10–12 minutes until thick. Make four wells in the sauce."
+            "text": "Add the tomatoes and their juices, season with salt and pepper, and simmer uncovered for 8–10 minutes until thick. Make two wells in the sauce."
           },
           {
             "title": "Set the eggs",
             "summary": "Finish with parsley and bread",
-            "text": "Crack an egg into each well. Cover and cook for 5–7 minutes, until the whites are set and the yolks are still soft. Scatter over the parsley and serve with toasted sourdough."
+            "text": "Crack an egg into each well. Cover and cook for 5–7 minutes, until the whites are set and the yolks are still soft. Meanwhile toast the bread in a second pan until golden. Scatter the parsley over the shakshuka and serve with the bread."
           }
         ]
       },
       "image": {
         "file": "../photos/shakshuka-mit-paprika.webp",
         "alt": {
-          "de": "Shakshuka mit pochierten Eiern in würziger Tomatensauce",
-          "en": "Shakshuka with poached eggs in spiced tomato sauce"
+          "de": "Shakshuka mit zwei Eiern und Petersilie in einer kleinen Pfanne, daneben geröstetes Brot auf einem Holzbrett",
+          "en": "Shakshuka with two eggs and parsley in a small pan, toasted bread on a wooden board beside it"
         },
         "photographer": "Toa Heftiba",
         "photographerUrl": "https://unsplash.com/@heftiba?utm_source=mealie_atelier&utm_medium=referral",
@@ -92,34 +101,45 @@
     {
       "id": "gnocchi-sorrentina",
       "slug": "gnocchi-alla-sorrentina",
-      "title": { "de": "Gnocchi alla Sorrentina", "en": "Gnocchi alla Sorrentina" },
-      "description": {
-        "de": "Kartoffelgnocchi, Tomatensauce und Mozzarella backen zusammen zu einem goldenen, gemütlichen Ofengericht.",
-        "en": "Potato gnocchi, tomato sauce and mozzarella bake together into a golden, comforting supper."
+      "title": {
+        "de": "Gnocchi alla Sorrentina",
+        "en": "Gnocchi alla Sorrentina"
       },
-      "category": { "de": "Ofengericht", "en": "Baked pasta" },
-      "cuisine": { "de": "Italienisch", "en": "Italian" },
-      "tags": ["vegetarian", "family-friendly", "comfort-food"],
+      "description": {
+        "de": "Kartoffelgnocchi in einer fruchtigen Sauce aus Kirschtomaten. Mini-Mozzarella schmilzt nur leicht an, frisches Basilikum kommt zum Schluss dazu.",
+        "en": "Potato gnocchi in a bright cherry tomato sauce. Mini mozzarella balls just start to melt and fresh basil goes on at the end."
+      },
+      "category": {
+        "de": "Hauptgericht",
+        "en": "Main course"
+      },
+      "cuisine": {
+        "de": "Italienisch",
+        "en": "Italian"
+      },
+      "tags": ["vegetarian", "family-friendly", "quick"],
       "servings": 4,
-      "prepMinutes": 15,
-      "cookMinutes": 30,
+      "prepMinutes": 10,
+      "cookMinutes": 20,
       "ingredients": {
         "de": [
           "800 g Kartoffelgnocchi",
-          "500 g passierte Tomaten",
-          "1 Knoblauchzehe",
+          "500 g Kirschtomaten",
+          "200 g passierte Tomaten",
+          "1 Knoblauchzehe, in Scheiben",
           "2 EL Olivenöl",
-          "200 g Mozzarella",
-          "40 g Parmesan",
+          "1 Prise getrockneter Oregano",
+          "250 g Mini-Mozzarella",
           "1 Handvoll Basilikum"
         ],
         "en": [
           "800 g potato gnocchi",
-          "500 g passata",
-          "1 garlic clove",
+          "500 g cherry tomatoes",
+          "200 g passata",
+          "1 garlic clove, sliced",
           "2 tbsp olive oil",
-          "200 g mozzarella",
-          "40 g Parmesan",
+          "1 pinch dried oregano",
+          "250 g mini mozzarella balls",
           "1 handful basil leaves"
         ]
       },
@@ -127,224 +147,261 @@
         "de": [
           {
             "title": "Tomatensauce kochen",
-            "summary": "Knoblauch in Olivenöl duften lassen",
-            "text": "Backofen auf 220 °C Ober-/Unterhitze vorheizen. Knoblauch in Olivenöl kurz anschwitzen, Passata zugeben, salzen und 12 Minuten offen köcheln lassen."
+            "summary": "Kirschtomaten aufplatzen lassen",
+            "text": "Olivenöl in einer weiten Pfanne erhitzen und den Knoblauch kurz anschwitzen. Kirschtomaten halbieren, zugeben und 5 Minuten garen, bis sie zerfallen. Passata und Oregano einrühren, salzen und 8 Minuten offen köcheln lassen."
           },
           {
-            "title": "Gnocchi vorgaren",
+            "title": "Gnocchi garen",
             "summary": "Kurz in Salzwasser ziehen lassen",
-            "text": "Gnocchi nach Packungsangabe in siedendem Salzwasser garen. Sobald sie an die Oberfläche steigen, mit einer Schaumkelle herausheben und abtropfen lassen."
+            "text": "Gnocchi nach Packungsangabe in siedendem Salzwasser garen. Sobald sie an die Oberfläche steigen, mit einer Schaumkelle direkt in die Sauce heben."
           },
           {
-            "title": "Goldbraun überbacken",
-            "summary": "Mit Basilikum servieren",
-            "text": "Gnocchi mit der Sauce in einer Auflaufform mischen. Mozzarella zupfen und mit Parmesan darauf verteilen. 12–15 Minuten backen, bis der Käse blubbert und goldene Stellen bekommt. Mit Basilikum servieren."
+            "title": "Mit Mozzarella servieren",
+            "summary": "Mozzarella nur leicht anschmelzen",
+            "text": "Gnocchi in der Sauce schwenken, bis sie glänzen. Pfanne vom Herd nehmen, Mini-Mozzarella darauf verteilen und 1 Minute ziehen lassen. Mit Basilikum in Schalen servieren."
           }
         ],
         "en": [
           {
             "title": "Make the tomato sauce",
-            "summary": "Warm the garlic in olive oil",
-            "text": "Heat the oven to 220 °C / 425 °F. Soften the garlic briefly in olive oil, add the passata, season and simmer uncovered for 12 minutes."
+            "summary": "Let the cherry tomatoes burst",
+            "text": "Heat the olive oil in a wide pan and soften the garlic briefly. Halve the cherry tomatoes, add them and cook for 5 minutes until they collapse. Stir in the passata and oregano, season and simmer uncovered for 8 minutes."
           },
           {
             "title": "Cook the gnocchi",
             "summary": "Poach briefly in salted water",
-            "text": "Cook the gnocchi in gently boiling salted water according to the packet. Lift them out with a slotted spoon as soon as they float and drain."
+            "text": "Cook the gnocchi in gently boiling salted water according to the packet. As soon as they float, lift them straight into the sauce with a slotted spoon."
           },
           {
-            "title": "Bake until golden",
-            "summary": "Serve with fresh basil",
-            "text": "Toss the gnocchi with the sauce in a baking dish. Tear the mozzarella over the top and scatter with Parmesan. Bake for 12–15 minutes until bubbling and golden in places. Serve with basil."
+            "title": "Serve with mozzarella",
+            "summary": "Let the mozzarella just soften",
+            "text": "Toss the gnocchi in the sauce until glossy. Take the pan off the heat, dot with the mini mozzarella and leave for 1 minute. Serve in bowls with basil."
           }
         ]
       },
       "image": {
         "file": "../photos/gnocchi-alla-sorrentina.webp",
         "alt": {
-          "de": "Gnocchi mit Tomatensauce, Mozzarella und Basilikum",
-          "en": "Gnocchi with tomato sauce, mozzarella and basil"
+          "de": "Gnocchi in Tomatensauce mit Mini-Mozzarella und Basilikum in einer Holzschale auf hellem Stein",
+          "en": "Gnocchi in tomato sauce with mini mozzarella balls and basil in a wooden bowl on light stone"
         },
         "photographer": "Max Griss",
-        "photographerUrl": "https://unsplash.com/@maxgriss?utm_source=mealie_atelier&utm_medium=referral",
+        "photographerUrl": "https://unsplash.com/@grissphoto?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/a-bowl-of-food-bqs2XoayCt8"
       }
     },
     {
-      "id": "greek-salad",
-      "slug": "griechischer-salat-mit-kichererbsen",
-      "title": { "de": "Griechischer Salat mit Kichererbsen", "en": "Greek chickpea salad" },
-      "description": {
-        "de": "Knackige Gurke, Tomaten, Kichererbsen und Feta werden mit Zitronen-Oregano-Dressing zu einem frischen Hauptgericht.",
-        "en": "Crisp cucumber, tomatoes, chickpeas and feta meet a lemon and oregano dressing for a fresh main-course salad."
+      "id": "chicken-salad",
+      "slug": "haehnchensalat-mit-parmesan-und-croutons",
+      "title": {
+        "de": "Hähnchensalat mit Parmesan und Croutons",
+        "en": "Chicken salad with Parmesan and croutons"
       },
-      "category": { "de": "Salat", "en": "Salad" },
-      "cuisine": { "de": "Griechisch inspiriert", "en": "Greek inspired" },
-      "tags": ["vegetarian", "quick", "no-cook"],
-      "servings": 4,
-      "prepMinutes": 20,
-      "cookMinutes": 0,
+      "description": {
+        "de": "Gegrillte Hähnchenstreifen auf Romanasalat mit Paprika, Gurke, Kirschtomaten und schwarzen Oliven. Knusprige Croutons, gehobelter Parmesan und Basilikum machen den Salat zur Hauptmahlzeit.",
+        "en": "Grilled chicken strips on romaine with bell pepper, cucumber, cherry tomatoes and black olives. Crisp croutons, shaved Parmesan and basil make it a full meal."
+      },
+      "category": {
+        "de": "Salat",
+        "en": "Salad"
+      },
+      "cuisine": {
+        "de": "Mediterran inspiriert",
+        "en": "Mediterranean inspired"
+      },
+      "tags": ["quick", "family-friendly"],
+      "servings": 2,
+      "prepMinutes": 15,
+      "cookMinutes": 15,
       "ingredients": {
         "de": [
-          "400 g Kichererbsen, abgetropft",
-          "1 Salatgurke",
-          "250 g Kirschtomaten",
-          "1 kleine rote Zwiebel",
-          "150 g Feta",
-          "3 EL Olivenöl",
-          "1 Zitrone",
-          "1 TL getrockneter Oregano"
+          "2 Hähnchenbrustfilets (etwa 350 g)",
+          "1 Romanasalat",
+          "1 rote Paprika",
+          "½ Salatgurke",
+          "150 g Kirschtomaten",
+          "50 g schwarze Oliven, entsteint",
+          "2 Scheiben Weißbrot",
+          "30 g Parmesan",
+          "4 EL Olivenöl",
+          "1 EL Zitronensaft",
+          "1 Handvoll Basilikum"
         ],
         "en": [
-          "400 g drained chickpeas",
-          "1 cucumber",
-          "250 g cherry tomatoes",
-          "1 small red onion",
-          "150 g feta",
-          "3 tbsp olive oil",
-          "1 lemon",
-          "1 tsp dried oregano"
+          "2 chicken breast fillets (about 350 g)",
+          "1 romaine lettuce",
+          "1 red bell pepper",
+          "½ cucumber",
+          "150 g cherry tomatoes",
+          "50 g pitted black olives",
+          "2 slices white bread",
+          "30 g Parmesan",
+          "4 tbsp olive oil",
+          "1 tbsp lemon juice",
+          "1 handful basil leaves"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Gemüse vorbereiten",
-            "summary": "Gurke, Tomaten und Zwiebel schneiden",
-            "text": "Kichererbsen abspülen und gut abtropfen lassen. Gurke würfeln, Tomaten halbieren und die rote Zwiebel in feine Streifen schneiden."
+            "title": "Croutons rösten",
+            "summary": "Brotwürfel goldbraun rösten",
+            "text": "Brot in kleine Würfel schneiden. In 1 EL Olivenöl bei mittlerer Hitze 4–5 Minuten rundum goldbraun rösten, leicht salzen und herausnehmen."
           },
           {
-            "title": "Dressing rühren",
-            "summary": "Zitrone mit Oregano verbinden",
-            "text": "Olivenöl mit dem Saft der Zitrone, Oregano, einer Prise Salz und schwarzem Pfeffer verrühren."
+            "title": "Hähnchen grillen",
+            "summary": "In der Grillpfanne braten und ruhen lassen",
+            "text": "Hähnchen mit 1 EL Olivenöl, Salz und Pfeffer einreiben. In einer heißen Grillpfanne pro Seite 5–6 Minuten braten, bis es durchgegart ist. 5 Minuten ruhen lassen und in Streifen schneiden."
           },
           {
             "title": "Salat anrichten",
-            "summary": "Feta darüberbröseln und servieren",
-            "text": "Kichererbsen und Gemüse mit dem Dressing mischen. Feta darüberbröseln und nach Wunsch mit Oliven und frischer Petersilie servieren."
+            "summary": "Mit Parmesan und Basilikum vollenden",
+            "text": "Salatblätter zupfen, Paprika in Streifen schneiden, Gurke würfeln, Tomaten halbieren. Restliches Olivenöl mit Zitronensaft, Salz und Pfeffer verrühren. Gemüse und Oliven damit mischen. Hähnchen und Croutons darauf verteilen, Parmesan darüberhobeln und mit Basilikum servieren."
           }
         ],
         "en": [
           {
-            "title": "Prepare the vegetables",
-            "summary": "Cut the cucumber, tomatoes and onion",
-            "text": "Rinse and drain the chickpeas well. Dice the cucumber, halve the tomatoes and thinly slice the red onion."
+            "title": "Toast the croutons",
+            "summary": "Crisp the bread cubes",
+            "text": "Cut the bread into small cubes. Toast in 1 tbsp olive oil over medium heat for 4–5 minutes until golden all over, salt lightly and set aside."
           },
           {
-            "title": "Mix the dressing",
-            "summary": "Bring lemon and oregano together",
-            "text": "Whisk the olive oil with the lemon juice, oregano, a pinch of salt and black pepper."
+            "title": "Grill the chicken",
+            "summary": "Sear in a griddle pan and rest",
+            "text": "Rub the chicken with 1 tbsp olive oil, salt and pepper. Cook in a hot griddle pan for 5–6 minutes per side until cooked through. Rest for 5 minutes and slice into strips."
           },
           {
             "title": "Assemble the salad",
-            "summary": "Crumble over the feta and serve",
-            "text": "Toss the chickpeas and vegetables with the dressing. Crumble feta over the top and serve with olives and fresh parsley if you like."
+            "summary": "Finish with Parmesan and basil",
+            "text": "Tear the lettuce, slice the pepper, dice the cucumber and halve the tomatoes. Whisk the remaining olive oil with the lemon juice, salt and pepper and toss with the vegetables and olives. Top with the chicken and croutons, shave over the Parmesan and serve with basil."
           }
         ]
       },
       "image": {
-        "file": "../photos/griechischer-salat-mit-kichererbsen.webp",
+        "file": "../photos/haehnchensalat-mit-parmesan-und-croutons.webp",
         "alt": {
-          "de": "Bunte Schüssel mit frischem Salat, Gemüse und Feta",
-          "en": "Colorful bowl of fresh salad, vegetables and feta"
+          "de": "Salat mit gegrilltem Hähnchen, Romanasalat, roter Paprika, Gurke, Kirschtomaten, schwarzen Oliven, Croutons, gehobeltem Parmesan und Basilikum in einer hellen Schale auf einem Juteläufer",
+          "en": "Salad with grilled chicken, romaine, red pepper, cucumber, cherry tomatoes, black olives, croutons, shaved Parmesan and basil in a pale bowl on a jute runner"
         },
-        "photographer": "Elena Leya",
-        "photographerUrl": "https://unsplash.com/@foodistika?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/a-colorful-salad-bowl-with-many-fresh-ingredients-_vy3L5n8VnI"
+        "photographer": "Svitlana",
+        "photographerUrl": "https://unsplash.com/@kekse_und_ich?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/a-salad-with-chicken-tomatoes-lettuce-olives-and-cheese-MdewPG0w_dc"
       }
     },
     {
-      "id": "chicken-soup",
-      "slug": "haehnchensuppe-mit-gemuese",
-      "title": { "de": "Hähnchensuppe mit Gemüse", "en": "Chicken and vegetable soup" },
-      "description": {
-        "de": "Hähnchen, Möhren und Sellerie garen in einer klaren Brühe. Kleine Nudeln machen die Suppe zu einer sättigenden Mahlzeit.",
-        "en": "Chicken, carrots and celery simmer in a clear broth. Small pasta turns the soup into a satisfying meal."
+      "id": "pumpkin-soup",
+      "slug": "kuerbissuppe-mit-feta-und-kuerbiskernen",
+      "title": {
+        "de": "Kürbissuppe mit Feta und Kürbiskernen",
+        "en": "Pumpkin soup with feta and pumpkin seeds"
       },
-      "category": { "de": "Suppe", "en": "Soup" },
-      "cuisine": { "de": "Hausmannskost", "en": "Homestyle" },
-      "tags": ["family-friendly", "make-ahead"],
+      "description": {
+        "de": "Eine samtige Suppe aus Hokkaido und Möhren, getoppt mit zerbröckeltem Feta, gerösteten Kürbiskernen und einer Prise Chiliflocken.",
+        "en": "A velvety soup of Hokkaido squash and carrots, topped with crumbled feta, toasted pumpkin seeds and a pinch of chilli flakes."
+      },
+      "category": {
+        "de": "Suppe",
+        "en": "Soup"
+      },
+      "cuisine": {
+        "de": "Herbstküche",
+        "en": "Autumn cooking"
+      },
+      "tags": ["vegetarian", "make-ahead", "freezer-friendly"],
       "servings": 4,
       "prepMinutes": 15,
-      "cookMinutes": 35,
+      "cookMinutes": 30,
       "ingredients": {
         "de": [
-          "450 g Hähnchenbrust",
-          "1,2 l Hühnerbrühe",
+          "1 Hokkaido-Kürbis (etwa 1 kg)",
           "2 Möhren",
-          "2 Stangen Sellerie",
           "1 Zwiebel",
-          "120 g kleine Suppennudeln",
-          "2 EL gehackte Petersilie"
+          "1 Knoblauchzehe",
+          "2 EL Olivenöl",
+          "800 ml Gemüsebrühe",
+          "100 g Feta",
+          "3 EL Kürbiskerne",
+          "1 Prise Chiliflocken"
         ],
         "en": [
-          "450 g chicken breast",
-          "1.2 l chicken stock",
+          "1 Hokkaido squash (about 1 kg)",
           "2 carrots",
-          "2 celery sticks",
           "1 onion",
-          "120 g small soup pasta",
-          "2 tbsp chopped parsley"
+          "1 garlic clove",
+          "2 tbsp olive oil",
+          "800 ml vegetable stock",
+          "100 g feta",
+          "3 tbsp pumpkin seeds",
+          "1 pinch chilli flakes"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Brühe aufsetzen",
-            "summary": "Hähnchen sanft gar ziehen lassen",
-            "text": "Brühe mit der ganzen Hähnchenbrust und der halbierten Zwiebel in einem Topf zum sanften Köcheln bringen. Zugedeckt 15 Minuten garen, bis das Fleisch durchgegart ist."
+            "title": "Gemüse anschwitzen",
+            "summary": "Kürbis, Möhren und Zwiebel vorbereiten",
+            "text": "Kürbis entkernen und mit Schale würfeln. Möhren schälen und in Scheiben schneiden, Zwiebel und Knoblauch fein hacken. Alles im Olivenöl 5 Minuten anschwitzen."
           },
           {
-            "title": "Gemüse garen",
-            "summary": "Möhren und Sellerie in die Brühe geben",
-            "text": "Hähnchen herausnehmen und kurz ruhen lassen. Möhren und Sellerie in die Brühe geben und 8 Minuten köcheln lassen. Das Fleisch mit zwei Gabeln zerpflücken."
+            "title": "Suppe köcheln lassen",
+            "summary": "Weich garen und pürieren",
+            "text": "Brühe angießen und 20–25 Minuten köcheln lassen, bis der Kürbis ganz weich ist. Fein pürieren, mit Salz und Pfeffer abschmecken. Ist die Suppe zu dick, etwas Wasser zugeben."
           },
           {
-            "title": "Nudeln fertig garen",
-            "summary": "Mit Petersilie heiß servieren",
-            "text": "Nudeln in die Suppe geben und nach Packungsangabe garen. Hähnchen zurück in den Topf geben, mit Salz und Pfeffer abschmecken und mit Petersilie servieren."
+            "title": "Toppings rösten",
+            "summary": "Mit Feta und Kürbiskernen servieren",
+            "text": "Kürbiskerne in einer trockenen Pfanne rösten, bis sie leise knacken. Suppe in Schalen füllen, Feta darüberbröckeln, Kürbiskerne und Chiliflocken darüberstreuen."
           }
         ],
         "en": [
           {
-            "title": "Start the stock",
-            "summary": "Poach the chicken gently",
-            "text": "Bring the stock, whole chicken breast and halved onion to a gentle simmer. Cover and cook for 15 minutes, until the chicken is cooked through."
+            "title": "Soften the vegetables",
+            "summary": "Prepare the squash, carrots and onion",
+            "text": "Deseed the squash and dice it with the skin on. Peel and slice the carrots, finely chop the onion and garlic. Cook everything in the olive oil for 5 minutes."
           },
           {
-            "title": "Cook the vegetables",
-            "summary": "Add the carrots and celery to the stock",
-            "text": "Remove the chicken and let it rest briefly. Add the carrots and celery to the stock and simmer for 8 minutes. Shred the chicken with two forks."
+            "title": "Simmer the soup",
+            "summary": "Cook until soft and blend",
+            "text": "Pour in the stock and simmer for 20–25 minutes until the squash is completely soft. Blend until smooth and season with salt and pepper. Add a little water if the soup is too thick."
           },
           {
-            "title": "Finish the noodles",
-            "summary": "Serve hot with parsley",
-            "text": "Add the pasta to the soup and cook according to the packet. Return the chicken to the pot, season with salt and pepper, and serve with parsley."
+            "title": "Toast the toppings",
+            "summary": "Serve with feta and pumpkin seeds",
+            "text": "Toast the pumpkin seeds in a dry pan until they start to pop. Ladle the soup into bowls, crumble over the feta and scatter with the pumpkin seeds and chilli flakes."
           }
         ]
       },
       "image": {
-        "file": "../photos/haehnchensuppe-mit-gemuese.webp",
+        "file": "../photos/kuerbissuppe-mit-feta-und-kuerbiskernen.webp",
         "alt": {
-          "de": "Schale Hähnchensuppe mit Gemüse",
-          "en": "Bowl of chicken soup with vegetables"
+          "de": "Kürbissuppe mit zerbröckeltem Feta, Kürbiskernen und Chiliflocken in einer weißen Schale mit blauem Rand auf hellem Stein, daneben eine zweite Schale und ein Löffel",
+          "en": "Pumpkin soup with crumbled feta, pumpkin seeds and chilli flakes in a white bowl with a blue rim on light stone, a second bowl and a spoon beside it"
         },
-        "photographer": "Babs Gorniak",
-        "photographerUrl": "https://unsplash.com/@babs_gorniak?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/a-white-bowl-filled-with-soup-and-vegetables-gRTiEpm1zps"
+        "photographer": "Cala",
+        "photographerUrl": "https://unsplash.com/@calajay?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/soup-bowls-with-feta-and-seeds-w6ftFbPCs9I"
       }
     },
     {
-      "id": "margherita-pizza",
-      "slug": "pizza-margherita",
-      "title": { "de": "Pizza Margherita", "en": "Margherita pizza" },
-      "description": {
-        "de": "Ein dünner, knuspriger Boden mit Tomate, Mozzarella und Basilikum. Der Teig braucht Zeit, die aktive Arbeit bleibt kurz.",
-        "en": "A thin, crisp base topped with tomato, mozzarella and basil. The dough takes time, but the hands-on work is short."
+      "id": "ham-mushroom-pizza",
+      "slug": "pizza-mit-schinken-und-champignons",
+      "title": {
+        "de": "Pizza mit Schinken und Champignons",
+        "en": "Ham and mushroom pizza"
       },
-      "category": { "de": "Pizza", "en": "Pizza" },
-      "cuisine": { "de": "Italienisch", "en": "Italian" },
-      "tags": ["vegetarian", "family-friendly", "freezer-friendly"],
+      "description": {
+        "de": "Ein dünner Boden mit luftigem, leicht angekohltem Rand, belegt mit Tomate, Mozzarella, Kochschinken und Champignons. Der Teig braucht Zeit, die aktive Arbeit bleibt kurz.",
+        "en": "A thin base with an airy, lightly charred crust, topped with tomato, mozzarella, cooked ham and mushrooms. The dough takes time, but the hands-on work is short."
+      },
+      "category": {
+        "de": "Pizza",
+        "en": "Pizza"
+      },
+      "cuisine": {
+        "de": "Italienisch",
+        "en": "Italian"
+      },
+      "tags": ["family-friendly", "freezer-friendly"],
       "servings": 2,
       "prepMinutes": 20,
       "cookMinutes": 12,
@@ -356,8 +413,9 @@
           "1 TL Salz",
           "150 g passierte Tomaten",
           "150 g Mozzarella",
-          "1 EL Olivenöl",
-          "8 Basilikumblätter"
+          "60 g Kochschinken, in dünnen Scheiben",
+          "80 g kleine Champignons, in Scheiben",
+          "1 EL Olivenöl"
         ],
         "en": [
           "300 g 00 flour",
@@ -366,8 +424,9 @@
           "1 tsp salt",
           "150 g passata",
           "150 g mozzarella",
-          "1 tbsp olive oil",
-          "8 basil leaves"
+          "60 g thinly sliced cooked ham",
+          "80 g small mushrooms, sliced",
+          "1 tbsp olive oil"
         ]
       },
       "steps": {
@@ -380,12 +439,12 @@
           {
             "title": "Belag vorbereiten",
             "summary": "Ofen und Blech kräftig vorheizen",
-            "text": "Backofen mit einem umgedrehten Blech auf höchster Stufe mindestens 30 Minuten vorheizen. Passata mit Olivenöl und einer Prise Salz würzen. Mozzarella gut abtropfen lassen."
+            "text": "Backofen mit einem umgedrehten Blech auf höchster Stufe mindestens 30 Minuten vorheizen. Passata mit Olivenöl und einer Prise Salz würzen. Mozzarella gut abtropfen lassen, Champignons in dünne Scheiben schneiden."
           },
           {
             "title": "Pizza backen",
-            "summary": "Mit Basilikum frisch aus dem Ofen servieren",
-            "text": "Teig auf wenig Mehl dünn ausziehen. Mit Tomatensauce bestreichen und Mozzarella darauf verteilen. 8–12 Minuten backen, bis der Rand kräftig gebräunt ist. Basilikum erst danach auflegen."
+            "summary": "Frisch aus dem Ofen servieren",
+            "text": "Teig auf wenig Mehl dünn ausziehen. Mit Tomatensauce bestreichen. Mozzarella zupfen und mit Schinken und Champignons darauf verteilen. 8–12 Minuten backen, bis der Rand kräftig gebräunt ist."
           }
         ],
         "en": [
@@ -397,20 +456,20 @@
           {
             "title": "Prepare the toppings",
             "summary": "Preheat the oven and tray thoroughly",
-            "text": "Heat the oven with an inverted baking tray at its highest setting for at least 30 minutes. Season the passata with olive oil and a pinch of salt. Drain the mozzarella well."
+            "text": "Heat the oven with an inverted baking tray at its highest setting for at least 30 minutes. Season the passata with olive oil and a pinch of salt. Drain the mozzarella well and slice the mushrooms thinly."
           },
           {
             "title": "Bake the pizza",
-            "summary": "Serve straight from the oven with basil",
-            "text": "Stretch the dough thinly on a little flour. Spread with tomato sauce and add the mozzarella. Bake for 8–12 minutes until the crust is deeply browned. Add the basil afterwards."
+            "summary": "Serve straight from the oven",
+            "text": "Stretch the dough thinly on a little flour. Spread with tomato sauce, tear over the mozzarella and add the ham and mushrooms. Bake for 8–12 minutes until the crust is deeply browned."
           }
         ]
       },
       "image": {
-        "file": "../photos/pizza-margherita.webp",
+        "file": "../photos/pizza-mit-schinken-und-champignons.webp",
         "alt": {
-          "de": "Selbst gebackene Pizza Margherita auf einem Teller",
-          "en": "Homemade Margherita pizza on a plate"
+          "de": "Pizza mit Tomatensauce, Mozzarella, Kochschinken und Champignons auf einem weißen Teller, von oben auf einem hellen Tisch fotografiert",
+          "en": "Pizza with tomato sauce, mozzarella, cooked ham and mushrooms on a white plate, shot from above on a light table"
         },
         "photographer": "Luke Oslizlo",
         "photographerUrl": "https://unsplash.com/@lukaszmtw?utm_source=mealie_atelier&utm_medium=referral",
@@ -418,87 +477,91 @@
       }
     },
     {
-      "id": "kale-walnut-pasta",
-      "slug": "zitronen-pasta-mit-gruenkohl-und-walnuessen",
+      "id": "cherry-tomato-spaghetti",
+      "slug": "spaghetti-mit-kirschtomaten-und-basilikum",
       "title": {
-        "de": "Zitronen-Pasta mit Grünkohl und Walnüssen",
-        "en": "Lemon pasta with kale and walnuts"
+        "de": "Spaghetti mit Kirschtomaten und Basilikum",
+        "en": "Spaghetti with cherry tomatoes and basil"
       },
       "description": {
-        "de": "Zitrone, Grünkohl und geröstete Walnüsse geben dieser schnellen Pasta Frische, Biss und Tiefe – ganz ohne Milchprodukte.",
-        "en": "Lemon, kale and toasted walnuts bring freshness, crunch and depth to this quick pasta, with no dairy needed."
+        "de": "Kirschtomaten garen in Olivenöl, bis sie aufplatzen. Dann kommen Spaghetti, Basilikum und reichlich frisch geriebener Parmesan dazu.",
+        "en": "Cherry tomatoes cook in olive oil until they burst. Spaghetti, basil and plenty of freshly grated Parmesan go in next."
       },
-      "category": { "de": "Pasta", "en": "Pasta" },
-      "cuisine": { "de": "Italienisch inspiriert", "en": "Italian inspired" },
-      "tags": ["vegan", "vegetarian", "quick"],
+      "category": {
+        "de": "Pasta",
+        "en": "Pasta"
+      },
+      "cuisine": {
+        "de": "Italienisch",
+        "en": "Italian"
+      },
+      "tags": ["vegetarian", "quick", "family-friendly"],
       "servings": 4,
-      "prepMinutes": 10,
+      "prepMinutes": 5,
       "cookMinutes": 15,
       "ingredients": {
         "de": [
-          "350 g Spaghetti",
-          "120 g Grünkohl, entstielt",
-          "1 Bio-Zitrone",
-          "3 EL Olivenöl",
-          "50 g Walnüsse, grob gehackt",
-          "1 Knoblauchzehe",
-          "150 ml Nudelwasser"
+          "400 g Spaghetti",
+          "400 g Kirschtomaten",
+          "4 EL Olivenöl",
+          "2 Knoblauchzehen, in Scheiben",
+          "1 Handvoll Basilikum",
+          "50 g Parmesan, fein gerieben"
         ],
         "en": [
-          "350 g spaghetti",
-          "120 g stemmed kale",
-          "1 unwaxed lemon",
-          "3 tbsp olive oil",
-          "50 g roughly chopped walnuts",
-          "1 garlic clove",
-          "150 ml pasta water"
+          "400 g spaghetti",
+          "400 g cherry tomatoes",
+          "4 tbsp olive oil",
+          "2 garlic cloves, sliced",
+          "1 handful basil leaves",
+          "50 g Parmesan, finely grated"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Pasta kochen",
-            "summary": "Nudelwasser auffangen",
-            "text": "Spaghetti in gut gesalzenem Wasser al dente kochen. Vor dem Abgießen 150 ml Nudelwasser abschöpfen."
+            "title": "Spaghetti kochen",
+            "summary": "In Salzwasser al dente garen",
+            "text": "Spaghetti in reichlich Salzwasser nach Packungsangabe al dente kochen. Vor dem Abgießen eine Tasse Nudelwasser abschöpfen."
           },
           {
-            "title": "Grünkohl und Walnüsse rösten",
-            "summary": "Knoblauch nur leicht bräunen",
-            "text": "Walnüsse in einer großen Pfanne ohne Öl rösten und beiseitestellen. Olivenöl erwärmen, Knoblauch fein reiben und 30 Sekunden sanft dünsten. Grünkohl zugeben und 3–4 Minuten zusammenfallen lassen."
+            "title": "Tomaten schmoren",
+            "summary": "Kirschtomaten aufplatzen lassen",
+            "text": "Olivenöl in einer großen Pfanne erhitzen. Knoblauch 1 Minute anschwitzen, Kirschtomaten zugeben und bei mittlerer Hitze 6–8 Minuten garen, bis sie aufplatzen. Salzen."
           },
           {
-            "title": "Sauce binden",
-            "summary": "Mit Zitronenschale und Pfeffer abschmecken",
-            "text": "Spaghetti mit Grünkohl, Zitronenabrieb, zwei Esslöffeln Zitronensaft und etwas Nudelwasser in der Pfanne schwenken. Mehr Nudelwasser zugeben, bis die Sauce glänzt. Walnüsse darüberstreuen."
+            "title": "Alles vermengen",
+            "summary": "Mit Basilikum und Parmesan servieren",
+            "text": "Spaghetti mit etwas Nudelwasser in die Pfanne geben und schwenken, bis alles glänzt. Basilikum unterheben, auf Teller verteilen und mit Parmesan bestreuen."
           }
         ],
         "en": [
           {
-            "title": "Cook the pasta",
-            "summary": "Reserve some pasta water",
-            "text": "Cook the spaghetti in well-salted water until al dente. Scoop out 150 ml pasta water before draining."
+            "title": "Cook the spaghetti",
+            "summary": "Boil until al dente",
+            "text": "Cook the spaghetti in plenty of salted water according to the packet until al dente. Scoop out a cup of pasta water before draining."
           },
           {
-            "title": "Toast the kale and walnuts",
-            "summary": "Keep the garlic from browning",
-            "text": "Toast the walnuts in a large dry pan and set aside. Warm the olive oil, finely grate in the garlic and cook gently for 30 seconds. Add the kale and cook for 3–4 minutes until wilted."
+            "title": "Blister the tomatoes",
+            "summary": "Let the cherry tomatoes burst",
+            "text": "Heat the olive oil in a large pan. Soften the garlic for 1 minute, add the cherry tomatoes and cook over medium heat for 6–8 minutes until they burst. Season with salt."
           },
           {
-            "title": "Emulsify the sauce",
-            "summary": "Finish with lemon zest and pepper",
-            "text": "Toss the spaghetti with the kale, lemon zest, two tablespoons of lemon juice and a little pasta water. Add more pasta water until glossy. Scatter over the walnuts."
+            "title": "Toss together",
+            "summary": "Serve with basil and Parmesan",
+            "text": "Add the spaghetti and a splash of pasta water to the pan and toss until glossy. Fold in the basil, divide between plates and sprinkle with Parmesan."
           }
         ]
       },
       "image": {
-        "file": "../photos/zitronen-pasta-mit-gruenkohl-und-walnuessen.webp",
+        "file": "../photos/spaghetti-mit-kirschtomaten-und-basilikum.webp",
         "alt": {
-          "de": "Pasta mit Grünkohl und Walnüssen in einer hellen Schale",
-          "en": "Pasta with kale and walnuts in a white bowl"
+          "de": "Spaghetti mit geschmorten Kirschtomaten, Basilikum und frisch geriebenem Parmesan auf einem hellgrauen Teller auf grauem Stein",
+          "en": "Spaghetti with blistered cherry tomatoes, basil and freshly grated Parmesan on a pale grey plate on grey stone"
         },
-        "photographer": "Sebastian Coman Photography",
-        "photographerUrl": "https://unsplash.com/@sebastiancoman?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/pasta-dish-on-white-ceramic-bowl-Zmhi-OMDVbw"
+        "photographer": "Filipp Romanovski",
+        "photographerUrl": "https://unsplash.com/@filipp_roman_photography?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/a-plate-of-food-4HnWRpLmRKk"
       }
     },
     {
@@ -509,11 +572,17 @@
         "en": "Buttermilk pancakes with berries"
       },
       "description": {
-        "de": "Lockere Pancakes mit Buttermilch, kurz ausgebacken und mit frischen Beeren und Ahornsirup serviert.",
-        "en": "Fluffy buttermilk pancakes, cooked in minutes and served with fresh berries and maple syrup."
+        "de": "Lockere Pancakes mit Buttermilch, hoch gestapelt, mit Erdbeeren und Heidelbeeren belegt und mit Ahornsirup beträufelt.",
+        "en": "Fluffy buttermilk pancakes, stacked high, topped with strawberries and blueberries and drizzled with maple syrup."
       },
-      "category": { "de": "Frühstück", "en": "Breakfast" },
-      "cuisine": { "de": "Amerikanisch inspiriert", "en": "American inspired" },
+      "category": {
+        "de": "Frühstück",
+        "en": "Breakfast"
+      },
+      "cuisine": {
+        "de": "Amerikanisch inspiriert",
+        "en": "American inspired"
+      },
       "tags": ["vegetarian", "family-friendly", "quick"],
       "servings": 4,
       "prepMinutes": 10,
@@ -526,7 +595,8 @@
           "1 Ei",
           "300 ml Buttermilch",
           "40 g Butter, geschmolzen",
-          "200 g Beeren",
+          "250 g Erdbeeren",
+          "125 g Heidelbeeren",
           "4 EL Ahornsirup"
         ],
         "en": [
@@ -536,7 +606,8 @@
           "1 egg",
           "300 ml buttermilk",
           "40 g melted butter",
-          "200 g berries",
+          "250 g strawberries",
+          "125 g blueberries",
           "4 tbsp maple syrup"
         ]
       },
@@ -554,8 +625,8 @@
           },
           {
             "title": "Pancakes ausbacken",
-            "summary": "Mit Beeren und Ahornsirup servieren",
-            "text": "Eine leicht gefettete Pfanne auf mittlere Hitze bringen. Pro Pancake zwei Esslöffel Teig hineingeben. Wenden, wenn sich Bläschen bilden, und die zweite Seite goldbraun backen. Mit Beeren und Ahornsirup servieren."
+            "summary": "Mit Erdbeeren, Heidelbeeren und Ahornsirup servieren",
+            "text": "Eine leicht gefettete Pfanne auf mittlere Hitze bringen. Pro Pancake zwei Esslöffel Teig hineingeben. Sobald sich Bläschen bilden, wenden und die zweite Seite goldbraun backen. Pancakes stapeln, mit halbierten Erdbeeren und Heidelbeeren belegen und mit Ahornsirup beträufeln."
           }
         ],
         "en": [
@@ -571,115 +642,139 @@
           },
           {
             "title": "Cook the pancakes",
-            "summary": "Serve with berries and maple syrup",
-            "text": "Heat a lightly greased pan over medium heat. Add two tablespoons of batter per pancake. Flip when bubbles appear and cook the second side until golden. Serve with berries and maple syrup."
+            "summary": "Serve with strawberries, blueberries and maple syrup",
+            "text": "Heat a lightly greased pan over medium heat. Add two tablespoons of batter per pancake. Flip when bubbles appear and cook the second side until golden. Stack the pancakes, top with halved strawberries and blueberries and drizzle with maple syrup."
           }
         ]
       },
       "image": {
         "file": "../photos/buttermilch-pancakes-mit-beeren.webp",
         "alt": {
-          "de": "Stapel fluffiger Pancakes mit frischen Beeren",
-          "en": "Stack of fluffy pancakes with fresh berries"
+          "de": "Stapel Pancakes mit Erdbeeren und Heidelbeeren auf einem hellen Keramikteller, darüber fließt Ahornsirup",
+          "en": "Stack of pancakes with strawberries and blueberries on a pale ceramic plate, maple syrup pouring over the top"
         },
-        "photographer": "Chad Montano",
-        "photographerUrl": "https://unsplash.com/@briewilly?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/baked-pancakes-eeqbbemH9-c"
+        "photographer": "Joshua Ryder",
+        "photographerUrl": "https://unsplash.com/@photos_by_ryder?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/brown-and-red-strawberry-cake-on-white-ceramic-plate-y4K7Ydp2z3Y"
       }
     },
     {
-      "id": "paneer-curry",
-      "slug": "paneer-curry-mit-basmatireis",
-      "title": { "de": "Paneer-Curry mit Basmatireis", "en": "Paneer curry with basmati rice" },
-      "description": {
-        "de": "Paneer gart in einer würzigen Tomaten-Sahne-Sauce. Basmatireis und frischer Koriander runden das vegetarische Curry ab.",
-        "en": "Paneer simmers in a warmly spiced tomato and cream sauce. Basmati rice and fresh coriander complete this vegetarian curry."
+      "id": "coconut-curry",
+      "slug": "kokos-curry-mit-champignons-und-gruenkohl",
+      "title": {
+        "de": "Kokos-Curry mit Champignons und Grünkohl",
+        "en": "Coconut curry with mushrooms and kale"
       },
-      "category": { "de": "Curry", "en": "Curry" },
-      "cuisine": { "de": "Nordindisch inspiriert", "en": "North Indian inspired" },
-      "tags": ["vegetarian", "family-friendly", "make-ahead"],
+      "description": {
+        "de": "Champignons und Zwiebeln köcheln in einer milden roten Kokossauce. Dazu gibt es Jasminreis, frisch gehackten Grünkohl, Koriander und Limette.",
+        "en": "Mushrooms and onion simmer in a mild red coconut sauce. Serve with jasmine rice, freshly chopped kale, coriander and lime."
+      },
+      "category": {
+        "de": "Curry",
+        "en": "Curry"
+      },
+      "cuisine": {
+        "de": "Thailändisch inspiriert",
+        "en": "Thai inspired"
+      },
+      "tags": ["vegan", "vegetarian", "quick"],
       "servings": 4,
-      "prepMinutes": 15,
-      "cookMinutes": 25,
+      "prepMinutes": 10,
+      "cookMinutes": 20,
       "ingredients": {
         "de": [
-          "250 g Basmatireis",
-          "400 g Paneer",
-          "1 Zwiebel",
-          "2 Knoblauchzehen",
-          "1 TL Garam Masala",
-          "400 g passierte Tomaten",
-          "100 ml Sahne",
-          "2 EL gehackter Koriander"
+          "250 g Jasminreis",
+          "1 EL Kokosöl",
+          "1 Zwiebel, gewürfelt",
+          "2 Knoblauchzehen, fein gehackt",
+          "2 EL vegane rote Currypaste",
+          "400 g braune Champignons, in Scheiben",
+          "400 ml Kokosmilch",
+          "100 g Grünkohl, entstielt",
+          "1 Bund Frühlingszwiebeln",
+          "2 Limetten",
+          "1 Handvoll Koriander"
         ],
         "en": [
-          "250 g basmati rice",
-          "400 g paneer",
-          "1 onion",
-          "2 garlic cloves",
-          "1 tsp garam masala",
-          "400 g passata",
-          "100 ml cream",
-          "2 tbsp chopped coriander"
+          "250 g jasmine rice",
+          "1 tbsp coconut oil",
+          "1 onion, diced",
+          "2 garlic cloves, finely chopped",
+          "2 tbsp vegan red curry paste",
+          "400 g chestnut mushrooms, sliced",
+          "400 ml coconut milk",
+          "100 g kale, stems removed",
+          "1 bunch spring onions",
+          "2 limes",
+          "1 handful coriander"
         ]
       },
       "steps": {
         "de": [
           {
             "title": "Reis garen",
-            "summary": "Basmatireis locker kochen",
-            "text": "Reis gründlich waschen. Mit 375 ml Wasser und einer Prise Salz aufkochen, zugedeckt bei kleiner Hitze 12 Minuten garen und anschließend 5 Minuten ruhen lassen."
+            "summary": "Jasminreis aufsetzen",
+            "text": "Reis kalt abspülen, mit 375 ml Wasser und einer Prise Salz aufkochen. Zugedeckt bei kleiner Hitze 12 Minuten garen, dann 5 Minuten ruhen lassen."
           },
           {
-            "title": "Curry-Sauce ansetzen",
-            "summary": "Zwiebel und Gewürze anrösten",
-            "text": "Paneer würfeln und in etwas Öl goldgelb anbraten. Herausnehmen. Zwiebel fein würfeln und weich dünsten. Knoblauch und Garam Masala einrühren und 30 Sekunden rösten. Passata zugeben und 12 Minuten köcheln lassen."
+            "title": "Curry kochen",
+            "summary": "Pilze in Kokosmilch köcheln",
+            "text": "Kokosöl in einem Topf erhitzen. Zwiebel und Knoblauch 3 Minuten anschwitzen, Currypaste einrühren und 1 Minute rösten. Champignons zugeben und 4 Minuten braten. Kokosmilch angießen und 8 Minuten leise köcheln lassen. Mit dem Saft einer Limette und Salz abschmecken."
           },
           {
-            "title": "Paneer vollenden",
-            "summary": "Mit Reis und Koriander servieren",
-            "text": "Sahne in die Sauce rühren und Paneer zurück in die Pfanne geben. 4 Minuten sanft erhitzen, mit Salz abschmecken und mit Reis und Koriander servieren."
+            "title": "Anrichten",
+            "summary": "Mit Grünkohl, Koriander und Limette servieren",
+            "text": "Grünkohl und Koriander fein hacken, Frühlingszwiebeln in Ringe schneiden. Reis mit dem Curry anrichten, Grünkohl, Koriander und Frühlingszwiebeln darüberstreuen. Mit Limettenspalten servieren."
           }
         ],
         "en": [
           {
             "title": "Cook the rice",
-            "summary": "Steam the basmati until fluffy",
-            "text": "Rinse the rice thoroughly. Bring it to a boil with 375 ml water and a pinch of salt, cover and cook over low heat for 12 minutes. Rest for 5 minutes."
+            "summary": "Start the jasmine rice",
+            "text": "Rinse the rice in cold water and bring to the boil with 375 ml water and a pinch of salt. Cover and cook over low heat for 12 minutes, then rest for 5 minutes."
           },
           {
-            "title": "Build the curry sauce",
-            "summary": "Toast the onion and spices",
-            "text": "Cube the paneer and fry in a little oil until golden. Set aside. Finely dice the onion and cook until soft. Stir in the garlic and garam masala and toast for 30 seconds. Add the passata and simmer for 12 minutes."
+            "title": "Make the curry",
+            "summary": "Simmer the mushrooms in coconut milk",
+            "text": "Heat the coconut oil in a pot. Soften the onion and garlic for 3 minutes, stir in the curry paste and fry for 1 minute. Add the mushrooms and cook for 4 minutes. Pour in the coconut milk and simmer gently for 8 minutes. Season with the juice of one lime and salt."
           },
           {
-            "title": "Finish the paneer",
-            "summary": "Serve with rice and coriander",
-            "text": "Stir the cream into the sauce and return the paneer to the pan. Warm gently for 4 minutes, season with salt and serve with rice and coriander."
+            "title": "Serve",
+            "summary": "Finish with kale, coriander and lime",
+            "text": "Finely chop the kale and coriander and slice the spring onions. Serve the curry with the rice, scatter over the kale, coriander and spring onions and add lime wedges."
           }
         ]
       },
       "image": {
-        "file": "../photos/paneer-curry-mit-basmatireis.webp",
+        "file": "../photos/kokos-curry-mit-champignons-und-gruenkohl.webp",
         "alt": {
-          "de": "Würziges indisches Curry in einer Schale",
-          "en": "Spiced Indian curry served in a bowl"
+          "de": "Kokos-Curry mit Champignons, Reis, gehacktem Grünkohl und einer Limettenspalte auf einem Teller, ringsum Grünkohl, Limetten und Frühlingszwiebeln auf einem Holzbrett",
+          "en": "Coconut curry with mushrooms, rice, chopped kale and a lime wedge on a plate, with kale, limes and spring onions around it on a wooden board"
         },
-        "photographer": "zablanca_clicks",
-        "photographerUrl": "https://unsplash.com/@zablanca_clicks?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/a-bowl-of-soup-with-a-spoon-in-it-7jERG_ACcQs"
+        "photographer": "Nathan Dumlao",
+        "photographerUrl": "https://unsplash.com/@nate_dumlao?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/brown-ceramic-plate-with-brown-wooden-chopsticks-w9zCH4Lpflw"
       }
     },
     {
       "id": "chicken-ramen",
       "slug": "ramen-mit-haehnchen-und-gemuese",
-      "title": { "de": "Ramen mit Hähnchen und Gemüse", "en": "Chicken and vegetable ramen" },
-      "description": {
-        "de": "Eine würzige Brühe mit Hähnchen, Pilzen, Nudeln und knackigen Toppings. Die Brühe lässt sich gut vorbereiten.",
-        "en": "A savory broth with chicken, mushrooms, noodles and crisp toppings. The broth is easy to prepare ahead."
+      "title": {
+        "de": "Ramen mit Hähnchen und Gemüse",
+        "en": "Chicken and vegetable ramen"
       },
-      "category": { "de": "Nudelsuppe", "en": "Noodle soup" },
-      "cuisine": { "de": "Japanisch inspiriert", "en": "Japanese inspired" },
+      "description": {
+        "de": "Eine würzige Brühe mit gezupftem Hähnchen, gebratenem Hackfleisch, Wakame, Radieschen und Frühlingszwiebeln über Ramen-Nudeln. Die Brühe lässt sich gut vorbereiten.",
+        "en": "A savoury broth with pulled chicken, browned minced pork, wakame, radishes and spring onions over ramen noodles. The broth is easy to prepare ahead."
+      },
+      "category": {
+        "de": "Nudelsuppe",
+        "en": "Noodle soup"
+      },
+      "cuisine": {
+        "de": "Japanisch inspiriert",
+        "en": "Japanese inspired"
+      },
       "tags": ["family-friendly", "make-ahead"],
       "servings": 4,
       "prepMinutes": 20,
@@ -690,10 +785,14 @@
           "2 EL Sojasauce",
           "1 EL Misopaste",
           "300 g Hähnchenbrust",
+          "200 g Schweinehack",
           "250 g Ramen-Nudeln",
-          "150 g Shiitake-Pilze",
-          "2 Eier",
+          "20 g getrocknete Shiitake-Pilze",
+          "1 Stück Kombu (etwa 10 cm)",
+          "10 g getrocknete Wakame",
+          "6 Radieschen",
           "2 Frühlingszwiebeln",
+          "1 TL Chiliflocken",
           "1 TL Sesamöl"
         ],
         "en": [
@@ -701,54 +800,58 @@
           "2 tbsp soy sauce",
           "1 tbsp miso paste",
           "300 g chicken breast",
+          "200 g minced pork",
           "250 g ramen noodles",
-          "150 g shiitake mushrooms",
-          "2 eggs",
+          "20 g dried shiitake mushrooms",
+          "1 piece kombu (about 10 cm)",
+          "10 g dried wakame",
+          "6 radishes",
           "2 spring onions",
+          "1 tsp chilli flakes",
           "1 tsp sesame oil"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Eier kochen",
-            "summary": "Weich kochen und abschrecken",
-            "text": "Eier 7 Minuten kochen, kalt abschrecken und pellen. Für ein festes Eigelb eine Minute länger kochen."
+            "title": "Brühe ansetzen",
+            "summary": "Mit Kombu und Shiitake ziehen lassen",
+            "text": "Brühe mit Sojasauce, Kombu und Shiitake aufkochen. Hähnchenbrust einlegen und 15 Minuten leise garen, bis sie durch ist. Herausnehmen und mit zwei Gabeln zupfen. Kombu entfernen, Shiitake in Scheiben schneiden und zurückgeben. Misopaste in etwas Brühe glatt rühren und einrühren."
           },
           {
-            "title": "Brühe aromatisieren",
-            "summary": "Hähnchen und Pilze sanft garen",
-            "text": "Brühe mit Sojasauce zum Köcheln bringen. Hähnchenbrust und geviertelte Pilze zugeben und 12–15 Minuten sanft garen, bis das Hähnchen durch ist. Herausnehmen und in Streifen schneiden. Misopaste in etwas Brühe glatt rühren und zurück in den Topf geben."
+            "title": "Toppings vorbereiten",
+            "summary": "Hack braten, Wakame einweichen",
+            "text": "Wakame 5 Minuten in kaltem Wasser einweichen und abtropfen lassen. Schweinehack mit Chiliflocken in Sesamöl krümelig braten. Radieschen in dünne Scheiben, Frühlingszwiebeln in feine Ringe schneiden."
           },
           {
             "title": "Schalen füllen",
-            "summary": "Mit Frühlingszwiebeln und Sesamöl abschließen",
-            "text": "Nudeln separat nach Packungsangabe garen und auf vier Schalen verteilen. Brühe, Pilze und Hähnchen darübergeben. Halbierte Eier und Frühlingszwiebeln darauflegen und mit Sesamöl beträufeln."
+            "summary": "Nudeln, Brühe und Toppings anrichten",
+            "text": "Nudeln separat nach Packungsangabe garen und auf vier Schalen verteilen. Heiße Brühe mit Shiitake darübergeben. Hähnchen, Hack, Wakame, Radieschen und Frühlingszwiebeln darauf anrichten."
           }
         ],
         "en": [
           {
-            "title": "Cook the eggs",
-            "summary": "Boil until soft and cool",
-            "text": "Boil the eggs for 7 minutes, cool under cold water and peel. Cook for one extra minute if you prefer a firm yolk."
+            "title": "Start the broth",
+            "summary": "Steep with kombu and shiitake",
+            "text": "Bring the stock, soy sauce, kombu and shiitake to the boil. Add the chicken breast and simmer gently for 15 minutes until cooked through. Lift out and pull apart with two forks. Remove the kombu, slice the shiitake and return them to the pot. Loosen the miso with a little broth and stir it in."
           },
           {
-            "title": "Season the broth",
-            "summary": "Gently cook the chicken and mushrooms",
-            "text": "Bring the stock and soy sauce to a simmer. Add the chicken breast and quartered mushrooms and gently cook for 12–15 minutes, until the chicken is cooked through. Remove and slice the chicken. Loosen the miso with a little broth and stir it back into the pot."
+            "title": "Prepare the toppings",
+            "summary": "Brown the pork, soak the wakame",
+            "text": "Soak the wakame in cold water for 5 minutes and drain. Fry the minced pork with the chilli flakes in the sesame oil until crumbly. Thinly slice the radishes and finely slice the spring onions."
           },
           {
             "title": "Fill the bowls",
-            "summary": "Finish with spring onion and sesame oil",
-            "text": "Cook the noodles separately according to the packet and divide among four bowls. Ladle over the broth, mushrooms and chicken. Add halved eggs and spring onions, then finish with sesame oil."
+            "summary": "Add noodles, broth and toppings",
+            "text": "Cook the noodles separately according to the packet and divide among four bowls. Ladle over the hot broth and shiitake. Top with the chicken, pork, wakame, radishes and spring onions."
           }
         ]
       },
       "image": {
         "file": "../photos/ramen-mit-haehnchen-und-gemuese.webp",
         "alt": {
-          "de": "Ramen mit Nudeln, Pilzen und frischen Toppings",
-          "en": "Ramen with noodles, mushrooms and fresh toppings"
+          "de": "Ramen mit gezupftem Hähnchen, Hackfleisch, Wakame, Radieschen und Frühlingszwiebeln in einer blau-weißen Schale auf einem Holzbrett, ringsum Radieschen, Frühlingszwiebeln, Zwiebeln, getrocknete Shiitake, Kombu, Nudeln und Chili",
+          "en": "Ramen with pulled chicken, minced pork, wakame, radishes and spring onions in a blue and white bowl on a wooden board, surrounded by radishes, spring onions, onions, dried shiitake, kombu, noodles and chilli"
         },
         "photographer": "Daniel Houwing",
         "photographerUrl": "https://unsplash.com/@danielhouwing?utm_source=mealie_atelier&utm_medium=referral",
@@ -756,89 +859,95 @@
       }
     },
     {
-      "id": "roasted-vegetables",
-      "slug": "ofengemuese-mit-linsen-und-kraeuterjoghurt",
+      "id": "lemon-focaccia",
+      "slug": "zitronen-focaccia-mit-rosmarin",
       "title": {
-        "de": "Ofengemüse mit Linsen und Kräuterjoghurt",
-        "en": "Roasted vegetables with lentils and herbed yogurt"
+        "de": "Zitronen-Focaccia mit Rosmarin",
+        "en": "Lemon and rosemary focaccia"
       },
       "description": {
-        "de": "Rote Bete, Möhren und Zwiebeln rösten im Ofen, während grüne Linsen und ein frisches Kräuterjoghurt die Schale ergänzen.",
-        "en": "Beetroot, carrots and onions roast while green lentils and a fresh herb yogurt round out the bowl."
+        "de": "Eine lockere Focaccia mit dünnen Zitronenscheiben, Rosmarin und Meersalzflocken. Der Teig ruht lange, die aktive Arbeit bleibt kurz.",
+        "en": "A light focaccia topped with thin lemon slices, rosemary and flaky sea salt. The dough rests for a long time, but the hands-on work is short."
       },
-      "category": { "de": "Blechgericht", "en": "Sheet-pan meal" },
-      "cuisine": { "de": "Modern europäisch", "en": "Modern European" },
-      "tags": ["vegetarian", "meal-prep", "family-friendly"],
-      "servings": 4,
-      "prepMinutes": 15,
-      "cookMinutes": 35,
+      "category": {
+        "de": "Backen",
+        "en": "Baking"
+      },
+      "cuisine": {
+        "de": "Italienisch",
+        "en": "Italian"
+      },
+      "tags": ["vegan", "vegetarian", "make-ahead"],
+      "servings": 8,
+      "prepMinutes": 20,
+      "cookMinutes": 25,
       "ingredients": {
         "de": [
-          "500 g Rote Bete, vorgekocht",
-          "400 g Möhren",
-          "1 rote Zwiebel",
-          "2 EL Olivenöl",
-          "200 g grüne Linsen",
-          "150 g Naturjoghurt",
-          "1 EL gehackte Petersilie",
-          "1 TL Zitronensaft"
+          "500 g Weizenmehl Type 00",
+          "400 ml lauwarmes Wasser",
+          "7 g Trockenhefe",
+          "2 TL Salz",
+          "6 EL Olivenöl",
+          "1 Bio-Zitrone",
+          "3 Zweige Rosmarin",
+          "1 TL Meersalzflocken"
         ],
         "en": [
-          "500 g cooked beetroot",
-          "400 g carrots",
-          "1 red onion",
-          "2 tbsp olive oil",
-          "200 g green lentils",
-          "150 g plain yogurt",
-          "1 tbsp chopped parsley",
-          "1 tsp lemon juice"
+          "500 g 00 flour",
+          "400 ml lukewarm water",
+          "7 g dried yeast",
+          "2 tsp salt",
+          "6 tbsp olive oil",
+          "1 unwaxed lemon",
+          "3 sprigs rosemary",
+          "1 tsp flaky sea salt"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Ofengemüse rösten",
-            "summary": "Möhren und Zwiebel auf ein Blech geben",
-            "text": "Backofen auf 210 °C vorheizen. Möhren längs halbieren und die Zwiebel in Spalten schneiden. Mit Olivenöl, Salz und Pfeffer mischen und 25 Minuten rösten. Vorgekochte Rote Bete in Spalten schneiden und für die letzten 10 Minuten dazugeben."
+            "title": "Teig anrühren",
+            "summary": "Mischen und gehen lassen",
+            "text": "Mehl, Wasser und Hefe mischen. Salz und 2 EL Olivenöl zugeben und 5 Minuten zu einem weichen, klebrigen Teig verrühren. Abgedeckt 1–2 Stunden gehen lassen, bis sich das Volumen verdoppelt hat."
           },
           {
-            "title": "Linsen garen",
-            "summary": "In ungesalzenem Wasser weich kochen",
-            "text": "Linsen abspülen und in reichlich ungesalzenem Wasser 20–25 Minuten weich, aber noch bissfest kochen. Abgießen und erst dann salzen."
+            "title": "Aufs Blech geben",
+            "summary": "Dellen drücken und belegen",
+            "text": "Ein Blech mit 2 EL Olivenöl ausstreichen. Teig darauf ziehen und weitere 30 Minuten gehen lassen. Backofen auf 230 °C Ober-/Unterhitze vorheizen. Mit geölten Fingern tiefe Dellen in den Teig drücken. Zitrone in hauchdünne Scheiben schneiden und mit den Rosmarinnadeln darauf verteilen."
           },
           {
-            "title": "Kräuterjoghurt rühren",
-            "summary": "Alles zusammen anrichten",
-            "text": "Joghurt mit Petersilie, Zitronensaft, einer Prise Salz und etwas Wasser cremig rühren. Linsen und Ofengemüse auf Teller verteilen und mit dem Kräuterjoghurt servieren."
+            "title": "Goldbraun backen",
+            "summary": "Mit Meersalz bestreuen",
+            "text": "Restliches Olivenöl darüberträufeln, mit Meersalzflocken bestreuen und 20–25 Minuten goldbraun backen. Kurz abkühlen lassen und in Stücke schneiden."
           }
         ],
         "en": [
           {
-            "title": "Roast the vegetables",
-            "summary": "Put the carrots and onion on a tray",
-            "text": "Heat the oven to 210 °C / 410 °F. Halve the carrots lengthwise and cut the onion into wedges. Toss with olive oil, salt and pepper and roast for 25 minutes. Cut the cooked beetroot into wedges and add for the final 10 minutes."
+            "title": "Mix the dough",
+            "summary": "Combine and let it rise",
+            "text": "Mix the flour, water and yeast. Add the salt and 2 tbsp olive oil and stir for 5 minutes into a soft, sticky dough. Cover and leave to rise for 1–2 hours, until doubled in size."
           },
           {
-            "title": "Cook the lentils",
-            "summary": "Simmer in unsalted water until tender",
-            "text": "Rinse the lentils and cook in plenty of unsalted water for 20–25 minutes until tender but still holding their shape. Drain and season with salt afterwards."
+            "title": "Shape on the tray",
+            "summary": "Dimple and top",
+            "text": "Grease a baking tray with 2 tbsp olive oil. Stretch the dough over it and leave to rise for another 30 minutes. Heat the oven to 230 °C / 450 °F. Press deep dimples into the dough with oiled fingers. Slice the lemon paper thin and scatter it over the dough with the rosemary needles."
           },
           {
-            "title": "Mix the herbed yogurt",
-            "summary": "Plate everything together",
-            "text": "Stir the yogurt with parsley, lemon juice, a pinch of salt and a little water until creamy. Divide the lentils and roasted vegetables among plates and serve with the herbed yogurt."
+            "title": "Bake until golden",
+            "summary": "Finish with sea salt",
+            "text": "Drizzle over the remaining olive oil, sprinkle with flaky sea salt and bake for 20–25 minutes until golden. Cool briefly and cut into pieces."
           }
         ]
       },
       "image": {
-        "file": "../photos/ofengemuese-mit-linsen-und-kraeuterjoghurt.webp",
+        "file": "../photos/zitronen-focaccia-mit-rosmarin.webp",
         "alt": {
-          "de": "Buntes geröstetes Gemüse mit Kräutern",
-          "en": "Colorful roasted vegetables with herbs"
+          "de": "Focaccia-Stücke mit Zitronenscheiben, Rosmarin und Meersalz auf hellen Holzdielen, dazu ein Schälchen Salz, eine halbe Zitrone und Rosmarinzweige",
+          "en": "Pieces of focaccia with lemon slices, rosemary and sea salt on pale wooden boards, with a small bowl of salt, half a lemon and rosemary sprigs"
         },
-        "photographer": "Odiseo Castrejon",
-        "photographerUrl": "https://unsplash.com/@odiseo?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/close-up-of-vegetables-asK-tikpD5A"
+        "photographer": "Quin Engle",
+        "photographerUrl": "https://unsplash.com/@twistsandzests?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/sliced-lemon-beside-sliced-bread-TqQXS9bG4mE"
       }
     }
   ]

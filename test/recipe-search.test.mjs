@@ -48,7 +48,7 @@ test("localized demo routes can discover ingredients using the alternate languag
     const alternateIngredient = locale === "de" ? "kale" : "grünkohl";
     const matches = searchDemoRecipes(recipes, details, alternateIngredient);
     assert.ok(
-      matches.some((recipe) => recipe.slug === "zitronen-pasta-mit-gruenkohl-und-walnuessen"),
+      matches.some((recipe) => recipe.slug === "kokos-curry-mit-champignons-und-gruenkohl"),
     );
   }
 });
@@ -58,18 +58,22 @@ test("demo query transforms apply dietary, time, serving, and ingredient filters
   const matches = searchDemoRecipes(recipes, details, "vegan ingredient:kale under 30 min for 4");
   assert.deepEqual(
     matches.map((recipe) => recipe.slug),
-    ["zitronen-pasta-mit-gruenkohl-und-walnuessen"],
+    ["kokos-curry-mit-champignons-und-gruenkohl"],
   );
 });
 
 test("demo recipe search handles German diacritics and exclusions", () => {
   const { recipes, details } = catalog("de");
-  const matches = searchDemoRecipes(recipes, details, "vegetarisch ohne Sahne");
+  const soup = "kuerbissuppe-mit-feta-und-kuerbiskernen";
+  assert.ok(
+    searchDemoRecipes(recipes, details, "vegetarisch").some((recipe) => recipe.slug === soup),
+  );
+  const matches = searchDemoRecipes(recipes, details, "vegetarisch ohne Kürbiskerne");
   assert.ok(matches.length > 0);
-  assert.ok(!matches.some((recipe) => recipe.slug === "paneer-curry-mit-basmatireis"));
+  assert.ok(!matches.some((recipe) => recipe.slug === soup));
   assert.ok(
     searchDemoRecipes(recipes, details, "ingredient:Zitrone").some(
-      (recipe) => recipe.slug === "zitronen-pasta-mit-gruenkohl-und-walnuessen",
+      (recipe) => recipe.slug === "zitronen-focaccia-mit-rosmarin",
     ),
   );
 });
