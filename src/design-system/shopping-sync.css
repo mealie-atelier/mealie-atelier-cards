@@ -19,7 +19,6 @@
 .atelier .sync-panel p {
   margin: var(--ds-space-1) 0;
 }
-.atelier .sync-state,
 .atelier .sync-last,
 .atelier .sync-issues,
 .atelier .sync-result,
@@ -30,7 +29,11 @@
   gap: var(--ds-space-2);
 }
 .atelier .sync-state {
-  flex-wrap: wrap;
+  display: block;
+}
+.atelier .sync-state svg {
+  vertical-align: -0.2em;
+  margin-inline-end: var(--ds-space-1);
 }
 .atelier .sync-count {
   white-space: nowrap;

@@ -715,11 +715,14 @@ test("first-batch send shows a failure icon, not a success check, and no doubled
   assert.doesNotMatch(result, /m5 12 5 5L20 7/);
 });
 
-test("rule card shows a separator in the state line and no repeated route", async () => {
+test("rule card keeps the state line in plain flow (no stranded separator) and no repeated route", async () => {
   const env = syncCard();
   await openStatus(env, [withRule()]);
   const html = markup(env.cards);
-  assert.match(html, /<\/strong> <span class="sync-muted" aria-hidden="true">·<\/span>/);
+  const state = html.match(/<p class="sync-state">.*?<\/p>/s)?.[0] || "";
+  assert.ok(state, "state line renders");
+  assert.doesNotMatch(state, /·/);
+  assert.match(state, /<\/strong> <span class="sync-count sync-muted">/);
   assert.equal((html.match(/Weekly groceries → Bring/g) || []).length, 1);
 });
 
