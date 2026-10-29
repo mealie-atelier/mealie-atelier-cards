@@ -325,3 +325,11 @@ test("text on accent fills follows the accent: white on dark accents, dark ink o
   assert.equal(ink("#9dcbb2"), "#12221b");
   assert.equal(ink("#f2c94c"), "#12221b");
 });
+test("enter animations do not hold their end frame, so text is not left on a blurred layer", () => {
+  const motion = file("src/design-system/motion.css");
+  const uses = [...motion.matchAll(/animation:\s*at-(?:view|theme)-enter[^;]*;/g)].map((m) => m[0]);
+  assert.ok(uses.length >= 4, "enter animations found");
+  for (const rule of uses) {
+    assert.match(rule, /\bbackwards;$/, rule);
+  }
+});

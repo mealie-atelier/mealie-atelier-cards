@@ -6,6 +6,9 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Fixed
 
+- Text no longer sits on a blurred compositing layer after a view change: the enter animations stop holding their end frame, which left Safari rendering the whole view slightly soft.
+- The pantry and the shopping assistant show the piece unit as "Stück" / "pcs" instead of the stored key "stück", also in the notes sent to the shopping list.
+- On phones and narrow cards each day of the week carousel keeps its own height, so a single dish no longer sits above a large empty area.
 - Focused card types open their own view. `type: custom:mealie-atelier-today` (and every other focused type) without a `mode` showed the complete kitchen; the type now sets its start view, and an explicit `mode` still wins.
 - The visual editor preview no longer shows `extra keys not allowed` once a Bridge connection is picked: the status request is sent without `entry_id`.
 - Home Assistant's card picker lists the ten card types with German names and descriptions in a German Home Assistant.
@@ -16,6 +19,9 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Changed
 
+- A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.
+- Recipe photos appear in the week grid, in today's plan and in the cookbook list.
+- Demo: the meal plan fills the whole current and next week from Monday, so the week view never opens on empty days.
 - Exclusive design settings (theme, density, motion, photo crop, corners) are a typographic choice with an accent underline instead of a row of filled buttons; the print section is titled "Druckstudio" / "Print studio".
 - Kochinspo choices (diet, cookbooks, time, pantry, ingredients to avoid) are a typographic register with an accent underline instead of rows of rounded chips.
 - The search launcher in the toolbar has the same shape as the refresh and settings buttons, the active tab on phones has a straight accent line, and the daily shortcuts keep their labels on one line.

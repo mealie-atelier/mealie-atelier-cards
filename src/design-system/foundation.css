@@ -62,6 +62,16 @@ ha-card {
   box-shadow: var(--at-shadow);
   line-height: 1.4;
 }
+/* A panel view gives the card the whole view: no frame, no floating corners. */
+.atelier.panel {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: calc(100vh - var(--header-height, 56px));
+}
+.atelier.panel > .shell {
+  min-height: inherit;
+}
 .atelier.compact {
   --at-gap: 13px;
   --at-pad: 20px;

@@ -435,3 +435,23 @@ test("a shared journal needs write access while a personal journal only needs a 
     false,
   );
 });
+
+test("the piece unit is shown translated, never as its stored key", () => {
+  for (const [language, label] of [
+    ["de", "Stück"],
+    ["en", "pcs"],
+  ]) {
+    const { card } = permissionCard(grants(true, true, false));
+    card._config = { ...card._config, language };
+    card._studio = {
+      revision: 0,
+      journal: {},
+      profile: {},
+      family: { members: [] },
+      pantry: [{ id: "p1", name: "Eggs", amount: 6, unit: "stück" }],
+    };
+    const html = card._studioPantry().split('class="studio-pantry-list"')[1];
+    assert.match(html, new RegExp(`6 ${label} `), language);
+    assert.doesNotMatch(html, /stück/, language);
+  }
+});

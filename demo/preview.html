@@ -163,22 +163,24 @@
           ("0" + d.getDate()).slice(-2),
         ].join("-");
       };
-      const meals = [
-        { id: "meal-1", date: dateAdd(0), entryType: "dinner", recipe: recipes[0] },
-        ...[
-          [1, 2, "lunch"],
-          [2, 1, "dinner"],
-          [3, 3, "lunch"],
-          [4, 4, "dinner"],
-          [5, 5, "dinner"],
-          [6, 6, "lunch"],
-        ].map(([d, ix, type]) => ({
-          id: "meal-" + (d + 1),
-          date: dateAdd(d),
-          entryType: type,
-          recipe: recipes[ix],
-        })),
-      ];
+      // Fill this week and next from Monday, so the week view never opens on empty days.
+      // Today's dinner stays the first recipe; the other days rotate through the rest, and a lunch
+      // repeats a dinner four days away, never the neighbouring one.
+      const monday = -((new Date().getDay() + 6) % 7);
+      const meals = [];
+      for (let d = monday; d < monday + 14; d += 1) {
+        const ix = d === 0 ? 0 : 1 + (((d - monday) * 4) % (recipes.length - 1));
+        meals.push({ date: dateAdd(d), entryType: "dinner", recipe: recipes[ix] });
+        if ((d - monday) % 3 === 1)
+          meals.push({
+            date: dateAdd(d),
+            entryType: "lunch",
+            recipe: recipes[1 + (((d - monday) * 4 + 7) % (recipes.length - 1))],
+          });
+      }
+      meals.forEach((meal, index) => (meal.id = "meal-" + (index + 1)));
+      // A counter, not the list length: after a delete, length + 1 would repeat a live id.
+      let nextMealId = meals.length;
       const shoppingLists = [
         { id: "list-1", name: demoLanguage === "de" ? "Wocheneinkauf" : "Weekly shop" },
         { id: "list-2", name: demoLanguage === "de" ? "Vorrat" : "Pantry" },
@@ -565,7 +567,7 @@
             if (req.action === "mealplan_add") {
               const rec = recipes.find((r) => r.id === req.payload.recipe_id);
               meals.push({
-                id: "meal-" + (meals.length + 1),
+                id: "meal-" + (nextMealId += 1),
                 date: req.payload.date,
                 entryType: req.payload.meal_type,
                 recipe: rec,

@@ -35,10 +35,10 @@
   isolation: isolate;
 }
 .atelier .view-stage.is-entering {
-  animation: at-view-enter var(--ds-motion-slow) var(--at-ease) both;
+  animation: at-view-enter var(--ds-motion-slow) var(--at-ease) backwards;
 }
 .atelier .view-stage.is-theme-entering {
-  animation: at-theme-enter var(--ds-motion-enter) var(--at-ease) both;
+  animation: at-theme-enter var(--ds-motion-enter) var(--at-ease) backwards;
 }
 @keyframes at-theme-enter {
   from {
@@ -50,6 +50,7 @@
     filter: blur(0);
   }
 }
+/* Fill "backwards" only: a held end frame (blur 0, translate3d) keeps a composited layer and softens text in Safari. */
 @keyframes at-view-enter {
   from {
     opacity: 0.35;
@@ -542,7 +543,7 @@
   min-height: min(780px, 82vh);
 }
 .atelier .cook-stage h2 {
-  animation: at-view-enter var(--ds-motion-enter) var(--at-ease) both;
+  animation: at-view-enter var(--ds-motion-enter) var(--at-ease) backwards;
   text-wrap: pretty;
 }
 .atelier .cook-fill {
@@ -677,7 +678,7 @@
   border: 1px solid color-mix(in srgb, var(--ds-brand) 30%, var(--at-line));
   border-radius: 18px;
   background: color-mix(in srgb, var(--ds-brand) 6%, var(--at-panel));
-  animation: at-view-enter var(--ds-motion-enter) var(--ds-motion-ease) both;
+  animation: at-view-enter var(--ds-motion-enter) var(--ds-motion-ease) backwards;
 }
 .atelier .command-conversion-label {
   color: var(--ds-brand);

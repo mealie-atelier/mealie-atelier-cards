@@ -29,3 +29,12 @@ test("a re-render that keeps the card in place does not scroll", () => {
   card._render();
   assert.deepEqual(scrolled, []);
 });
+
+test("a card that fills a panel view runs edge to edge, elsewhere it keeps its frame", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._render();
+  assert.doesNotMatch(cards.document.markup, /class="atelier [^"]*\bpanel\b/);
+  card.layout = "panel";
+  assert.match(cards.document.markup, /class="atelier [^"]*\bpanel\b/);
+});

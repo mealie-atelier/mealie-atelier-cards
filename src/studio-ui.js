@@ -176,6 +176,10 @@ Object.assign(MealieAtelierCard.prototype, {
       this._studioCookbooks || [],
     );
   },
+  // Units are stored as "g", "ml" and "stück"; only the piece unit needs a translated label.
+  _studioUnit(unit) {
+    return unit === "stück" ? this.t("studioPieceUnit") : unit || "";
+  },
   _studioShell(title, lead, content, kicker = this.t("studioKicker")) {
     const progress = this._catalogProgress;
     const progressText = progress
@@ -475,7 +479,7 @@ Object.assign(MealieAtelierCard.prototype, {
       <label class="studio-inline"><input type="checkbox" name="staple"><span>${this.t("studioStaple")}</span></label>
       <button class="btn primary" type="submit">${icon("plus", 15)} ${this.t("studioAdd")}</button></form>`
       }
-      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(x.unit)} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
+      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(this._studioUnit(x.unit))} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
       ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioGroceryKicker")}</span><h2>${this.t("studioGroceryTitle")}</h2><p>${this.t("studioGroceryDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-grocery-build">${icon("refresh", 14)} ${this.t("studioGroceryCalculate")}</button>${needs.length && this._permissions.can_write ? `<button class="btn" data-action="studio-grocery-send">${icon("cart", 14)} ${this.t("studioGrocerySend")}</button>` : ""}</div>
       ${
@@ -483,7 +487,7 @@ Object.assign(MealieAtelierCard.prototype, {
           ? atGroup(needs)
               .map(
                 (g) =>
-                  `<div class="studio-group"><h3>${esc(this.t(atAisleKeys[g.category] || "studioAisleProduce"))}</h3>${g.rows.map((x) => `<div class="studio-grocery-line"><span>${esc(x.name)}</span><strong>${x.needed == null ? this.t("studioQuantityCheck") : esc(atQty(x.needed, this._locale)) + " " + esc(x.unit)}${x.uncertain ? " ⚠" : ""}</strong></div>`).join("")}</div>`,
+                  `<div class="studio-group"><h3>${esc(this.t(atAisleKeys[g.category] || "studioAisleProduce"))}</h3>${g.rows.map((x) => `<div class="studio-grocery-line"><span>${esc(x.name)}</span><strong>${x.needed == null ? this.t("studioQuantityCheck") : esc(atQty(x.needed, this._locale)) + " " + esc(this._studioUnit(x.unit))}${x.uncertain ? " ⚠" : ""}</strong></div>`).join("")}</div>`,
               )
               .join("")
           : `<p class="studio-muted">${this.t("studioGroceryPreview")}</p>`
@@ -531,7 +535,7 @@ Object.assign(MealieAtelierCard.prototype, {
           .slice(0, 120)
           .map(
             (r) =>
-              `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}><span>${esc(r.name)}</span></label>`,
+              `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}>${recipeImage(r, "studio-book-photo")}<span>${esc(r.name)}</span></label>`,
           )
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
@@ -626,7 +630,7 @@ Object.assign(MealieAtelierCard.prototype, {
     const errors = [];
     for (const item of items) {
       const note =
-        `${item.needed ?? "?"} ${item.unit || ""} ${item.name}${item.uncertain ? " (" + this.t("studioShoppingUncertain") + ")" : ""}`
+        `${item.needed ?? "?"} ${this._studioUnit(item.unit)} ${item.name}${item.uncertain ? " (" + this.t("studioShoppingUncertain") + ")" : ""}`
           .trim()
           .slice(0, 250);
       try {

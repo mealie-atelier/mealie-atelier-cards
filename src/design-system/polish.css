@@ -2301,3 +2301,38 @@
   color: var(--at-muted, inherit);
   cursor: pointer;
 }
+
+/* Recipe photos wherever a planned or listed recipe has one; without a photo the plain layout stays. */
+.atelier .day-meal.has-photo {
+  padding: 10px;
+}
+.atelier .day-meal-photo {
+  display: block;
+  aspect-ratio: 4 / 3;
+  margin: -4px -4px 9px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--at-panel);
+}
+.atelier .day-meal-photo img,
+.atelier .meal-photo img,
+.atelier .studio-book-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .today-meal .meal-photo {
+  width: 96px;
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--at-panel2);
+}
+.atelier .studio-book-row .studio-book-photo {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 9px;
+}

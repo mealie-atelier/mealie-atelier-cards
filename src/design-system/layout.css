@@ -451,6 +451,8 @@
   .atelier .week-grid {
     grid-template-columns: repeat(7, minmax(210px, min(46cqi, 310px)));
     gap: var(--ds-space-3);
+    /* Swiped one day at a time, so each day keeps its own height instead of the tallest one. */
+    align-items: start;
   }
   .atelier .week-grid > .day {
     min-height: 205px;
