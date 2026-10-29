@@ -827,6 +827,11 @@ h2 em {
 }
 
 /* before and after */
+@property --pos {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
 .ba {
   --pos: 50%;
   position: relative;
@@ -859,6 +864,14 @@ h2 em {
 .ba picture:has(.before),
 .ba .before {
   clip-path: inset(0 calc(100% - var(--pos)) 0 0);
+}
+.ba.settling {
+  transition: --pos 0.4s var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ba.settling {
+    transition: none;
+  }
 }
 .ba .handle {
   position: absolute;
@@ -1115,11 +1128,6 @@ h2 em {
   padding-block: 6vh;
   opacity: 0.38;
   transition: opacity 0.5s var(--ease);
-}
-/* The sticky stage already ends flush with the story, so the last step adds no blank run. */
-.step:last-child {
-  min-height: 0;
-  padding-bottom: 0;
 }
 .step.current,
 html:not(.js) .step {
@@ -2383,6 +2391,9 @@ details[open] .chev {
   .foot-support {
     grid-template-columns: 1fr;
   }
+}
+/* Up to tablet width the copy spans most of the photo, so the scrim covers it evenly. */
+@media (max-width: 900px) {
   .closing::before {
     background: linear-gradient(
       0deg,
@@ -2502,21 +2513,23 @@ details[open] .chev {
   vertical-align: -1px;
   opacity: 0.55;
 }
+/* Inline in the heading, so every column's first link starts at the same height. */
 .foot-col .col-note {
-  display: block;
-  margin-top: 6px;
+  margin-left: 6px;
   color: var(--sub);
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: none;
+  white-space: nowrap;
 }
 .wordmark {
   position: relative;
   font: 500 clamp(64px, 15vw, 230px) / 0.8 var(--serif);
   letter-spacing: -0.04em;
   /* A soft mint fill with a clear outline, so it reads as a brand element at every width. */
-  color: rgba(157, 203, 178, 0.1);
-  -webkit-text-stroke: 1.5px rgba(157, 203, 178, 0.5);
+  color: rgba(157, 203, 178, 0.16);
+  -webkit-text-stroke: 2px rgba(157, 203, 178, 0.78);
+  paint-order: stroke fill;
   white-space: nowrap;
   text-align: center;
   /* Clear of the rule below: the letters end well above the hairline, nothing crosses them. */
@@ -2575,14 +2588,33 @@ details[open] .chev {
     grid-template-columns: 1fr;
   }
 }
+/* Tablet: brand copy left, support tiles right, so the row is filled on purpose. */
+@media (min-width: 561px) and (max-width: 900px) {
+  .foot-brand {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: clamp(28px, 5vw, 56px);
+    align-items: start;
+  }
+  .foot-brand > * {
+    grid-column: 1;
+  }
+  .foot-brand > .foot-support {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: center;
+    justify-self: end;
+    width: 100%;
+    margin-top: 0;
+  }
+}
+/* Phone: the same Product, Guides, Open Source order as everywhere, the third column full width. */
 @media (max-width: 560px) {
   .foot-cols {
     grid-template-columns: 1fr 1fr;
     gap: 24px 20px;
   }
-  .foot-cols > .foot-col:nth-child(2) {
+  .foot-cols > .foot-col:nth-child(3) {
     grid-column: 1 / -1;
-    order: 3;
   }
 }
 
@@ -2672,7 +2704,9 @@ details[open] .chev {
   .recipe-hero {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(40px, 6vw, 88px);
-    align-items: center;
+    /* Top aligned: the breadcrumb sits at the same distance under the header on every recipe,
+       whatever the height of the title block or the photo. */
+    align-items: start;
   }
   .recipe-hero .recipe-head h1 {
     font-size: clamp(36px, 4.4vw, 64px);

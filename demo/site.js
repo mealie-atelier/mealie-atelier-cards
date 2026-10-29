@@ -114,6 +114,10 @@ if (layers.length) {
 for (const slider of document.querySelectorAll("[data-ba]")) {
   const input = slider.querySelector('input[type="range"]');
   const template = slider.dataset.valuetext || "{a} / {b}";
+  // On phones the two shots are different layouts, so any divider in the middle cuts text in
+  // half. There the handle settles on a whole picture (the new interface first) when released.
+  const phone = matchMedia("(max-width: 700px)");
+  const rest = () => (phone.matches ? 0 : 50);
   let swept = false;
   const set = (value) => {
     const position = Math.max(0, Math.min(100, Math.round(value)));
@@ -146,10 +150,16 @@ for (const slider of document.querySelectorAll("[data-ba]")) {
   const release = (event) => {
     slider.classList.remove("dragging");
     if (slider.hasPointerCapture(event.pointerId)) slider.releasePointerCapture(event.pointerId);
+    if (phone.matches) {
+      slider.classList.add("settling");
+      set(Number(input.value) < 50 ? 0 : 100);
+      setTimeout(() => slider.classList.remove("settling"), 420);
+    }
   };
   slider.addEventListener("pointerup", release);
   slider.addEventListener("pointercancel", release);
-  set(Number(input.value));
+  set(rest());
+  phone.addEventListener("change", () => set(rest()));
   // One gentle sweep the first time the slider is seen, so people notice it moves.
   if ("IntersectionObserver" in window && !reduced()) {
     const hint = new IntersectionObserver(
@@ -160,9 +170,14 @@ for (const slider of document.querySelectorAll("[data-ba]")) {
         const sweep = (now) => {
           if (swept) return;
           const t = Math.min(1, (now - start) / 1600);
-          set(50 + Math.sin(t * Math.PI * 2) * 16 * (1 - t));
+          const base = rest();
+          set(
+            phone.matches
+              ? base + Math.sin(t * Math.PI) * 70
+              : base + Math.sin(t * Math.PI * 2) * 16 * (1 - t),
+          );
           if (t < 1) requestAnimationFrame(sweep);
-          else set(50);
+          else set(base);
         };
         setTimeout(() => requestAnimationFrame(sweep), 350);
       },

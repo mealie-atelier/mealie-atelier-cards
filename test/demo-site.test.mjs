@@ -623,3 +623,28 @@ test("recipe metrics stay an even grid at every width and the page offsets match
   const scrim = css.match(/\.closing::before \{[\s\S]*?\n\}/)[0];
   assert.match(scrim, /0\.88\) 55%/, "closing scrim stays dense behind the text column");
 });
+
+test("layout regressions: breadcrumb offset, story steps, footer order and note, closing scrim, phone compare", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  const js = read(join(builds.local, "assets/site.js"));
+  // The hero columns are top aligned, so the breadcrumb never drops with the title block height.
+  const hero = css.match(/@media \(min-width: 900px\)\s*\{\s*\.recipe-hero\s*\{[^}]*\}/)[0];
+  assert.match(hero, /align-items:\s*start/);
+  assert.doesNotMatch(hero, /align-items:\s*center/);
+  // Every story step keeps the same height, so the pinned stage and the observer band agree.
+  assert.doesNotMatch(css, /\.step:last-child/);
+  // The footer keeps one column order and the note shares the heading line.
+  assert.doesNotMatch(css, /\.foot-cols\s*>\s*\.foot-col:nth-child\(2\)/);
+  assert.doesNotMatch(css, /\.foot-cols[^{]*\{[^}]*order:/);
+  assert.doesNotMatch(css.match(/\.foot-col \.col-note\s*\{[^}]*\}/)[0], /display:\s*block/);
+  // The tablet footer fills its row, and the scrim covers the closing copy up to tablet width.
+  assert.match(
+    css,
+    /@media \(min-width: 561px\) and \(max-width: 900px\)\s*\{\s*\.foot-brand\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)/,
+  );
+  assert.match(css, /@media \(max-width: 900px\)\s*\{\s*\.closing::before\s*\{/);
+  // On phones the compare handle settles on a whole picture instead of cutting text.
+  assert.match(js, /matchMedia\("\(max-width: 700px\)"\)/);
+  assert.match(js, /classList\.add\("settling"\)/);
+  assert.match(css, /\.ba\.settling\s*\{[^}]*transition:\s*--pos/);
+});
