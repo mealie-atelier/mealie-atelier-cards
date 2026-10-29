@@ -63,7 +63,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The pantry list flows with the page instead of cutting rows in an inner scroller. Dates show no zero padding, add the year when it is not the current one, never wrap, and read the calendar day without a timezone shift. Expired and soon expiring items are marked with text.
 - Editing a pantry item shows a Save button and a Cancel button, and the edit survives a re-render.
 - The cookbook print preview fits phone and tablet screens instead of scrolling sideways, deleting a pantry row you are editing resets the form, and values typed while editing survive a re-render.
-- The grocery assistant files Schwein with the meat and keeps Zuckerschoten, Pfefferminze and Gewürzgurken out of the spice aisle, broths go to the pantry, "3 Zehen Knoblauch" and "2 Knoblauchzehen" become one row, and fractions of counting units round up.
+- The grocery assistant files Schwein with the meat and keeps Zuckerschoten, Pfefferminze and Gewürzgurken out of the spice aisle, broths, stocks (Fond) and bouillon cubes go to the pantry, "3 Zehen Knoblauch" and "2 Knoblauchzehen" become one row, and fractions of counting units round up.
 - The cookbook shows a placeholder for recipes without a photo, and its print preview has a close button and a mobile viewport.
 - Cooking mode shows the Studio tools (read step aloud, voice command, ingredient substitute, scene, music, speech) again, and shared timers appear in the timer list.
 - The replace-session dialog focuses Cancel first, Cancel now really cancels, and a new "Cook here only" button starts the recipe on this device only. Ending a shared session also focuses Cancel first.
