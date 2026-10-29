@@ -14,7 +14,10 @@ class MealieAtelierEditor extends HTMLElement {
     this._boundClick = this._handleClick.bind(this);
   }
   setConfig(config) {
-    this._config = { ...DEFAULTS, ...config };
+    // A focused card type without mode starts in its own view, as the card does.
+    const tag = String(config?.type || "").replace(/^custom:/, "");
+    const mode = customElements.get(tag)?.getStubConfig?.().mode;
+    this._config = { ...DEFAULTS, ...(mode ? { mode } : {}), ...config };
     if (this._config._setup_complete === true) this._wizardMode = false;
     this._render();
   }

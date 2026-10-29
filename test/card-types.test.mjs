@@ -61,3 +61,14 @@ test("the card picker lists German names in a German Home Assistant", () => {
     "Mealie Atelier · Today",
   );
 });
+
+test("the visual editor shows and keeps the focused type's own view", () => {
+  const cards = loadCards();
+  const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+  editor.setConfig({ type: "custom:mealie-atelier-today" });
+  assert.equal(editor._config.mode, "today");
+  editor.setConfig({ type: "custom:mealie-atelier-today", mode: "recipes" });
+  assert.equal(editor._config.mode, "recipes");
+  editor.setConfig({ type: "custom:mealie-atelier-card" });
+  assert.equal(editor._config.mode, "dashboard");
+});
