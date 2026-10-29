@@ -299,12 +299,16 @@
 .atelier .modal:has(.cook-layout) .cook-controls > * {
   order: 0;
 }
+/* The bar owns the bottom spacing: padding below it would let it rise off the dialog edge at the end. */
+.atelier .modal.large:has(.cook-layout) .cook-content {
+  padding-bottom: 0;
+}
 .atelier .modal:has(.cook-layout) .cook-actions {
   position: sticky;
   bottom: 0;
   z-index: 6;
   margin-block: auto 0;
-  padding: 8px 0 max(10px, env(safe-area-inset-bottom));
+  padding: 8px 0 max(16px, env(safe-area-inset-bottom));
   background: linear-gradient(180deg, transparent, var(--at-surface) 24%);
 }
 

@@ -311,3 +311,24 @@ test("docs and README spell web app in lower case within a sentence and name the
     assert.doesNotMatch(text, /(?<!Mealie )Atelier Bridge/, `${file} shortens the Bridge name`);
   }
 });
+
+test("the premium dialog copies the accent text token it renders its eyebrow with", () => {
+  const source = read("../src/studio-ui.js");
+  const list = source.slice(source.indexOf("_atelierDialog("));
+  const tokens = list.slice(list.indexOf("for (const token of ["), list.indexOf("]) {"));
+  assert.match(tokens, /"--ds-brand-text"/);
+});
+
+test("the cooking action bar is the last child of the cook content", () => {
+  const source = read("../src/components/dialogs.js");
+  const footnote = source.indexOf('<p class="cook-footnote">');
+  const actions = source.indexOf('<div class="cook-actions">');
+  assert.ok(footnote > 0 && actions > footnote, "footnote renders before the sticky action bar");
+});
+
+test("the cook content has no bottom padding so the sticky bar stays on the dialog edge", () => {
+  assert.match(
+    rule(refinement, ".atelier .modal.large:has(.cook-layout) .cook-content"),
+    /padding-bottom:\s*0;/,
+  );
+});
