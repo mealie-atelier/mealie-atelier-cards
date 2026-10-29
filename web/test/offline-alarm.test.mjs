@@ -160,7 +160,7 @@ test("alarm is durable after browser closes, restarts and dispatches only once",
     await b.tick();
     assert.equal(deliveries, 1);
     assert.equal((await b.list()).alarms[0].status, "sent");
-    await assert.rejects(b.cancel(id), { status: 409, atelierCode: "timer_dispatched" });
+    assert.equal((await b.cancel(id)).status, "sent", "cancelling a dispatched timer succeeds");
     await assert.rejects(b.cancel(randomUUID()), { status: 404, atelierCode: "timer_not_found" });
   }));
 test("offline companion UI uses shared locale resources for all visible shell copy", () => {

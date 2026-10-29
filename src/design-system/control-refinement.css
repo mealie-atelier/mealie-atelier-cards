@@ -386,8 +386,8 @@
     animation-range: 0 48px;
   }
 }
-/* In short landscape the strip would take a quarter of the dialog (and the hero grid scrolls per column), so no strip. */
-@media (orientation: landscape) and (max-height: 700px) {
+/* Only on phones in landscape (about 500px tall or less) the strip would take a quarter of the dialog, so no strip. Laptop windows keep it. */
+@media (orientation: landscape) and (max-height: 500px) {
   .atelier .modal > .modal-close::before {
     display: none;
   }

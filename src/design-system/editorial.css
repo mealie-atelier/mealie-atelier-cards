@@ -1548,6 +1548,26 @@
   cursor: pointer;
   appearance: none;
 }
+/* The visible circle stays small; an invisible 44px box around it is the touch target. */
+.atelier .detail-cols .step-number.step-toggle {
+  position: relative;
+}
+.atelier .detail-cols .step-number.step-toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+.atelier .detail-cols .step-number.step-toggle:hover {
+  border-color: var(--at-accent);
+}
+.atelier .detail-cols .step-number.step-toggle:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
 .atelier .detail-cols .step:has(.step-toggle:focus-visible) {
   outline: 2px solid var(--at-accent);
   outline-offset: 3px;

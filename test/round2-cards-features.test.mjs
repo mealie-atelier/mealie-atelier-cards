@@ -46,7 +46,6 @@ test("every Bridge error code has a German and an English err key that the card 
 test("the web app store reports the timer error codes", async () => {
   const src = readFileSync(new URL("../web/alarm-store.mjs", import.meta.url), "utf8");
   for (const code of [
-    "timer_dispatched",
     "timer_not_found",
     "timer_not_permitted",
     "timer_exists",

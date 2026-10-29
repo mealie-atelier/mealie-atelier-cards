@@ -822,6 +822,29 @@ test("a rule card never shows the built-in list under two names", async () => {
   }
 });
 
+test("a built-in list named in the server language is shown by the UI language, both ways", () => {
+  const env = syncCard();
+  for (const [language, label] of [
+    ["en", "Shopping list"],
+    ["de", "Einkaufsliste"],
+  ]) {
+    env.card._hass.language = language;
+    for (const name of ["Shopping list", "Einkaufsliste"]) {
+      assert.equal(
+        env.card._syncDestinationName(name, "shopping_list"),
+        label,
+        `${language} ${name}`,
+      );
+      assert.equal(
+        env.card._syncDestinationLabel(name, "shopping_list"),
+        label,
+        `${language} ${name}`,
+      );
+    }
+    assert.equal(env.card._syncDestinationName("Einkaufsliste", "bring"), "Einkaufsliste");
+  }
+});
+
 test("a plain success does not repeat the word Sent", () => {
   const card = syncCard().card;
   assert.equal(

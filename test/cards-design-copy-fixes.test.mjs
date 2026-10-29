@@ -73,7 +73,7 @@ test("a scroll-driven header strip keeps content from being cut by the sticky cl
   assert.match(refinement, /@keyframes at-close-strip \{\s*to \{\s*opacity: 1/);
   assert.match(
     refinement,
-    /max-height: 700px\) \{\s*\.atelier \.modal > \.modal-close::before \{\s*display: none/,
+    /max-height: 500px\) \{\s*\.atelier \.modal > \.modal-close::before \{\s*display: none/,
   );
 });
 
@@ -104,8 +104,8 @@ test("the mealie_auth text names the server token in the web app and the setting
   for (const [language, web, expected] of [
     ["de", true, /MEALIE_API_TOKEN/],
     ["en", true, /MEALIE_API_TOKEN/],
-    ["de", false, /Einstellungen/],
-    ["en", false, /settings/],
+    ["de", false, /authentifiziere die Integration neu/],
+    ["en", false, /re-authenticate the integration/],
   ]) {
     const card = makeCard(loadCards(), {
       hass: { language, atelierOfflineHost: web, callWS: async () => ({}) },
@@ -113,6 +113,45 @@ test("the mealie_auth text names the server token in the web app and the setting
     const text = card._errorText({ code: "mealie_auth", message: "raw" });
     assert.match(text, expected, `${language} web=${web}`);
     if (!web) assert.doesNotMatch(text, /MEALIE_API_TOKEN/);
+  }
+});
+
+test("the Mealie address errors name MEALIE_URL only in the web app", () => {
+  for (const code of ["mealie_not_mealie", "mealie_not_found"])
+    for (const [language, web, expected] of [
+      ["de", true, /MEALIE_URL/],
+      ["en", true, /MEALIE_URL/],
+      ["de", false, /Integrationsoptionen/],
+      ["en", false, /integration options/],
+    ]) {
+      const card = makeCard(loadCards(), {
+        hass: { language, atelierOfflineHost: web, callWS: async () => ({}) },
+      });
+      const text = card._errorText({ code, message: "raw" });
+      assert.match(text, expected, `${code} ${language} web=${web}`);
+      if (!web) assert.doesNotMatch(text, /MEALIE_URL/);
+    }
+});
+
+test("German copy never puts a comma next to und", () => {
+  const de = JSON.parse(read("../src/i18n/de.json"));
+  for (const [key, value] of Object.entries(de))
+    assert.doesNotMatch(String(value), /, und\b|\bund,/, key);
+});
+
+test("the USDA key missing text names the .env file in the web app and the integration options in Home Assistant", () => {
+  for (const [language, web, expected] of [
+    ["de", true, /USDA_FDC_API_KEY/],
+    ["en", true, /USDA_FDC_API_KEY/],
+    ["de", false, /Integrationsoptionen/],
+    ["en", false, /integration options/],
+  ]) {
+    const card = makeCard(loadCards(), {
+      hass: { language, atelierOfflineHost: web, callWS: async () => ({}) },
+    });
+    const text = card._errorText({ code: "usda_key_missing", message: "raw" });
+    assert.match(text, expected, `${language} web=${web}`);
+    if (!web) assert.doesNotMatch(text, /USDA_FDC_API_KEY/);
   }
 });
 

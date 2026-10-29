@@ -106,8 +106,8 @@ export class AlarmStore {
       if (!a) throw err(404, "Timer not found", "timer_not_found");
       if (!mayAccess(a, access))
         throw err(403, "Only the owner or an admin can cancel this timer", "timer_not_permitted");
-      if (a.status === "sent" || a.status === "sending")
-        throw err(409, "Timer has already been dispatched", "timer_dispatched");
+      // A timer that already fired or is being sent has nothing left to cancel: success, like the Bridge.
+      if (a.status === "sent" || a.status === "sending") return a;
       a.status = "cancelled";
       a.updatedAt = this.clock();
       return a;

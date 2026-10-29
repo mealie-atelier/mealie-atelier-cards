@@ -1,4 +1,6 @@
 /** Smart Shopping Sync: status panel, setup wizard and review list for the Mealie Atelier Bridge. */
+// Normalised names Home Assistant gives its built-in todo list, by server language.
+const SHOPPING_LIST_NAMES = ["shoppinglist", "einkaufsliste"];
 export const shoppingSyncMethods = {
   // Sync state lives on one object so closing the modals can drop it in a single place.
   _syncData() {
@@ -86,12 +88,12 @@ export const shoppingSyncMethods = {
     const words = id.replace(/_/g, " ");
     return words.charAt(0).toUpperCase() + words.slice(1);
   },
-  // Home Assistant's built-in list is named "Shopping list" whatever the UI language is, so show it by its localised name.
+  // Home Assistant names its built-in list in the server language ("Shopping list", "Einkaufsliste"), so show it by the UI language.
   _syncDestinationName(name, platform) {
     const plain = String(name || "")
       .toLowerCase()
       .replace(/[^\p{L}\p{N}]/gu, "");
-    return String(platform) === "shopping_list" && plain === "shoppinglist"
+    return String(platform) === "shopping_list" && SHOPPING_LIST_NAMES.includes(plain)
       ? this._syncPlatformLabel(platform)
       : String(name || "");
   },
@@ -268,7 +270,7 @@ export const shoppingSyncMethods = {
     const builtIn =
       String(destination.platform) === "shopping_list" &&
       name.startsWith(prefix) &&
-      ["shoppinglist", "einkaufsliste"].includes(plain(name.slice(prefix.length)));
+      SHOPPING_LIST_NAMES.includes(plain(name.slice(prefix.length)));
     return builtIn || name === `${prefix}${destination.name}` ? `${prefix}${destName}` : rule.name;
   },
   // Route line "source → destination (platform)". When the rule is already named after the route

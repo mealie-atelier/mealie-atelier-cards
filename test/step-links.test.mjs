@@ -44,3 +44,9 @@ test("the step toggle rule is specific enough to keep the round serif badge", ()
   assert.match(rule, /border-radius:\s*50%/);
   assert.match(rule, /font-family:\s*var\(--at-serif\)/);
 });
+
+test("the step number toggle keeps a 44px touch target around the small circle", () => {
+  const css = readFileSync(new URL("../src/design-system/editorial.css", import.meta.url), "utf8");
+  assert.match(css, /\.step-number\.step-toggle::after \{[^}]*width: 44px;[^}]*height: 44px;/);
+  assert.match(css, /\.step-number\.step-toggle:focus-visible \{[^}]*outline: 2px solid/);
+});

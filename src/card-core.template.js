@@ -12,6 +12,13 @@ const MODES = [
   "cookbook",
   "manage",
 ];
+// Error codes whose advice differs by route: the web app server is configured through its environment.
+const HOST_SPECIFIC_ERRORS = [
+  "mealie_auth",
+  "usda_key_missing",
+  "mealie_not_mealie",
+  "mealie_not_found",
+];
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 // Result cap of the official Home Assistant provider; hitting it means the list may be cut off.
 const NATIVE_RESULT_LIMIT = 500;
@@ -490,13 +497,9 @@ class MealieAtelierCard extends HTMLElement {
   _errorText(err) {
     const code = typeof err?.code === "string" ? err.code : "";
     if (/^[a-z][a-z0-9_]*$/.test(code)) {
-      // The Mealie token lives in the server environment of the web app, not in a settings screen.
-      const key =
-        "err" +
-        (code === "mealie_auth" && this._isWebApp ? "mealie_auth_web" : code).replace(
-          /(?:^|_)([a-z0-9])/g,
-          (_, c) => c.toUpperCase(),
-        );
+      // The Mealie token and the USDA key live in the server environment of the web app, not in a settings screen.
+      const hostCode = this._isWebApp && HOST_SPECIFIC_ERRORS.includes(code) ? code + "_web" : code;
+      const key = "err" + hostCode.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase());
       const text = this.t(key);
       if (text && text !== key) return text;
     }
