@@ -395,3 +395,16 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
     assert.equal(recipe["@type"], "Recipe", page);
   }
 });
+
+test("every page carries the Week Dial favicon, touch icon and page-surface theme colour", () => {
+  assert.ok(existsSync(join(builds.local, "assets/mealie-atelier-mark.svg")));
+  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
+  assert.match(css, /\.brand-mark\s*\{[^}]*mealie-atelier-mark\.svg/);
+  for (const page of listFiles(builds.local, ".html")) {
+    const html = readFileSync(page, "utf8");
+    assert.match(html, /<link rel="icon"[^>]*mealie-atelier-icon-192\.png/, page);
+    assert.match(html, /<link rel="apple-touch-icon"[^>]*mealie-atelier-icon-192\.png/, page);
+    assert.match(html, /<meta name="theme-color" content="#0c120f"/, page);
+    assert.doesNotMatch(html, /<path d="M6 19c7-1/, page);
+  }
+});

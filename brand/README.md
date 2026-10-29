@@ -1,18 +1,17 @@
 # Cards brand assets
 
-Cards uses an original pasta-and-tomato photograph with an editorial wordmark. The square, full-bleed icon uses straight edges and a clean aubergine footer; the matching GitHub preview pairs warm typography with the food photograph.
+Cards uses the Week Dial mark: a cream plate seen from above, its rim notched into seven day sections with today in paprika, and a card grid on the plate. The masters live in the `brand/` folder of the [mealie-atelier/.github](https://github.com/mealie-atelier/.github) repository, together with the palette, clear space and minimum size rules ([`brand/README.md`](https://github.com/mealie-atelier/.github/tree/main/brand)). Never redraw the mark by hand; copy the generated files.
 
-- `icon.svg` is the self-contained master; its source photo is embedded so common SVG renderers produce the same result.
-- `icon-192.png`, `icon-512.png` and `icon-1024.png` are ready-to-use exports.
-- `social-preview.svg` is the editable artwork; `social-preview.png` is the 1280 × 640 export, and `social-preview.jpg` is the optimized GitHub upload (under 1 MB).
-- `CREDITS.md` records the photograph attribution and source license.
+- `icon.svg` is the Cards app tile master (night tile, cream plate, herb card grid).
+- `icon-192.png`, `icon-512.png` and `icon-1024.png` are exports of that master.
+- `social-preview.png` is the 1280 × 640 GitHub social preview and `social-preview.jpg` the optimized GitHub upload (both under 1 MB). Both are byte-identical copies of `brand/social/mealie-atelier-cards-social-preview.*` in the `.github` repository, where they are generated; do not edit them here.
 
-Regenerate the square icon exports on macOS with the built-in `sips` tool:
+The web app (`web/public/`) uses the web app family of the same set, and the demo copies `icon-192.png` as its favicon.
+
+Re-export the PNGs from the masters with the `render.sh` script of the masters repository (Chrome headless):
 
 ```sh
-for size in 192 512 1024; do
-  sips -s format png -z "$size" "$size" icon.svg --out "icon-$size.png"
-done
-sips -s format png social-preview.svg --out social-preview.png
-sips -s format jpeg -s formatOptions 86 social-preview.png --out social-preview.jpg
+render.sh icon.svg 192 icon-192.png
+render.sh icon.svg 512 icon-512.png
+render.sh icon.svg 1024 icon-1024.png
 ```

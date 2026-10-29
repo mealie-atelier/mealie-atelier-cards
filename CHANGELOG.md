@@ -20,6 +20,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Demo site: dish names on the food photos sit on a stronger scrim with the photo credit in the top corner, and the fifth fact closes the facts strip as a full-width row on narrow screens.
 - Demo photos: the skillet eggs and the pizza are cropped tight on the dish (no drink, almost no crispbread, no empty table), and all product screenshots were captured again with them.
 - Cooking mode on laptop-height screens (landscape, 701 to 1000 px tall): Back and Next sit right under the step and stay pinned to the bottom of the step column, the photo column keeps its full height with the recipe title readable, and only the step column scrolls. At 1440 × 900 the buttons were cut off at the dialog edge.
+- German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
 - Opening a dialog in Home Assistant puts keyboard focus inside it again: Home Assistant renders `ha-card` asynchronously, so the one-shot `focus()` hit content without a layout box and silently did nothing. Focus is retried until it holds, so Esc, Ctrl+K typing and Tab (kept inside the open dialog) work right away, and focus returns to the opener on close.
 - Cooking mode keeps focus on the control you used (next, back, timers) after every re-render, so the arrow keys step through repeatedly. When that control is gone or disabled, focus moves to the primary step button (Next or Done), so a repeated Enter neither ends cooking nor starts a timer by accident.
 - Ctrl/Cmd+K and "/" also work in Home Assistant while nothing has focus (never while another element has focus, so its own shortcuts stay untouched); Esc, arrows and Tab keep working in an open dialog even if focus fell to the page.
@@ -31,7 +32,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Web app: the footer has a side gutter on phones.
 - The Verwalten view no longer repeats the read-only notice that the global banner already shows.
 - AI failures show their own message instead of claiming Mealie is unreachable.
-- Web app: `icon-maskable-512.png` and `pasta-with-tomatoes.jpg`, which the manifest and the service worker precache list, are served now instead of answering 404.
+- Web app: `icon-maskable-512.png`, which the manifest lists, is served now instead of answering 404. The unused photo `pasta-with-tomatoes.jpg` left the precache list.
 - Web app: a reader sees "You are signed in with read access. An administrator can give your account the writer role." instead of the Home Assistant wording.
 - Web app: the footer line follows the app language (German or English).
 - Web app docs: a reader's shared cooking journal is read only (only personal timers still work), and the sign-in throttle allows 5 free failures and locks out from the 6th.
@@ -62,6 +63,10 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 ### Changed
 
 - Demo photos: eight of the ten photos are new (pancakes, skillet eggs, chicken salad, pumpkin soup, penne with artichokes, wonton soup, coconut curry, lemon focaccia), the gnocchi and pizza photos stay, and every fictional recipe now matches its photo. The shakshuka, Greek salad, chicken soup, lemon pasta, paneer curry, ramen and roasted vegetables gave way to the new dishes, the pizza became ham and mushroom, and the gnocchi and pancake recipes and all alt texts describe exactly what their photos show.
+- New Week Dial icons replace the photo icon: a cream plate with seven day sections, today in paprika. The Cards icon carries a card grid on the plate (`brand/icon.svg` with `icon-192.png`, `icon-512.png` and `icon-1024.png`, also the demo favicon and the GitHub social preview).
+- The web app icon carries a browser window on the plate. It is used in the browser tab (`favicon.svg`, `favicon.ico` with 16, 32 and 48 px, `favicon-32.png`), on the iOS home screen, in the installed app (`web/public/icon-192.png`, `icon-512.png`) and as a maskable icon for Android.
+- The manifest is named "Mealie Atelier · Kitchen Studio". Its theme and splash colour, the browser theme colour and the window title now match the dark page surface (`#101613`), and the page title no longer uses a dash.
+- Timer notifications show a monochrome badge (`badge-96.png`) instead of the full-colour tile, so Android draws a clear glyph in the status bar.
 - The overview tiles "Rezepte", "Geplant" and "Offene Artikel" are buttons that open the recipes, the week plan and the shopping list.
 - A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.
 - Recipe photos appear in the week grid, in today's plan and in the cookbook list.

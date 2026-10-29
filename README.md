@@ -1,4 +1,4 @@
-<p align="center"><img width="112" alt="Mealie Atelier icon: handmade pasta with tomatoes" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/brand/icon-512.png"></p>
+<p align="center"><img width="112" alt="Mealie Atelier Cards icon: a cream plate with seven day sections and a card grid" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/brand/icon-512.png"></p>
 
 <h1 align="center">Mealie Atelier Cards</h1>
 

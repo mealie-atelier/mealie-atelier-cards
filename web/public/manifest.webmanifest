@@ -1,6 +1,6 @@
 {
   "id": "/",
-  "name": "Mealie Atelier \u2014 Kitchen Studio",
+  "name": "Mealie Atelier · Kitchen Studio",
   "short_name": "Atelier",
   "description": "A private kitchen studio for your Mealie recipes, meal planning and shopping.",
   "start_url": "/",
@@ -8,8 +8,8 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#302632",
-  "theme_color": "#302632",
+  "background_color": "#101613",
+  "theme_color": "#101613",
   "icons": [
     {
       "src": "/icon-192.png",

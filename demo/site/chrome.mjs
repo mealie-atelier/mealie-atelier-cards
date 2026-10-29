@@ -111,7 +111,7 @@ export function iconSprite() {
 }
 
 // The app's leaf mark in the green accent; the plum-banded store icon stays the favicon only.
-export const brandMark = `<span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z"/><path d="M5 20c2-4 5-7 10-10"/></svg></span>`;
+export const brandMark = () => `<span class="brand-mark" aria-hidden="true"></span>`;
 
 // ctx: { locale, home: { de, en }, alternate: { de, en }, onLanding }
 function anchor(ctx, key) {
@@ -149,7 +149,7 @@ export function renderSiteHeader(ctx) {
   ];
   const link = ([key, label]) => `<a href="${anchor(ctx, key)}">${label}</a>`;
   const homeLabel = t("Mealie Atelier, zur Startseite", "Mealie Atelier, home");
-  return `${iconSprite()}<a class="skip" href="#main">${t("Zum Inhalt springen", "Skip to content")}</a><div class="progress" aria-hidden="true"></div><header class="top" id="top"><div class="wrap top-row"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}" aria-label="${homeLabel}">${brandMark}<b>Mealie Atelier</b></a><nav class="nav" aria-label="${t("Hauptnavigation", "Main navigation")}">${nav.map(link).join("")}</nav>${languageSwitch(ctx, "lang-switch top-lang")}<a class="btn btn-primary top-cta" href="${anchor(ctx, "install")}">${t("Installieren", "Install")}</a><button class="menu-btn" type="button" aria-expanded="false" aria-controls="drawer" data-open-label="${t("Menü öffnen", "Open menu")}" data-close-label="${t("Menü schließen", "Close menu")}" aria-label="${t("Menü öffnen", "Open menu")}">${icon("menu")}</button></div><div class="drawer" id="drawer" hidden>${drawer.map(link).join("")}${languageSwitch(ctx, "lang-switch drawer-lang")}<a class="btn btn-primary" href="${anchor(ctx, "install")}">${t("Kostenlos installieren", "Install for free")}</a></div></header>`;
+  return `${iconSprite()}<a class="skip" href="#main">${t("Zum Inhalt springen", "Skip to content")}</a><div class="progress" aria-hidden="true"></div><header class="top" id="top"><div class="wrap top-row"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}" aria-label="${homeLabel}">${brandMark(ctx)}<b>Mealie Atelier</b></a><nav class="nav" aria-label="${t("Hauptnavigation", "Main navigation")}">${nav.map(link).join("")}</nav>${languageSwitch(ctx, "lang-switch top-lang")}<a class="btn btn-primary top-cta" href="${anchor(ctx, "install")}">${t("Installieren", "Install")}</a><button class="menu-btn" type="button" aria-expanded="false" aria-controls="drawer" data-open-label="${t("Menü öffnen", "Open menu")}" data-close-label="${t("Menü schließen", "Close menu")}" aria-label="${t("Menü öffnen", "Open menu")}">${icon("menu")}</button></div><div class="drawer" id="drawer" hidden>${drawer.map(link).join("")}${languageSwitch(ctx, "lang-switch drawer-lang")}<a class="btn btn-primary" href="${anchor(ctx, "install")}">${t("Kostenlos installieren", "Install for free")}</a></div></header>`;
 }
 
 export function renderSiteFooter(ctx) {
@@ -163,7 +163,7 @@ export function renderSiteFooter(ctx) {
   const column = (title, rows) =>
     `<div class="foot-col"><h3>${title}</h3><ul>${rows.join("")}</ul></div>`;
   const heart = `<span class="heart" role="img" aria-label="${t("Liebe", "love")}">♥</span>`;
-  return `<footer class="site-footer"><div class="foot-glow" aria-hidden="true"></div><div class="wrap foot-top"><div class="foot-brand"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}">${brandMark}<b>Mealie Atelier</b></a><p class="promise">${t("Eine ruhige Küche für dein Mealie. Jeden Tag.", "A calm kitchen for your Mealie. Every day.")}</p><p class="foot-sub">${t("Kostenlos, Open Source und selbst gehostet. Für Home Assistant oder als eigene Web-App.", "Free, open source and self-hosted. For Home Assistant or as a web app of its own.")}</p><div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>Alles Automatisch · YouTube</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>Ko-fi</small></span>`, "support-link")}</div></div><div class="foot-cols">${column(
+  return `<footer class="site-footer"><div class="foot-glow" aria-hidden="true"></div><div class="wrap foot-top"><div class="foot-brand"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}">${brandMark(ctx)}<b>Mealie Atelier</b></a><p class="promise">${t("Eine ruhige Küche für dein Mealie. Jeden Tag.", "A calm kitchen for your Mealie. Every day.")}</p><p class="foot-sub">${t("Kostenlos, Open Source und selbst gehostet. Für Home Assistant oder als eigene Web-App.", "Free, open source and self-hosted. For Home Assistant or as a web app of its own.")}</p><div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>Alles Automatisch · YouTube</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>Ko-fi</small></span>`, "support-link")}</div></div><div class="foot-cols">${column(
     t("Produkt", "Product"),
     [
       local("demo", t("Live-Demo", "Live demo")),

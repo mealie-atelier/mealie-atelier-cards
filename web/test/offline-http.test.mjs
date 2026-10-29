@@ -170,7 +170,8 @@ test("every file the service worker precaches and the manifest names is served w
       await readFile(join(ROOT, "public", "manifest.webmanifest"), "utf8"),
     );
     const paths = new Set([...precache, ...manifest.icons.map((icon) => icon.src)]);
-    assert.ok(paths.has("/icon-maskable-512.png") && paths.has("/pasta-with-tomatoes.jpg"));
+    assert.ok(paths.has("/icon-maskable-512.png"));
+    assert.ok(!paths.has("/pasta-with-tomatoes.jpg"), "the old photo is no longer precached");
     const expected = { ".png": "image/png", ".jpg": "image/jpeg" };
     for (const path of paths) {
       const r = await fetch(`http://127.0.0.1:${app.port}${path}`, {
