@@ -396,7 +396,13 @@ test("explicit people yield provides a serving basis while piece yield never doe
   const ranked = Studio.recommendation(people, { people: 2 }, [], {});
   assert.equal(ranked.servings, 2);
   assert.ok(
-    ranked.reasons.some((r) => r.key === "studioReasonServingsBase" && r.values.servings === 2),
+    ranked.reasons.some(
+      (r) =>
+        r.key === "studioReasonServingsBase" &&
+        r.values.servings === 2 &&
+        r.plural === true &&
+        r.values.count === 2,
+    ),
   );
 });
 test("Kochinspo sorts single ingredient lines into meat, fish and vegetarian", () => {

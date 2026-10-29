@@ -578,7 +578,11 @@ const AtelierStudio = (() => {
         : null,
       profile.kidFriendly && kidTags ? { key: "studioReasonFamilyFriendly" } : null,
       serves
-        ? { key: "studioReasonServingsBase", values: { servings: serves } }
+        ? {
+            key: "studioReasonServingsBase",
+            values: { servings: serves, count: serves },
+            plural: true,
+          }
         : { key: "studioReasonServingsOpen" },
       prep && prep <= Number(profile.maxMinutes || 40)
         ? { key: "studioReasonWithinBudget", values: { minutes: prep } }

@@ -428,6 +428,25 @@ test("the open item count reads in singular and plural", () => {
   assert.equal(card.tp("openItems", 4), "4 offene Artikel");
 });
 
+test("Kochinspo servings and people read in singular and plural", () => {
+  const cards = loadCards();
+  const de = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
+  const en = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+  assert.equal(de.tp("studioDiscoverForPeople", 1, { people: 1 }), "Für 1 Person");
+  assert.equal(de.tp("studioDiscoverRecipeBase", 1, { servings: 1 }), "Rezeptbasis 1 Portion");
+  assert.equal(de.tp("studioReasonServingsBase", 4, { servings: 4 }), "Rezeptbasis: 4 Portionen");
+  assert.equal(en.tp("studioDiscoverForPeople", 1, { people: 1 }), "For 1 person");
+  assert.equal(en.tp("studioReasonServingsBase", 1, { servings: 1 }), "Recipe base: 1 serving");
+});
+
+test("studio kickers share the eyebrow and carry no stray section numbers", () => {
+  for (const locale of ["de", "en"]) {
+    assert.equal(locales[locale].studioKicker, locales[locale].eyebrow);
+    for (const key of ["studioPlanKicker", "studioPantryKicker", "studioGroceryKicker"])
+      assert.doesNotMatch(locales[locale][key], /^\d+\s*\//, `${locale}.${key}`);
+  }
+});
+
 test("the card credit line is translated for German", () => {
   assert.equal(locales.de.creditMadeWith, "Mit");
   assert.equal(locales.de.creditBy, "von");
