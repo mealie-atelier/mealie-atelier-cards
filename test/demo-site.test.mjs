@@ -136,6 +136,14 @@ test("English footers group the German-only guides under one note", () => {
     const html = read(page);
     const footer = footerOf(html);
     assert.doesNotMatch(footer, /\(DE\)/, page);
+    // Each external arrow sits in a no-wrap span with the last word of its label.
+    const arrows = footer.match(/<svg class="i trail"/g)?.length ?? 0;
+    assert.ok(arrows >= 6, page);
+    assert.equal(
+      footer.match(/<span class="nowrap">[^<\s]+<svg class="i trail"/g)?.length,
+      arrows,
+      page,
+    );
     if (!html.includes('<html lang="en">')) continue;
     english += 1;
     assert.match(footer, /<h3>Guides <span class="col-note">in German<\/span><\/h3>/, page);

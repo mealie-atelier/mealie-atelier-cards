@@ -155,8 +155,11 @@ export function renderSiteHeader(ctx) {
 export function renderSiteFooter(ctx) {
   const t = translator(ctx.locale);
   const local = (key, label) => `<li><a href="${anchor(ctx, key)}">${label}</a></li>`;
+  // The arrow is glued to the last word, so a wrapping label never leaves it alone on a line.
+  const trailing = (label) =>
+    label.replace(/(\S+)$/, `<span class="nowrap">$1${icon("ext", "trail")}</span>`);
   const remote = (href, label, iconName = "ext") =>
-    `<li>${ext(href, iconName === "ext" ? `${label}${icon("ext", "trail")}` : `${icon(iconName)}${label}`)}</li>`;
+    `<li>${ext(href, iconName === "ext" ? trailing(label) : `${icon(iconName)}${label}`)}</li>`;
   const column = (title, rows) =>
     `<div class="foot-col"><h3>${title}</h3><ul>${rows.join("")}</ul></div>`;
   const heart = `<span class="heart" role="img" aria-label="${t("Liebe", "love")}">♥</span>`;

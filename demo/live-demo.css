@@ -2521,7 +2521,10 @@ details[open] .chev {
   margin-right: 8px;
   vertical-align: -3px;
 }
-.foot-col a > svg.trail {
+.foot-col .nowrap {
+  white-space: nowrap;
+}
+.foot-col a svg.trail {
   width: 13px;
   height: 13px;
   margin: 0 0 0 6px;
