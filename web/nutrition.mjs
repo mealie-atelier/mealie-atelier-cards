@@ -160,7 +160,7 @@ export async function calculate(key, recipe, entries, expectedHash) {
     throw invalid("Match each recipe ingredient");
   const servings = Number(recipe.recipeServings);
   if (!Number.isFinite(servings) || servings <= 0 || servings > 100)
-    throw invalid("Recipe needs a valid serving count");
+    throw invalid("Recipe needs a valid serving count", "recipe_servings_invalid");
   const result = Object.fromEntries(Object.keys(NUTRIENTS).map((k) => [k, 0]));
   const coverage = Object.fromEntries(Object.keys(NUTRIENTS).map((k) => [k, 0]));
   const lines = [];
@@ -182,7 +182,7 @@ export async function calculate(key, recipe, entries, expectedHash) {
     if (food.fdcId !== id) throw invalid("Food ID mismatch");
     const n = nutrients(food);
     if (["calories", "protein", "fat", "carbohydrate"].some((k) => n[k] === null))
-      throw invalid(`USDA food ${id} is missing essential nutrition data`);
+      throw invalid(`USDA food ${id} is missing essential nutrition data`, "usda_food_incomplete");
     for (const [name, v] of Object.entries(n)) {
       if (v !== null) {
         result[name] += (v * w) / 100;

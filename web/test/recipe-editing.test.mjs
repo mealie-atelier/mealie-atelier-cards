@@ -700,3 +700,21 @@ test("nutrition errors carry specific codes so the card can show its own message
     assert.equal(changed.body.code, "recipe_changed");
   });
 });
+
+test("nutrition calculate gives a missing serving count its own code", async () => {
+  await withApp({}, async ({ app, state }) => {
+    state.recipe.recipeServings = 0;
+    const preview = await app.api("nutrition_prepare", { slug: "gnocchi" });
+    const res = await app.api("nutrition_calculate", {
+      slug: "gnocchi",
+      entries: (state.recipe.recipeIngredient || []).map((_, index) => ({
+        index,
+        grams: 10,
+        fdc_id: 1,
+      })),
+      expected_hash: preview.body.hash,
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.code, "recipe_servings_invalid");
+  });
+});

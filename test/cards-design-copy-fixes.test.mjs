@@ -401,3 +401,32 @@ test("nutrition save and calculate show the translated text for a Bridge error c
     assert.doesNotMatch(card._nutrition.notice, /raw bridge/);
   }
 });
+
+test("nutrition keeps the specific reason for a bare invalid_request and translates the web app codes", async () => {
+  for (const [language, code, message, expected] of [
+    ["de", "invalid_request", "Recipe must have a valid serving count", /^Recipe must have/],
+    ["en", "invalid_request", "Recipe must have a valid serving count", /^Recipe must have/],
+    ["de", "recipe_servings_invalid", "raw", /Portionsangabe/],
+    ["en", "recipe_servings_invalid", "raw", /no valid serving count/],
+    ["de", "usda_food_incomplete", "raw", /Nährwertangaben/],
+    ["en", "usda_food_incomplete", "raw", /missing essential nutrition data/],
+  ]) {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._render = () => {};
+    Object.defineProperty(card, "_permissions", { get: () => ({ can_manage: true }) });
+    card._nutrition = {
+      busy: false,
+      rows: [],
+      replaceExisting: false,
+      preview: { slug: "s", hash: "h" },
+    };
+    card._ws = async () => {
+      throw Object.assign(new Error(message), { code });
+    };
+    const el = { dataset: { action: "nutri-calc", value: "" }, disabled: false, closest: () => el };
+    await card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
+    assert.match(card._nutrition.notice, expected, `${language} ${code}`);
+    assert.doesNotMatch(card._nutrition.notice, /ungültig\. Prüfe|not valid\. Check/);
+  }
+});
