@@ -85,8 +85,8 @@
       "image": {
         "file": "../photos/pfannen-eier-mit-tomaten-und-basilikum.webp",
         "alt": {
-          "de": "Vier Eier mit Tomatenstücken, Zwiebelstreifen und Basilikumblättern in einer schwarzen Pfanne auf einem sonnigen Holztisch, oben am Rand ein Stück Knäckebrot",
-          "en": "Four eggs with chunks of tomato, sliced onion and basil leaves in a black pan on a sunlit wooden table, a piece of crispbread at the top edge"
+          "de": "Vier Eier mit Tomatenstücken, Zwiebelstreifen und Basilikumblättern in einer schwarzen Pfanne auf einem sonnigen Holztisch, oben links eine rote Beere und oben rechts am Rand ein Stück Knäckebrot",
+          "en": "Four eggs with chunks of tomato, sliced onion and basil leaves in a black pan on a sunlit wooden table, a red berry at the top left and a piece of crispbread at the top right edge"
         },
         "photographer": "Ivan Cherepanov",
         "photographerUrl": "https://unsplash.com/@theveryday?utm_source=mealie_atelier&utm_medium=referral",
@@ -123,7 +123,7 @@
           "500 g Kirschtomaten",
           "200 g passierte Tomaten",
           "1 Knoblauchzehe, in Scheiben",
-          "2 EL Olivenöl",
+          "3 EL Olivenöl",
           "1 Prise getrockneter Oregano",
           "250 g Mozzarella",
           "1 Handvoll Basilikum"
@@ -133,7 +133,7 @@
           "500 g cherry tomatoes",
           "200 g passata",
           "1 garlic clove, sliced",
-          "2 tbsp olive oil",
+          "3 tbsp olive oil",
           "1 pinch dried oregano",
           "250 g mozzarella",
           "1 handful basil leaves"
@@ -148,8 +148,8 @@
           },
           {
             "title": "Gnocchi garen",
-            "summary": "Kurz in Salzwasser ziehen lassen",
-            "text": "Gnocchi nach Packungsangabe in siedendem Salzwasser garen. Sobald sie an die Oberfläche steigen, mit einer Schaumkelle direkt in die Sauce heben."
+            "summary": "Kochen und goldbraun anbraten",
+            "text": "Gnocchi nach Packungsangabe in siedendem Salzwasser garen. Sobald sie an die Oberfläche steigen, mit einer Schaumkelle herausheben und abtropfen lassen. In einer zweiten Pfanne 1 EL Olivenöl erhitzen, die Gnocchi 2 Minuten goldbraun anbraten und dann in die Sauce geben."
           },
           {
             "title": "Mit Mozzarella servieren",
@@ -165,8 +165,8 @@
           },
           {
             "title": "Cook the gnocchi",
-            "summary": "Poach briefly in salted water",
-            "text": "Cook the gnocchi in gently boiling salted water according to the packet. As soon as they float, lift them straight into the sauce with a slotted spoon."
+            "summary": "Boil and sear until golden",
+            "text": "Cook the gnocchi in gently boiling salted water according to the packet. As soon as they float, lift them out with a slotted spoon and drain. Heat 1 tbsp olive oil in a second pan, sear the gnocchi for 2 minutes until golden, then add them to the sauce."
           },
           {
             "title": "Serve with mozzarella",
@@ -178,8 +178,8 @@
       "image": {
         "file": "../photos/gnocchi-alla-sorrentina.webp",
         "alt": {
-          "de": "Gnocchi in Tomatensauce mit gezupftem Mozzarella und Basilikum in einem weißen Teller mit braunem Rand auf hellem Holz",
-          "en": "Gnocchi in tomato sauce with torn mozzarella and basil in a white bowl with a brown rim on light wood"
+          "de": "Gnocchi in Tomatensauce mit gezupftem Mozzarella und Basilikum in einem weißen Teller mit braunem Rand, in den Ecken helles Holz",
+          "en": "Gnocchi in tomato sauce with torn mozzarella and basil in a white bowl with a brown rim, light wood in the corners"
         },
         "photographer": "Nathalie Klippert",
         "photographerUrl": "https://unsplash.com/@nathaliescontent?utm_source=mealie_atelier&utm_medium=referral",
@@ -676,8 +676,8 @@
         "en": "Coconut curry with potatoes and carrots"
       },
       "description": {
-        "de": "Kartoffeln und Karotten garen in einer milden roten Kokossauce. Dazu gibt es Basmatireis, geröstete Erdnüsse, frischen Koriander und Limette.",
-        "en": "Potatoes and carrots simmer in a mild red coconut sauce. Serve with basmati rice, roasted peanuts, fresh coriander and lime."
+        "de": "Kartoffeln und Karotten garen in einer milden gelben Kokossauce. Dazu gibt es Basmatireis, geröstete Erdnüsse, frischen Koriander und Limette.",
+        "en": "Potatoes and carrots simmer in a mild yellow coconut sauce. Serve with basmati rice, roasted peanuts, fresh coriander and lime."
       },
       "category": {
         "de": "Curry",
@@ -697,12 +697,13 @@
           "1 EL Kokosöl",
           "1 Zwiebel, in Spalten",
           "2 Knoblauchzehen, fein gehackt",
-          "2 EL vegane rote Currypaste",
+          "2 EL vegane gelbe Currypaste",
           "400 g festkochende Kartoffeln, in 2 cm Würfeln",
           "2 Karotten, in dicken Scheiben",
           "400 ml Kokosmilch",
           "50 g geröstete Erdnüsse",
           "2 Limetten",
+          "2 Frühlingszwiebeln, in feinen Ringen",
           "1 Handvoll Koriander"
         ],
         "en": [
@@ -710,12 +711,13 @@
           "1 tbsp coconut oil",
           "1 onion, cut into wedges",
           "2 garlic cloves, finely chopped",
-          "2 tbsp vegan red curry paste",
+          "2 tbsp vegan yellow curry paste",
           "400 g waxy potatoes, in 2 cm cubes",
           "2 carrots, in thick slices",
           "400 ml coconut milk",
           "50 g roasted peanuts",
           "2 limes",
+          "2 spring onions, finely sliced",
           "1 handful coriander"
         ]
       },
@@ -734,7 +736,7 @@
           {
             "title": "Anrichten",
             "summary": "Mit Erdnüssen, Koriander und Limette servieren",
-            "text": "Koriander grob hacken. Reis in Schalen geben, das Curry daraufsetzen und mit Erdnüssen und Koriander bestreuen. Mit Limettenspalten servieren."
+            "text": "Koriander grob hacken, Frühlingszwiebeln in feine Ringe schneiden. Reis in Schalen geben, das Curry daraufsetzen und mit Erdnüssen, Koriander und Frühlingszwiebeln bestreuen. Mit Limettenspalten servieren."
           }
         ],
         "en": [
@@ -751,15 +753,15 @@
           {
             "title": "Serve",
             "summary": "Finish with peanuts, coriander and lime",
-            "text": "Roughly chop the coriander. Spoon the rice into bowls, set the curry on top and scatter over the peanuts and coriander. Serve with lime wedges."
+            "text": "Roughly chop the coriander and slice the spring onions into fine rings. Spoon the rice into bowls, set the curry on top and scatter over the peanuts, coriander and spring onions. Serve with lime wedges."
           }
         ]
       },
       "image": {
         "file": "../photos/kokos-curry-mit-kartoffeln-und-karotten.webp",
         "alt": {
-          "de": "Kokos-Curry mit Kartoffeln, Karotten und Erdnüssen auf Basmatireis in einer dunklen Schale, mit Koriander und einer Limettenspalte, auf hellem Stein",
-          "en": "Coconut curry with potatoes, carrots and peanuts on basmati rice in a dark bowl, topped with coriander and a lime wedge, on light stone"
+          "de": "Kokos-Curry mit Kartoffeln, Karotten und Erdnüssen auf Basmatireis in einer dunklen Schale, mit Koriander, Frühlingszwiebelringen und zwei Limettenspalten, auf hellem Stein",
+          "en": "Coconut curry with potatoes, carrots and peanuts on basmati rice in a dark bowl, topped with coriander, sliced spring onion and two lime wedges, on light stone"
         },
         "photographer": "Filipp Romanovski",
         "photographerUrl": "https://unsplash.com/@filipp_roman_photography?utm_source=mealie_atelier&utm_medium=referral",

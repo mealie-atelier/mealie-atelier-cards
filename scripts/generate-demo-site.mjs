@@ -6,6 +6,7 @@ import {
   readdir,
   readFile,
   rmdir,
+  stat,
   unlink,
   writeFile,
 } from "node:fs/promises";
@@ -492,6 +493,27 @@ function rootIndex() {
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}">${iconLinks("assets/")}<meta name="theme-color" content="#0c120f"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
 }
 
+// Deletes every file below `target` that has no counterpart below `source`.
+async function removeStaleFiles(source, target) {
+  const entries = await readdir(target, { withFileTypes: true });
+  for (const entry of entries) {
+    const sourcePath = join(source, entry.name);
+    const targetPath = join(target, entry.name);
+    if (entry.isDirectory()) {
+      await removeStaleFiles(sourcePath, targetPath);
+      continue;
+    }
+    const exists = await stat(sourcePath).then(
+      () => true,
+      (error) => {
+        if (error.code === "ENOENT") return false;
+        throw error;
+      },
+    );
+    if (!exists) await unlink(targetPath);
+  }
+}
+
 await validateCatalog();
 await mkdir(join(siteRoot, "assets"), { recursive: true });
 await mkdir(join(siteRoot, "photos"), { recursive: true });
@@ -505,6 +527,9 @@ await mkdir(join(siteRoot, "data"), { recursive: true });
 await copyFile(styles, join(siteRoot, "assets/live-demo.css"));
 await copyFile(siteScript, join(siteRoot, "assets/site.js"));
 await cp(join(demoRoot, "showcase"), join(siteRoot, "showcase"), { recursive: true });
+// Photos and screenshots that left the sources must not linger in a reused output folder.
+await removeStaleFiles(join(demoRoot, "photos"), join(siteRoot, "photos"));
+await removeStaleFiles(join(demoRoot, "showcase"), join(siteRoot, "showcase"));
 await copyFile(searchModule, join(siteRoot, "assets/recipe-search.js"));
 await copyFile(bundle, join(siteRoot, "assets/mealie-atelier-cards.js"));
 await copyFile(

@@ -40,6 +40,15 @@ before(() => {
     mkdirSync(join(stale, page), { recursive: true });
     writeFileSync(join(stale, page, "index.html"), "<p>old leaf page</p>");
   }
+  // Renamed photos and replaced screenshots must not survive either.
+  for (const leftover of [
+    "photos/kokos-curry-mit-champignons-und-gruenkohl.webp",
+    "showcase/photos/kokos-curry-mit-champignons-und-gruenkohl-800.webp",
+    "showcase/de/app-desktop-retired-1600.webp",
+  ]) {
+    mkdirSync(dirname(join(stale, leftover)), { recursive: true });
+    writeFileSync(join(stale, leftover), "old photo");
+  }
   builds.local = generate("", stale);
   builds.deployed = generate(baseUrl);
 });
@@ -467,6 +476,18 @@ test("a reused output folder loses the pages of recipes that left the catalog", 
   for (const page of contentPages(builds.local)) {
     assert.doesNotMatch(read(page), /old leaf page/, page);
   }
+});
+
+test("a reused output folder loses renamed photos and retired screenshots", () => {
+  for (const leftover of [
+    "photos/kokos-curry-mit-champignons-und-gruenkohl.webp",
+    "showcase/photos/kokos-curry-mit-champignons-und-gruenkohl-800.webp",
+    "showcase/de/app-desktop-retired-1600.webp",
+  ]) {
+    assert.ok(!existsSync(join(builds.local, leftover)), leftover);
+  }
+  assert.ok(existsSync(join(builds.local, "photos/kokos-curry-mit-kartoffeln-und-karotten.webp")));
+  assert.ok(existsSync(join(builds.local, "showcase/de/app-desktop-recipes-1600.webp")));
 });
 
 test("favicon and page mark come from one family: the plate with the herb leaf", () => {
