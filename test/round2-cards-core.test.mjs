@@ -174,7 +174,7 @@ test("wizard automatic preset renders its translated hint", () => {
 });
 
 test("editor accent dot and option name show herb green in the light theme", () => {
-  for (const [darkMode, plum] of [
+  for (const [darkMode, herb] of [
     [false, true],
     [true, false],
   ]) {
@@ -185,9 +185,9 @@ test("editor accent dot and option name show herb green in the light theme", () 
     editor._wizardMode = false;
     editor.setConfig({ type: "custom:mealie-atelier-card", theme: "auto" });
     const markup = editor.shadowRoot.innerHTML;
-    assert.equal(markup.includes("background:#3e6b48"), plum);
-    assert.equal(markup.includes("Herb green (default in the light theme)"), plum);
-    assert.equal(markup.includes("Sage green"), !plum);
+    assert.equal(markup.includes("background:#3e6b48"), herb);
+    assert.equal(markup.includes("Herb green (default in the light theme)"), herb);
+    assert.equal(markup.includes("Sage green"), !herb);
   }
   const cards = loadCards();
   const editor = new (cards.registry.get("mealie-atelier-card-editor"))();

@@ -5,7 +5,7 @@
 <p align="center"><strong>Your Mealie kitchen, beautifully at home in Home Assistant.</strong><br>Recipes, meal plans, shopping lists and a calm step-by-step cooking mode as dashboard cards, in light and dark, on the wall tablet and on the phone.</p>
 
 <p align="center">
-<a href="https://github.com/mealie-atelier/mealie-atelier-cards/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/mealie-atelier/mealie-atelier-cards?style=flat-square&color=75465d"></a>
+<a href="https://github.com/mealie-atelier/mealie-atelier-cards/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/mealie-atelier/mealie-atelier-cards?style=flat-square&color=3e6b48"></a>
 <a href="https://github.com/mealie-atelier/mealie-atelier-cards/actions/workflows/validate.yml"><img alt="Validate" src="https://img.shields.io/github/actions/workflow/status/mealie-atelier/mealie-atelier-cards/validate.yml?branch=main&style=flat-square&label=validate"></a>
 <a href="https://hacs.xyz"><img alt="HACS Dashboard" src="https://img.shields.io/badge/HACS-Dashboard-41BDF5?style=flat-square"></a>
 <img alt="Home Assistant 2026.10 or newer" src="https://img.shields.io/badge/Home%20Assistant-2026.10%2B-41BDF5?style=flat-square">

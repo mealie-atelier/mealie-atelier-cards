@@ -476,7 +476,7 @@
   padding: clamp(26px, 4cqi, 49px);
 }
 .atelier.light .hero {
-  background-color: #594652;
+  background-color: #1e3026;
   border-color: color-mix(in srgb, var(--ds-brand) 24%, transparent);
 }
 .atelier.light .hero:after {

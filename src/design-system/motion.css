@@ -9,7 +9,7 @@
   --at-slow: var(--ds-motion-slow);
 }
 .atelier.light {
-  --at-focus: color-mix(in srgb, var(--at-accent) 76%, #2b2028);
+  --at-focus: color-mix(in srgb, var(--at-accent) 76%, #14201a);
 }
 .atelier {
   --at-focus: color-mix(in srgb, var(--at-accent) 65%, white);

@@ -18,7 +18,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - AI review and substitute helpers: "Review with AI" is hidden when no AI key is set, the consent dialog names the configured provider (OpenAI or Anthropic), requests carry the card language, and the missing-key texts use one term ("AI API key"). The web app reports `ai_enabled` and `ai_provider` in its status. The web app's USDA hint points to `USDA_FDC_API_KEY` in the server's `.env` file. Every destructive confirm (remove pantry item, remove member, end or replace a session) focuses Cancel.
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
 - Theme auto follows the system colour scheme in the web app, live while it is open (the card and the theme colour of the browser bar included). The setup wizard offers Automatic next to the two presets. The Family page title and the provider banner eyebrow are translated. The recipe print word is normal case.
-- The card follows the Home Assistant light or dark mode by default (`theme: auto`); in the light theme the default accent swatch in the Design Studio is shown and named plum, matching the colour you see.
+- The card follows the Home Assistant light or dark mode by default (`theme: auto`).
 - Design Studio and the editor offer the automatic theme; print documents get a normal-case title (the file name when saving as PDF); the shopping card is called "Einkaufsliste" in the German picker.
 - Card picker: one name per view in the picker, navigation and settings (Discover, Meal plan, Family, Manage), neutral parallel descriptions in English and German, and the picker follows a language switch without a reload. Stub configs no longer write an unused `title`.
 - German UI: sidebar, menu label, Print Studio and Design Studio headings and the print masthead are translated. Week and shopping prints no longer ask "How was it last time?" and the print credit link matches the sheet colours. The week range uses an en dash.
@@ -125,7 +125,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Changed
 
-- The light theme uses the Herb green of the brand mark (`#3e6b48`) instead of plum; its inks, shadows and photo fallback follow the same green-night cast.
+- The light theme uses the Herb green of the brand mark (`#3e6b48`) instead of plum, for the default accent, inks, shadows and photo fallback; the default accent swatch in the Design Studio and the editor is shown and named "herb green" in the light theme, matching the colour you see.
 - New Week Dial icons replace the photo icon: a cream plate with seven day sections, today in paprika. The Cards icon carries a card grid on the plate (`brand/icon.svg` with `icon-192.png`, `icon-512.png` and `icon-1024.png`, also the demo favicon and the GitHub social preview).
 - The web app icon carries a browser window on the plate. It is used in the browser tab (`favicon.svg`, `favicon.ico` with 16, 32 and 48 px, `favicon-32.png`), on the iOS home screen, in the installed app (`web/public/icon-192.png`, `icon-512.png`) and as a maskable icon for Android.
 - The manifest is named "Mealie Atelier · Kitchen Studio". Its theme and splash colour, the browser theme colour and the window title now match the dark page surface (`#101613`), and the page title no longer uses a dash.
