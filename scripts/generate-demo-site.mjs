@@ -62,11 +62,13 @@ const ogTaglines = {
     tagline: "Eine ruhige Küche für dein <em>Mealie</em>.",
     sub: "Woche planen, einkaufen, Schritt für Schritt kochen.",
     chips: ["Kostenlos", "Open Source", "Live-Demo"],
+    crops: [489, 490],
   },
   en: {
     tagline: "A calm kitchen for your <em>Mealie</em>.",
     sub: "Plan the week, shop, cook step by step.",
     chips: ["Free", "Open source", "Live demo"],
+    crops: [462, 490],
   },
 };
 
@@ -110,7 +112,7 @@ async function buildOgImages() {
   const mark = join(cardsRoot, "demo/site/week-dial-mark.svg");
   const jobs = [];
   for (const locale of localeIds) {
-    const shots = ["app-phone-recipe-720", "app-phone-today-720"].map((name) =>
+    const shots = ["app-phone-recipe-720", "app-phone-shopping-720"].map((name) =>
       join(demoRoot, `showcase/${locale}/${name}.webp`),
     );
     const words = ogTaglines[locale];
@@ -134,6 +136,7 @@ async function buildOgImages() {
           locale,
           title: recipe.title[locale],
           kicker: recipe.category[locale],
+          foot: ogTaglines[locale].chips.join(" · "),
           photo: fileUrl(image),
           font: fileUrl(font),
           mark: fileUrl(mark),

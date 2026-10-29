@@ -977,10 +977,63 @@ test("every generated page has og:image and twitter:image pointing at an existin
   }
 });
 
-test("German share image alt texts hyphenate the compound with the brand name", () => {
-  const html = read(
-    join(builds.local, "de/rezepte/pfannen-eier-mit-tomaten-und-basilikum/index.html"),
+test("German share image alt texts on every recipe page keep the brand name after the preposition", () => {
+  const catalog = JSON.parse(read(new URL("../demo/data/recipes.json", import.meta.url)));
+  assert.equal(catalog.recipes.length, 10);
+  for (const recipe of catalog.recipes) {
+    const html = read(join(builds.local, `de/rezepte/${recipe.slug}/index.html`));
+    assert.doesNotMatch(html, /Mealie Atelier Logo/, recipe.slug);
+    assert.ok(
+      html.includes(`content="${recipe.title.de}: Rezeptfoto mit dem Logo von Mealie Atelier"`),
+      `${recipe.slug} og:image:alt`,
+    );
+  }
+});
+
+test("landing share image templates keep both screens whole, date free, and the recipe edge clean", async () => {
+  const { landingHtml, recipeHtml, OG_HEIGHT } = await import("../scripts/og-images.mjs");
+  const job = {
+    locale: "en",
+    tagline: "x",
+    sub: "x",
+    chips: ["a"],
+    shots: ["file:///recipe.webp", "file:///shopping.webp"],
+    crops: [462, 490],
+    mark: "file:///m.svg",
+    font: "file:///f.ttf",
+  };
+  const html = landingHtml(job);
+  for (const [name, crop] of [
+    ["a", 462],
+    ["b", 490],
+  ]) {
+    const top = Number(new RegExp(`\\.${name} \\{[^}]*top: (\\d+)px`).exec(html)[1]);
+    assert.ok(top + crop <= OG_HEIGHT - 16, `phone ${name} ends inside the frame`);
+  }
+  const source = read(new URL("../scripts/generate-demo-site.mjs", import.meta.url));
+  const og = source.slice(source.indexOf("async function buildOgImages"));
+  assert.doesNotMatch(
+    og.slice(0, 600),
+    /app-phone-today|mealplan/,
+    "share image screens show no date",
   );
-  assert.doesNotMatch(html, /Mealie Atelier Logo/);
-  assert.match(html, /Rezeptfoto mit dem Logo von Mealie Atelier/);
+  const recipe = recipeHtml({
+    ...job,
+    title: "t",
+    kicker: "k",
+    foot: "f",
+    photo: "file:///p.webp",
+  });
+  assert.doesNotMatch(recipe, /linear-gradient/, "no gradient seam over the photo");
+});
+
+test("every photo master matches its manifest size and the skillet eggs master is a native crop", () => {
+  const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));
+  for (const [name, entry] of Object.entries(manifest.photos)) {
+    const file = join(builds.local, `photos/${name}.webp`);
+    assert.equal(webpWidth(file), entry.width, `${name} master width matches the manifest`);
+  }
+  // The source photo is 3456x4320 and the dish fills about 2100 px of it, so a 2100 px master is
+  // a 1:1 crop. A smaller manifest or a stretched one would mean upscaled pixels.
+  assert.equal(manifest.photos["pfannen-eier-mit-tomaten-und-basilikum"].width, 2100);
 });

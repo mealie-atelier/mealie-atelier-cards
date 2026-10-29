@@ -45,64 +45,72 @@ body { font-family: "Bricolage", "Helvetica Neue", Arial, sans-serif; position: 
 .lockup b { font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
 `;
 
-// job: { kind: "landing", locale, tagline, sub, chips, shots: [phoneA, phoneB], mark, font }
-// Two whole phones sit side by side (no overlap, nothing clipped at the right edge); the second one
-// bleeds off the bottom on purpose. The copy column centres its headline block between the lockup
-// and the chips, so a one line tagline (English) and a two line tagline (German) keep the same rhythm.
+// job: { kind: "landing", locale, tagline, sub, chips, shots: [recipeShot, shoppingShot], crops: [heightA, heightB], mark, font }
+// Two phone screens, each cropped at a gap between rows (never through text; `crops` holds the
+// visible heights, which differ per locale because the copy wraps differently) and framed as whole
+// rounded cards, so nothing is cut at the frame edge and nothing bleeds off it. The recipe screen sits
+// in front and large enough to read at feed thumbnail size, the shopping screen behind it. Neither
+// screen shows a date, so the share image never goes stale. The copy column centres its headline
+// block between the lockup and the chips, so a one line tagline (English) and a longer German one keep
+// the same rhythm.
 export function landingHtml(job) {
   return `<!doctype html><html lang="${job.locale}"><meta charset="utf-8"><style>${baseCss(job.font)}
 body { background: #0c120f; }
 .glow { position: absolute; inset: 0; background:
   radial-gradient(620px 520px at 82% 30%, rgba(143,201,166,.20), transparent 70%),
   radial-gradient(520px 420px at 4% 108%, rgba(184,83,46,.22), transparent 70%); }
-.copy { position: absolute; left: 72px; top: 60px; width: 520px; height: 510px; display: flex; flex-direction: column; justify-content: space-between; }
+.copy { position: absolute; left: 64px; top: 56px; width: 390px; height: 518px; display: flex; flex-direction: column; justify-content: space-between; }
 .mid { margin-block: auto; padding-block: 8px; }
-h1 { font-size: 62px; line-height: 1.05; font-weight: 700; letter-spacing: -0.025em; color: #f7f1e4; text-wrap: balance; }
+h1 { font-size: 52px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; color: #f7f1e4; text-wrap: balance; }
 h1 em { font-style: normal; color: #8fc9a6; }
-.sub { margin-top: 20px; font-size: 26px; line-height: 1.35; color: #b7c4ba; font-weight: 400; max-width: 500px; text-wrap: balance; }
-.chips { display: flex; gap: 10px; }
-.chips span { font-size: 20px; font-weight: 600; padding: 9px 18px; border-radius: 999px; border: 1.5px solid rgba(143,201,166,.38); color: #cfe6d8; background: rgba(143,201,166,.08); }
-.phone { position: absolute; width: 252px; border-radius: 30px; overflow: hidden; border: 2px solid rgba(255,255,255,.14);
-  box-shadow: 0 36px 70px rgba(0,0,0,.6), 0 0 0 6px #1a231d, 0 0 0 7px rgba(255,255,255,.1); }
-.phone img { display: block; width: 100%; height: auto; }
-.a { left: 640px; top: 100px; }
-.b { left: 920px; top: 36px; }
+.sub { margin-top: 18px; font-size: 24px; line-height: 1.35; color: #b7c4ba; font-weight: 400; text-wrap: balance; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chips span { font-size: 17px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1.5px solid rgba(143,201,166,.38); color: #cfe6d8; background: rgba(143,201,166,.08); }
+.shot { position: absolute; overflow: hidden; border-radius: 28px; border: 2px solid rgba(255,255,255,.16);
+  box-shadow: 0 30px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.4); }
+.shot img { display: block; width: 100%; height: auto; }
+.a { left: 776px; top: 44px; width: 400px; height: ${job.crops[0]}px; z-index: 2; }
+.b { left: 470px; top: 96px; width: 320px; height: ${job.crops[1]}px; z-index: 1; }
+.b img { filter: brightness(.88); }
 .lockup { gap: 20px; }
-.lockup img { width: 84px; height: 84px; filter: drop-shadow(0 10px 24px rgba(0,0,0,.5)); }
-.lockup b { font-size: 42px; }
+.lockup img { width: 76px; height: 76px; filter: drop-shadow(0 10px 24px rgba(0,0,0,.5)); }
+.lockup b { font-size: 38px; }
 </style><body><div class="glow"></div>
 <div class="copy"><div class="lockup"><img src="${job.mark}" alt=""><b>Mealie Atelier</b></div>
 <div class="mid"><h1>${job.tagline}</h1><p class="sub">${escapeHtml(job.sub)}</p></div>
 <div class="chips">${job.chips.map((c) => `<span>${escapeHtml(c)}</span>`).join("")}</div></div>
-<div class="phone a"><img src="${job.shots[0]}" alt=""></div>
-<div class="phone b"><img src="${job.shots[1]}" alt=""></div>
+<div class="shot b"><img src="${job.shots[1]}" alt=""></div>
+<div class="shot a"><img src="${job.shots[0]}" alt=""></div>
 </body></html>`;
 }
 
-// job: { kind: "recipe", locale, title, kicker, photo, mark, font }
+// job: { kind: "recipe", locale, title, kicker, foot, photo, mark, font }
 // Split layout: the dish fills the right 700 px at full height (most photos are portrait or square, so
 // a full-bleed 1.9:1 crop would cut them to a sliver), the text sits on the solid dark panel at the
-// left. No text ever lies on the photo, so the contrast is that of cream on near-black (above 14:1),
-// whatever the picture shows, and the lockup never fights a busy background.
+// left. No text ever lies on the photo, so the contrast is that of cream on near-black, whatever the
+// picture shows. The photo meets the panel in a clean straight edge with a thin paprika accent (no
+// gradient, which smeared grey on light photos). The panel is composed top, middle, bottom: lockup,
+// then kicker and title centred in the remaining height, then a quiet one line footer.
 export function recipeHtml(job) {
   const length = job.title.length;
   const size = length > 34 ? 50 : length > 24 ? 56 : 64;
   return `<!doctype html><html lang="${job.locale}"><meta charset="utf-8"><style>${baseCss(job.font)}
 body { background: #101914; }
 .photo { position: absolute; left: 500px; top: 0; right: 0; bottom: 0; background: url("${job.photo}") center / cover no-repeat; }
-.seam { position: absolute; left: 500px; top: 0; bottom: 0; width: 90px; background: linear-gradient(to right, #101914, rgba(16,25,20,0)); }
-.glow { position: absolute; left: 0; top: 0; width: 560px; bottom: 0; background: radial-gradient(420px 360px at 0% 108%, rgba(184,83,46,.20), transparent 70%); }
-.lockup { position: absolute; left: 56px; top: 52px; gap: 16px; }
-.lockup img { width: 64px; height: 64px; }
+.edge { position: absolute; left: 500px; top: 0; bottom: 0; width: 6px; background: #e0784c; }
+.glow { position: absolute; left: 0; top: 0; width: 500px; bottom: 0; background: radial-gradient(420px 360px at 0% 108%, rgba(184,83,46,.20), transparent 70%); }
+.panel { position: absolute; left: 56px; top: 52px; width: 412px; bottom: 52px; display: flex; flex-direction: column; justify-content: space-between; }
+.lockup { gap: 16px; }
 .lockup b { font-size: 31px; color: #fffaf0; }
-.text { position: absolute; left: 56px; width: 428px; bottom: 60px; }
 .kicker { display: inline-flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #f8dcc3;
   padding: 9px 20px 9px 16px; border-radius: 999px; background: rgba(224,120,76,.12); border: 1.5px solid rgba(224,120,76,.45); }
 .kicker i { width: 12px; height: 12px; border-radius: 50%; background: #e0784c; display: block; }
 h1 { margin-top: 22px; font-size: ${size}px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; color: #fffaf0; text-wrap: balance; }
-</style><body><div class="glow"></div><div class="photo"></div><div class="seam"></div>
-<div class="lockup"><img src="${job.mark}" alt=""><b>Mealie Atelier</b></div>
-<div class="text"><span class="kicker"><i></i>${escapeHtml(job.kicker)}</span><h1>${escapeHtml(job.title)}</h1></div>
+.foot { font-size: 21px; font-weight: 500; letter-spacing: .02em; color: #b3c2b8; }
+</style><body><div class="glow"></div><div class="photo"></div><div class="edge"></div>
+<div class="panel"><div class="lockup"><img src="${job.mark}" alt=""><b>Mealie Atelier</b></div>
+<div><span class="kicker"><i></i>${escapeHtml(job.kicker)}</span><h1>${escapeHtml(job.title)}</h1></div>
+<div class="foot">${escapeHtml(job.foot)}</div></div>
 </body></html>`;
 }
 

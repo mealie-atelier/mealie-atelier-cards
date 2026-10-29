@@ -576,6 +576,13 @@ h2 em {
   bottom: 0;
   width: 20%;
 }
+/* The capture ends in the middle of the title of today's card, which would show cut descenders on
+   the window edge. Crop at row 825 of 1000, between the last sidebar label and the card label, so no text is cut. */
+.stack .browser img {
+  aspect-ratio: 1600 / 825;
+  object-fit: cover;
+  object-position: top;
+}
 .toast {
   z-index: 3;
   left: 3%;
@@ -2718,7 +2725,12 @@ details[open] .chev {
 @media (max-width: 560px) {
   .foot-cols {
     grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+    gap: 32px;
+  }
+  /* A hairline and extra air set the groups apart, so they do not read as one long list. */
+  .foot-col + .foot-col {
+    border-top: 1px solid var(--line);
+    padding-top: 30px;
   }
 }
 
