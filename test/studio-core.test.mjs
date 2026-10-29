@@ -171,6 +171,36 @@ test("Kochinspo recognises meat and fish inside German compound words", () => {
   assert.deepEqual(slugs({ mealStyle: "fish" }), ["Garnelenpfanne", "Lachsnudeln"]);
   assert.deepEqual(slugs({ mealStyle: "vegetarian" }), ["Pilzpfanne"]);
 });
+test("Kochinspo finds the animal at the end of a compound and ignores look-alikes", () => {
+  const dish = (slug, ...ingredients) => recipe(slug, ingredients, 30, 2);
+  const items = [
+    dish("Miesmuscheln", "1 kg Miesmuscheln", "200 ml Weißwein"),
+    dish("Seelachs", "400 g Seelachsfilet"),
+    dish("Lammschulter", "1,2 kg Lammschulter", "4 Knoblauchzehen"),
+    dish("Hackbaellchen", "500 g Hackbällchen"),
+    dish("Tomatensalat", "4 Fleischtomaten", "1 Zwiebel"),
+    dish("Mangolassi", "Fruchtfleisch von 1 Mango", "300 g Joghurt"),
+    dish("Ruehrei", "4 Hühnereier", "1 Entenei"),
+    dish("Spiegelei", "1 Entenei", "1 Prise Salz"),
+    dish("Veggiegrill", "4 vegane Bratwurst", "200 g Erbsenprotein Hack"),
+    dish("Flammkuchen", "1 Flammkuchenteig", "2 EL Flachssamen", "1 Clementine"),
+  ];
+  const slugs = (profile) =>
+    Studio.suggest(items, profile)
+      .map((x) => x.slug)
+      .sort();
+  assert.deepEqual(slugs({ mealStyle: "meat" }), ["Hackbaellchen", "Lammschulter"]);
+  assert.deepEqual(slugs({ mealStyle: "fish" }), ["Miesmuscheln", "Seelachs"]);
+  assert.deepEqual(slugs({ mealStyle: "vegetarian" }), [
+    "Flammkuchen",
+    "Mangolassi",
+    "Ruehrei",
+    "Spiegelei",
+    "Tomatensalat",
+    "Veggiegrill",
+  ]);
+  assert.deepEqual(slugs({ mealStyle: "vegan" }), ["Flammkuchen", "Tomatensalat", "Veggiegrill"]);
+});
 test("Kochinspo filters against exact Mealie cookbook tag and category IDs", () => {
   const tagBook = {
     name: "Kindgerecht",

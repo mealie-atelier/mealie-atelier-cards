@@ -404,32 +404,37 @@ const AtelierStudio = (() => {
       all = names.join(" ");
     const tagged = (...terms) => tags.some((tag) => terms.some((term) => tag.includes(term)));
     const has = (pattern) => pattern.test(all);
-    // German compounds put the animal first (Hähnchenbrust, Lachsfilet), so most terms match as a
-    // word prefix; a few lookaheads keep Parmesanrinde, Austernpilze and Muschelnudeln vegetarian.
+    // German puts the animal anywhere in a compound (Hähnchenbrust, Miesmuscheln, Seelachs), so meat
+    // and fish stems match inside words. Plant products and look-alikes (Fleischtomaten, Hühnereier,
+    // Parmesanrinde, Austernpilze, vegane Bratwurst) are removed per ingredient before matching.
+    const lookalike =
+      /\b(?:vegan\w*|vegetari\w*|veggie\w*|pflanzlich\w*|fleischfrei\w*|fleischlos\w*|meatless|plant based|soja|tofu|seitan|tempeh|\w*protein)\s+\w+|\b(?:soja|tofu|seitan|veggie|vegan|fleischersatz)\w*|\w*fruchtfleisch\w*|\bfleischtomate\w*|\bkokos\w*|\w*(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b|\w*rinden?\b|\b(?:lemon|lime|orange|citrus|zitronen|orangen|limetten)\s+rinds?\b|\bauster\w*pilz\w*|\boyster mushrooms?\b|\bmuschelnudel\w*|\bbeefsteak tomato\w*|\b(?:cauliflower|celeriac|mushroom|portobello|cabbage)\s+steaks?\b|\blamb\s?s\s+lettuce\b/g;
+    const flesh = names.map((name) => name.replace(lookalike, " "));
+    const eats = (pattern) => flesh.some((name) => pattern.test(name));
     const meat =
-      /\b(?:rind(?!en?\b)|kalb|schwein|schinken|speck|salami|chorizo|huhn|haehnchen|hahnchen|hähnchen|pute|truthahn|ente|gans|bacon|beef|pork|chicken|turkey|veal|duck|prosciutto|pancetta|guanciale)\w*|\b(?:hack|lamm|lammfleisch|lammkeule|lammfilet|wild|ham|mett|leber)\b|fleisch|wurst|schinken|suppenhuhn/;
+      /fleisch|wurst|schinken|speck|salami|chorizo|schwein|huhn|hahnchen|haehnchen|geflugel|gefluegel|truthahn|hirsch|kaninchen|kasseler|kotelett|(?<!g)rind|(?<!ge)hack(?!t|en\b|er\b)|(?<![fc])lamm|gans(?:e\w*)?\b|\b(?:kalb|pute|(?:barbarie|flug|peking)?ente|mett|leber|schnitzel|frikadelle|bacon|pancetta|guanciale|prosciutto|beef|pork|chicken|turkey|veal|duck|lamb|venison|rabbit|goose|mutton|sausage|(?<!(?:crab|lobster)\s?)meat|steak|rumpsteak|roastbeef)|\b(?:ham|mince)\b|\bgehacktes$|\bwild(?:schwein|gulasch|ragout|ragu|braten|keule|fond)|\bwild\b(?!\s+(?:rice|garlic|mushroom|berr|blue|rocket|herb|salmon|honey|strawberr))|\breh(?:\b|rucken|keule|gulasch|ragout|braten|medaillon)/;
     const seafood =
-      /\b(?:lachs|forelle|kabeljau|garnele|shrimp|krabbe|muschel(?!nudel)|sardine|sardelle|anchovi|matjes|hering|herring|salmon|tuna|prawn|scampi|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster(?!n?pilz)|seafood|fish)\w*|fisch/;
+      /fisch|(?<!f)lachs|forelle|kabeljau|garnele|shrimp|krabbe|muschel|sardine|sardelle|anchovi|anchov|matjes|hering|herring|calamar|oktopus|octopus|dorade|zander|scholle|hummer|languste|auster|scampi|meeresfrucht|makrele|karpfen|barsch|heilbutt|seezunge|krebs|fish|\b(?:kaviar|salmon|tuna|prawn|crab|lobster|mussel|clam|oyster|squid|scallop|mackerel|trout|halibut|haddock|pollock|seafood)|\b(?:raucher)?aal\b|\bcod\b/;
     const animal =
-      /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|honey)\b/;
+      /\b(milch|kaese|kase|käse|joghurt|quark|sahne|rahm|butter|ei|eier|eigelb|honig|gelatine|molke|parmesan|mozzarella|cream|cheese|yogurt|milk|egg|eggs|honey)\b|(?:huhner|enten|wachtel|ganse)\s?ei(?:er)?\b/;
     if (
       style === "vegan" &&
-      (has(meat) ||
-        has(seafood) ||
+      (eats(meat) ||
+        eats(seafood) ||
         has(animal) ||
         (!tagged("vegan") && (!rows.length || names.length !== rows.length)))
     )
       return false;
     if (
       style === "vegetarian" &&
-      (has(meat) ||
-        has(seafood) ||
+      (eats(meat) ||
+        eats(seafood) ||
         /\b(gelatine|gelatin)\b/.test(all) ||
         (!tagged("vegetarian", "vegetarisch") && (!rows.length || names.length !== rows.length)))
     )
       return false;
-    if (style === "meat" && !tagged("fleisch", "meat") && !has(meat)) return false;
-    if (style === "fish" && !tagged("fisch", "fish", "seafood") && !has(seafood)) return false;
+    if (style === "meat" && !tagged("fleisch", "meat") && !eats(meat)) return false;
+    if (style === "fish" && !tagged("fisch", "fish", "seafood") && !eats(seafood)) return false;
     if (
       profile.kidFriendly === true &&
       has(/\b(chili|chilli|scharf|sriracha|jalapeno|cayenne|hot sauce|habanero)\b/) &&
