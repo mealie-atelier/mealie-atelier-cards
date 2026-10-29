@@ -9742,6 +9742,10 @@ ha-card {
     min-width: 0;
     min-height: 44px;
   }
+  /* One row of three: the short-landscape rule above would otherwise stretch Next over its own row. */
+  .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
+    grid-column: auto;
+  }
   .atelier .modal:has(.cook-layout) .cook-utility,
   .atelier .modal:has(.cook-layout) .cook-note {
     order: 4;
@@ -13308,7 +13312,7 @@ class MealieAtelierCard extends HTMLElement {
         } catch (error) {
           // Gone or already dispatched (or due within clock skew): nothing is left to cancel.
           const settled =
-            /already been dispatched|timer not found/i.test(String(error?.message || "")) ||
+            ["timer_dispatched", "timer_not_found"].includes(error?.code) ||
             timer.deadline <= Date.now() + 60000;
           if (!settled) {
             this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");

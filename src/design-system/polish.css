@@ -1574,6 +1574,10 @@
     min-width: 0;
     min-height: 44px;
   }
+  /* One row of three: the short-landscape rule above would otherwise stretch Next over its own row. */
+  .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
+    grid-column: auto;
+  }
   .atelier .modal:has(.cook-layout) .cook-utility,
   .atelier .modal:has(.cook-layout) .cook-note {
     order: 4;

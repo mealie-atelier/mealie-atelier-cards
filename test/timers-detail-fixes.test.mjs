@@ -32,7 +32,7 @@ test("removing a finished server-armed timer still tries to cancel and drops it 
 
 test("removing a timer the server no longer knows or has just started sending drops it", async () => {
   for (const [error, offset] of [
-    [Object.assign(new Error("Timer not found"), { code: "invalid_request" }), 600000],
+    [Object.assign(new Error("Timer not found"), { code: "timer_not_found" }), 600000],
     [new Error("busy"), 20000],
   ]) {
     const { card, flashes } = setup();
@@ -348,4 +348,39 @@ test("a URL in the cooking step text is linked", () => {
     card._modalHtml(),
     /<a href="https:\/\/example\.org\/v" target="_blank" rel="noopener noreferrer">/,
   );
+});
+
+test("removing a timer settles on the dedicated Bridge codes, never on message text", async () => {
+  for (const code of ["timer_dispatched", "timer_not_found"]) {
+    const { card, flashes } = setup();
+    card._ws = async () => {
+      // German Bridge text: a message match would not recognise it.
+      throw Object.assign(new Error("Der Küchentimer wurde nicht gefunden."), { code });
+    };
+    card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+    await click(card, "timer-remove", "t1");
+    assert.equal(card._timers.length, 0, code);
+    assert.equal(flashes.length, 0, code);
+  }
+  for (const code of ["timer_not_permitted", "invalid_request"]) {
+    const { card, flashes } = setup();
+    card._ws = async () => {
+      throw Object.assign(new Error("Timer not found"), { code });
+    };
+    card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+    await click(card, "timer-remove", "t1");
+    assert.equal(card._timers.length, 1, code);
+    assert.equal(flashes[0].kind, "error");
+  }
+});
+
+test("a refused cancel names the specific reason", async () => {
+  const { card, flashes } = setup();
+  card._ws = async () => {
+    throw Object.assign(new Error("x"), { code: "timer_not_permitted" });
+  };
+  card._timers = [{ id: "t1", label: "x", deadline: Date.now() + 600000, serverArmed: true }];
+  await click(card, "timer-remove", "t1");
+  assert.match(flashes[0].text, /another person's kitchen timer/);
+  assert.doesNotMatch(flashes[0].text, /check your input/i);
 });

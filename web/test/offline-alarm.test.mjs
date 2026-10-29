@@ -264,7 +264,10 @@ test("timers belong to their owner: list and cancel are limited to owner and adm
       [mine],
     );
     assert.equal((await store.list(admin)).alarms.length, 2);
-    await assert.rejects(store.cancel(theirs, reader), { status: 403, code: "unauthorized" });
+    await assert.rejects(store.cancel(theirs, reader), {
+      status: 403,
+      code: "timer_not_permitted",
+    });
     assert.equal((await store.cancel(mine, reader)).status, "cancelled");
     assert.equal((await store.cancel(theirs, admin)).status, "cancelled");
   }));

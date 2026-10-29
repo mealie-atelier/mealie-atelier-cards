@@ -234,3 +234,14 @@ test("copy uses one spelling per concept in both locales", () => {
   assert.deepEqual(serialComma, [], "English lists use no serial comma");
   assert.match(en.editorOnlyTriggeredWhenYouTapTheCookingCockpitButton, /Cooking light/);
 });
+
+test("the short landscape cooking bar stays one row of three", () => {
+  const polish = read("../src/design-system/polish.css");
+  const sticky = polish.slice(
+    polish.indexOf("@media (orientation: landscape) and (max-height: 700px) {"),
+  );
+  assert.match(
+    sticky.slice(0, sticky.indexOf("@media (orientation: portrait)")),
+    /\.cook-actions \.btn\.primary \{\s*grid-column:\s*auto/,
+  );
+});
