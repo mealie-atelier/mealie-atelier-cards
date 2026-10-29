@@ -12305,7 +12305,14 @@ class MealieAtelierCard extends HTMLElement {
             this._nativeMealieEntryIds.length === 1
           ) {
             this._config = { ...this._config, mealie_entry_id: this._nativeMealieEntryIds[0] };
-            this._emitConfig();
+            // The card has no editor methods: announce the adopted entry from the card itself.
+            this.dispatchEvent(
+              new CustomEvent("config-changed", {
+                detail: { config: { ...this._config } },
+                bubbles: true,
+                composed: true,
+              }),
+            );
           }
         }
         if (failures.length && this._providerActive !== "home_assistant") {

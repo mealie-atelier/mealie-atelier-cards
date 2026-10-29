@@ -158,12 +158,17 @@ test("native fallback after a missing bridge clears the setup state and shows th
     throw err;
   };
   card._nativeRecipes = async () => ({ items: [{ slug: "a", name: "Soup" }], total: 1 });
-  card._emitConfig = () => {};
+  const events = [];
+  card.dispatchEvent = (e) => events.push(e);
   await card._refresh();
   assert.equal(card._providerActive, "home_assistant");
   assert.equal(card._errorCode, "");
   assert.equal(card._setupMissing, false);
   assert.equal(card._loadFailed, false);
+  assert.equal(card._failedParts.size, 0);
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, "config-changed");
+  assert.equal(events[0].detail.config.mealie_entry_id, "e1");
 });
 
 test("a failed part shows a dash only on its own counter and recovers on reload", async () => {
