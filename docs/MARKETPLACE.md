@@ -1,6 +1,6 @@
 # Distribution
 
-Mealie Atelier Cards is built for the Home Assistant Marketplace (Home Assistant 2026.11 and newer), which is HACS moved into core and reads the `hacs/default` catalog. Both packages are submitted to that catalog; until they are listed, HACS installs them as custom repositories. HACS stays supported as a second route and works on older Home Assistant versions. The card bundle installs to `/local/community/mealie-atelier-cards/`, and on UI-managed dashboards the Lovelace resource is registered automatically.
+Mealie Atelier Cards is built for the Home Assistant Marketplace (Home Assistant 2026.11 and newer), which is HACS moved into core and reads the `hacs/default` catalog. Both packages are submitted to that catalog; until they are listed, use **Add from link** with the repository URL (this needs the one-time GitHub connection) or add them to HACS as custom repositories. HACS stays supported as a second route and works on older Home Assistant versions. The card bundle installs to `/local/community/mealie-atelier-cards/`, and on UI-managed dashboards the Lovelace resource is registered automatically.
 
 ## Packages
 
