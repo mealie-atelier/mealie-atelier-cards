@@ -75,6 +75,26 @@ test("the hero photo carries no badge and the fallback meta says servings", () =
   assert.doesNotMatch(html, /Person/);
 });
 
+test("a hero without servings does not say servings are open next to the people count", () => {
+  // Reasons exactly as studio-core builds them for a recipe without servings.
+  const reasons = [
+    { key: "studioReasonPantryUnchecked" },
+    { key: "studioReasonServingsOpen" },
+    { key: "studioReasonWithinBudget", values: { minutes: 30 } },
+  ];
+  const de = heroHtml(
+    heroCard("de", recipeFor({ servings: null, people: 2, reasons, timeLabel: "30 min" })),
+  );
+  assert.match(de, /Für 2 Portionen</);
+  assert.doesNotMatch(reasonLine(de), /Portionen offen/);
+  assert.match(reasonLine(de), /Vorrat noch nicht geprüft/);
+  const en = heroHtml(
+    heroCard("en", recipeFor({ servings: null, people: 2, reasons, timeLabel: "30 min" })),
+  );
+  assert.match(en, /For 2 servings</);
+  assert.doesNotMatch(reasonLine(en), /Servings not set/);
+});
+
 test("alternative cards pluralise servings per language", () => {
   const alt = (servings) => ({ ...recipeFor({ slug: "alt", name: "Alt", servings }), reasons: [] });
   const de = heroCard("de", recipeFor(), [alt(1)])._studioDiscover();

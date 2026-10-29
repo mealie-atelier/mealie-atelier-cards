@@ -19102,8 +19102,13 @@ Object.assign(MealieAtelierCard.prototype, {
           ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}</div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.tp("studioDiscoverRecipeBase", hero.servings, { servings: hero.servings }) : this.tp("studioDiscoverForPeople", hero.people, { people: hero.people })}</span></div><p>${esc(
               hero.reasons
                 // The meta row already states the recipe base and the time, so the reason
-                // line skips the base and words the time budget without the minutes.
-                .filter((r) => r.key !== "studioReasonServingsBase")
+                // line skips the base and words the time budget without the minutes. The
+                // "servings not set" reason is dropped too: the meta row then shows the
+                // people count and the two lines would contradict each other.
+                .filter(
+                  (r) =>
+                    r.key !== "studioReasonServingsBase" && r.key !== "studioReasonServingsOpen",
+                )
                 .map((r) =>
                   r.key === "studioReasonWithinBudget" || r.key === "studioReasonOverBudget"
                     ? { key: `${r.key}Hero` }
