@@ -704,3 +704,30 @@ test("grocery list keeps counting words as units, merges notes, rounds pieces an
   assert.equal(row("Rotwein").category, "pantry");
   assert.equal(row("Sellerie").category, "produce");
 });
+
+test("shopping aisles recognise German compound food names", () => {
+  const names = {
+    Weizenmehl: "pantry",
+    Vollkornbrot: "pantry",
+    Basmatireis: "pantry",
+    Vollmilch: "chilled",
+    Schlagsahne: "chilled",
+    Bratwurst: "protein",
+    Kalbfleisch: "protein",
+    Meersalz: "spices",
+    Puderzucker: "spices",
+    Sesamöl: "spices",
+    Balsamicoessig: "spices",
+    Weinessig: "spices",
+    Weintrauben: "produce",
+  };
+  const r = recipe(
+    "H",
+    Object.keys(names).map((n) => `1 Stück ${n}`),
+    25,
+    2,
+  );
+  const list = Studio.shoppingNeeds([r], []);
+  for (const [n, aisle] of Object.entries(names))
+    assert.equal(list.find((x) => x.name === n)?.category, aisle, n);
+});

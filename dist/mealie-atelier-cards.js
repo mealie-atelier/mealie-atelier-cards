@@ -18204,7 +18204,9 @@ const AtelierStudio = (() => {
     );
   }
   // Aisle ids; the UI maps them to localized headings (studioAisle*).
-  // Word-start stems on the diacritic-free text produced by clean(); never substring matches.
+  // Stems on the diacritic-free text produced by clean(); never free substring matches.
+  // aisleSuffixes catch the head of German compounds (Weizenmehl, Vollmilch, Sesamöl) and win over
+  // word starts, so Weinessig is a spice and Weintrauben stay produce.
   const aisleStems = [
     [
       "chilled",
@@ -18216,15 +18218,23 @@ const AtelierStudio = (() => {
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein|rotwein|weisswein|bier|bruhe)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruhe)/,
     ],
     [
       "spices",
       /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$)/,
     ],
   ];
+  const aisleSuffixes = [
+    ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter)$/],
+    ["protein", /(wurst|fleisch|fisch|schinken|speck)$/],
+    ["pantry", /(mehl|brot|reis|nudeln|wein)$/],
+    ["spices", /(salz|zucker|essig|pfeffer|ol)$/],
+  ];
   const category = (name) => {
     const tokens = clean(name).split(" ").filter(Boolean);
+    for (const [aisle, suffix] of aisleSuffixes)
+      if (tokens.some((w) => suffix.test(w))) return aisle;
     for (const [aisle, stem] of aisleStems) if (tokens.some((w) => stem.test(w))) return aisle;
     return "produce";
   };
