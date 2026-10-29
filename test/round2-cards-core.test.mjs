@@ -137,3 +137,92 @@ test("family title, provider eyebrow and recipe print word are translated", () =
     "editorFollowsHomeAssistantLightOrDark",
   );
 });
+
+function coreCard() {
+  const cards = loadCards();
+  const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+  return card;
+}
+
+test("native fallback after a missing bridge clears the setup state and shows the recipes", async () => {
+  const card = coreCard();
+  card._config = { ...card._config, provider: "auto" };
+  card._hass = {
+    ...card._hass,
+    entities: { "sensor.m": { platform: "mealie", config_entry_id: "e1" } },
+    services: { mealie: { get_recipes: {}, get_recipe: {} } },
+  };
+  card._ws = async () => {
+    const err = new Error("not configured");
+    err.code = "not_configured";
+    throw err;
+  };
+  card._nativeRecipes = async () => ({ items: [{ slug: "a", name: "Soup" }], total: 1 });
+  card._emitConfig = () => {};
+  await card._refresh();
+  assert.equal(card._providerActive, "home_assistant");
+  assert.equal(card._errorCode, "");
+  assert.equal(card._setupMissing, false);
+  assert.equal(card._loadFailed, false);
+});
+
+test("a failed part shows a dash only on its own counter and recovers on reload", async () => {
+  const card = coreCard();
+  card._data = { recipes: { total: 7, items: [] }, mealplan: [], shopping: { items: [] } };
+  card._failedParts = new Set(["mealplan"]);
+  const stats = card._stats();
+  assert.match(stats, /7/);
+  assert.equal((stats.match(/<strong>—/g) || []).length, 1);
+  card._ws = async () => [];
+  await card._loadMealplan();
+  assert.equal(card._failedParts.has("mealplan"), false);
+  assert.equal((card._stats().match(/<strong>—/g) || []).length, 0);
+});
+
+test("a failed shopping call alone keeps the recipes and the onboarding state", async () => {
+  const card = coreCard();
+  card._ws = async (type) => {
+    if (type === "recipes") return { total: 0, items: [] };
+    if (type === "shopping") throw new TypeError("Failed to fetch");
+    return [];
+  };
+  card._data = { recipes: null };
+  await card._refresh();
+  assert.equal(card._loadFailed, false);
+  assert.equal(card._libraryEmpty(), true);
+  assert.equal(card._failedParts.has("shopping"), true);
+});
+
+test("an import that fails without a code reports the error, not the URL", async () => {
+  const card = coreCard();
+  const out = [];
+  card._flash = (text, kind) => out.push({ text, kind });
+  card._ws = async () => {
+    throw new Error("HTTP 500");
+  };
+  await card._mutate("recipe_import", { url: "https://example.com/x" }, "none");
+  assert.match(out[0].text, /Import failed: HTTP 500/);
+  assert.doesNotMatch(out[0].text, /publicly reachable/);
+});
+
+test("the print button only appears when there is something to print", () => {
+  const card = coreCard();
+  card._view = "shopping";
+  card._data = { recipes: { total: 0, items: [] }, shopping: { lists: [], items: [] } };
+  assert.equal(card._printable(), false);
+  card._data.shopping.items = [{ id: "i", note: "milk", shoppingListId: "l1" }];
+  card._activeList = "l1";
+  assert.equal(card._printable(), true);
+  card._view = "mealplan";
+  card._data.mealplan = [];
+  assert.equal(card._printable(), false);
+});
+
+test("an empty library drops the collection subtitle on the dashboard", () => {
+  const card = coreCard();
+  card._view = "dashboard";
+  card._data = { recipes: { total: 0, items: [] }, mealplan: [], shopping: { items: [] } };
+  assert.doesNotMatch(card._body(), /Every recipe from your Mealie/);
+  card._data.recipes = { total: 1, items: [{ slug: "a", name: "Soup" }] };
+  assert.match(card._body(), /Every recipe from your Mealie/);
+});

@@ -101,16 +101,19 @@ test("command search filters views and actions by label", () => {
   });
   const items = [mk("Meal plan"), mk("Shopping"), mk("Refresh")];
   const block = mk("");
+  const empty = { visible: false, classList: { toggle: (_n, on) => (empty.visible = on) } };
   card.shadowRoot.querySelectorAll = () => items;
-  card.shadowRoot.querySelector = () => block;
+  card.shadowRoot.querySelector = (sel) => (sel === ".command-empty" ? empty : block);
   assert.equal(card._commandFilterViews("shop"), 1);
   assert.deepEqual(
     items.map((i) => i.hidden),
     [true, false, true],
   );
   assert.equal(block.hidden, false);
+  assert.equal(empty.visible, false);
   assert.equal(card._commandFilterViews("zzz"), 0);
   assert.equal(block.hidden, true);
+  assert.equal(empty.visible, true);
   assert.equal(card._commandFilterViews(""), 3);
 });
 
