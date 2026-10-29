@@ -1074,7 +1074,7 @@
   "pickerError": "Rezepte konnten nicht geladen werden: {error}",
   "pickerRetry": "Erneut versuchen",
   "pickerEnd": "Ende der Liste",
-  "pickerCategory": "Kategorie",
+  "pickerCategory": "Kategorien",
   "pickerTag": "Schlagwörter",
   "pickerFavorites": "Nur Favoriten",
   "pickerFavoritesHint": "Favoriten des verbundenen Mealie-Kontos",

@@ -111,3 +111,58 @@ test("the recipe picker formats times and the tag filter is not a pill", () => {
   assert.match(css, /fit-content\(30%\)/);
   assert.equal(JSON.parse(file("src/i18n/de.json")).pickerTag, "Schlagwörter");
 });
+
+test("today is revealed when the week grid appears without a view change", () => {
+  const { card } = setup();
+  // The grid exists only once the new markup is in place, as after skeleton to data.
+  let before = true;
+  let calls = 0;
+  card.shadowRoot.querySelector = (sel) => (sel === ".week-grid" && !before ? {} : null);
+  card._revealToday = () => calls++;
+  card._render();
+  calls = 0;
+  const render = card._render.bind(card);
+  const run = (hasGridBefore) => {
+    before = hasGridBefore;
+    const original = card.shadowRoot.querySelector;
+    let first = true;
+    card.shadowRoot.querySelector = (sel) => {
+      if (sel === ".week-grid" && first) {
+        first = false;
+        return hasGridBefore ? {} : null;
+      }
+      return sel === ".week-grid" ? {} : null;
+    };
+    render();
+    card.shadowRoot.querySelector = original;
+  };
+  run(false);
+  assert.ok(calls > 0);
+  calls = 0;
+  run(true);
+  assert.equal(calls, 0);
+  card._revealTodayNext = true;
+  run(true);
+  assert.ok(calls > 0);
+});
+
+test("removing one of several planned entries keeps the plan dialog open", async () => {
+  const { card } = setup();
+  Object.defineProperty(card, "_permissions", { get: () => ({ can_write: true }) });
+  card._planDay = "2030-01-01";
+  card._modal = "plan";
+  card._data.mealplan = [
+    { id: "a", date: "2030-01-01", entryType: "lunch", title: "A" },
+    { id: "b", date: "2030-01-01", entryType: "dinner", title: "B" },
+  ];
+  card._ws = async (cmd) => (cmd === "mealplan" ? [{ id: "b", date: "2030-01-01" }] : {});
+  card._render = () => {};
+  const click = (id) =>
+    card._handleClick({
+      target: { closest: () => ({ dataset: { action: "remove-meal", value: id } }) },
+    });
+  await click("a");
+  assert.equal(card._modal, "plan");
+  await click("b");
+  assert.equal(card._modal, null);
+});

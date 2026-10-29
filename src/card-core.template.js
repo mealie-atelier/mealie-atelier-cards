@@ -1019,6 +1019,8 @@ class MealieAtelierCard extends HTMLElement {
       ".command-list",
       ".modal",
     ];
+    // The grid can appear without a view change (skeleton to data, or the "today" button).
+    const gridBefore = Boolean(this.shadowRoot.querySelector(".week-grid"));
     const scrolls = viewChanged
       ? []
       : scrollClasses.map((selector) => {
@@ -1075,6 +1077,10 @@ class MealieAtelierCard extends HTMLElement {
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
+    const revealNow = this._revealTodayNext;
+    this._revealTodayNext = false;
+    const gridAppeared =
+      !viewChanged && !gridBefore && Boolean(this.shadowRoot.querySelector(".week-grid"));
     if (viewChanged) {
       this._revealActiveNav();
       this._revealToday();
@@ -1083,6 +1089,10 @@ class MealieAtelierCard extends HTMLElement {
           this._revealActiveNav();
           this._revealToday();
         });
+    } else if (revealNow || gridAppeared) {
+      this._revealToday();
+      if (typeof requestAnimationFrame === "function")
+        requestAnimationFrame(() => this._revealToday());
     }
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     const closeButton = () =>
@@ -1299,7 +1309,7 @@ class MealieAtelierCard extends HTMLElement {
    * Run a write. `optimistic` applies the change to local state right away and returns a
    * function that restores the previous state; it runs when the write fails.
    */
-  async _mutate(action, payload, refresh = "all", optimistic = null) {
+  async _mutate(action, payload, refresh = "all", optimistic = null, options = {}) {
     this._toast = "";
     if (
       !this._permissions.can_write ||
@@ -1322,7 +1332,7 @@ class MealieAtelierCard extends HTMLElement {
         this._data.recipes = null;
         await this._refresh();
       }
-      this._modal = null;
+      if (!options.keepModal) this._modal = null;
       this._flash(action.startsWith("recipe") ? this.t("saved") : this.t("saved"));
       return true;
     } catch (err) {
@@ -1928,6 +1938,7 @@ class MealieAtelierCard extends HTMLElement {
         action === "week-today"
           ? monday(new Date())
           : addDays(this._weekStart, action === "week-next" ? 7 : -7);
+      this._revealTodayNext = action === "week-today";
       await this._loadMealplan();
       return;
     }
@@ -1942,8 +1953,16 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (action === "remove-meal") {
       el.disabled = true;
-      await this._mutate("mealplan_delete", { entry_id: v }, "mealplan", () =>
-        this._optimisticRemoveMeal(v),
+      // Keep the plan dialog open while other entries of that day remain.
+      const others = asArray(this._data.mealplan).filter(
+        (x) => x.date === this._planDay && String(x.id) !== String(v),
+      );
+      await this._mutate(
+        "mealplan_delete",
+        { entry_id: v },
+        "mealplan",
+        () => this._optimisticRemoveMeal(v),
+        { keepModal: this._modal === "plan" && others.length > 0 },
       );
       return;
     }
