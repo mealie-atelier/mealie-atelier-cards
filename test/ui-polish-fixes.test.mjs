@@ -28,7 +28,7 @@ test("the pantry reason for unclear amounts is flagged for plural resolution", (
   assert.match(read("../src/studio-core.js"), /studioReasonAmountsUnclear[^}]*\}, plural: true/);
 });
 
-test("accent swatches get a translated colour name as accessible name", () => {
+test("accent swatches get a translated color name as accessible name", () => {
   const cards = loadCards();
   const card = makeCard(cards, { hass: { language: "de", callWS: async () => ({}) } });
   card._modal = "settings";
@@ -37,7 +37,7 @@ test("accent swatches get a translated colour name as accessible name", () => {
   assert.doesNotMatch(html, /aria-label="Accent color/);
 });
 
-test("disabled primary buttons keep the muted disabled text colour", () => {
+test("disabled primary buttons keep the muted disabled text color", () => {
   const css = read("../src/design-system/polish.css").replace(/\s+/g, " ");
   assert.match(css, /\.atelier \.btn\.primary:disabled \{[^}]*color: var\(--ds-muted\);/);
 });
@@ -64,12 +64,12 @@ test("design system CSS defines every font token it uses and avoids invalid nega
   assert.doesNotMatch(css, /-var\(/);
 });
 
-test("eyebrows are uppercased by CSS and use a readable light-theme text colour", () => {
+test("eyebrows are uppercased by CSS and use a readable light-theme text color", () => {
   assert.match(
     read("../src/design-system/polish.css"),
     /\.atelier \.eyebrow \{[^}]*text-transform: uppercase;[^}]*--ds-brand-text/,
   );
-  // No later rule may paint light-theme eyebrows with the low-contrast brand colour again.
+  // No later rule may paint light-theme eyebrows with the low-contrast brand color again.
   const polishCss = read("../src/design-system/polish.css");
   for (const m of polishCss.matchAll(/([^{}]*)\{([^}]*)\}/g)) {
     if (/\.light \.eyebrow\b/.test(m[1]) && /(^|[;\s])color:/.test(m[2])) {

@@ -6,9 +6,13 @@
  Mealie (private URL, your own recipes)
        | REST /api/*  [Bearer API token stored server-side]
        +--> Mealie Atelier Bridge (Home Assistant custom component)
-       |       | WebSocket: mealie_atelier/{recipes,recipe,mealplan,shopping,metadata,mutate,status}
+       |       | WebSocket: mealie_atelier/* (46 commands in groups)
+       |       |   catalog and planning: recipes, recipe, mealplan, shopping, metadata, status, foods, units
+       |       |   writes and media: mutate, upload_*, recipe_image_*, step_image_*, recipe_backups, recipe_restore
+       |       |   kitchen and nutrition: alarm*, ingredients_*, nutrition_*, food_create, unit_create
+       |       |   studio and sync: studio_*, sync_*, offline_replay
        |       | HA-signed image routes: /api/mealie_atelier/image/<entry>/<recipe>
-       |                         /api/mealie_atelier/recipe_asset/...
+       |       |                         /api/mealie_atelier/recipe_asset/...
        |       +--> Ten Lovelace custom cards and graphical card editor
        |
        +--> Mealie Atelier Web (optional self-hosted Node 22 server)

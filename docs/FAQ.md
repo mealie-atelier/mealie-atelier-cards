@@ -36,4 +36,4 @@ No. Mealie has no endpoint to delete a recipe asset. Removing a step photo detac
 
 ## Where do I ask for help or suggest an improvement?
 
-Use [GitHub Discussions](https://github.com/orgs/mealie-atelier/discussions) for setup questions and ideas. Open an Issue for a reproducible bug. Never post API tokens, private recipe data or sensitive logs publicly; use the private process in [SECURITY.md](../.github/SECURITY.md) for security reports.
+Use [GitHub Discussions](https://github.com/orgs/mealie-atelier/discussions) for setup questions and ideas. Open an issue for a reproducible bug. Never post API tokens, private recipe data or sensitive logs publicly; use the private process in [SECURITY.md](../.github/SECURITY.md) for security reports.

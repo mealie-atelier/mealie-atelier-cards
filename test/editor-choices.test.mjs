@@ -13,7 +13,7 @@ function renderEditor(config, hass) {
   return editor.shadowRoot.innerHTML;
 }
 
-test("accent colours carry translated names, never raw hex labels", () => {
+test("accent colors carry translated names, never raw hex labels", () => {
   const de = renderEditor({}, { language: "de" });
   const accent = de.match(/<select id="atelier-accent".*?<\/select>/s)[0];
   assert.match(accent, />Salbeigrün</);

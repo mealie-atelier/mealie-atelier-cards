@@ -11,13 +11,26 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PASSWORD = "lengthy-test-password";
 
-async function mealieStub({ tokenOk = true, forbidden = false, html = false, hang = false } = {}) {
+async function mealieStub({
+  tokenOk = true,
+  forbidden = false,
+  html = false,
+  plain = false,
+  jsonMissing = false,
+  hang = false,
+} = {}) {
   const posts = [];
   const server = createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => (raw += c));
     req.on("end", () => {
       if (hang) return;
+      if (plain)
+        return res.writeHead(404, { "Content-Type": "text/plain" }).end("404 page not found");
+      if (jsonMissing)
+        return res
+          .writeHead(404, { "Content-Type": "application/json" })
+          .end('{"detail":"Not Found"}');
       if (html) return res.writeHead(404, { "Content-Type": "text/html" }).end("<html></html>");
       res.setHeader("Content-Type", "application/json");
       if (forbidden) return res.writeHead(403).end("{}");
@@ -162,7 +175,20 @@ test("a 403 from Mealie stays a permission error, not a token error", async () =
   try {
     const res = await call(r.port, { type: "mealie_atelier/shopping" });
     assert.equal(res.status, 403);
-    assert.notEqual((await res.json()).code, "mealie_auth");
+    assert.equal((await res.json()).code, "mealie_forbidden");
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("a JSON 404 from MEALIE_URL reports mealie_not_found", async () => {
+  const stub = await mealieStub({ jsonMissing: true });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await call(r.port, { type: "mealie_atelier/shopping" });
+    assert.equal(res.status, 404);
+    assert.equal((await res.json()).code, "mealie_not_found");
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();
@@ -171,6 +197,19 @@ test("a 403 from Mealie stays a permission error, not a token error", async () =
 
 test("an HTML answer from MEALIE_URL reports mealie_not_mealie", async () => {
   const stub = await mealieStub({ html: true });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await call(r.port, { type: "mealie_atelier/shopping" });
+    assert.equal(res.status, 502);
+    assert.equal((await res.json()).code, "mealie_not_mealie");
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("a plain-text 404 from MEALIE_URL reports mealie_not_mealie", async () => {
+  const stub = await mealieStub({ plain: true });
   const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
   try {
     const res = await call(r.port, { type: "mealie_atelier/shopping" });
@@ -253,5 +292,57 @@ test("a rejected USDA key carries its own error code", async () => {
     });
   } finally {
     globalThis.fetch = original;
+  }
+});
+
+test("/healthz is unauthenticated, checks the token server side and caches the result", async () => {
+  const stub = await mealieStub();
+  let hits = 0;
+  stub.server.on("request", () => hits++);
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const url = `http://127.0.0.1:${r.port}/healthz`;
+    const first = await fetch(url);
+    assert.equal(first.status, 200);
+    assert.deepEqual(await first.json(), { ok: true });
+    assert.equal((await fetch(url)).status, 200);
+    assert.equal(hits, 1, "second probe is served from the 60 s cache");
+    assert.equal((await fetch(`http://127.0.0.1:${r.port}/api/health`)).status, 401);
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("/healthz answers 503 without details when Mealie rejects the token", async () => {
+  const stub = await mealieStub({ tokenOk: false });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await fetch(`http://127.0.0.1:${r.port}/healthz`);
+    assert.equal(res.status, 503);
+    assert.deepEqual(await res.json(), { ok: false });
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("healthcheck.mjs exits 0 when healthy and 1 when not, without credentials", async () => {
+  for (const [tokenOk, code] of [
+    [true, 0],
+    [false, 1],
+  ]) {
+    const stub = await mealieStub({ tokenOk });
+    const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+    try {
+      const probe = spawn(process.execPath, [join(ROOT, "healthcheck.mjs")], {
+        env: { PATH: process.env.PATH, PORT: String(r.port) },
+      });
+      const [exit] = await once(probe, "exit");
+      assert.equal(exit, code);
+    } finally {
+      r.child.kill("SIGTERM");
+      stub.server.close();
+    }
   }
 });

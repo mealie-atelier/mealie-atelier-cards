@@ -14,7 +14,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (`/api/health`, authenticated with your configured credentials), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
+Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (the unauthenticated `/healthz`, which verifies the Mealie token on the server, caches the result for 60 seconds and answers only 200 or 503 without details), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
 
 Optional **read-only** kiosk mode: add `ATELIER_READ_ONLY=true` to `.env` and restart. The server will reject all mutation commands, not just hide buttons.
 
@@ -88,7 +88,7 @@ ATELIER_USERS='anna:admin:scrypt$16384$8$1$...$...;ben:reader:scrypt$16384$8$1$.
 - A refused write answers HTTP 403 with `code` `write_not_permitted` (reader) or `unauthorized` (writer on an admin action); the card hides the matching controls. A shopping edit queued offline by an account that lost its write role is dropped on the next sync, with a visible notice.
 - Successful sign-ins are cached in memory for 10 minutes so each request does not run scrypt; failures are never cached and every one counts for the sign-in throttle described below.
 
-Generate the Web Push keys with `npm run vapid` and paste the three `ATELIER_VAPID_` lines into `.env` (the subject must start with `mailto:` or `https://`, otherwise the server refuses to start; replace the example address). Keep the private key stable, secret and backed up.
+Generate the Web Push keys with `npm run vapid` on any machine with Node 22 or later, from a checkout of this repository (the Docker image does not contain the `scripts/` folder, so the command does not work inside the container), and paste the three `ATELIER_VAPID_` lines into `.env` (the subject must start with `mailto:` or `https://`, otherwise the server refuses to start; replace the example address). Keep the private key stable, secret and backed up.
 
 ## Security
 

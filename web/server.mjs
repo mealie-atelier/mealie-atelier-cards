@@ -277,8 +277,18 @@ async function mealie(method, path, body, query) {
       });
     }
     const mime = response.headers.get("content-type") || "";
-    // A real Mealie answers errors and data as JSON; HTML or plain text means another server.
-    if ((response.status === 404 || response.status < 300) && mime.includes("html"))
+    if (response.status === 403) {
+      throw Object.assign(new Error("Mealie HTTP 403"), {
+        status: 403,
+        atelierCode: "mealie_forbidden",
+      });
+    }
+    // A real Mealie answers errors as JSON (FastAPI); a 404 that is not JSON, or HTML on success,
+    // means another server answers at MEALIE_URL.
+    if (
+      (response.status === 404 && !mime.includes("json")) ||
+      (response.status < 300 && mime.includes("html"))
+    )
       throw Object.assign(
         new Error("The address does not answer like a Mealie server. Check MEALIE_URL."),
         {
@@ -289,6 +299,8 @@ async function mealie(method, path, body, query) {
     if (response.status >= 300) {
       throw Object.assign(new Error(`Mealie HTTP ${response.status}`), {
         status: response.status >= 500 ? 502 : response.status,
+        // A JSON 404 is Mealie's own "missing" or another API server at MEALIE_URL.
+        ...(response.status === 404 ? { atelierCode: "mealie_not_found" } : {}),
       });
     }
     if (response.status === 204) return null;
@@ -306,6 +318,21 @@ async function mealieReachable() {
     () => false,
   );
   return Promise.race([probe, limit]);
+}
+const HEALTH_OK_MS = 60000;
+const HEALTH_FAIL_MS = 10000;
+let healthCache = { until: 0, ok: false, pending: null };
+/** Server-side token check for /healthz: cached (60 s when healthy, 10 s when not) and shared by concurrent probes. */
+async function mealieHealthy() {
+  const now = Date.now();
+  if (now < healthCache.until) return healthCache.ok;
+  if (healthCache.pending) return healthCache.pending;
+  const pending = mealieReachable().then((ok) => {
+    healthCache = { until: Date.now() + (ok ? HEALTH_OK_MS : HEALTH_FAIL_MS), ok, pending: null };
+    return ok;
+  });
+  healthCache.pending = pending;
+  return pending;
 }
 // BEGIN feature B: binary and multipart Mealie calls, editing service
 async function mealieRaw(method, path, { body } = {}) {
@@ -1038,6 +1065,13 @@ const FILES = {
 };
 const server = createServer(async (req, res) => {
   warnUntrustedProxy(req);
+  // Unauthenticated liveness probe for the container health check. It carries no credentials, is
+  // outside the sign-in throttle and reveals nothing beyond healthy or not.
+  if ((req.method === "GET" || req.method === "HEAD") && req.url.split("?")[0] === "/healthz") {
+    const ok = await mealieHealthy();
+    reply(res, ok ? 200 : 503, { ok });
+    return;
+  }
   // A throttled address is refused before its credentials are checked, so the lockout cannot be
   // used as a password oracle.
   const retryMs = authThrottle.retryAfterMs(throttleClient(req));

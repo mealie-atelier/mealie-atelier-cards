@@ -129,7 +129,9 @@ export function createRecipeEditing({
     try {
       return await mealieJson(...args);
     } catch (error) {
-      if (error?.atelierCode) throw error;
+      // A plain 403 from Mealie keeps the editing contract (mealie_auth, 502); a plain 404 stays an upstream status.
+      const plain = ["mealie_forbidden", "mealie_not_found"].includes(error?.atelierCode);
+      if (error?.atelierCode && !plain) throw error;
       const auth = error?.status === 401 || error?.status === 403;
       throw Object.assign(
         editError(
