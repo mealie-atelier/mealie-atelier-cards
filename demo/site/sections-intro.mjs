@@ -1,6 +1,6 @@
 // Landing page, first half: hero, facts, food, before/after and the opening of the live demo.
 import { escapeHtml, icon, sectionIds, translator } from "./chrome.mjs";
-import { browser, credit, host, phone, photo, shot, shotSources, tablet } from "./media.mjs";
+import { browser, host, phone, photo, shot, shotSources, tablet } from "./media.mjs";
 
 export const bySlug = (ctx, slug) => {
   const recipe = ctx.recipes.find((row) => row.slug === slug);
@@ -87,7 +87,7 @@ function food(ctx) {
   const figures = dishes
     .map(([slug, slot, sizes], index) => {
       const recipe = bySlug(ctx, slug);
-      return `<figure class="dish ${slot} rv${index ? ` d${Math.min(index, 3)}` : ""}">${photo(ctx, recipe, sizes, { className: "dish-img" })}<figcaption class="name"><a href="${escapeHtml(ctx.recipeUrl(recipe))}">${escapeHtml(recipe.title[ctx.locale])}</a></figcaption>${credit(ctx, recipe)}</figure>`;
+      return `<figure class="dish ${slot} rv${index ? ` d${Math.min(index, 3)}` : ""}">${photo(ctx, recipe, sizes, { className: "dish-img" })}<figcaption class="name"><a href="${escapeHtml(ctx.recipeUrl(recipe))}">${escapeHtml(recipe.title[ctx.locale])}</a></figcaption></figure>`;
     })
     .join("");
   return `<section class="sec" aria-labelledby="food-title"><div class="wrap"><div class="sec-head"><p class="kicker rv">${t("Deine Rezepte, endlich schön", "Your recipes, finally beautiful")}</p><h2 id="food-title" class="rv d1">${t("Rezepte, die Lust aufs <em>Kochen</em> machen.", "Recipes that make you want to <em>cook</em>.")}</h2><p class="lead rv d2">${t(

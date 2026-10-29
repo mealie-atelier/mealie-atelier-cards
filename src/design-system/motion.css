@@ -221,14 +221,6 @@
   position: relative;
   isolation: isolate;
 }
-.atelier .identity .logo:after {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border: 1px solid color-mix(in srgb, var(--at-accent) 26%, transparent);
-  border-radius: inherit;
-  pointer-events: none;
-}
 .atelier .topbar {
   position: relative;
   z-index: 2;

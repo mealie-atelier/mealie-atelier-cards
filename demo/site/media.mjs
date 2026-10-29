@@ -46,10 +46,19 @@ export function photo(ctx, recipe, sizes, options = {}) {
   return `<img${className} src="${url(entry.widths.at(-1))}" srcset="${srcset}" sizes="${sizes}" width="${entry.width}" height="${entry.height}" ${attributes({ ...options, alt })}>`;
 }
 
-// The credit sits at the photo, never in the footer.
-export function credit(ctx, recipe, className = "credit") {
+// Credits stay quiet: a muted caption under the hero photo of a recipe page and one complete
+// list on the credits page. Never an overlay on a tile, card or screenshot.
+function creditLinks(ctx, recipe) {
   const t = translator(ctx.locale);
-  return `<p class="${className}">${t("Foto", "Photo")}: ${ext(recipe.image.photographerUrl, escapeHtml(recipe.image.photographer))} · ${ext(recipe.image.sourceUrl, "Unsplash")}</p>`;
+  return `${t("Foto", "Photo")}: ${ext(recipe.image.photographerUrl, escapeHtml(recipe.image.photographer))} ${t("auf", "on")} ${ext(recipe.image.sourceUrl, "Unsplash")}`;
+}
+
+export function photoCaption(ctx, recipe) {
+  return `<p class="photo-caption">${creditLinks(ctx, recipe)}</p>`;
+}
+
+export function creditRow(ctx, recipe, url) {
+  return `<li>${photo(ctx, recipe, "64px", { className: "credit-thumb" })}<p class="credit-title"><a href="${escapeHtml(url)}">${escapeHtml(recipe.title[ctx.locale])}</a></p><p class="credit-by">${creditLinks(ctx, recipe)}</p></li>`;
 }
 
 export const browser = (label, inner, extra = "") =>

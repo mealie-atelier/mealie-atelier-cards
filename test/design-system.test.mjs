@@ -349,3 +349,12 @@ test("enter animations do not hold their end frame, so text is not left on a blu
     assert.match(rule, /\bbackwards;$/, rule);
   }
 });
+
+test("the sidebar identity shows the Week Dial mark, not the old leaf tile", () => {
+  const identity = compiled.match(/<div class="identity">[^`]*?<\/div><div><strong>/)?.[0] ?? "";
+  assert.ok(identity.includes("${WEEK_DIAL_MARK}"), "identity renders the Week Dial constant");
+  assert.doesNotMatch(identity, /icon\("leaf"/);
+  const mark = compiled.match(/const WEEK_DIAL_MARK =\s*'([^']+)'/)?.[1] ?? "";
+  for (const fill of ["#F2E9D8", "#B8532E", "#DCCDB0", "#3E6B48"])
+    assert.ok(mark.includes(fill), fill);
+});

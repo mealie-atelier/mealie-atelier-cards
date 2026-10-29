@@ -1,7 +1,15 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { sectionIds } from "../demo/site/chrome.mjs";
@@ -18,8 +26,7 @@ const links = {
 
 // Two builds: one relative (as served locally) and one with a deployment base URL.
 const builds = {};
-function generate(base) {
-  const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+function generate(base, out = mkdtempSync(join(tmpdir(), "atelier-demo-"))) {
   execFileSync("node", ["scripts/generate-demo-site.mjs"], {
     env: { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: base },
     stdio: "pipe",
@@ -27,7 +34,13 @@ function generate(base) {
   return out;
 }
 before(() => {
-  builds.local = generate("");
+  // The local build starts in a folder that still holds the page of a removed recipe.
+  const stale = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+  for (const page of ["de/rezepte/shakshuka-mit-paprika", "en/recipes/shakshuka-with-peppers"]) {
+    mkdirSync(join(stale, page), { recursive: true });
+    writeFileSync(join(stale, page, "index.html"), "<p>old leaf page</p>");
+  }
+  builds.local = generate("", stale);
   builds.deployed = generate(baseUrl);
 });
 after(() => {
@@ -148,7 +161,7 @@ test("English footers group the German-only guides under one note", () => {
     english += 1;
     assert.match(footer, /<h3>Guides <span class="col-note">in German<\/span><\/h3>/, page);
   }
-  assert.equal(english, 11);
+  assert.equal(english, 12);
 });
 
 test("each story scene shows one large device with real content", () => {
@@ -222,7 +235,7 @@ test("landing pages carry the links, social tags and JSON-LD", () => {
     /<meta name="description" content="[^"]{40,}"/,
   );
   const sitemap = read(join(builds.deployed, "sitemap.xml"));
-  assert.equal((sitemap.match(/<loc>/g) ?? []).length, 22);
+  assert.equal((sitemap.match(/<loc>/g) ?? []).length, 24);
   assert.match(
     read(join(builds.deployed, "robots.txt")),
     /Sitemap: https:\/\/mealie\.example\.test\/sitemap\.xml/,
@@ -235,7 +248,7 @@ test("every page shares the designed footer in its own language without photo cr
     en: /Made with <span class="heart"[^>]*>♥<\/span> by/,
   };
   const pages = contentPages(builds.local);
-  assert.equal(pages.length, 22);
+  assert.equal(pages.length, 24);
   for (const page of pages) {
     const html = read(page);
     const locale = html.match(/<html lang="(de|en)">/)[1];
@@ -259,10 +272,13 @@ test("every page shares the designed footer in its own language without photo cr
     ]) {
       assert.ok(footer.includes(`href="${link}"`), `${page} footer lacks ${link}`);
     }
-    assert.doesNotMatch(
+    assert.doesNotMatch(footer, /Unsplash|Foto:|Photo:/, `${page} footer holds no credit lines`);
+    const creditsLabel = locale === "de" ? "Bildnachweise" : "Photo credits";
+    const creditsHref = locale === "de" ? "bildnachweise/" : "credits/";
+    assert.match(
       footer,
-      /Unsplash|Foto|Photo:/i,
-      `${page} footer must not carry photo credits`,
+      new RegExp(`<a class="foot-credits" href="(?:[^"]*${creditsHref}|\\./)">${creditsLabel}</a>`),
+      `${page} footer links the credits list`,
     );
     if (locale === "de") assert.doesNotMatch(footer, /Made with/, page);
     assert.match(html, /<meta name="color-scheme" content="dark"/, page);
@@ -346,18 +362,38 @@ test("every asset a page references exists in the generated site", () => {
   }
 });
 
-test("photo credits sit at their photos and cover every recipe", () => {
+test("photo credits stay quiet: no overlays, one caption per recipe page, one full list", () => {
   const catalog = JSON.parse(read("demo/data/recipes.json"));
+  for (const page of listFiles(builds.local, ".html")) {
+    const html = read(page);
+    assert.doesNotMatch(html, /class="credit"|closing-credit/, `${page} has no credit overlay`);
+    const isRecipe = html.includes('<body class="recipe-body">');
+    assert.equal(
+      html.includes('<p class="photo-caption">'),
+      isRecipe,
+      `${page} caption only on recipe pages`,
+    );
+  }
   for (const locale of ["de", "en"]) {
-    const html = landing(builds.local, locale);
-    const directory = html.match(/<div class="recipe-list">[\s\S]*?<\/div><\/div><\/section>/)[0];
-    assert.equal((directory.match(/<p class="credit">/g) ?? []).length, 10, locale);
+    const home = landing(builds.local, locale);
+    assert.doesNotMatch(home, /unsplash\.com/, `${locale} landing page shows no credits`);
+    const list = read(
+      join(builds.local, locale === "de" ? "de/bildnachweise" : "en/credits", "index.html"),
+    );
     for (const recipe of catalog.recipes) {
       assert.ok(
-        html.includes(`>${recipe.image.photographer}</a>`),
-        `${locale} credits ${recipe.slug}`,
+        list.includes(`>${recipe.image.photographer}</a>`),
+        `${locale} lists ${recipe.slug}`,
+      );
+      assert.ok(
+        list.includes(`href="${recipe.image.sourceUrl}" target="_blank" rel="noopener noreferrer"`),
       );
     }
+    assert.equal((list.match(/<li><img/g) ?? []).length, 10, `${locale} credit rows`);
+    assert.match(
+      list,
+      /href="https:\/\/unsplash\.com\/license" target="_blank" rel="noopener noreferrer"/,
+    );
   }
 });
 
@@ -371,7 +407,7 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
     assert.match(html, /<header class="top"/, page);
     assert.match(
       html,
-      /<figure class="wrap recipe-figure"><img [^>]*fetchpriority="high"[^>]*><figcaption><p class="credit">/,
+      /<figure class="wrap recipe-figure"><img [^>]*fetchpriority="high"[^>]*><figcaption><p class="photo-caption">Foto|Photo/,
       page,
     );
     const method = html.match(/<section class="recipe-method"[\s\S]*?<\/section>/)[0];
@@ -397,14 +433,35 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
 });
 
 test("every page carries the Week Dial favicon, touch icon and page-surface theme colour", () => {
-  assert.ok(existsSync(join(builds.local, "assets/mealie-atelier-mark.svg")));
+  for (const asset of [
+    "mealie-atelier-mark.svg",
+    "favicon.svg",
+    "favicon.ico",
+    "apple-touch-icon.png",
+  ]) {
+    assert.ok(existsSync(join(builds.local, "assets", asset)), asset);
+  }
+  const touch = readFileSync(join(builds.local, "assets/apple-touch-icon.png"));
+  assert.equal(touch.readUInt32BE(16), 180, "touch icon is 180 px wide");
+  assert.equal(touch.readUInt32BE(20), 180, "touch icon is 180 px high");
   const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
   assert.match(css, /\.brand-mark\s*\{[^}]*mealie-atelier-mark\.svg/);
   for (const page of listFiles(builds.local, ".html")) {
     const html = readFileSync(page, "utf8");
-    assert.match(html, /<link rel="icon"[^>]*mealie-atelier-icon-192\.png/, page);
-    assert.match(html, /<link rel="apple-touch-icon"[^>]*mealie-atelier-icon-192\.png/, page);
+    assert.match(html, /<link rel="icon" type="image\/svg\+xml" href="[^"]*favicon\.svg"/, page);
+    assert.match(html, /<link rel="icon" href="[^"]*favicon\.ico" sizes="32x32"/, page);
+    assert.match(html, /<link rel="apple-touch-icon" href="[^"]*apple-touch-icon\.png"/, page);
     assert.match(html, /<meta name="theme-color" content="#0c120f"/, page);
     assert.doesNotMatch(html, /<path d="M6 19c7-1/, page);
+  }
+});
+
+test("a reused output folder loses the pages of recipes that left the catalog", () => {
+  assert.ok(!existsSync(join(builds.local, "de/rezepte/shakshuka-mit-paprika")));
+  assert.ok(!existsSync(join(builds.local, "en/recipes/shakshuka-with-peppers")));
+  assert.equal(listFiles(join(builds.local, "de/rezepte"), ".html").length, 10);
+  assert.equal(listFiles(join(builds.local, "en/recipes"), ".html").length, 10);
+  for (const page of contentPages(builds.local)) {
+    assert.doesNotMatch(read(page), /old leaf page/, page);
   }
 });
