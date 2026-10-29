@@ -1091,5 +1091,21 @@
   "openItems.one": "1 open item",
   "openItems.other": "{count} open items",
   "importKicker": "IMPORT",
-  "shoppingKicker": "SHOPPING"
+  "shoppingKicker": "SHOPPING",
+  "editorCustomValue": "{value} (custom, not a preset)",
+  "editorNoBuiltInMealieIntegrationFound": "Not available: no Mealie integration found in Home Assistant.",
+  "editorColorSage": "Sage green",
+  "editorColorApricot": "Apricot",
+  "editorColorPeriwinkle": "Periwinkle blue",
+  "editorColorLilac": "Lilac",
+  "editorColorHoney": "Honey yellow",
+  "stubTitle.today": "Mealie Atelier · Today",
+  "stubTitle.recipes": "Mealie Atelier · Recipes",
+  "stubTitle.mealplan": "Mealie Atelier · Planner",
+  "stubTitle.shopping": "Mealie Atelier · Shopping",
+  "stubTitle.discover": "Mealie Atelier · Discover",
+  "stubTitle.pantry": "Mealie Atelier · Pantry",
+  "stubTitle.family": "Mealie Atelier · Family",
+  "stubTitle.cookbook": "Mealie Atelier · Cookbook",
+  "stubTitle.manage": "Mealie Atelier · Manager"
 }

@@ -26,6 +26,11 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The corner style in the design settings shows the active option when no radius was set.
 - The Kochinspo time step always shows a selected limit. The default of 40 minutes matched none of the choices, so nothing was marked; a saved limit now selects the next choice up.
 
+- The visual editor names the accent colours (Salbeigrün, Aprikose and so on, in German and English) with a colour swatch beside the select instead of raw hex values.
+- The suggested card titles in Home Assistant's card picker follow the Home Assistant language (German or English, English fallback) instead of always being English.
+- The visual editor no longer shows the first option when a stored value is not a preset (for example `language: fr`, `columns: 9`, `theme: purple`): the stored value is shown as a selected, labelled extra option and kept on save.
+- The data connection select always lists the built-in Home Assistant Mealie option; without a Mealie integration it is disabled with a one-line hint.
+
 ### Changed
 
 - A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.

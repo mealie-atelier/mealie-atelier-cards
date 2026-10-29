@@ -954,3 +954,19 @@ input[type="checkbox"]:disabled {
     transition: none !important;
   }
 }
+
+.accent-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.accent-pick select {
+  flex: 1;
+}
+.accent-dot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.45);
+}

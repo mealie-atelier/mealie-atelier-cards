@@ -173,6 +173,12 @@ function dayString(locale, day, opts) {
 /** Dedicated print documents. No token/credentials or arbitrary HTML from Mealie is interpolated. */
 /* ATELIER_PRINT_DOCUMENT */
 
+/** Stub card title in the Home Assistant UI language (English fallback). */
+function stubTitle(hass, mode) {
+  const locale = resolveLanguage("auto", hass?.locale?.language || hass?.language, "");
+  return translateLabel(locale, `stubTitle.${mode}`);
+}
+
 class MealieAtelierCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement("mealie-atelier-card-editor");
@@ -2024,48 +2030,48 @@ MealieAtelierCard.prototype.disconnectedCallback = function () {
 /* END shopping sync routing */
 
 class AtelierTodayCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "today", title: "Mealie Atelier · Today" };
+  static getStubConfig(hass) {
+    return { mode: "today", title: stubTitle(hass, "today") };
   }
 }
 class AtelierRecipeCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "recipes", title: "Mealie Atelier · Recipes" };
+  static getStubConfig(hass) {
+    return { mode: "recipes", title: stubTitle(hass, "recipes") };
   }
 }
 class AtelierMealplanCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "mealplan", title: "Mealie Atelier · Planner" };
+  static getStubConfig(hass) {
+    return { mode: "mealplan", title: stubTitle(hass, "mealplan") };
   }
 }
 class AtelierShoppingCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "shopping", title: "Mealie Atelier · Shopping" };
+  static getStubConfig(hass) {
+    return { mode: "shopping", title: stubTitle(hass, "shopping") };
   }
 }
 class AtelierDiscoverCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "discover", title: "Mealie Atelier · Discover" };
+  static getStubConfig(hass) {
+    return { mode: "discover", title: stubTitle(hass, "discover") };
   }
 }
 class AtelierPantryCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "pantry", title: "Mealie Atelier · Pantry" };
+  static getStubConfig(hass) {
+    return { mode: "pantry", title: stubTitle(hass, "pantry") };
   }
 }
 class AtelierFamilyCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "family", title: "Mealie Atelier · Family" };
+  static getStubConfig(hass) {
+    return { mode: "family", title: stubTitle(hass, "family") };
   }
 }
 class AtelierCookbookCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "cookbook", title: "Mealie Atelier · Cookbook" };
+  static getStubConfig(hass) {
+    return { mode: "cookbook", title: stubTitle(hass, "cookbook") };
   }
 }
 class AtelierManageCard extends MealieAtelierCard {
-  static getStubConfig() {
-    return { mode: "manage", title: "Mealie Atelier · Manager" };
+  static getStubConfig(hass) {
+    return { mode: "manage", title: stubTitle(hass, "manage") };
   }
 }
 

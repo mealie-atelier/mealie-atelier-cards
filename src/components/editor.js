@@ -1,3 +1,10 @@
+const COLOR_NAMES = {
+  "#9dcbb2": "editorColorSage",
+  "#e5ad92": "editorColorApricot",
+  "#a8bdef": "editorColorPeriwinkle",
+  "#d3adcd": "editorColorLilac",
+  "#d6c07d": "editorColorHoney",
+};
 // Home Assistant visual card editor; the first-run path stays short and skippable.
 class MealieAtelierEditor extends HTMLElement {
   constructor() {
@@ -60,9 +67,11 @@ class MealieAtelierEditor extends HTMLElement {
     this.shadowRoot.removeEventListener("change", this._boundChange);
     this.shadowRoot.removeEventListener("click", this._boundClick);
   }
+  _locale() {
+    return resolveLanguage("auto", this._hass?.language, navigator.language);
+  }
   _tr(key) {
-    const locale = resolveLanguage("auto", this._hass?.language, navigator.language);
-    return translateLabel(locale, key);
+    return translateLabel(this._locale(), key);
   }
   _detectNativeEntries() {
     const entities = Object.values(this._hass?.entities || {}).filter(
@@ -84,7 +93,20 @@ class MealieAtelierEditor extends HTMLElement {
   }
   _choose(key, options) {
     const c = this._config;
-    return `<select id="atelier-${key}" data-key="${key}">${options.map(([value, label]) => `<option value="${esc(value)}" ${String(c[key]) === String(value) ? "selected" : ""}>${esc(label)}</option>`).join("")}</select>`;
+    const stored = c[key];
+    // A stored value outside the presets stays selected (and saved) as an extra, labelled option.
+    const unknown =
+      stored !== undefined &&
+      stored !== null &&
+      stored !== "" &&
+      !options.some(([value]) => String(value) === String(stored));
+    const all = unknown
+      ? [
+          [stored, translateLabel(this._locale(), "editorCustomValue", { value: stored })],
+          ...options,
+        ]
+      : options;
+    return `<select id="atelier-${key}" data-key="${key}">${all.map(([value, label, disabled]) => `<option value="${esc(value)}" ${String(c[key]) === String(value) ? "selected" : ""} ${disabled ? "disabled" : ""}>${esc(label)}</option>`).join("")}</select>`;
   }
   _emitConfig() {
     this.dispatchEvent(
@@ -250,7 +272,14 @@ class MealieAtelierEditor extends HTMLElement {
       MODES.map((value) => [value, this._tr(value)]),
     )}</div>
     <div class="group"><label for="atelier-entry_id">${tr("editorMealieAccount")}</label>${choose("entry_id", [["", tr("editorFirstConnectedAccount")], ...this._entries.map((entry) => [entry.entry_id, entry.name || entry.title || entry.entry_id])])}</div>
-    <div class="group"><label for="atelier-provider">${tr("editorDataConnection")}</label>${choose("provider", [["auto", tr("editorAutomaticAtelierFirst")], ["atelier", tr("editorAtelierBridgeFullFeatures")], ...(this._nativeEntries.length ? [["home_assistant", tr("editorHomeAssistantMealieReadOnly")]] : [])])}<p class="hint">${tr("editorTheBuiltInOptionNeedsNoAtelierServerOrCardTokenRecipeSearchAndCookingAreReadOnlyTheBridgeAddsImagesAndKitchenTools")}</p></div>
+    <div class="group"><label for="atelier-provider">${tr("editorDataConnection")}</label>${choose(
+      "provider",
+      [
+        ["auto", tr("editorAutomaticAtelierFirst")],
+        ["atelier", tr("editorAtelierBridgeFullFeatures")],
+        ["home_assistant", tr("editorHomeAssistantMealieReadOnly"), !this._nativeEntries.length],
+      ],
+    )}<p class="hint">${tr("editorTheBuiltInOptionNeedsNoAtelierServerOrCardTokenRecipeSearchAndCookingAreReadOnlyTheBridgeAddsImagesAndKitchenTools")}</p>${this._nativeEntries.length ? "" : `<p class="hint" id="atelier-provider-native-hint">${tr("editorNoBuiltInMealieIntegrationFound")}</p>`}</div>
     ${
       this._nativeEntries.length
         ? `<div class="group"><label for="atelier-mealie_entry_id">${tr("editorBuiltInMealieInstance")}</label>${choose(
@@ -289,10 +318,10 @@ class MealieAtelierEditor extends HTMLElement {
         [3, "3"],
         [4, "4"],
       ],
-    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label>${choose(
+    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(c.accent)}"></span>${choose(
       "accent",
-      COLORS.map((value) => [value, value]),
-    )}</div>
+      COLORS.map((value) => [value, tr(COLOR_NAMES[value])]),
+    )}</div></div>
     <div class="group"><label for="atelier-radius">${tr("editorCornerStyle")}</label>${choose(
       "radius",
       [
