@@ -877,7 +877,7 @@
   "uiNoWriteGrantWeb": "Du bist mit Lesezugriff angemeldet. Ein Administrator kann deinem Konto die Schreibrolle geben.",
   "errNotConfigured": "Mealie Atelier ist noch nicht eingerichtet.",
   "errInvalidRequest": "Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.",
-  "errMealieAuth": "Mealie hat das API-Token abgelehnt. Prüfe MEALIE_API_TOKEN in der Konfiguration des Servers.",
+  "errMealieAuth": "Mealie hat das API-Token abgelehnt. Prüfe das Token in den Einstellungen.",
   "errMealieError": "Mealie ist nicht erreichbar oder hat unerwartet geantwortet. Versuche es gleich noch einmal.",
   "errAiError": "Der KI-Anbieter hat nicht geantwortet oder eine unbrauchbare Antwort geliefert. Prüfe den API-Key und versuche es erneut.",
   "errReadOnly": "Diese Küche ist schreibgeschützt, daher lässt sich nichts ändern.",

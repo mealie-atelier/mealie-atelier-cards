@@ -434,6 +434,12 @@ test("nutrition keeps the specific reason for a bare invalid_request and transla
 test("merged i18n wording stays consistent between German and English", () => {
   assert.match(i18n("en").errMealieAuth, /API token/);
   assert.doesNotMatch(i18n("en").errMealieAuth, /access token/);
+  // The same code arrives from the Home Assistant Bridge, so no web-only env var may be named.
+  for (const lang of ["de", "en"])
+    assert.doesNotMatch(
+      i18n(lang).errMealieAuth,
+      /MEALIE_API_TOKEN|server config|Konfiguration des Servers/i,
+    );
   assert.equal(i18n("de").editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
 });
 
