@@ -121,9 +121,8 @@ const seen = (key, item, wanted, shown) => {
   const bare = bareLabel(item);
   const given = String(wanted || "").trim();
   if (same("name", withoutAmount(given, item, shown), bare)) return given;
-  // The label the cards show: display, else note, else food name.
   const candidates = [
-    item.display || item.note || item.food?.name,
+    item.display || bare,
     item.display,
     bare,
     rebuilt(item, true),

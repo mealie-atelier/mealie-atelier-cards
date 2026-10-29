@@ -675,7 +675,7 @@ test("another device's note or name change makes a rename a conflict, a quantity
           note: "fettarm",
           display: "Milch fettarm",
           isFood: true,
-          food: { name: "Milch" },
+          food: { name: "Hafer" },
           quantity: 0,
         },
         // Another device set the quantity to 3 on an item the user saw as "2 Milch".
@@ -694,7 +694,7 @@ test("another device's note or name change makes a rename a conflict, a quantity
   }
 });
 
-test("a number in a free text name is no amount, and the label the cards show for an empty display matches", async () => {
+test("a number in a free text name is no amount, and a food changed on another device never matches an empty display", async () => {
   const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
   try {
     const state = {
@@ -704,13 +704,13 @@ test("a number in a free text name is no amount, and the label the cards show fo
         b: { id: "b", note: "Eier", display: "Eier", isFood: false, quantity: 0 },
         // The free text item the user saw is still unchanged.
         c: { id: "c", note: "2 Milch", display: "2 Milch", isFood: false, quantity: 0 },
-        // The display is empty, so the cards show and send the note alone.
+        // The display is empty and another device changed the food from Milch to Hafer.
         d: {
           id: "d",
           note: "fettarm",
           display: "",
           isFood: true,
-          food: { name: "Milch" },
+          food: { name: "Hafer" },
           quantity: 0,
         },
         // Another device renamed "10 Eier" to "Eier" and set the quantity to 2.
@@ -728,7 +728,9 @@ test("a number in a free text name is no amount, and the label the cards show fo
       atelierCode: "offline_conflict",
     });
     assert.equal((await ledger.process(rename("c", "2 Milch"))).ok, true);
-    assert.equal((await ledger.process(rename("d", "fettarm"))).ok, true);
+    await assert.rejects(ledger.process(rename("d", "fettarm")), {
+      atelierCode: "offline_conflict",
+    });
     const seenQuantity = (id, expected, quantity) =>
       op("shopping_update", {
         item_id: id,
