@@ -20,26 +20,6 @@
       "height": 1000,
       "widths": [800, 1600]
     },
-    "app-desktop-discover": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "app-desktop-family": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "app-desktop-pantry": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "app-desktop-cookbook": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
     "app-desktop-cook": {
       "width": 1600,
       "height": 1000,
@@ -90,7 +70,22 @@
       "height": 1558,
       "widths": [360, 720]
     },
-    "app-phone-cook": {
+    "app-phone-discover-results": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-pantry-assist": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-family-helper": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-cookbook": {
       "width": 720,
       "height": 1558,
       "widths": [360, 720]
@@ -116,11 +111,6 @@
       "widths": [360, 720]
     },
     "ha-integration": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "ha-sync-status": {
       "width": 1600,
       "height": 1000,
       "widths": [800, 1600]
@@ -152,26 +142,6 @@
       "height": 1000,
       "widths": [800, 1600]
     },
-    "app-desktop-discover": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "app-desktop-family": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "app-desktop-pantry": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "app-desktop-cookbook": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
     "app-desktop-cook": {
       "width": 1600,
       "height": 1000,
@@ -222,7 +192,22 @@
       "height": 1558,
       "widths": [360, 720]
     },
-    "app-phone-cook": {
+    "app-phone-discover-results": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-pantry-assist": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-family-helper": {
+      "width": 720,
+      "height": 1558,
+      "widths": [360, 720]
+    },
+    "app-phone-cookbook": {
       "width": 720,
       "height": 1558,
       "widths": [360, 720]
@@ -248,11 +233,6 @@
       "widths": [360, 720]
     },
     "ha-integration": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
-    "ha-sync-status": {
       "width": 1600,
       "height": 1000,
       "widths": [800, 1600]
@@ -295,13 +275,13 @@
       "widths": [360, 800]
     },
     "pfannen-eier-mit-tomaten-und-basilikum": {
-      "width": 1200,
-      "height": 1500,
+      "width": 960,
+      "height": 960,
       "widths": [360, 800]
     },
     "pizza-mit-schinken-und-champignons": {
-      "width": 1067,
-      "height": 1600,
+      "width": 810,
+      "height": 1012,
       "widths": [360, 800]
     },
     "wan-tan-suppe-mit-pak-choi": {
