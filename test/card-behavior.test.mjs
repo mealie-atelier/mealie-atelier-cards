@@ -474,8 +474,8 @@ test("the piece unit is shown translated, never as its stored key", () => {
   }
 });
 
-const aiClick = (card, action) => {
-  const el = { dataset: { action }, disabled: false, closest: () => el };
+const aiClick = (card, action, value) => {
+  const el = { dataset: { action, value }, disabled: false, closest: () => el };
   return card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
 };
 
@@ -508,6 +508,57 @@ test("an ai_error rejection renders the translated errAiError text on the AI flo
   card._nutrition = { busy: false, preview: { ai_enabled: true, slug: "s", hash: "h" }, rows: [] };
   await aiClick(card, "nutri-ai");
   assert.match(card._nutrition.notice, text);
+});
+
+test("not-configured and read-only errors render translated text, not the raw server message", async () => {
+  const fail = (code, message) => async () => {
+    throw Object.assign(new Error(message), { code });
+  };
+  const setup = (code, message) => {
+    const card = makeCard(loadCards(), { hass: { language: "de", callWS: async () => ({}) } });
+    card._detail = { slug: "s", name: "Suppe" };
+    card._ws = fail(code, message);
+    card._atelierDialog = async (opts) => (opts.kind === "prompt" ? "Drachenfrucht" : true);
+    return card;
+  };
+  let card = setup("ai_not_configured", "AI is not configured");
+  await aiClick(card, "studio-replacement");
+  assert.match(card._aiSwap, /kein KI-Anbieter eingerichtet/);
+  assert.doesNotMatch(card._aiSwap, /AI is not configured/);
+
+  card = setup("ai_not_configured", "AI is not configured");
+  const flashed = [];
+  card._flash = (message) => flashed.push(message);
+  await aiClick(card, "studio-ai-audit");
+  assert.match(flashed.join("\n"), /kein KI-Anbieter eingerichtet/);
+  assert.doesNotMatch(flashed.join("\n"), /AI is not configured/);
+
+  card = setup("read_only", "Read-only mode");
+  card._timers = [{ id: "t1", serverArmed: true }];
+  card._flash = (message) => flashed.push(message);
+  flashed.length = 0;
+  await aiClick(card, "timer-remove", "t1");
+  assert.match(flashed.join("\n"), /schreibgeschützt/);
+  assert.doesNotMatch(flashed.join("\n"), /Read-only mode/);
+});
+
+test("the AI review button is hidden when the server reports no AI key", () => {
+  const render = (ai) => {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+    card._status = { entries: [{ entry_id: "c", features: { ai } }] };
+    card._detail = {
+      slug: "s",
+      name: "Soup",
+      recipeIngredient: [{ note: "1 onion" }],
+      recipeInstructions: [{ text: "Cook." }],
+    };
+    card._modal = "recipe";
+    card._render();
+    return cards.document.markup;
+  };
+  assert.match(render(true), /data-action="studio-ai-audit"/);
+  assert.doesNotMatch(render(false), /data-action="studio-ai-audit"/);
 });
 
 test("the card credit line follows the card language", () => {

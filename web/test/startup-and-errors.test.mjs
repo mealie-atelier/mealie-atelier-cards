@@ -11,12 +11,13 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PASSWORD = "lengthy-test-password";
 
-async function mealieStub({ tokenOk = true, forbidden = false, html = false } = {}) {
+async function mealieStub({ tokenOk = true, forbidden = false, html = false, hang = false } = {}) {
   const posts = [];
   const server = createServer((req, res) => {
     let raw = "";
     req.on("data", (c) => (raw += c));
     req.on("end", () => {
+      if (hang) return;
       if (html) return res.writeHead(404, { "Content-Type": "text/html" }).end("<html></html>");
       res.setHeader("Content-Type", "application/json");
       if (forbidden) return res.writeHead(403).end("{}");
@@ -136,6 +137,21 @@ test("wrong Mealie token is a translated-code 502 and status is not connected", 
     assert.equal(status.entries[0].features.ai, false);
   } finally {
     r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("status answers promptly while Mealie hangs", async () => {
+  const stub = await mealieStub({ hang: true });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const started = Date.now();
+    const status = await (await call(r.port, { type: "mealie_atelier/status" })).json();
+    assert.equal(status.entries[0].connected, false);
+    assert.ok(Date.now() - started < 8000, "status must not wait for the 25 s Mealie timeout");
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.closeAllConnections();
     stub.server.close();
   }
 });

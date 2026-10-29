@@ -299,12 +299,13 @@ async function mealie(method, path, body, query) {
 }
 /** Checks that MEALIE_URL answers like Mealie and accepts the token. */
 async function mealieReachable() {
-  try {
-    const who = await mealie("GET", "/api/users/self");
-    return !!who && typeof who === "object";
-  } catch {
-    return false;
-  }
+  // Bounded so a hanging Mealie never delays the status call (and with it card start).
+  const limit = new Promise((resolve) => setTimeout(() => resolve(false), 2000).unref());
+  const probe = mealie("GET", "/api/users/self").then(
+    (who) => !!who && typeof who === "object",
+    () => false,
+  );
+  return Promise.race([probe, limit]);
 }
 // BEGIN feature B: binary and multipart Mealie calls, editing service
 async function mealieRaw(method, path, { body } = {}) {
