@@ -1,5 +1,5 @@
 name: Feature request
-about: Suggest something useful for a better kitchen experience
+description: Suggest something useful for a better kitchen experience
 labels: [enhancement]
 body:
   - type: textarea

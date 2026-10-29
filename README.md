@@ -35,12 +35,12 @@
 
 ## Screenshots
 
-<p align="center"><img width="440" alt="Recipe collection with photos, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipes-dark.webp"> <img width="440" alt="Recipe details with cooking, nutrition and print actions, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipe-light.webp"></p>
-<p align="center"><img width="440" alt="Cooking mode with step, timer and photo, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/cook-dark.webp"> <img width="440" alt="Weekly meal planner, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/mealplan-light.webp"></p>
-<p align="center"><img width="440" alt="Shopping list with ticked items, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/shopping-dark.webp"> <img width="440" alt="Discover questionnaire, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/discover-light.webp"></p>
+<p align="center"><img width="400" alt="Recipe collection with photos, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipes-dark.webp"> <img width="400" alt="Recipe details with cooking, nutrition and print actions, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipe-light.webp"></p>
+<p align="center"><img width="400" alt="Cooking mode with step, timer and photo, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/cook-dark.webp"> <img width="400" alt="Weekly meal planner, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/mealplan-light.webp"></p>
+<p align="center"><img width="400" alt="Shopping list with ticked items, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/shopping-dark.webp"> <img width="400" alt="Discover questionnaire, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/discover-light.webp"></p>
 <p align="center"><img width="820" alt="Four phone screens: overview, recipe, cooking mode and shopping list" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/phones.webp"></p>
 
-<sub>All screenshots show fictional sample recipes in a disposable Home Assistant 2026.11 test instance. Photos are credited in the [demo catalogue](demo/data/recipes.json).</sub>
+<sub>All screenshots show fictional sample recipes in a disposable Home Assistant 2026.11 test instance. Photos are credited in the [demo catalog](demo/data/recipes.json).</sub>
 
 ## Install
 
@@ -60,12 +60,12 @@ The Marketplace and HACS install the bundle to `/local/community/mealie-atelier-
 
 ### 2. Connect Mealie
 
-Pick one:
+You need a Mealie server that Home Assistant can reach: Mealie 3.x (tested with v3.29). Pick one connection:
 
 | Connection                                                                                         | What you get                                                                                                  |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | [Mealie Atelier Bridge](https://github.com/mealie-atelier/mealie-atelier-bridge) (recommended)     | Everything: photos, shopping and meal plan writes, recipe editing, timers, offline shopping, per-user grants. |
-| Home Assistant's built-in [Mealie integration](https://www.home-assistant.io/integrations/mealie/) | Read-only recipe browsing and cooking mode, no photos or writes.                                              |
+| Home Assistant's built-in [Mealie integration](https://www.home-assistant.io/integrations/mealie/) | Read-only recipe browsing and cooking mode through its read actions, no photos or Atelier writes.             |
 
 ### 3. Add a card
 

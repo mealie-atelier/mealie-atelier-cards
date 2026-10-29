@@ -1,19 +1,52 @@
 name: Bug report
-about: Report a reproducible issue without sharing personal data
+description: Report a reproducible issue without sharing personal data
 labels: [bug]
 body:
-  - type: textarea
-    id: summary
+  - type: markdown
     attributes:
-      label: What happened?
-      description: Include steps to reproduce and what you expected.
+      value: |
+        Remove recipe names, hostnames, tokens, personal data and unredacted logs before submitting.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      options:
+        - Cards (Home Assistant dashboard cards)
+        - Web (standalone app)
+        - Demo
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Mealie Atelier version
+      placeholder: 0.10.0
     validations:
       required: true
   - type: input
     id: versions
     attributes:
-      label: Versions
-      placeholder: Home Assistant version / Mealie version / Atelier version
+      label: Relevant versions
+      description: Home Assistant, Mealie, browser and device, as applicable
+      placeholder: Home Assistant version / Mealie version / browser
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
     validations:
       required: true
   - type: textarea

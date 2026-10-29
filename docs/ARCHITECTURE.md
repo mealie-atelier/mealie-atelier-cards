@@ -56,7 +56,7 @@ Standalone: Node.js 22+ HTTP server with zero npm dependencies and a read-only f
 
 1. Mealie APIs change between releases. Mutation payloads and media permissions are covered by mock-server tests; verify a new Mealie release on a disposable instance before relying on writes.
 2. Recipe transfer to shopping lists uses the current batch endpoint first and falls back to the legacy single-recipe route only when the batch route is unavailable (HTTP 404/405).
-3. Recipe edits go through the structured editor with food and unit links. The web app saves a JSON snapshot before every write and supports restore from the history list. Step photos can be added and replaced; removing one detaches it from Mealie but cannot delete the file, because Mealie has no endpoint for that.
+3. Recipe edits go through the structured editor with food and unit links. Both the Bridge (recipe backups) and the web app save a JSON snapshot before every recipe write and support restore from the history list. Step photos can be added and replaced; removing one detaches it from Mealie but cannot delete the file, because Mealie has no endpoint for that.
 4. Writes are gated per person: the Bridge reports permissions and the standalone app has admin, writer and reader accounts (`ATELIER_USERS`). Read-only mode is enforced on the server.
 5. Shopping edits made without a connection go into an on-device queue and are replayed in order. The queue is per device and does not merge edits across devices.
 6. Signed photo URLs last two hours. The card reuses the first URL per recipe photo for 90 minutes so refreshes do not reload every image.
