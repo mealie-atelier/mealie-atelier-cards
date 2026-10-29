@@ -478,15 +478,21 @@ Object.assign(MealieAtelierCard.prototype, {
         hero
           ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}</div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.tp("studioDiscoverRecipeBase", hero.servings, { servings: hero.servings }) : this.tp("studioDiscoverForPeople", hero.people, { people: hero.people })}</span></div><p>${esc(
               hero.reasons
-                // The meta row already states the recipe base, so the reason line skips it.
+                // The meta row already states the recipe base and the time, so the reason
+                // line skips the base and words the time budget without the minutes.
                 .filter((r) => r.key !== "studioReasonServingsBase")
+                .map((r) =>
+                  r.key === "studioReasonWithinBudget" || r.key === "studioReasonOverBudget"
+                    ? { key: `${r.key}Hero` }
+                    : r,
+                )
                 .slice(0, 3)
                 .map((r) =>
                   r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values),
                 )
                 .join(" · ") || this.t("studioDiscoverGoodIdea"),
             )}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
-      ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.tp("studioDiscoverMoreIdeas", alternatives.length)}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.t("servings")}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
+      ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.tp("studioDiscoverMoreIdeas", alternatives.length)}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.tp("uiServing", Number(x.servings))}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
           : `<div class="studio-discover-empty"><span>✦</span><h3>${this.t("studioDiscoverEmptyTitle")}</h3><p>${this.t("studioDiscoverEmpty")}</p><button class="btn" data-action="studio-discover-edit">${this.t("studioDiscoverAdjust")}</button><button class="btn" data-action="studio-analyze" ${this._catalogLoading ? "disabled" : ""}>${icon("refresh", 14)} ${this.t("studioDiscoverReload")}</button></div>`
       }</section>`
       }

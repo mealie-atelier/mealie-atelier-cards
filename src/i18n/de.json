@@ -829,6 +829,8 @@
   "studioReasonServingsBase.other": "Rezeptbasis: {servings} Portionen",
   "studioReasonServingsOpen": "Portionen offen",
   "studioReasonWithinBudget": "{minutes} Min. im Zeitbudget",
+  "studioReasonWithinBudgetHero": "Im Zeitbudget",
+  "studioReasonOverBudgetHero": "Etwas über dem Zeitbudget",
   "studioReasonOverBudget": "{minutes} Min. · etwas über dem Zeitbudget",
   "studioReasonSharedIngredients": "gemeinsame Zutaten",
   "studioReasonTwoMeals": "Portionen für zwei Mahlzeiten",
@@ -1174,10 +1176,10 @@
   "studioAiNotConfigured": "KI ist optional und benötigt einen KI-API-Key.",
   "nutriUsdaKeyMissingHa": "USDA-API-Key fehlt. Bitte in den Integrationsoptionen hinterlegen.",
   "syncReadOnly": "Dieses Dashboard ist im Nur-Lesen-Modus.",
-  "studioDiscoverRecipeBase.one": "Rezeptbasis 1 Portion",
-  "studioDiscoverRecipeBase.other": "Rezeptbasis {servings} Portionen",
-  "studioDiscoverForPeople.one": "Für 1 Person",
-  "studioDiscoverForPeople.other": "Für {people} Personen",
+  "studioDiscoverRecipeBase.one": "Rezeptbasis: 1 Portion",
+  "studioDiscoverRecipeBase.other": "Rezeptbasis: {servings} Portionen",
+  "studioDiscoverForPeople.one": "Für 1 Portion",
+  "studioDiscoverForPeople.other": "Für {people} Portionen",
   "editorEntityDomainWarning": "Erwartet wird eine Entität der Domäne {domain}, zum Beispiel {example}.",
   "studioAiAuditBodyProvider": "Die Zutaten, Mengen und Kochschritte dieses Rezepts werden an {provider} übertragen. Es erfolgt keine automatische Änderung."
 }
