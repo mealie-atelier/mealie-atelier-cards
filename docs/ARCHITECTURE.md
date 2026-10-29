@@ -39,7 +39,7 @@ Frontend: Custom Elements + Shadow DOM for styles isolated from Home Assistant; 
 
 Localization: Source locale JSON lives under `src/i18n/`; the build discovers language files and bundles them with a shared resolver. English is the canonical fallback. Every locale must have the same keys and all `Intl.PluralRules` categories used by the UI. The card editor stores its language choice in HA configuration, while Design Studio can persist a browser-local override.
 
-HA backend: Config Flow in German/English; aiohttp client via HA's managed shared session; lightweight async WS functions; signed image proxy with size cap. No sensor platform for v0.2.0; the official Mealie integration already supplies Home Assistant entities for shopping lists, planned meals and sensors.
+HA backend: Config Flow in German/English; aiohttp client via HA's managed shared session; lightweight async WS functions; signed image proxy with size cap. No sensor platform: the official Mealie integration already supplies Home Assistant entities for shopping lists, planned meals and sensors.
 
 Standalone: Node.js 22+ HTTP server with zero npm dependencies and a read-only filesystem container. The same frontend bundle is copied under `public/`; edits to the card JS must be synced to `web/public/mealie-atelier-cards.js` when publishing.
 

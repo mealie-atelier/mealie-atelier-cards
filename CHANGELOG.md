@@ -2,7 +2,7 @@
 
 All notable changes to Mealie Atelier Cards, the standalone Web app and the demo are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions before 0.10.0 were developer previews.
 
-## [0.10.0] - Unreleased
+## [0.10.0] - 2026-10-29
 
 First release prepared for the Home Assistant Marketplace (HA 2026.11), with HACS as the second install route.
 
