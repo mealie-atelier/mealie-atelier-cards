@@ -940,6 +940,7 @@ const FILES = {
   "/favicon.svg": ["favicon.svg", "image/svg+xml"],
   "/favicon.ico": ["favicon.ico", "image/x-icon"],
   "/favicon-32.png": ["favicon-32.png", "image/png"],
+  "/badge-96.png": ["badge-96.png", "image/png"],
   "/icon-maskable.svg": ["icon-maskable.svg", "image/svg+xml"],
   "/sw.js": ["sw.js", "text/javascript; charset=utf-8"],
   "/offline-core.js": ["offline-core.js", "text/javascript; charset=utf-8"],

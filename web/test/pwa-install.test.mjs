@@ -73,8 +73,29 @@ test("every icon path in the manifest and index.html exists and is served by ser
     if (path === "/") continue;
     assert.ok(server.includes(`"${path}": [`), `server.mjs does not serve ${path}`);
   }
-  assert.equal(manifest.background_color, "#14201A");
-  assert.equal(manifest.theme_color, "#14201A");
+  // The shell paints #101613 first (dark default), so theme and splash colour match it.
+  const css = await readFile(new URL("../public/shell.css", import.meta.url), "utf8");
+  const dark = css.match(/--shell-page:\s*(#[0-9a-f]{6})/i)[1];
+  assert.equal(dark.toLowerCase(), "#101613");
+  assert.equal(manifest.background_color.toLowerCase(), dark.toLowerCase());
+  assert.equal(manifest.theme_color.toLowerCase(), dark.toLowerCase());
+  assert.match(html, new RegExp(`<meta name="theme-color" content="${dark}"`, "i"));
+  assert.match(html, new RegExp(`normalizedTheme === "light" \\? "#f4f1eb" : "${dark}"`, "i"));
+  assert.match(html, /href="\/favicon\.ico"[^>]*sizes="16x16 32x32 48x48"/);
+  assert.doesNotMatch(html, /<title>[^<]*[—–]/);
   assert.doesNotMatch(JSON.stringify(manifest) + html, /#302632/i);
   assert.doesNotMatch(manifest.name, /[—–]/);
+});
+
+test("the notification badge is a monochrome 96 px PNG that is served and precached", async () => {
+  const sw = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
+  const server = await readFile(new URL("../server.mjs", import.meta.url), "utf8");
+  assert.match(sw, /badge: "\/badge-96\.png"/);
+  assert.ok(sw.match(/new Set\(\[([\s\S]*?)\]\)/)[1].includes('"/badge-96.png"'));
+  assert.ok(server.includes('"/badge-96.png": ["badge-96.png", "image/png"]'));
+  const png = await readFile(new URL("../public/badge-96.png", import.meta.url));
+  assert.equal(png.subarray(1, 4).toString(), "PNG");
+  assert.equal(png.readUInt32BE(16), 96);
+  assert.equal(png.readUInt32BE(20), 96);
+  assert.equal(png[25], 6, "RGBA colour type, so Android can use the alpha channel");
 });

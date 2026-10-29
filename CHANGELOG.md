@@ -52,6 +52,9 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Changed
 
+- New Week Dial app icon for the web app and the Cards: a cream plate with seven day sections (today in paprika) and a browser window on it. It replaces the photo icon in the browser tab (`favicon.svg`, `favicon.ico` with 16, 32 and 48 px, `favicon-32.png`), on the iOS home screen, in the installed app (`icon-192.png`, `icon-512.png`) and as a maskable icon for Android.
+- The manifest is named "Mealie Atelier · Kitchen Studio". Its theme and splash colour, the browser theme colour and the window title now match the dark page surface (`#101613`), and the page title no longer uses a dash.
+- Timer notifications show a monochrome badge (`badge-96.png`) instead of the full-colour tile, so Android draws a clear glyph in the status bar.
 - The overview tiles "Rezepte", "Geplant" and "Offene Artikel" are buttons that open the recipes, the week plan and the shopping list.
 - A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.
 - Recipe photos appear in the week grid, in today's plan and in the cookbook list.
