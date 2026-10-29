@@ -191,7 +191,7 @@ test("status panel shows route, mode text, state line and pending count", async 
     withRule({ name: "Weekly shop", mode: "move", paused: true, counts: { pending: 2 } }),
   ]);
   const html = markup(env.cards);
-  assert.match(html, /Weekly groceries → Bring \(bring\)/);
+  assert.match(html, /Weekly groceries → Bring<\/p>/);
   assert.match(
     html,
     /Move: Items are checked off in Mealie after the destination has confirmed them/,

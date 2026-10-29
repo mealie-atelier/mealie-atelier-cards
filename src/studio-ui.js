@@ -803,6 +803,14 @@ MealieAtelierCard.prototype._openRecipe = async function (slug) {
     this._catalogDetail = this._detail;
   }
 };
+// A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
+MealieAtelierCard.prototype._aiErrorText = function (error) {
+  const translated = this._errorText(error);
+  if (translated !== error?.message) return translated;
+  return /not configured/i.test(error?.message || "")
+    ? this.t("studioAiNotConfigured")
+    : error?.message || "";
+};
 MealieAtelierCard.prototype._modalHtml = function () {
   let html = _atOriginalModal.call(this);
   if (this._modal === "cook" && this._detail) {
@@ -1230,12 +1238,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             answer.warning;
         } catch (error) {
           output = this.t("studioSubstituteError", {
-            error:
-              error?.code === "ai_error"
-                ? this.t("errAiError")
-                : /not configured/i.test(error?.message || "")
-                  ? this.t("studioAiNotConfigured")
-                  : error?.message || "",
+            error: this._aiErrorText(error),
           });
         }
       }
@@ -1261,12 +1264,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       } catch (error) {
         this._flash(
           this.t("studioAiUnavailable", {
-            error:
-              error?.code === "ai_error"
-                ? this.t("errAiError")
-                : /not configured/i.test(error?.message || "")
-                  ? this.t("studioAiNotConfigured")
-                  : error?.message || "",
+            error: this._aiErrorText(error),
           }),
         );
       }

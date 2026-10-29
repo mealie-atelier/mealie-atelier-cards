@@ -128,12 +128,13 @@ function cookCard(timers) {
   return card;
 }
 
-test("shared timers replace the empty timer state and the tools sit outside the timer section", () => {
+test("shared timers replace the empty timer state and the tools open the timer section", () => {
   const html = cookCard([{ id: "t1", name: "Pasta", deadline: Date.now() + 120000 }])._modalHtml();
   assert.ok(html.includes('data-shared-timer="t1"'));
   assert.ok(!html.includes("cook-timers-empty"));
   const section = html.indexOf('<section class="cook-utility"');
-  assert.ok(html.indexOf('data-action="studio-read-step"') < section);
+  // The tools are the first child of the timer section (see the cooking tools test in cards-design-copy-fixes).
+  assert.ok(section >= 0 && html.indexOf('data-action="studio-read-step"') > section);
 });
 
 test("the substitute button reports a missing AI key in the card language", async () => {

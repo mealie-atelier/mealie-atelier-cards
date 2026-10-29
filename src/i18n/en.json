@@ -351,7 +351,7 @@
   "familyBrowse": "Browse recipes",
   "cookbookTitle": "Your own cookbook",
   "cookbookLead": "Choose favorite recipes. Atelier lays out a cover, contents and A4 recipe pages in one print-ready view.",
-  "cookbookSelectKicker": "01 / CHOOSE RECIPES",
+  "cookbookSelectKicker": "CHOOSE RECIPES",
   "cookbookCollection": "Your collection",
   "cookbookLoad": "Load recipe details",
   "cookbookSelectAll": "Select all visible",
@@ -674,7 +674,7 @@
   "editorPreviewCookbook": "Your cookbooks",
   "editorPreviewManage": "Your kitchen studio",
   "uiRememberAsFavoriteRecipe": "Save as a favorite recipe",
-  "uiScaleServingsNote": "Amounts adjusted for {target} servings. Recipe base: {base} servings. Clear quantities are scaled; please check free-text amounts.",
+  "uiScaleServingsNote": "Amounts adjusted for {target} {targetUnit}. Recipe base: {base} {baseUnit}. Clear quantities are scaled; please check free-text amounts.",
   "uiRecipeStepImageAlt": "Image for step {step}",
   "uiMarkShoppingOpen": "Mark as open: {item}",
   "uiMarkShoppingComplete": "Mark complete: {item}",
@@ -1123,7 +1123,7 @@
   "errOfflineConflict": "This item was changed elsewhere in the meantime. Discard your change and check the list.",
   "errOfflineAddUncertain": "This item may already be on the list. Check the list, then discard this entry.",
   "cookSwipeHint": "← swipe →",
-  "studioKicker": "YOUR PERSONAL KITCHEN STUDIO",
+  "studioKicker": "Your personal kitchen studio",
   "studioDailyExpiringOne": "1 pantry item should be used soon.",
   "openItemsLabel": "Open items",
   "recipesSub": "Every recipe from your Mealie in one place.",
@@ -1172,5 +1172,10 @@
   "designSystemEyebrow": "ATELIER DESIGN SYSTEM",
   "printEdition": "KITCHEN STUDIO · PRINT EDITION",
   "printNotes": "Notes",
-  "accentPlumLightDefault": "Plum (default in the light theme)"
+  "accentPlumLightDefault": "Plum (default in the light theme)",
+  "studioSessionReplaceLocal": "Cook here only",
+  "studioAiNotConfigured": "No AI key is configured.",
+  "nutriUsdaKeyMissingHa": "USDA API key not configured. Add it in the integration options.",
+  "syncReadOnly": "This dashboard is in read-only mode.",
+  "editorEntityDomainWarning": "Expected an entity from the {domain} domain, for example {example}."
 }

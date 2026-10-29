@@ -188,7 +188,7 @@ test("German copy keeps one address, one term per concept and complete sentences
   const en = JSON.parse(read("../src/i18n/en.json"));
   for (const [key, value] of Object.entries(de))
     assert.doesNotMatch(value, /\b(euch|euer\w*|eure\w*|ihr)\b/i, `${key} uses the du-form`);
-  assert.match(de.studioDiscoverRecipeBase, /^Rezeptbasis: /);
+  assert.match(de["studioDiscoverRecipeBase.other"], /^Rezeptbasis /);
   assert.match(de.studioCatalogTotal, /Rezepte\.$/);
   assert.match(en.studioCatalogTotal, /recipes\.$/);
   assert.equal(de.studioLunch, de.lunch);
