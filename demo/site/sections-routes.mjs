@@ -87,7 +87,6 @@ function openSource(ctx) {
 function install(ctx) {
   const t = translator(ctx.locale);
   const id = sectionIds[ctx.locale];
-  const german = t("", " (German)");
   const route = (iconName, tag, title, steps, primary, secondary, delay = "") =>
     `<article class="route rv${delay}"><span class="ico">${icon(iconName)}</span><p class="tag">${tag}</p><h3>${title}</h3><ol>${steps.map((step) => `<li>${step}</li>`).join("")}</ol><div class="btn-row">${primary}${secondary}</div></article>`;
   return `<section class="sec install" id="${id.install}" aria-labelledby="install-title"><div class="wrap"><div class="sec-head center"><p class="kicker rv">${t("Loslegen", "Get started")}</p><h2 id="install-title" class="rv d1">${t("Zwei Wege in <em>dieselbe Küche</em>.", "Two routes into <em>the same kitchen</em>.")}</h2><p class="lead rv d2">${t("Du brauchst nur ein laufendes Mealie. Den Rest erklären die Schritt-für-Schritt-Anleitungen.", "All you need is a running Mealie. The step-by-step guides explain the rest.")}</p></div><div class="routes">${route(
@@ -108,11 +107,7 @@ function install(ctx) {
         "<b>Add the card.</b> The visual editor finds the Bridge by itself.",
       ),
     ],
-    ext(
-      links.setup,
-      `${t("Zur Anleitung", "Open the guide")}${german}${icon("arrow")}`,
-      "btn btn-primary",
-    ),
+    ext(links.setup, `${t("Zur Anleitung", "Guide (German)")}${icon("arrow")}`, "btn btn-primary"),
     ext(
       links.bridge,
       `${icon("github")}${t("Bridge auf GitHub", "Bridge on GitHub")}`,
@@ -138,7 +133,7 @@ function install(ctx) {
     ],
     ext(
       links.setupWeb,
-      `${t("Zur Anleitung", "Open the guide")}${german}${icon("arrow")}`,
+      `${t("Zur Anleitung", "Guide (German)")}${icon("arrow")}`,
       "btn btn-primary",
     ),
     ext(

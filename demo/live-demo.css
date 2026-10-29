@@ -1,5 +1,5 @@
 /* Public product site of Mealie Atelier: landing pages, live demo frame and recipe pages.
-   Dark theme only, matching the card default. Green and warm saffron accents. */
+   Dark by default, with a light scheme for visitors who prefer it. Green and warm saffron accents. */
 :root {
   --bg: #0c120f;
   --bg2: #101813;
@@ -1121,12 +1121,12 @@ h2 em {
   display: grid;
 }
 .step {
-  min-height: 78vh;
+  min-height: 70vh;
   display: grid;
   align-content: center;
   gap: 18px;
   padding-block: 6vh;
-  opacity: 0.38;
+  opacity: 0.55;
   transition: opacity 0.5s var(--ease);
 }
 .step.current,
@@ -2944,4 +2944,104 @@ details[open] .chev {
 }
 .credits-switch {
   margin-top: 28px;
+}
+
+/* Light scheme. The page follows the visitor's system setting. Surfaces that sit on photos or hold
+   a dark product screen (device frames, closing scene, terminal, footer) keep the dark palette so
+   screenshots and image scrims stay legible in both schemes. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f8f3e9;
+    --bg2: #f1ead9;
+    --panel: #fffcf5;
+    --panel2: #f3ecdb;
+    --panel3: #e9dfc9;
+    --ink: #1c241e;
+    --sub: #49534b;
+    --faint: #667068;
+    --line: rgba(28, 36, 30, 0.12);
+    --line2: rgba(28, 36, 30, 0.22);
+    --mint: #2d7656;
+    --mint2: #1f5c43;
+    --mint-deep: #2d7656;
+    --mint-ink: #ffffff;
+    --cream: #3a3a2c;
+    --saffron: #9a5f12;
+    --shadow: 0 30px 70px rgba(48, 38, 20, 0.2), 0 10px 24px rgba(48, 38, 20, 0.1);
+    color-scheme: light;
+  }
+  .closing,
+  .site-footer,
+  .dish .name,
+  .term,
+  .toast,
+  .browser,
+  .tablet,
+  .phone,
+  .live-frame,
+  .live-bar,
+  .notif-phone {
+    --bg: #0c120f;
+    --bg2: #101813;
+    --panel: #17201a;
+    --panel2: #1f2a22;
+    --panel3: #263027;
+    --ink: #f3f0e8;
+    --sub: #aeb5ab;
+    --faint: #879187;
+    --line: rgba(230, 237, 220, 0.12);
+    --line2: rgba(230, 237, 220, 0.2);
+    --mint: #9dcbb2;
+    --mint2: #bfe3cf;
+    --mint-deep: #5f9c80;
+    --mint-ink: #10221a;
+    --cream: #efe4cf;
+    --saffron: #e9b96e;
+    color: var(--ink);
+    color-scheme: dark;
+  }
+  .top.scrolled,
+  .top.open,
+  .recipe-body .top,
+  .credits-body .top {
+    background: rgba(248, 243, 233, 0.88);
+  }
+  .top .brand-mark {
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 1px rgba(28, 36, 30, 0.16),
+      0 3px 10px rgba(48, 38, 20, 0.14);
+  }
+  .btn-ghost {
+    background: rgba(28, 36, 30, 0.03);
+  }
+  .nav a:hover {
+    background: rgba(28, 36, 30, 0.06);
+  }
+  .btn-primary {
+    box-shadow: 0 10px 26px rgba(45, 118, 86, 0.25);
+  }
+  .hero::before {
+    background:
+      radial-gradient(60% 50% at 70% 35%, rgba(95, 156, 128, 0.2), transparent 70%),
+      radial-gradient(40% 40% at 10% 10%, rgba(233, 185, 110, 0.22), transparent 70%);
+  }
+  .ba-labels .tag.l {
+    background: var(--panel);
+  }
+  .solo {
+    background: linear-gradient(180deg, var(--bg), var(--bg2) 30%, var(--bg));
+  }
+  .fact > span {
+    background: linear-gradient(90deg, rgba(45, 118, 86, 0.1), transparent 70%);
+  }
+  .stage-inner::before {
+    background: radial-gradient(closest-side, rgba(95, 156, 128, 0.2), transparent);
+  }
+  .ico {
+    background: rgba(45, 118, 86, 0.1);
+  }
+  .ai-list .ico {
+    background: rgba(154, 95, 18, 0.1);
+  }
 }

@@ -290,8 +290,17 @@ test("every page shares the designed footer in its own language without photo cr
       `${page} footer links the credits list`,
     );
     if (locale === "de") assert.doesNotMatch(footer, /Made with/, page);
-    assert.match(html, /<meta name="color-scheme" content="dark"/, page);
-    assert.match(html, /<meta name="theme-color" content="#0c120f"/, page);
+    assert.match(html, /<meta name="color-scheme" content="dark light"/, page);
+    assert.match(
+      html,
+      /<meta name="theme-color" content="#0c120f" media="\(prefers-color-scheme: dark\)"/,
+      page,
+    );
+    assert.match(
+      html,
+      /<meta name="theme-color" content="#f8f3e9" media="\(prefers-color-scheme: light\)"/,
+      page,
+    );
   }
 });
 
@@ -582,12 +591,13 @@ test("page CSS keeps the footer wordmark off the rule and the metric grid divide
   }
 });
 
-test("the page is dark only by design: both colour schemes render the same page", () => {
+test("the page ships a dark and a light scheme that follow the system setting", () => {
   const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
-  assert.doesNotMatch(css, /prefers-color-scheme/);
+  assert.match(css, /@media \(prefers-color-scheme: light\)/);
   assert.match(css, /color-scheme:\s*dark/);
+  assert.match(css, /color-scheme:\s*light/);
   for (const page of contentPages(builds.local)) {
-    assert.match(read(page), /<meta name="color-scheme" content="dark"/, page);
+    assert.match(read(page), /<meta name="color-scheme" content="dark light"/, page);
   }
 });
 
