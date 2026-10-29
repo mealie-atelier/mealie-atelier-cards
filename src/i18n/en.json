@@ -889,6 +889,7 @@
   "errUnauthorized": "This action needs administrator access.",
   "errWriteNotPermitted": "You do not have permission to change data in this kitchen.",
   "errMealieNotMealie": "The configured address does not answer like a Mealie server. Check MEALIE_URL.",
+  "errMealieNotFound": "Mealie did not find that. Check MEALIE_URL and that the item still exists.",
   "errUsdaKeyRejected": "The USDA service rejected the API key. Check USDA_FDC_API_KEY.",
   "errUsdaError": "The USDA nutrition service did not answer. Try again later.",
   "errAiNotConfigured": "No AI provider is set up on the server.",

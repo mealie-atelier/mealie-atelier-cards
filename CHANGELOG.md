@@ -72,7 +72,6 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The system check no longer repeats each status, shows a result heading after a run and spaces the status line.
 - The nutrition dialog has a German title, a USDA API key hint that fits the web app, lowercase "servings" and "per 100 g". The AI review reports a missing AI key in your language.
 - The shopping sync dialog says "read-only mode" instead of blaming your permissions when the dashboard is read-only.
-- Docs and repository files: working issue forms and a current security policy, README screenshots that sit side by side on GitHub, corrected statements about the built-in Mealie integration, a refreshed design system and architecture description, and a stated Mealie minimum (3.x, tested with v3.29).
 - Docs and repository files: working issue forms and a current security policy, README screenshots that sit side by side on GitHub, corrected statements about the built-in Mealie integration, a refreshed design system file tree and architecture diagram (second image route), and a stated Mealie minimum (3.x, tested with v3.29).
 - Docs: the manual install describes the UI resource route and the HA 2026.11 Marketplace (Add from link, GitHub login), the card picker needs the By card tab, an Uninstall section was added, the config table lists `kiosk_mode`, and the install and documentation lists wrap on phones.
 - Web app: `.env.example` no longer enables read-only mode and the user name `home` by default, drops the removed experimental flag and uses the published Mealie port 9925 in its example; the web README corrects the CSP, VAPID, proxy and contents notes.
@@ -83,7 +82,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - The sidebar and print brand lines are localized, the iOS install steps no longer repeat Share, offline conflict counts use proper singular and plural, and the sync status reads "wird synchronisiert".
 - Web app: free-text shopping items show exactly as typed (no forced "1 " prefix).
 - Web app: a wrong Mealie token reports `mealie_auth` (HTTP 502) instead of a passed-through 401, and the status call reports `connected: false` and an `ai` feature flag.
-- Web app: an address that answers with a web page instead of Mealie reports `mealie_not_mealie`; so does a 404 that is not JSON. A Mealie 403 (missing permission) reports `mealie_forbidden`, not a wrong token.
+- Web app: an address that answers with a web page instead of Mealie reports `mealie_not_mealie`; so does a 404 that is not JSON. A Mealie 403 (missing permission) reports `mealie_forbidden`, not a wrong token (recipe editing is the exception and keeps `mealie_auth`, HTTP 502). A JSON 404 reports `mealie_not_found`.
 - Timer, AI review, AI substitute and background timer errors now show in the UI language, and "Review with AI" is hidden without an AI key. New `err*` texts cover a missing AI provider, a rejected USDA key, no notification destination, a wrong Mealie address and a forbidden Mealie action.
 - Web app: an invalid USDA key reports `usda_key_rejected` instead of a Mealie connection error; read-only, missing AI key and missing notification destination errors carry codes.
 - Web app: browsers see a small German or English page for the sign-in prompt and the lockout (with the wait time); API clients still get JSON.

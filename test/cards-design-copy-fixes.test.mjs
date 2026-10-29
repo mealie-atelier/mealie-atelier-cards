@@ -138,6 +138,7 @@ test("copy uses one term per setting, one Bridge name and the neuter Token", () 
   for (const lang of ["de", "en"]) {
     assert.doesNotMatch(i18n(lang).errMealieAuth, /MEALIE_API_TOKEN/, "shared with the Bridge");
     assert.ok(i18n(lang).errMealieForbidden, `${lang} errMealieForbidden`);
+    assert.ok(i18n(lang).errMealieNotFound, `${lang} errMealieNotFound`);
   }
   assert.doesNotMatch(JSON.stringify(de), /API-Schlüssel/);
   assert.match(de.uiNoWriteGrant, /Home-Assistant-Nutzer/);

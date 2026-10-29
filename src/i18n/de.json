@@ -885,6 +885,7 @@
   "errUnauthorized": "Diese Aktion erfordert Administratorrechte.",
   "errWriteNotPermitted": "Du darfst in dieser Küche keine Daten ändern.",
   "errMealieNotMealie": "Die eingestellte Adresse antwortet nicht wie ein Mealie-Server. Prüfe MEALIE_URL.",
+  "errMealieNotFound": "Mealie hat dazu nichts gefunden. Prüfe MEALIE_URL und ob der Eintrag noch existiert.",
   "errUsdaKeyRejected": "Der USDA-Dienst hat den API-Key abgelehnt. Prüfe USDA_FDC_API_KEY.",
   "errUsdaError": "Der USDA-Nährwertdienst antwortet nicht. Versuche es später erneut.",
   "errAiNotConfigured": "Auf dem Server ist kein KI-Anbieter eingerichtet.",

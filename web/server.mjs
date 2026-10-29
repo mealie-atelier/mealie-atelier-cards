@@ -299,6 +299,8 @@ async function mealie(method, path, body, query) {
     if (response.status >= 300) {
       throw Object.assign(new Error(`Mealie HTTP ${response.status}`), {
         status: response.status >= 500 ? 502 : response.status,
+        // A JSON 404 is Mealie's own "missing" or another API server at MEALIE_URL.
+        ...(response.status === 404 ? { atelierCode: "mealie_not_found" } : {}),
       });
     }
     if (response.status === 204) return null;

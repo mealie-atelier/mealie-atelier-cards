@@ -16,6 +16,7 @@ async function mealieStub({
   forbidden = false,
   html = false,
   plain = false,
+  jsonMissing = false,
   hang = false,
 } = {}) {
   const posts = [];
@@ -26,6 +27,10 @@ async function mealieStub({
       if (hang) return;
       if (plain)
         return res.writeHead(404, { "Content-Type": "text/plain" }).end("404 page not found");
+      if (jsonMissing)
+        return res
+          .writeHead(404, { "Content-Type": "application/json" })
+          .end('{"detail":"Not Found"}');
       if (html) return res.writeHead(404, { "Content-Type": "text/html" }).end("<html></html>");
       res.setHeader("Content-Type", "application/json");
       if (forbidden) return res.writeHead(403).end("{}");
@@ -171,6 +176,19 @@ test("a 403 from Mealie stays a permission error, not a token error", async () =
     const res = await call(r.port, { type: "mealie_atelier/shopping" });
     assert.equal(res.status, 403);
     assert.equal((await res.json()).code, "mealie_forbidden");
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("a JSON 404 from MEALIE_URL reports mealie_not_found", async () => {
+  const stub = await mealieStub({ jsonMissing: true });
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const res = await call(r.port, { type: "mealie_atelier/shopping" });
+    assert.equal(res.status, 404);
+    assert.equal((await res.json()).code, "mealie_not_found");
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();
