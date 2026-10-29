@@ -5,7 +5,7 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { resolveAiConfig } from "../ai-client.mjs";
+import { resolveAiConfig, callAiJson, ANTHROPIC_MIN_TIMEOUT_MS } from "../ai-client.mjs";
 import { aiSuggest } from "../nutrition.mjs";
 import { aiSubstitute, aiAudit } from "../studio-ai.mjs";
 
@@ -224,7 +224,7 @@ async function startServer(extraEnv) {
   child.stdout.on("data", (c) => (out += c));
   child.stderr.on("data", (c) => (err += c));
   const result = await new Promise((resolve) => {
-    const timer = setTimeout(() => resolve({ started: true }), 4000);
+    const timer = setTimeout(() => resolve({ started: false, timedOut: true }), 10000);
     child.stdout.on("data", () => {
       if (/http:\/\/127\.0\.0\.1:\d+/.test(out)) {
         clearTimeout(timer);
@@ -286,4 +286,66 @@ test("German AI instructions ask for informal du on both providers", async () =>
     assert.match(seen[1], /informally with "du"/);
     assert.doesNotMatch(seen[2], /"du"/);
   }
+});
+
+test("AI failures carry the ai_error code, also for shape failures", async () => {
+  const cases = [
+    () => new Response("{}", { status: 401 }),
+    () => new Response("{}", { status: 503 }),
+    () => reply({ nonsense: true }),
+  ];
+  for (const handler of cases) {
+    await withFetch(
+      async () => handler(),
+      async () => {
+        await assert.rejects(
+          aiSubstitute(ANTHROPIC, "butter", "cake", "en"),
+          (e) => e.status === 502 && e.atelierCode === "ai_error" && !/sk-ant/.test(e.message),
+        );
+        await assert.rejects(
+          aiAudit(ANTHROPIC, recipe),
+          (e) => e.status === 502 && e.atelierCode === "ai_error",
+        );
+        await assert.rejects(
+          aiSuggest(ANTHROPIC, ["1 onion"]),
+          (e) => e.status === 502 && e.atelierCode === "ai_error",
+        );
+      },
+    );
+  }
+});
+
+test("Anthropic calls wait at least the minimum timeout, OpenAI keeps the given one", async () => {
+  const seen = [];
+  const realSet = globalThis.setTimeout;
+  globalThis.setTimeout = (fn, ms, ...rest) => {
+    seen.push(ms);
+    return realSet(fn, ms, ...rest);
+  };
+  try {
+    await withFetch(
+      async () => reply({ ok: true }),
+      () =>
+        callAiJson({ ai: ANTHROPIC, instructions: "x", input: "y", schema: {}, timeoutMs: 20000 }),
+    );
+    await withFetch(
+      async () =>
+        new Response(
+          JSON.stringify({ output: [{ content: [{ type: "output_text", text: "{}" }] }] }),
+          { status: 200 },
+        ),
+      () =>
+        callAiJson({
+          ai: { provider: "openai", key: "sk-x" },
+          instructions: "x",
+          input: "y",
+          schema: {},
+          timeoutMs: 20000,
+        }),
+    );
+  } finally {
+    globalThis.setTimeout = realSet;
+  }
+  assert.equal(ANTHROPIC_MIN_TIMEOUT_MS, 60000);
+  assert.deepEqual(seen.slice(0, 2), [60000, 20000]);
 });

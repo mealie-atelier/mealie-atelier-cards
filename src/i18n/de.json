@@ -858,6 +858,7 @@
   "errInvalidRequest": "Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.",
   "errMealieAuth": "Mealie hat den Zugriffstoken abgelehnt. Prüfe den Token in den Einstellungen.",
   "errMealieError": "Mealie ist nicht erreichbar oder hat unerwartet geantwortet. Versuche es gleich noch einmal.",
+  "errAiError": "Der KI-Anbieter hat nicht geantwortet oder eine unbrauchbare Antwort geliefert. Prüfe den API-Key und versuche es erneut.",
   "errReadOnly": "Diese Küche ist schreibgeschützt, daher lässt sich nichts ändern.",
   "errUnauthorized": "Diese Aktion erfordert Administratorrechte.",
   "errWriteNotPermitted": "Du darfst in dieser Küche keine Daten ändern.",

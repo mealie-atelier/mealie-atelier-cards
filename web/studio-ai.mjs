@@ -1,4 +1,4 @@
-import { callAiJson } from "./ai-client.mjs";
+import { callAiJson, fail } from "./ai-client.mjs";
 
 const DISCLAIMERS = {
   de: {
@@ -91,7 +91,7 @@ export async function aiSubstitute(key, ingredient, recipe, locale = "de") {
     typeof result.warning !== "string" ||
     result.warning.length > 280
   )
-    throw Object.assign(new Error("AI response invalid"), { status: 502 });
+    throw fail("AI response invalid");
   return {
     ...result,
     disclaimer: (DISCLAIMERS[locale] || DISCLAIMERS.en).substitute,
@@ -155,7 +155,7 @@ export async function aiAudit(key, recipe, locale = "de") {
         x.suggestion.length > 500,
     )
   )
-    throw Object.assign(new Error("AI audit invalid"), { status: 502 });
+    throw fail("AI audit invalid");
   return {
     ...result,
     disclaimer: (DISCLAIMERS[locale] || DISCLAIMERS.en).audit,

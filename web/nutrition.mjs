@@ -1,6 +1,6 @@
 /** Verified USDA-based nutrition, optional AI query suggestions. No guessed macros. */
 import { createHash } from "node:crypto";
-import { callAiJson, normalizeAi } from "./ai-client.mjs";
+import { callAiJson, fail, normalizeAi } from "./ai-client.mjs";
 
 const FDC = "https://api.nal.usda.gov/fdc/v1";
 const NUTRIENTS = {
@@ -284,6 +284,6 @@ export async function aiSuggest(key, raw) {
         r.note.length > 250,
     )
   )
-    throw invalid("AI response could not be validated");
+    throw fail("AI response could not be validated");
   return suggestions;
 }

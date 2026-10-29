@@ -10,6 +10,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Fixed
 
+- AI failures show their own message instead of claiming Mealie is unreachable.
 - Text no longer sits on a blurred compositing layer after a view change: the enter animations stop holding their end frame, which left Safari rendering the whole view slightly soft.
 - The pantry and the shopping assistant show the piece unit as "Stück" / "pcs" instead of the stored key "stück", also in the notes sent to the shopping list.
 - On phones and narrow cards each day of the week carousel keeps its own height, so a single dish no longer sits above a large empty area.

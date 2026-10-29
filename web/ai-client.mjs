@@ -40,9 +40,12 @@ export function normalizeAi(ai) {
   return ai.key ? { provider: ai.provider || "openai", key: ai.key } : null;
 }
 
-const fail = (message) => Object.assign(new Error(message), { status: 502 });
+export const fail = (message) =>
+  Object.assign(new Error(message), { status: 502, atelierCode: "ai_error" });
 
-function statusError(provider, status) {
+export const ANTHROPIC_MIN_TIMEOUT_MS = 60000;
+
+function statusError(status) {
   if (status === 401 || status === 403) return fail(`AI provider rejected the API key (${status})`);
   if (status === 429 || status === 529 || status >= 500)
     return fail(`AI provider temporarily unavailable (${status})`);
@@ -94,7 +97,8 @@ export async function callAiJson({
         },
       };
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const effectiveTimeout = anthropic ? Math.max(timeoutMs, ANTHROPIC_MIN_TIMEOUT_MS) : timeoutMs;
+  const timer = setTimeout(() => controller.abort(), effectiveTimeout);
   try {
     const res = await fetch(request.url, {
       method: "POST",
@@ -103,7 +107,7 @@ export async function callAiJson({
       redirect: "manual",
       signal: controller.signal,
     });
-    if (res.status !== 200) throw statusError(cfg.provider, res.status);
+    if (res.status !== 200) throw statusError(res.status);
     const data = await res.json();
     let raw;
     if (anthropic) {
