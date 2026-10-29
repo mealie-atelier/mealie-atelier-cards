@@ -16,7 +16,7 @@ No, but it unlocks more. The cards can read recipes through Home Assistant's bui
 
 ## Does it work without Home Assistant?
 
-Yes. The standalone Web app in `web/` runs on its own, for example in Docker, and works as an installable PWA. See the [Web app guide](../web/README.md).
+Yes. The standalone web app in `web/` runs on its own, for example in Docker, and works as an installable PWA. See the [web app guide](../web/README.md).
 
 ## Does the demo access my Mealie or Home Assistant?
 
