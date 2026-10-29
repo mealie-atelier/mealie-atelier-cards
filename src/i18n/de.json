@@ -775,7 +775,7 @@
   "uiBackgroundTimerEnabled": "Hintergrundtimer aktiviert",
   "uiLocalTimerEnabled": "Der Timer läuft nur auf diesem Gerät.",
   "uiBackgroundTimerError": "Hintergrundtimer nicht aktiviert: {error} Der Timer läuft auf diesem Gerät weiter.",
-  "uiTimerStopError": "Timer konnte nicht gestoppt werden: {error}",
+  "uiTimerStopError": "Timer konnte nicht entfernt werden: {error}",
   "dialogWeeklyMenu": "WOCHENPLAN",
   "dialogYourMenu": "DEIN MENÜ",
   "removeMeal": "Entfernen: {name} ({mealType})",

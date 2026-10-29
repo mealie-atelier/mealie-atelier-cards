@@ -14,8 +14,8 @@ const NUTRIENTS = {
   saturated_fat: [1258],
 };
 const GRAMS = /^\s*(\d+(?:[.,]\d+)?)\s*(kg|g|gramm|grams?)\b/i;
-function invalid(message) {
-  return Object.assign(new Error(message), { status: 400 });
+function invalid(message, code) {
+  return Object.assign(new Error(message), { status: 400, ...(code ? { code } : {}) });
 }
 function hash(recipe) {
   return createHash("sha256")
@@ -149,7 +149,7 @@ export async function search(key, query) {
 }
 export async function calculate(key, recipe, entries, expectedHash) {
   if (!expectedHash || hash(recipe) !== expectedHash)
-    throw invalid("Recipe changed since nutrition preview. Start again");
+    throw invalid("Recipe changed since nutrition preview. Start again", "recipe_changed");
   const ingredients = recipe.recipeIngredient || [];
   if (
     !Array.isArray(entries) ||

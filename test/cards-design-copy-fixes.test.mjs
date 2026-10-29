@@ -368,7 +368,10 @@ test("English strings use the typographic apostrophe only", () => {
 test("the cancel wording matches the card's Remove action and the dead dispatched text is gone", () => {
   assert.match(i18n("de").errTimerNotPermitted, /entfernen/);
   assert.match(i18n("en").errTimerNotPermitted, /remove/);
+  assert.match(i18n("de").uiTimerStopError, /entfernt/);
+  assert.match(i18n("en").uiTimerStopError, /remove/);
   for (const lang of ["de", "en"]) {
+    assert.doesNotMatch(i18n(lang).uiTimerStopError, /stopp/i);
     assert.doesNotMatch(i18n(lang).errTimerNotPermitted, /abbrechen|cancel/);
     assert.equal(i18n(lang).errTimerDispatched, undefined);
   }
