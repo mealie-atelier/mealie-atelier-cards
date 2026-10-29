@@ -88,7 +88,7 @@ ATELIER_USERS='anna:admin:scrypt$16384$8$1$...$...;ben:reader:scrypt$16384$8$1$.
 - A refused write answers HTTP 403 with `code` `write_not_permitted` (reader) or `unauthorized` (writer on an admin action); the card hides the matching controls. A shopping edit queued offline by an account that lost its write role is dropped on the next sync, with a visible notice.
 - Successful sign-ins are cached in memory for 10 minutes so each request does not run scrypt; failures are never cached and every one counts for the sign-in throttle described below.
 
-Generate the Web Push keys with `npm run vapid` and paste the three `ATELIER_VAPID_` lines into `.env` (the subject must start with `mailto:` or `https://`, otherwise the server refuses to start; replace the example address). Keep the private key stable, secret and backed up.
+Generate the Web Push keys with `npm run vapid` on any machine with Node 22 or later, from a checkout of this repository (the Docker image does not contain the `scripts/` folder, so the command does not work inside the container), and paste the three `ATELIER_VAPID_` lines into `.env` (the subject must start with `mailto:` or `https://`, otherwise the server refuses to start; replace the example address). Keep the private key stable, secret and backed up.
 
 ## Security
 
