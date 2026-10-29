@@ -314,6 +314,7 @@ class MealieAtelierEditor extends HTMLElement {
   _settingsMarkup() {
     const c = this._config,
       tr = (key) => this._tr(key),
+      percent = new Intl.NumberFormat(this._locale(), { style: "percent" }),
       choose = (key, options) => this._choose(key, options);
     return `<div class="editor"><div class="settings-top"><div><div class="title">Mealie Atelier <span class="title-accent">Studio</span></div><p class="hint">${tr("editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard")}</p></div><button class="editor-secondary" type="button" data-editor-action="restart">${tr("editorRunSetupWizard")}</button></div><div class="setup-success"><span aria-hidden="true">✓</span><div><strong>${tr("editorYourKitchenIsReady")}</strong><small>${esc(this._tr(c.mode))} · ${tr(c.theme === "auto" ? "editorAutomatic" : c.theme === "light" ? "editorDaylightKitchen" : "editorEveningStudio")}</small></div></div>
     <div class="section-head"><span>01</span><div><strong>${tr("editorBasics")}</strong><p>${tr("editorChooseContentAndTheConnectedMealieInstance")}</p></div></div>
@@ -402,12 +403,7 @@ class MealieAtelierEditor extends HTMLElement {
     <div class="group"><label for="atelier-cooking_scene">${tr("editorOptionalKitchenSceneHA")}</label><input id="atelier-cooking_scene" data-key="cooking_scene" value="${esc(c.cooking_scene || "")}" placeholder="scene.kitchen_cooking" list="atelier-list-cooking_scene" autocomplete="off">${this._entityDatalist("cooking_scene")}${this._entityWarning("cooking_scene")}<p class="hint">${tr("editorOnlyTriggeredWhenYouTapTheCookingCockpitButton")}</p></div><div class="group"><label for="atelier-cooking_media_player">${tr("editorOptionalMediaPlayerHA")}</label><input id="atelier-cooking_media_player" data-key="cooking_media_player" value="${esc(c.cooking_media_player || "")}" placeholder="media_player.kitchen" list="atelier-list-cooking_media_player" autocomplete="off">${this._entityDatalist("cooking_media_player")}${this._entityWarning("cooking_media_player")}</div>
     <div class="group"><label for="atelier-cooking_volume">${tr("editorCookingVolume")}</label>${choose(
       "cooking_volume",
-      [
-        [0.1, "10%"],
-        [0.18, "18%"],
-        [0.3, "30%"],
-        [0.5, "50%"],
-      ],
+      [...[0.1, 0.18, 0.3, 0.5].map((v) => [v, percent.format(v)])],
     )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper" list="atelier-list-cooking_tts_engine" autocomplete="off">${this._entityDatalist("cooking_tts_engine")}${this._entityWarning("cooking_tts_engine")}<p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div></details>
     <p class="hint editor-footer">${tr("editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio")}</p></div>`;
   }
@@ -420,9 +416,9 @@ class MealieAtelierEditor extends HTMLElement {
   }
   // A wrong domain silently hides the cooking button, so say so next to the field.
   _entityWarning(key) {
-    const value = String(this._config[key] || "").trim();
+    const value = String(this._config[key] || "");
     const { domain, example } = ENTITY_FIELDS[key];
-    // Same pattern as the card gate, so a warning appears exactly when the button stays hidden.
+    // Same pattern and untrimmed value as the card gate, so a warning appears exactly when the button stays hidden.
     if (!value || new RegExp(`^${domain}\\.[a-z0-9_]+$`, "i").test(value)) return "";
     return `<p class="hint" role="alert" id="atelier-${key}-warning">${esc(translateLabel(this._locale(), "editorEntityDomainWarning", { domain, example }))}</p>`;
   }

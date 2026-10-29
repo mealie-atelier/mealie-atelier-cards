@@ -142,6 +142,7 @@ test("entity fields use neutral placeholders, suggestions and a domain warning",
   assert.match(html, /id="atelier-cooking_scene-warning"/);
   assert.doesNotMatch(html, /atelier-cooking_media_player-warning/);
   assert.match(html, />10%</);
+  assert.match(html, />18%</);
   assert.doesNotMatch(html, /Cockpit/);
 });
 
@@ -172,4 +173,33 @@ test("editing an entity field updates its warning in place without re-rendering"
   assert.equal(renders, 0);
   assert.equal(nodes.size, 0);
   assert.equal(inserted, "");
+});
+
+test("cooking volume options follow the locale percent format", () => {
+  const de = makeEditor({ type: "custom:mealie-atelier-card" }, { language: "de" }).editor;
+  assert.match(de.shadowRoot.innerHTML, />10\u00a0%</);
+  assert.doesNotMatch(de.shadowRoot.innerHTML, />10%</);
+});
+
+test("entity warning uses the untrimmed value like the card gate", () => {
+  const { editor } = makeEditor(
+    { type: "custom:mealie-atelier-card", cooking_scene: " scene.foo" },
+    { language: "en" },
+  );
+  assert.match(editor.shadowRoot.innerHTML, /id="atelier-cooking_scene-warning"/);
+});
+
+test("the Mealie connection uses one term in the editor basics hint", () => {
+  for (const [language, term] of [
+    ["en", /Mealie connection/],
+    ["de", /Mealie-Verbindung/],
+  ]) {
+    const { editor } = makeEditor(
+      { type: "custom:mealie-atelier-card", mode: "recipes" },
+      { language },
+    );
+    const html = editor.shadowRoot.innerHTML;
+    assert.doesNotMatch(html, /Mealie instance|Mealie-Instanz/);
+    assert.match(html, term);
+  }
 });
