@@ -203,7 +203,7 @@ test("closing a dialog returns focus to the control that opened it", () => {
 });
 
 /** A cook mode render whose focused control is `used`; after the swap the selector yields `fresh`. */
-function cookRender({ index, disabledIndex = -1 }) {
+function cookRender({ index, disabledIndex = -1, primary = null }) {
   const world = {};
   const { card, root } = renderHarness(world);
   card._modal = "cook";
@@ -217,8 +217,15 @@ function cookRender({ index, disabledIndex = -1 }) {
   used.getAttribute = () => "cook-next";
   root.activeElement = used;
   let swapped = false;
+  const primaryEl = primary ? Object.assign(world.make(primary.name), primary) : null;
   world.query = (selector) =>
-    selector === '[role="dialog"]' ? {} : selector.includes("close-modal") ? close : null;
+    selector === '[role="dialog"]'
+      ? {}
+      : selector.includes(".btn.primary")
+        ? primaryEl
+        : selector.includes("close-modal")
+          ? close
+          : null;
   world.queryAll = (selector) => {
     if (selector !== '[data-action="cook-next"]') return [];
     if (!swapped) {
@@ -238,7 +245,15 @@ test("cook mode: focus returns to the same nth control after the subtree is swap
   assert.equal(first.root.activeElement, first.fresh[0]);
 });
 
-test("cook mode: a disabled target hands focus to the close button", () => {
+test("cook mode: a disabled target hands focus to the close button when no primary is left", () => {
   const { root, close } = cookRender({ index: 1, disabledIndex: 1 });
   assert.equal(root.activeElement, close);
+});
+
+test("cook mode: a gone or disabled target hands focus to the primary button, not to close", () => {
+  // Back disabled on step one, or Next replaced by Done on the last step: a repeated Enter must
+  // land on the primary action instead of closing cooking mode.
+  const primary = { name: "primary" };
+  const { root } = cookRender({ index: 1, disabledIndex: 1, primary });
+  assert.equal(root.activeElement?.name, "primary");
 });
