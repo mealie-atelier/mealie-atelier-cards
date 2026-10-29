@@ -18273,7 +18273,7 @@ const AtelierStudio = (() => {
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruhe)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon)/,
     ],
     [
       "spices",
@@ -18291,7 +18291,7 @@ const AtelierStudio = (() => {
   const aisleSuffixes = [
     ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter)$/],
     ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein)$/],
-    ["pantry", /(mehl|brot|reis|nudeln|wein|bruhe)$/],
+    ["pantry", /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon)$/],
     ["spices", /(salz|zucker|essig|pfeffer|ol)$/],
   ];
   const category = (name) => {
@@ -19968,7 +19968,10 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
           .slice(0, 30),
       });
     if (type === "studio-pantry") {
-      const editId = this._pantryEdit;
+      // A row that vanished meanwhile (deleted on another device) is saved as a new item, not under its dead id.
+      const editId = (this._studio.pantry || []).some((x) => x.id === this._pantryEdit)
+        ? this._pantryEdit
+        : null;
       this._pantryEdit = null;
       ok = await this._studioWrite("pantry_put", {
         id: editId || undefined,

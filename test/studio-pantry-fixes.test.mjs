@@ -118,3 +118,36 @@ test("deleting the row under edit clears the edit target and typed values surviv
   assert.equal(card._pantryEdit, null);
   assert.equal(card._pantryDraft, null);
 });
+
+test("saving after the edited row vanished adds a new item instead of reusing the dead id", async () => {
+  class FakeFormData {
+    entries() {
+      return [
+        ["name", "Rice"],
+        ["amount", "1"],
+        ["unit", "g"],
+      ][Symbol.iterator]();
+    }
+  }
+  const card = makeCard(loadCards({ globals: { FormData: FakeFormData } }));
+  card._studio = { revision: 0, journal: {}, profile: {}, family: { members: [] }, pantry: [] };
+  card._render = () => {};
+  card._pantryEdit = "p1";
+  card._studio.pantry = [];
+  const sent = [];
+  card._studioWrite = async (cmd, data) => (sent.push([cmd, data]), true);
+  const form = {
+    dataset: { form: "studio-pantry" },
+    elements: {
+      name: { value: "Rice" },
+      amount: { value: "1" },
+      unit: { value: "g" },
+      expires: { value: "" },
+      staple: { checked: false },
+    },
+  };
+  form.closest = () => form;
+  await card._handleSubmit({ target: form, preventDefault() {} });
+  assert.equal(sent[0][0], "pantry_put");
+  assert.equal(sent[0][1].id, undefined);
+});

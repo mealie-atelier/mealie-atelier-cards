@@ -1414,7 +1414,10 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
           .slice(0, 30),
       });
     if (type === "studio-pantry") {
-      const editId = this._pantryEdit;
+      // A row that vanished meanwhile (deleted on another device) is saved as a new item, not under its dead id.
+      const editId = (this._studio.pantry || []).some((x) => x.id === this._pantryEdit)
+        ? this._pantryEdit
+        : null;
       this._pantryEdit = null;
       ok = await this._studioWrite("pantry_put", {
         id: editId || undefined,

@@ -717,7 +717,7 @@ const AtelierStudio = (() => {
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruhe)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon)/,
     ],
     [
       "spices",
@@ -735,7 +735,7 @@ const AtelierStudio = (() => {
   const aisleSuffixes = [
     ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter)$/],
     ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein)$/],
-    ["pantry", /(mehl|brot|reis|nudeln|wein|bruhe)$/],
+    ["pantry", /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon)$/],
     ["spices", /(salz|zucker|essig|pfeffer|ol)$/],
   ];
   const category = (name) => {
