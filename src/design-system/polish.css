@@ -2208,20 +2208,23 @@
   font-size: var(--ds-font-xs);
 }
 .atelier .studio-discover-empty {
-  display: grid;
-  justify-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--ds-space-3);
   padding: var(--ds-space-7);
   border: 1px dashed var(--ds-border);
   border-radius: var(--ds-radius-lg);
 }
 .atelier .studio-discover-empty > span {
+  flex: 1 0 100%;
   color: var(--ds-brand);
   font-size: 26px;
 }
 .atelier .studio-discover-empty h3,
 .atelier .studio-discover-empty p {
   margin: 0;
+  flex: 1 0 100%;
 }
 .atelier .studio-serving-note {
   margin-block: var(--ds-space-2) var(--ds-space-3);

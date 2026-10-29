@@ -109,3 +109,46 @@ test("cooking mode renders the studio tools and the configured light button insi
   assert.match(html, /data-action="studio-ha-scene"/);
   assert.match(html, /data-action="studio-read-step"/);
 });
+
+const i18n = (lang) => JSON.parse(read(`../src/i18n/${lang}.json`));
+
+test("bridge error codes for timers, protected values and USDA have card texts in both languages", () => {
+  const keys = [
+    "errInvalidTimer",
+    "errTimerExists",
+    "errTooManyTimers",
+    "errTimerNotFound",
+    "errTimerNotPermitted",
+    "errTimerDispatched",
+    "errExistingValuesProtected",
+    "errUsdaKeyInvalid",
+    "errUsdaRateLimited",
+  ];
+  for (const lang of ["de", "en"])
+    for (const key of keys) assert.ok(i18n(lang)[key], `${lang} ${key}`);
+});
+
+test("copy uses one term per setting, one Bridge name and the neuter Token", () => {
+  const de = i18n("de");
+  assert.equal(de.editorComfortable, de.comfortable);
+  assert.equal(de.editorMotionTransitions, de.uiMotionTransitions);
+  assert.equal(de.editorFoodPhotographyCrop, de.uiPhotoCrop);
+  assert.doesNotMatch(JSON.stringify(de), /Mealie-Atelier-Bridge|den Zugriffstoken/);
+  assert.match(de.errMealieAuth, /das API-Token/);
+  assert.match(de.uiNoWriteGrant, /Home-Assistant-Nutzer/);
+  assert.equal(i18n("en").editorFoodPhotographyCrop, i18n("en").uiPhotoCrop);
+});
+
+test("empty Discover title and today heading fit their content", () => {
+  assert.equal(i18n("en").tonight, "On the table today");
+  for (const lang of ["de", "en"]) assert.notEqual(i18n(lang).studioDiscoverEmptyTitle, "");
+  assert.doesNotMatch(i18n("en").studioDiscoverEmptyTitle, /open/i);
+  assert.doesNotMatch(i18n("de").studioDiscoverEmptyTitle, /offen/i);
+});
+
+test("Discover empty state lays its buttons out in a wrapping row", () => {
+  const css = read("../src/design-system/polish.css");
+  const box = rule(css, ".atelier .studio-discover-empty");
+  assert.match(box, /display:\s*flex/);
+  assert.match(box, /flex-wrap:\s*wrap/);
+});
