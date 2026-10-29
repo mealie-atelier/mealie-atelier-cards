@@ -11474,7 +11474,7 @@ function buildPrintDocument(
   `;
   return `<!DOCTYPE html><html lang="${esc(locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(pageName || "Mealie Atelier")}</title><style>${css}</style></head>
    <body><nav class="print-toolbar"><button type="button" class="primary" id="print-now">${esc(words.print)}</button><button type="button" id="close-print">${esc(words.close)}</button></nav>
-   <article class="sheet ${landscape ? "landscape" : ""} ${photo ? "has-photo" : ""} ${esc(style)}"><header class="masthead"><span class="logo">MEALIE <b>ATELIER</b></span><span>KITCHEN STUDIO · PRINT EDITION</span>${AtelierUI.attribution()}</header>
+   <article class="sheet ${landscape ? "landscape" : ""} ${photo ? "has-photo" : ""} ${esc(style)}"><header class="masthead"><span class="logo">MEALIE <b>ATELIER</b></span><span>KITCHEN STUDIO · PRINT EDITION</span>${AtelierUI.attribution({ lead: t("creditMadeWith"), by: t("creditBy") })}</header>
    <section class="document-heading">${heading}</section>${body}${kind === "recipe" && instructions.length > 18 ? "" : `<footer class="footer"><span>${esc(words.made)}</span><span>${esc(words.created)}</span></footer>`}</article></body></html>`;
 }
 

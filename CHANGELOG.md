@@ -16,6 +16,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Web app: the footer line follows the app language (German or English).
 - Web app docs: a reader's shared cooking journal is read only (only personal timers still work), and the sign-in throttle allows 5 free failures and locks out from the 6th.
 - Demo recipe catalogue thumbnails load eagerly instead of lazily, so no tile stays empty when the page is captured or printed without scrolling.
+- The credit line in the print document (recipe, shopping list, week plan) follows the card language like the card footer does.
 - The card credit line ("Made with ♥ by Daniel") and the demo page footer follow the language: "Mit ♥ von Daniel" and "Mit Liebe gemacht von Daniel" in German. Photo credits left the footer; every photo carries its own credit in the recipe catalogue and on its recipe page.
 - Demo recipe pages: step titles are h3 under the "Zubereitung" / "Method" h2, and the pages carry og:site_name, Twitter card tags (summary_large_image with title, description and image) and a hreflang x-default pointing to the German page.
 - Demo pages declare their dark colour scheme explicitly (meta color-scheme), so a light system setting renders the intended dark page.

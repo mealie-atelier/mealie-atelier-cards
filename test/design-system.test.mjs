@@ -65,7 +65,7 @@ test("the shared page, motion and author contracts are built into every surface"
   assert.ok(primitives.includes('rel="noopener noreferrer"'));
   assert.ok(template.includes("view-stage ds-page"));
   assert.ok(compact(motion).includes("--at-fast:var(--ds-motion-fast)"));
-  assert.ok(print.includes("AtelierUI.attribution()"));
+  assert.ok(print.includes("AtelierUI.attribution("));
   const editorStyle = compiled.match(/const EDITOR_STYLE = ("(?:[^"\\]|\\.)*");/);
   assert.ok(editorStyle);
   assert.ok(JSON.parse(editorStyle[1]).includes("--ds-motion-fast: 140ms;"));

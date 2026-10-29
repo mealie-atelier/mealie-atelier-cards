@@ -522,3 +522,28 @@ test("the card credit line follows the card language", () => {
     assert.equal(cards.document.markup.match(globalPattern)?.length, 2, language);
   }
 });
+
+test("the print document credit line follows the card language", () => {
+  for (const [language, pattern] of [
+    ["en", /Made with <span class="atelier-credit-heart"[^>]*>♥<\/span> by <a/],
+    ["de", /Mit <span class="atelier-credit-heart"[^>]*>♥<\/span> von <a/],
+  ]) {
+    const written = [];
+    const popup = {
+      document: {
+        write: (html) => written.push(html),
+        open() {},
+        close() {},
+        getElementById: () => null,
+      },
+      focus() {},
+    };
+    const cards = loadCards({ window: { open: () => popup } });
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._data.shopping = { lists: [{ id: "l1", name: "Market" }], items: [] };
+    card._activeList = "l1";
+    card._printKind = "shopping";
+    card._print();
+    assert.match(written.join(""), pattern, language);
+  }
+});
