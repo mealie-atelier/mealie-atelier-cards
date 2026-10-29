@@ -846,3 +846,33 @@ test("the sync dialog carries the class that scopes its round close button", asy
   assert.match(css, /\.modal\.sync-modal > \.modal-close \{[^}]*border-radius: 50%/);
   assert.doesNotMatch(css, /:not\(:has\(> \.modal-hero/);
 });
+
+const builtInRule = (name) =>
+  withRule({
+    name,
+    destination_entity_id: "todo.sl",
+    destination: {
+      entity_id: "todo.sl",
+      name: "Shopping list",
+      platform: "shopping_list",
+      available: true,
+      supports: {},
+    },
+  });
+
+test("the edit dialog prefills the localised rule name, not the raw English one", async () => {
+  const env = syncCard();
+  env.card._hass.language = "de";
+  await openStatus(env, [builtInRule("Weekly groceries → Shopping list")]);
+  await click(env.card, { action: "sync-setup-open", value: "r1" });
+  assert.equal(env.card._syncData().setup.name, "Weekly groceries → Einkaufsliste");
+  assert.match(markup(env.cards), /value="Weekly groceries → Einkaufsliste"/);
+});
+
+test("a rule saved with the German list name shows one title in an English UI", async () => {
+  const env = syncCard();
+  await openStatus(env, [builtInRule("Weekly groceries → Einkaufsliste")]);
+  const html = markup(env.cards);
+  assert.match(html, /<h3 id="sync-rule-r1">Weekly groceries → Shopping list<\/h3>/);
+  assert.equal((html.match(/Weekly groceries → Shopping list/g) || []).length, 1);
+});

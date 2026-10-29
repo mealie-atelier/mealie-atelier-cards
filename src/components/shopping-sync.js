@@ -256,10 +256,20 @@ export const shoppingSyncMethods = {
       ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="sync-setup-open" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
-  // A rule saved with the raw built-in list name ("Shopping list") is titled with the localised route.
+  // A rule named after the built-in list in either language ("Shopping list" or "Einkaufsliste")
+  // is titled with the route in the current UI language.
   _syncRuleTitle(rule, destination, destName) {
-    const raw = `${rule.source_list_name} → ${destination.name}`;
-    return rule.name === raw ? `${rule.source_list_name} → ${destName}` : rule.name;
+    const prefix = `${rule.source_list_name} → `;
+    const name = String(rule.name || "");
+    const plain = (v) =>
+      String(v)
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]/gu, "");
+    const builtIn =
+      String(destination.platform) === "shopping_list" &&
+      name.startsWith(prefix) &&
+      ["shoppinglist", "einkaufsliste"].includes(plain(name.slice(prefix.length)));
+    return builtIn || name === `${prefix}${destination.name}` ? `${prefix}${destName}` : rule.name;
   },
   // Route line "source → destination (platform)". When the rule is already named after the route
   // only the platform that the title does not show is kept.
@@ -421,7 +431,14 @@ ${this._syncRouteHtml(rule, destination, destName)}
       rule_id: rule?.id || "",
       expected_revision: rule?.revision,
       activated: rule?.activated === true,
-      name: rule?.name || "",
+      name: rule
+        ? this._syncRuleTitle(
+            rule,
+            rule.destination || {},
+            this._syncDestinationName(rule.destination?.name, rule.destination?.platform) ||
+              rule.destination_entity_id,
+          )
+        : "",
       source_list_id: rule?.source_list_id || String(free[0]?.id || ""),
       destination_entity_id: rule?.destination_entity_id || "",
       mode: rule?.mode || "copy",
