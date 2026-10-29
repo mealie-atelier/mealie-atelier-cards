@@ -542,7 +542,9 @@ const AtelierStudio = (() => {
               values: { covered: available.length, total: rows.length },
             }
           : { key: "studioReasonPantryUnchecked" },
-      unknown ? { key: "studioReasonAmountsUnclear", values: { count: unknown } } : null,
+      unknown
+        ? { key: "studioReasonAmountsUnclear", values: { count: unknown }, plural: true }
+        : null,
       profile.kidFriendly && kidTags ? { key: "studioReasonFamilyFriendly" } : null,
       serves
         ? { key: "studioReasonServingsBase", values: { servings: serves } }

@@ -604,11 +604,13 @@ test("every editor and err translation key used by the component exists in en an
   ))
     used.add("err" + code.replace(/(?:^|_)([a-z])/g, (m, c) => c.toUpperCase()));
   for (const [i, locale] of locales.entries())
-    for (const key of used) assert.ok(key in locale, `${["en", "de"][i]}.${key}`);
+    for (const key of used)
+      assert.ok(key in locale || `${key}.other` in locale, `${["en", "de"][i]}.${key}`);
   const german = locales[1];
   for (const key of used) {
     if (!key.startsWith("editor") && !key.startsWith("err")) continue;
-    assert.doesNotMatch(german[key], /[—–]/, key);
-    assert.doesNotMatch(german[key], /\b(ae|oe|ue)\b|[^a-zäöüß](Aender|Loesch)/i, key);
+    const text = german[key] ?? german[`${key}.other`];
+    assert.doesNotMatch(text, /[—–]/, key);
+    assert.doesNotMatch(text, /\b(ae|oe|ue)\b|[^a-zäöüß](Aender|Loesch)/i, key);
   }
 });

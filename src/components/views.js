@@ -113,7 +113,9 @@ export const viewMethods = {
   },
   _manage() {
     if (!this._permissions.can_manage)
-      return `<div class="notice">${esc(this._permissions.can_write ? this.t("adminOnlyHint") : this._noWriteGrant ? this._noWriteGrantText : this.t("readOnlyHint"))}</div>`;
+      return this._permissions.can_write
+        ? `<div class="notice">${esc(this.t("adminOnlyHint"))}</div>`
+        : ""; // the global read-only banner already explains the missing write access
     return `<div class="manage-grid"><div class="manage-card"><div class="stat-icon">${icon("plus", 21)}</div><h3>${esc(this.t("create"))}</h3><p>${esc(this.t("recipeTip"))}</p><button class="btn primary" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button></div>
     <div class="manage-card"><div class="stat-icon">${icon("external", 21)}</div><h3>${esc(this.t("import"))}</h3><p>${esc(this.t("importTip"))}</p><button class="btn" data-action="import-form">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></div>
     <div class="section"><div class="heading"><div><h2>${esc(this.t("saveNote"))}</h2><p>${esc(this.t("adminOnly"))}</p></div></div>${this._recipes(12)}</div>`;

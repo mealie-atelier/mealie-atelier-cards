@@ -286,8 +286,8 @@ export const recipeEditorMethods = {
     if (state.loadError)
       return `<div class="notice error" role="alert"><span>${esc(state.loadError)}</span><button type="button" class="btn tiny" data-action="ed-retry">${esc(this.t("retry"))}</button></div>`;
     const diff = this._editorDiff();
-    return `<div class="ed-toolbar"><label class="ed-servings"><span data-ed-servings-label>${esc(this.t("editorServingsPreview", { count: state.preview }))}</span>
-        <input type="number" inputmode="numeric" min="1" max="100" step="1" value="${state.preview}" data-ed-input="servings" aria-label="${esc(this.t("editorServingsPreview", { count: state.preview }))}"></label>
+    return `<div class="ed-toolbar"><label class="ed-servings"><span data-ed-servings-label>${esc(this.tp("editorServingsPreview", state.preview))}</span>
+        <input type="number" inputmode="numeric" min="1" max="100" step="1" value="${state.preview}" data-ed-input="servings" aria-label="${esc(this.tp("editorServingsPreview", state.preview))}"></label>
         <button type="button" class="btn tiny" data-action="ed-servings-reset">${esc(this.t("editorServingsReset"))}</button>
         <span class="editor-sub" data-ed-servings-note ${state.preview === state.servings ? "hidden" : ""}>${esc(this.t("editorServingsNote"))}</span></div>
       <div class="ed-rows" role="list">${state.rows.map((row, i) => this._editorRowHtml(row, i)).join("")}</div>
@@ -592,7 +592,7 @@ export const recipeEditorMethods = {
     });
     const note = this.shadowRoot.querySelector("[data-ed-servings-note]");
     if (note) note.hidden = state.preview === state.servings;
-    const label = this.t("editorServingsPreview", { count: state.preview });
+    const label = this.tp("editorServingsPreview", state.preview);
     const text = this.shadowRoot.querySelector("[data-ed-servings-label]");
     if (text) text.textContent = label;
     this.shadowRoot.querySelector('[data-ed-input="servings"]')?.setAttribute("aria-label", label);

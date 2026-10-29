@@ -260,7 +260,11 @@ test("studio core emits translation keys instead of user-visible copy", () => {
   const keys = [...core.matchAll(/["'](studio[A-Z][A-Za-z0-9]+)["']/g)].map(([, key]) => key);
   assert.ok(keys.length >= 25, "reason, audit and swap keys are referenced");
   for (const [locale, resource] of Object.entries(locales))
-    for (const key of keys) assert.ok(key in resource, `${locale}.${key} is used by studio-core`);
+    for (const key of keys)
+      assert.ok(
+        key in resource || `${key}.other` in resource,
+        `${locale}.${key} is used by studio-core`,
+      );
   assert.doesNotMatch(core, /message:\s*[`"']/, "audit problems carry keys, not sentences");
 });
 
@@ -311,7 +315,7 @@ test("new notices resolve in every locale with matching placeholders", () => {
     "studioRecipeFetchFailed",
   ])
     for (const [locale, resource] of Object.entries(locales))
-      assert.ok(resource[key], `${locale}.${key}`);
+      assert.ok(resource[key] || resource[`${key}.other`], `${locale}.${key}`);
 });
 
 test("shopping sync keys from the contract exist in English and German with real umlauts", () => {

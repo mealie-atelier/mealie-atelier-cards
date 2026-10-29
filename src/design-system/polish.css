@@ -372,6 +372,10 @@
   font-weight: 770;
   box-shadow: 0 8px 21px color-mix(in srgb, var(--ds-brand) 13%, transparent);
 }
+.atelier .btn.primary:disabled {
+  color: var(--ds-muted);
+  box-shadow: none;
+}
 .atelier .btn:not(.primary):hover:not(:disabled) {
   background: color-mix(in srgb, var(--ds-brand) 12%, var(--ds-surface));
   border-color: color-mix(in srgb, var(--ds-brand) 29%, var(--ds-border));

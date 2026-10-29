@@ -15,6 +15,11 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Ctrl/Cmd+K and "/" also work in Home Assistant while nothing has focus (never while another element has focus, so its own shortcuts stay untouched); Esc, arrows and Tab keep working in an open dialog even if focus fell to the page.
 - Cooking mode: choosing "Cancel" in the "Replace the shared cooking session?" dialog now really starts the recipe locally, and "Replace session" opens cooking mode too (the click was replayed after the dialog and no longer hit the button).
 - Phone: the active navigation tab is scrolled into view when the view changes (also once more after layout settles), and the tab hover tint applies only on devices that can hover, so no stale highlight stays on a previous tab after a tap.
+- Count texts use proper singular and plural in German and English ("1 weitere Idee", "1 Menge unklar", selected recipes, servings, meals, items, failed checks).
+- The accent colour swatches in the design settings have a translated colour name as accessible name instead of an English hex value.
+- The disabled primary button (for example "Kochbuch als PDF / Druckvorschau") stays readable in the light and dark theme.
+- Web app: the footer has a side gutter on phones.
+- The Verwalten view no longer repeats the read-only notice that the global banner already shows.
 - AI failures show their own message instead of claiming Mealie is unreachable.
 - Web app: `icon-maskable-512.png` and `pasta-with-tomatoes.jpg`, which the manifest and the service worker precache list, are served now instead of answering 404.
 - Web app: a reader sees "You are signed in with read access. An administrator can give your account the writer role." instead of the Home Assistant wording.

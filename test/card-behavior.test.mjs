@@ -112,7 +112,7 @@ test("a skipped recipe fetch in the cookbook print is surfaced and the rest is s
   assert.ok(!html.includes("Broken Pie"));
   const toast = toastOf(cards);
   assert.equal(toast[1], "alert");
-  assert.match(toast[3], /1 recipes could not be loaded and were skipped: Broken Pie/);
+  assert.match(toast[3], /1 recipe could not be loaded and was skipped: Broken Pie/);
 });
 
 test("hitting the Home Assistant provider limit shows a localized incompleteness notice", async () => {

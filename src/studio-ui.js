@@ -313,7 +313,7 @@ Object.assign(MealieAtelierCard.prototype, {
     this._flash(
       results.every((x) => x.ok)
         ? this.t("studioDiagnosticsPassed")
-        : this.t("studioDiagnosticsFailed", { count: results.filter((x) => !x.ok).length }),
+        : this.tp("studioDiagnosticsFailed", results.filter((x) => !x.ok).length),
     );
   },
   _studioExport() {
@@ -454,10 +454,12 @@ Object.assign(MealieAtelierCard.prototype, {
           ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}<span class="studio-discover-photo-label">${hero.timeLabel || this.t("studioDiscoverTimeOpen")} <i>·</i> ${hero.people} ${hero.people === 1 ? this.t("studioDiscoverPerson") : this.t("studioDiscoverPeoplePlural")}</span></div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.t("studioDiscoverRecipeBase", { servings: hero.servings }) : this.t("studioDiscoverForPeople", { people: hero.people })}</span></div><p>${esc(
               hero.reasons
                 .slice(0, 3)
-                .map((r) => this.t(r.key, r.values))
+                .map((r) =>
+                  r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values),
+                )
                 .join(" · ") || this.t("studioDiscoverGoodIdea"),
             )}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
-      ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.t("studioDiscoverMoreIdeas", { count: alternatives.length })}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.t("servings")}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
+      ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.tp("studioDiscoverMoreIdeas", alternatives.length)}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.t("servings")}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
           : `<div class="studio-discover-empty"><span>✦</span><h3>${this.t("studioDiscoverEmptyTitle")}</h3><p>${this.t("studioDiscoverEmpty")}</p><button class="btn" data-action="studio-discover-edit">${this.t("studioDiscoverAdjust")}</button><button class="btn" data-action="studio-analyze" ${this._catalogLoading ? "disabled" : ""}>${icon("refresh", 14)} ${this.t("studioDiscoverReload")}</button></div>`
       }</section>`
       }
@@ -465,7 +467,7 @@ Object.assign(MealieAtelierCard.prototype, {
     const planner = this._discoverResults
       ? `${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioPlanKicker")}</span><h2>${this.t("studioPlanTitle")}</h2><p>${this.t("studioPlanDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-plan-preview" ${this._catalogLoading ? "disabled" : ""}>${icon("spark", 15)} ${this.t("studioPlanPreview")}</button>${upcoming.length && this._permissions.can_write ? `<button class="btn" data-action="studio-plan-commit">${icon("check", 15)} ${this.t("studioPlanCommit")}</button>` : ""}</div>
-      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => this.t(r.key, r.values)).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
+      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => (r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values))).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
       : "";
     return this._studioShell(this.t("studioDiscoverTitle"), lead, `${flow}${planner}`);
   },
@@ -546,7 +548,7 @@ Object.assign(MealieAtelierCard.prototype, {
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
       }</div></section>
-      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2>${this.t("cookbookSelected", { count: selected.size })}</h2></div>
+      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2>${this.tp("cookbookSelected", selected.size)}</h2></div>
       <form class="studio-form" data-form="studio-book"><label>${this.t("cookbookTitleLabel")}<input name="title" maxlength="100" value="${this.t("cookbookTitleDefault")}" required></label><label>${this.t("cookbookSubtitleLabel")}<input name="subtitle" maxlength="160" value="${this.t("cookbookSubtitleDefault")}"></label>
       <label class="studio-inline"><input type="checkbox" name="photos"> ${this.t("cookbookPhotos")}</label>
       <button class="btn primary" type="submit" ${!selected.size ? "disabled" : ""}>${icon("print", 15)} ${this.t("cookbookPrint")}</button></form>
@@ -585,7 +587,7 @@ Object.assign(MealieAtelierCard.prototype, {
     if (
       !(await this._atelierDialog({
         title: this.t("studioWeekConfirmTitle"),
-        body: this.t("studioWeekConfirmBody", { count: this._weekProposal.length }),
+        body: this.tp("studioWeekConfirmBody", this._weekProposal.length),
         confirmLabel: this.t("studioWeekConfirmAction"),
       }))
     )
@@ -612,7 +614,7 @@ Object.assign(MealieAtelierCard.prototype, {
       : [];
     await this._loadMealplan();
     this._flash(
-      `${this.t("studioWeekSuccess", { count: success })}${failed.length ? " " + this.t("studioWeekFailure", { errors: failed.join("; ") }) : ""}`,
+      `${this.tp("studioWeekSuccess", success)}${failed.length ? " " + this.t("studioWeekFailure", { errors: failed.join("; ") }) : ""}`,
     );
   },
   async _studioSendGroceries() {
@@ -626,7 +628,7 @@ Object.assign(MealieAtelierCard.prototype, {
     if (
       !(await this._atelierDialog({
         title: this.t("studioShoppingTransferTitle"),
-        body: this.t("studioShoppingTransferBody", { count: items.length }),
+        body: this.tp("studioShoppingTransferBody", items.length),
         confirmLabel: this.t("studioShoppingTransferConfirm"),
       }))
     )
@@ -650,7 +652,7 @@ Object.assign(MealieAtelierCard.prototype, {
     await this._recoverPermissions(refused);
     await this._loadShopping();
     this._flash(
-      `${this.t("studioShoppingSuccess", { count })}${errors.length ? " " + this.t("studioShoppingFailure", { items: errors.join(", ") }) : ""}`,
+      `${this.tp("studioShoppingSuccess", count)}${errors.length ? " " + this.t("studioShoppingFailure", { items: errors.join(", ") }) : ""}`,
     );
   },
   async _studioPrintBook({ title, subtitle, photos }) {
@@ -681,7 +683,7 @@ Object.assign(MealieAtelierCard.prototype, {
     }
     if (skipped.length)
       this._flash(
-        this.t("studioRecipeFetchFailed", { count: skipped.length, names: skipped.join(", ") }),
+        this.tp("studioRecipeFetchFailed", skipped.length, { names: skipped.join(", ") }),
         "error",
       );
     const toc = results
@@ -690,7 +692,7 @@ Object.assign(MealieAtelierCard.prototype, {
     const chapters = results
       .map(
         (r, i) =>
-          `<article class="chapter"><span class="eyebrow">${esc(this.t("printRecipe", { number: String(i + 1).padStart(2, "0"), total: results.length }))}</span><h2>${esc(r.name)}</h2>${photos && imageOk(r.imageUrl) ? `<img class="chapter-image" src="${esc(imageOk(r.imageUrl))}" alt="">` : ""}<div class="meta">${r.recipe?.totalTime ? esc(AtelierStudio.formatTime(r.recipe.totalTime, this._language)) + " · " : ""}${esc(AtelierStudio.recipeServings(r) ? this.t("printServings", { count: AtelierStudio.recipeServings(r) }) : r.recipeYieldQuantity && r.recipeYield ? `${r.recipeYieldQuantity} ${r.recipeYield}` : "—")}</div><div class="cols"><section><h3>${this.t("printIngredients")}</h3>${asArray(
+          `<article class="chapter"><span class="eyebrow">${esc(this.t("printRecipe", { number: String(i + 1).padStart(2, "0"), total: results.length }))}</span><h2>${esc(r.name)}</h2>${photos && imageOk(r.imageUrl) ? `<img class="chapter-image" src="${esc(imageOk(r.imageUrl))}" alt="">` : ""}<div class="meta">${r.recipe?.totalTime ? esc(AtelierStudio.formatTime(r.recipe.totalTime, this._language)) + " · " : ""}${esc(AtelierStudio.recipeServings(r) ? this.tp("printServings", AtelierStudio.recipeServings(r)) : r.recipeYieldQuantity && r.recipeYield ? `${r.recipeYieldQuantity} ${r.recipeYield}` : "—")}</div><div class="cols"><section><h3>${this.t("printIngredients")}</h3>${asArray(
             r.recipeIngredient,
           )
             .map(
