@@ -37,7 +37,7 @@
 
 <p align="center"><img width="440" alt="Recipe collection with photos, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipes-dark.webp"> <img width="440" alt="Recipe details with cooking, nutrition and print actions, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/recipe-light.webp"></p>
 <p align="center"><img width="440" alt="Cooking mode with step, timer and photo, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/cook-dark.webp"> <img width="440" alt="Weekly meal planner, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/mealplan-light.webp"></p>
-<p align="center"><img width="440" alt="Shopping list with ticked items, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/shopping-dark.webp"> <img width="440" alt="Cook ideas questionnaire, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/discover-light.webp"></p>
+<p align="center"><img width="440" alt="Shopping list with ticked items, dark theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/shopping-dark.webp"> <img width="440" alt="Discover questionnaire, light theme" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/discover-light.webp"></p>
 <p align="center"><img width="820" alt="Four phone screens: overview, recipe, cooking mode and shopping list" src="https://raw.githubusercontent.com/mealie-atelier/mealie-atelier-cards/main/assets/screens/phones.webp"></p>
 
 <sub>All screenshots show fictional sample recipes in a disposable Home Assistant 2026.11 test instance. Photos are credited in the [demo catalogue](demo/data/recipes.json).</sub>
@@ -99,7 +99,7 @@ lovelace:
 | `custom:mealie-atelier-mealplan` | Weekly planner with a searchable recipe picker           |
 | `custom:mealie-atelier-shopping` | Shopping lists with tick, add and offline queue          |
 | `custom:mealie-atelier-manage`   | Create, import and edit recipes with a structured editor |
-| `custom:mealie-atelier-discover` | Cook ideas and a proposed seven-day menu                 |
+| `custom:mealie-atelier-discover` | Discover recipes and a proposed seven-day menu           |
 | `custom:mealie-atelier-pantry`   | Pantry and staples for grocery planning                  |
 | `custom:mealie-atelier-family`   | Shared cooking sessions with helper tasks                |
 | `custom:mealie-atelier-cookbook` | A print-ready A4 cookbook                                |

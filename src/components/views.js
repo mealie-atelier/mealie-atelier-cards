@@ -123,10 +123,10 @@ export const viewMethods = {
       ${todays.length === 0 ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
     }).join("")}</div>`;
   },
-  /** Item text without the quantity Mealie already folds into `display`; quantity 1 shows no "1 " prefix. */
+  /** Item text without the quantity Mealie already folds into `display`; a unitless quantity of 1 shows no "1 " prefix. */
   _shoppingLabel(item) {
     const text = String(item.display || item.note || item.food?.name || this.t("itemFallback"));
-    return Number(item.quantity) === 1 ? text.replace(/^1(?:[.,]0+)?\s+/, "") : text;
+    return Number(item.quantity) === 1 && !item.unit ? text.replace(/^1(?:[.,]0+)?\s+/, "") : text;
   },
   _shoppingRow(item) {
     const label = this._shoppingLabel(item);
@@ -146,10 +146,11 @@ export const viewMethods = {
     const named = [...groups.keys()].filter(Boolean);
     const labelled = named.length > 0;
     const section = (name, list) =>
-      `${labelled && name ? `<div class="shopping-group-title">${esc(name)}</div>` : ""}${list.map((i) => this._shoppingRow(i)).join("")}`;
+      `${name ? `<div class="shopping-group-title">${esc(name)}</div>` : ""}${list.map((i) => this._shoppingRow(i)).join("")}`;
     const parts = named.map((n) => section(n, groups.get(n)));
-    if (groups.has("")) parts.push(section("", groups.get("")));
-    if (done.length) parts.push(done.map((i) => this._shoppingRow(i)).join(""));
+    if (groups.has(""))
+      parts.push(section(labelled ? this.t("shoppingOther") : "", groups.get("")));
+    if (done.length) parts.push(section(open.length ? this.t("shoppingTicked") : "", done));
     return parts.join("");
   },
   _shopping() {

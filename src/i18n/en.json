@@ -854,6 +854,8 @@
   "studioCreateShoppingListFirst": "Please create a shopping list in Mealie first.",
   "uiMealieRecipeFallback": "Mealie recipe",
   "itemFallback": "Item",
+  "shoppingOther": "Other",
+  "shoppingTicked": "Ticked",
   "recipeFallback": "Recipe",
   "navKitchenLabel": "Kitchen navigation",
   "uiHomeAssistantNotReady": "Home Assistant connection is not ready",

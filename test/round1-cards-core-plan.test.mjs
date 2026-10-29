@@ -190,6 +190,22 @@ test("shopping rows show the quantity once, sink ticked items and group open one
   assert.deepEqual(names, ["Brot", "3 Tomaten", "Mehl", "Salz"]);
   assert.match(html, /shopping-group-title">Backwaren</);
   assert.doesNotMatch(html, /shopping-qty">3</);
+  const titles = [...html.matchAll(/shopping-group-title">([^<]*)</g)].map((m) => m[1]);
+  assert.deepEqual(titles, ["Backwaren", "Sonstiges", "Erledigt"]);
+});
+
+test("shopping rows keep the amount when the item has a unit", () => {
+  const { card } = setup("de");
+  card._data.shopping = {
+    lists: [{ id: "L", name: "L" }],
+    items: [
+      { id: "1", shoppingListId: "L", display: "1 kg Mehl", quantity: 1, unit: { name: "kg" } },
+      { id: "2", shoppingListId: "L", display: "1 Salz", quantity: 1 },
+    ],
+  };
+  card._activeList = "L";
+  const names = [...card._shopping().matchAll(/class="shopping-name">([^<]*)</g)].map((m) => m[1]);
+  assert.deepEqual(names, ["1 kg Mehl", "Salz"]);
 });
 
 test("print is offered once per view and today items use a checkbox control", () => {

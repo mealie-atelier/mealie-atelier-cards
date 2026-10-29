@@ -476,7 +476,7 @@
 /* Semantic shopping toolbar, shared across themes and card widths. */
 .atelier .shopping-toolbar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
   justify-content: end;
   margin-block: 0 var(--ds-space-4);
 }
