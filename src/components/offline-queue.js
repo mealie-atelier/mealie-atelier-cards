@@ -124,7 +124,14 @@ export const offlineQueueMethods = {
     // The state the user saw: a waiting tick on the same item wins over the last loaded state.
     const before = ops[lastToggleIndex(ops, String(payload.item_id))];
     const seen = before ? before.payload.checked : item?.checked;
-    const entry = this._offlineEntry(action, payload, seen);
+    // An edit is compared on replay with what the user saw, including edits still waiting.
+    const shown =
+      this._offlineItems(asArray(this._data.shopping?.items)).find(
+        (x) => String(x.id) === String(payload.item_id),
+      ) || item;
+    const entry = this._offlineEntry(action, payload, seen, shown);
+    // A clear without the IDs the user saw would remove ticks made elsewhere. Do not queue it.
+    if (action === "shopping_clear_checked" && !entry.expected_ids?.length) return false;
     const label =
       action === "shopping_add"
         ? entry.note
@@ -141,7 +148,7 @@ export const offlineQueueMethods = {
     return true;
   },
   /** The stored form of a failed write; only the fields the Bridge replay accepts. */
-  _offlineEntry(action, payload, seen) {
+  _offlineEntry(action, payload, seen, shown) {
     if (action === "shopping_toggle")
       return {
         item_id: String(payload.item_id),
@@ -152,6 +159,13 @@ export const offlineQueueMethods = {
     if (action === "shopping_update") {
       const entry = { item_id: String(payload.item_id) };
       for (const key of ["note", "name", "quantity"]) if (key in payload) entry[key] = payload[key];
+      // The value the user saw for each changed field, so the Bridge can report a conflict.
+      if (shown) {
+        if ("name" in entry)
+          entry.expected_name = String(shown.display || shown.note || shown.food?.name || "");
+        if ("note" in entry) entry.expected_note = String(shown.note || "");
+        if ("quantity" in entry) entry.expected_quantity = Number(shown.quantity) || 0;
+      }
       return entry;
     }
     if (action === "shopping_clear_checked") {
@@ -197,7 +211,13 @@ export const offlineQueueMethods = {
         );
       else if (op.action === "shopping_clear_checked")
         view = view.filter(
-          (item) => !(item.checked === true && String(item.shoppingListId) === String(p.list_id)),
+          (item) =>
+            !(
+              item.checked === true &&
+              String(item.shoppingListId) === String(p.list_id) &&
+              (!Array.isArray(p.expected_ids) ||
+                p.expected_ids.map(String).includes(String(item.id)))
+            ),
         );
       else if (op.action === "shopping_add")
         view = [

@@ -179,11 +179,12 @@
           // The account may no longer write: drop the queued edit instead of retrying forever.
           await deleteOp(current.id);
           dropped++;
-        } else if (e.status === 409 || e.status === 403) {
-          await updateOp(current.id, { state: "conflict", reason: e.message });
+        } else if (e.status === 409 || e.status === 403 || e.code === "shopping_item_not_found") {
+          // The code is kept so the conflict list can show it in the language of the user.
+          await updateOp(current.id, { state: "conflict", reason: e.message, code: e.code });
           conflicts++;
         } else {
-          await updateOp(current.id, { state: "pending", reason: e.message });
+          await updateOp(current.id, { state: "pending", reason: e.message, code: e.code });
           break;
         }
       }

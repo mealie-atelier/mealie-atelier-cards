@@ -286,7 +286,12 @@ test("the ledger validates the new offline operations", () => {
     validateOperation(op("shopping_update", { item_id: "a", quantity: 0 })),
   );
   assert.doesNotThrow(() => validateOperation(op("shopping_update", { item_id: "a", note: "" })));
-  assert.doesNotThrow(() => validateOperation(op("shopping_clear_checked", { list_id: "l1" })));
+  assert.doesNotThrow(() =>
+    validateOperation(op("shopping_clear_checked", { list_id: "l1", expected_ids: ["a"] })),
+  );
+  assert.doesNotThrow(() =>
+    validateOperation(op("shopping_update", { item_id: "a", quantity: 2, expected_quantity: 1 })),
+  );
   for (const bad of [
     op("shopping_delete", { item_id: "a b" }),
     op("shopping_update", { item_id: "a" }),
@@ -295,6 +300,9 @@ test("the ledger validates the new offline operations", () => {
     op("shopping_update", { item_id: "a", name: "x", note: "y" }),
     op("shopping_clear_checked", { list_id: "l1", expected_ids: [] }),
     op("shopping_clear_checked", {}),
+    op("shopping_clear_checked", { list_id: "l1" }),
+    op("shopping_update", { item_id: "a", quantity: 2, expected_quantity: "1" }),
+    op("shopping_update", { item_id: "a", name: "x", expected_name: 5 }),
   ])
     assert.throws(() => validateOperation(bad), { status: 400 }, JSON.stringify(bad));
 });
@@ -307,6 +315,7 @@ test("a replayed delete, update or clear reaches Mealie once and a failure can b
     const ledger = new OfflineLedger({
       dir,
       readItem: async () => ({}),
+      readItems: async () => [{ id: "b", checked: true }],
       mutate: async (action, payload) => {
         sent.push(action);
         if (fail) throw new Error("network lost");
@@ -323,7 +332,7 @@ test("a replayed delete, update or clear reaches Mealie once and a failure can b
     assert.equal((await ledger.process(del)).ok, true);
     assert.equal((await ledger.process(del)).replayed, true);
     const upd = op("shopping_update", { item_id: "a", quantity: 2 });
-    const clr = op("shopping_clear_checked", { list_id: "l1" });
+    const clr = op("shopping_clear_checked", { list_id: "l1", expected_ids: ["b"] });
     await ledger.process(upd);
     await ledger.process(clr);
     await ledger.process(clr);
@@ -382,8 +391,17 @@ test("the offline client queues edits, deletes and clears and shows them in the 
   assert.deepEqual(
     client.operations.map((x) => [x.action, x.payload]),
     [
-      ["shopping_update", { item_id: "a", name: "Oat milk" }],
-      ["shopping_update", { item_id: "b", quantity: 3, note: "organic" }],
+      ["shopping_update", { item_id: "a", name: "Oat milk", expected_name: "Milk" }],
+      [
+        "shopping_update",
+        {
+          item_id: "b",
+          quantity: 3,
+          note: "organic",
+          expected_quantity: 2,
+          expected_note: "",
+        },
+      ],
       ["shopping_delete", { item_id: "c" }],
     ],
   );
@@ -500,4 +518,105 @@ test("the offline view rebuilds the label after quantity, note and rename edits"
   assert.equal(renamed.display, "2 l Hafermilch");
   assert.equal(renamed.food, null);
   assert.equal(base.items[0].display, "2 l Milch", "the snapshot is not mutated");
+});
+
+// Conflicts on replay
+
+async function conflictLedger(dir, state) {
+  const sent = [];
+  const ledger = new OfflineLedger({
+    dir,
+    readItem: async (id) => {
+      if (!(id in state.items)) throw Object.assign(new Error("gone"), { status: 404 });
+      return state.items[id];
+    },
+    readItems: async () => Object.values(state.items),
+    mutate: async (action, payload) => {
+      sent.push(action);
+      return { action, payload };
+    },
+  });
+  return { ledger, sent };
+}
+
+test("an update is a conflict when another device changed what the user saw", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
+  try {
+    const state = {
+      items: { a: { id: "a", note: "Milk", display: "2 Milk", quantity: 4, checked: false } },
+    };
+    const { ledger, sent } = await conflictLedger(dir, state);
+    const stale = op("shopping_update", { item_id: "a", quantity: 5, expected_quantity: 2 });
+    await assert.rejects(ledger.process(stale), { status: 409, atelierCode: "offline_conflict" });
+    // The conflict is sticky and nothing reached Mealie.
+    await assert.rejects(ledger.process(stale), { atelierCode: "offline_conflict" });
+    const fresh = op("shopping_update", { item_id: "a", note: "cold", expected_note: "Milk" });
+    assert.equal((await ledger.process(fresh)).ok, true);
+    const blind = op("shopping_update", { item_id: "a", quantity: 9 });
+    assert.equal((await ledger.process(blind)).ok, true, "without a seen value the edit wins");
+    assert.deepEqual(sent, ["shopping_update", "shopping_update"]);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("an update of a vanished item reports shopping_item_not_found and can be repeated", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
+  try {
+    const { ledger } = await conflictLedger(dir, { items: {} });
+    const gone = op("shopping_update", { item_id: "a", quantity: 5 });
+    for (let attempt = 0; attempt < 2; attempt++)
+      await assert.rejects(ledger.process(gone), {
+        status: 404,
+        atelierCode: "shopping_item_not_found",
+      });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("a clear is a conflict when another device ticked an item the user never saw", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
+  try {
+    const state = {
+      items: {
+        b: { id: "b", checked: true },
+        c: { id: "c", checked: true },
+      },
+    };
+    const { ledger, sent } = await conflictLedger(dir, state);
+    const clear = op("shopping_clear_checked", { list_id: "l1", expected_ids: ["b"] });
+    await assert.rejects(ledger.process(clear), { atelierCode: "offline_conflict" });
+    assert.deepEqual(sent, []);
+    // An item the user saw ticked that is gone meanwhile is fine.
+    delete state.items.c;
+    const ok = op("shopping_clear_checked", { list_id: "l1", expected_ids: ["b", "gone"] });
+    assert.equal((await ledger.process(ok)).ok, true);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test("the offline client sends what the user saw with an edit and a clear", async () => {
+  const client = await offlineClient();
+  await client.enqueue("shopping_update", { item_id: "a", quantity: 4 });
+  await client.enqueue("shopping_clear_checked", { list_id: "l1" });
+  assert.deepEqual(client.operations[0].payload, {
+    item_id: "a",
+    quantity: 4,
+    expected_quantity: 1,
+  });
+  assert.deepEqual(client.operations[1].payload, { list_id: "l1", expected_ids: ["b", "c"] });
+});
+
+test("the conflict list and the alarm status translate Bridge codes instead of raw text", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const client = await readFile(join(ROOT, "public/offline-client.js"), "utf8");
+  const core = await readFile(join(ROOT, "public/offline-core.js"), "utf8");
+  assert.match(client, /op\.code\s*\?\s*localizedError\(\{ code: op\.code \}\)/);
+  assert.match(client, /localizedError\(\{ code: alarms\.lastError \}\)/);
+  assert.doesNotMatch(client, /t\(alarms\.lastError\)/);
+  // The replay keeps the code next to the English text.
+  assert.match(core, /state: "conflict", reason: e\.message, code: e\.code/);
+  assert.match(core, /e\.code === "shopping_item_not_found"/);
 });

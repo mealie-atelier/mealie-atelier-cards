@@ -94,6 +94,10 @@ const offlineLedger = new OfflineLedger({
   dir: DATA_DIR,
   readOnly: READ_ONLY,
   readItem: (id) => mealie("GET", `/api/households/shopping/items/${identifier(id)}`),
+  readItems: async (listId) =>
+    unwrap(
+      await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
+    ).filter((x) => String(x?.shoppingListId) === String(listId)),
   mutate: (action, payload) => mutate(action, payload),
 });
 
@@ -474,6 +478,15 @@ function shoppingNote(v) {
   if (typeof v !== "string" || v.length > 250) throw bad("Invalid note");
   return v.trim();
 }
+/** A 404 on an item that an edit targets: the item was deleted meanwhile. */
+function itemGone(error) {
+  if (error.status === 404)
+    throw Object.assign(new Error("This item no longer exists in Mealie"), {
+      status: 404,
+      atelierCode: "shopping_item_not_found",
+    });
+  throw error;
+}
 /** Deleting an item that is already gone counts as done, so a replay or double tap stays harmless. */
 async function deleteShoppingItem(id) {
   try {
@@ -521,7 +534,7 @@ async function mutate(action, payload, req) {
         changes.quantity = payload.quantity;
       }
       if (!Object.keys(changes).length) throw bad("Nothing to update");
-      const current = await mealie("GET", `/api/households/shopping/items/${id}`);
+      const current = await mealie("GET", `/api/households/shopping/items/${id}`).catch(itemGone);
       const { name, ...rest } = changes;
       // Mealie rebuilds `display` (quantity, unit, name, note) only when it is empty, so the old
       // one is never sent back. A rename turns the item into a free text item, as the Bridge does:
@@ -531,7 +544,7 @@ async function mutate(action, payload, req) {
         Object.assign(next, { note: name, food: null, foodId: null, isFood: false });
       if (!next.food && !String(next.note || "").trim())
         throw bad("An item without a food needs a name");
-      return mealie("PUT", `/api/households/shopping/items/${id}`, next);
+      return mealie("PUT", `/api/households/shopping/items/${id}`, next).catch(itemGone);
     }
     case "shopping_clear_checked": {
       const listId = typeof payload.list_id === "string" ? payload.list_id : "";

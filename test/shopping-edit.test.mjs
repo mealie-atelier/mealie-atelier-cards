@@ -262,14 +262,21 @@ test("connectivity failures queue delete, update and clear with exactly the Brid
     true,
   );
   assert.equal(await card._mutate("shopping_delete", { item_id: "i1" }, "shopping"), true);
-  assert.equal(await card._mutate("shopping_clear_checked", { list_id: "l1" }, "shopping"), true);
+  assert.equal(
+    await card._mutate(
+      "shopping_clear_checked",
+      { list_id: "l1", expected_ids: ["i2", "i3"] },
+      "shopping",
+    ),
+    true,
+  );
   const ops = queue(card);
   assert.deepEqual(
     ops.map((op) => [op.action, op.payload]),
     [
-      ["shopping_update", { item_id: "i2", quantity: 5 }],
+      ["shopping_update", { item_id: "i2", quantity: 5, expected_quantity: 2 }],
       ["shopping_delete", { item_id: "i1" }],
-      ["shopping_clear_checked", { list_id: "l1" }],
+      ["shopping_clear_checked", { list_id: "l1", expected_ids: ["i2", "i3"] }],
     ],
   );
   assert.equal(ops[2].label, "Groceries");
@@ -279,7 +286,11 @@ test("waiting operations change the list the user sees, in the order they were m
   const { card } = offlineSetup();
   await card._mutate("shopping_update", { item_id: "i1", name: "Oat milk" }, "shopping");
   await card._mutate("shopping_delete", { item_id: "i3" }, "shopping");
-  await card._mutate("shopping_clear_checked", { list_id: "l1" }, "shopping");
+  await card._mutate(
+    "shopping_clear_checked",
+    { list_id: "l1", expected_ids: ["i2", "i3"] },
+    "shopping",
+  );
   const view = card._offlineItems(card._data.shopping.items);
   assert.deepEqual(
     view.map((x) => x.id),
@@ -291,7 +302,11 @@ test("waiting operations change the list the user sees, in the order they were m
 test("a waiting tick still counts when clear runs behind it", async () => {
   const { card } = offlineSetup();
   await card._mutate("shopping_toggle", { item_id: "i1", checked: true }, "shopping");
-  await card._mutate("shopping_clear_checked", { list_id: "l1" }, "shopping");
+  await card._mutate(
+    "shopping_clear_checked",
+    { list_id: "l1", expected_ids: ["i1", "i2", "i3"] },
+    "shopping",
+  );
   assert.deepEqual(
     card._offlineItems(card._data.shopping.items).map((x) => x.id),
     ["o1"],
@@ -301,7 +316,11 @@ test("a waiting tick still counts when clear runs behind it", async () => {
 test("replay sends the new actions through offline_replay in order and empties the queue", async () => {
   const { card, calls, script } = offlineSetup();
   await card._mutate("shopping_delete", { item_id: "i1" }, "shopping");
-  await card._mutate("shopping_clear_checked", { list_id: "l1" }, "shopping");
+  await card._mutate(
+    "shopping_clear_checked",
+    { list_id: "l1", expected_ids: ["i2", "i3"] },
+    "shopping",
+  );
   script.mutate = async () => ({});
   await card._offlineReplay();
   const sent = calls.filter((c) => c.type === "mealie_atelier/offline_replay");
@@ -362,5 +381,38 @@ test("a failed write blocks later writes on the same item in the same replay", a
       ["i1", "pending"],
       ["i1", "pending"],
     ],
+  );
+});
+
+test("an offline edit carries the value the user saw for every changed field", async () => {
+  const { card } = offlineSetup();
+  await card._mutate("shopping_update", { item_id: "i1", name: "Oat milk" }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i2", note: "fine" }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i2", quantity: 5 }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i2", quantity: 6 }, "shopping");
+  assert.deepEqual(
+    queue(card).map((op) => op.payload),
+    [
+      { item_id: "i1", name: "Oat milk", expected_name: "Milk" },
+      { item_id: "i2", note: "fine", expected_note: "organic" },
+      { item_id: "i2", quantity: 5, expected_quantity: 2 },
+      // The second edit saw the waiting first edit.
+      { item_id: "i2", quantity: 6, expected_quantity: 5 },
+    ],
+  );
+});
+
+test("an offline clear is not queued without the IDs of the ticked items the user saw", async () => {
+  const { card } = offlineSetup();
+  assert.equal(await card._mutate("shopping_clear_checked", { list_id: "l1" }, "shopping"), false);
+  assert.deepEqual(queue(card), []);
+});
+
+test("the offline view of a clear leaves items ticked after it was queued", async () => {
+  const { card } = offlineSetup();
+  await card._mutate("shopping_clear_checked", { list_id: "l1", expected_ids: ["i2"] }, "shopping");
+  assert.deepEqual(
+    card._offlineItems(card._data.shopping.items).map((x) => x.id),
+    ["i1", "i3", "o1"],
   );
 });

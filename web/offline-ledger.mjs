@@ -16,6 +16,8 @@ export const OFFLINE_ACTIONS = [
   "shopping_clear_checked",
 ];
 const MAX_AGE = 30 * 86400e3;
+const validAmount = (value) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 99999;
 export function validateOperation(operation) {
   if (
     !operation ||
@@ -44,23 +46,22 @@ export function validateOperation(operation) {
       ("note" in p && (typeof p.note !== "string" || p.note.length > 250)) ||
       ("name" in p && (typeof p.name !== "string" || !p.name.trim() || p.name.length > 250)) ||
       ("name" in p && "note" in p) ||
-      ("quantity" in p &&
-        (typeof p.quantity !== "number" ||
-          !Number.isFinite(p.quantity) ||
-          p.quantity < 0 ||
-          p.quantity > 99999))
+      ["name", "note"].some(
+        (key) => `expected_${key}` in p && typeof p[`expected_${key}`] !== "string",
+      ) ||
+      ("expected_quantity" in p && !validAmount(p.expected_quantity)) ||
+      ("quantity" in p && !validAmount(p.quantity))
     )
       throw err(400, "Update needs an item ID and valid changes");
   } else if (operation.action === "shopping_clear_checked") {
     if (
       !ID.test(p.list_id || "") ||
-      ("expected_ids" in p &&
-        (!Array.isArray(p.expected_ids) ||
-          !p.expected_ids.length ||
-          p.expected_ids.length > 1000 ||
-          !p.expected_ids.every((id) => ID.test(id || ""))))
+      !Array.isArray(p.expected_ids) ||
+      !p.expected_ids.length ||
+      p.expected_ids.length > 1000 ||
+      !p.expected_ids.every((id) => ID.test(id || ""))
     )
-      throw err(400, "Clear needs a list ID");
+      throw err(400, "Clearing ticked items needs a list ID and the IDs of the items the user saw");
   } else if (
     !ID.test(p.list_id || "") ||
     typeof p.note !== "string" ||
@@ -70,11 +71,23 @@ export function validateOperation(operation) {
     throw err(400, "Add needs an existing list and note");
   return { id: operation.id, action: operation.action, payload: structuredClone(p) };
 }
+/** The name a list shows for an item, as the Bridge reads it. */
+const seen = (key, item) =>
+  key === "name" ? String(item.display || item.note || item.food?.name || "").trim() : item[key];
+const same = (key, current, wanted) =>
+  key === "quantity"
+    ? (current || 0) === (wanted || 0)
+    : String(current || "").trim() === String(wanted || "").trim();
+const applied = (key, item, wanted) =>
+  key === "name"
+    ? !item.food && !item.isFood && same("note", item.note, wanted)
+    : same(key, item[key], wanted);
 export class OfflineLedger {
-  constructor({ dir, readItem, mutate, readOnly = false }) {
+  constructor({ dir, readItem, readItems, mutate, readOnly = false }) {
     this.file = join(dir, "offline-ledger.json");
     this.dir = dir;
     this.readItem = readItem;
+    this.readItems = readItems;
     this.mutate = mutate;
     this.readOnly = readOnly;
     this.lock = Promise.resolve();
@@ -148,6 +161,52 @@ export class OfflineLedger {
       if (current.checked !== op.payload.expected_checked) {
         await set("conflict", {
           message: "This item was changed on another device. Review both values.",
+        });
+        throw err(409, record.message, "offline_conflict");
+      }
+    } else if (op.action === "shopping_update") {
+      let current;
+      try {
+        current = await this.readItem(op.payload.item_id);
+      } catch (e) {
+        // Not sticky: a replay must report the same code again.
+        await set("checking");
+        if (e.status === 404)
+          throw err(404, "This item no longer exists in Mealie", "shopping_item_not_found");
+        throw e;
+      }
+      const changes = ["name", "note", "quantity"].filter((key) => key in op.payload);
+      if (changes.every((key) => applied(key, current, op.payload[key]))) {
+        const result = { ok: true, alreadyApplied: true, item: current };
+        await set("completed", { result });
+        return result;
+      }
+      // The values the user saw are optional: without one, that edit wins.
+      if (
+        changes.some(
+          (key) =>
+            `expected_${key}` in op.payload &&
+            !same(key, seen(key, current), op.payload[`expected_${key}`]),
+        )
+      ) {
+        await set("conflict", {
+          message: "This item was changed on another device. Review both values.",
+        });
+        throw err(409, record.message, "offline_conflict");
+      }
+    } else if (op.action === "shopping_clear_checked") {
+      const items = await this.readItems(op.payload.list_id).catch(async (e) => {
+        await set("checking");
+        throw e;
+      });
+      const ticked = new Set(items.filter((x) => x?.checked === true).map((x) => String(x.id)));
+      const existing = new Set(items.map((x) => String(x.id)));
+      const expected = new Set(op.payload.expected_ids.filter((id) => existing.has(id)));
+      // A ticked item the user saw that is gone meanwhile is fine. Any other difference means
+      // another device ticked or unticked something the user never saw.
+      if (ticked.size !== expected.size || [...ticked].some((id) => !expected.has(id))) {
+        await set("conflict", {
+          message: "The ticked items changed on another device. Review the list.",
         });
         throw err(409, record.message, "offline_conflict");
       }
