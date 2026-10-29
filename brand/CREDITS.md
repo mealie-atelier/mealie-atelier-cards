@@ -7,4 +7,4 @@
 
 ## Typeface
 
-- The text in the social preview is set in [Bricolage Grotesque](https://github.com/ateliertriay/bricolage), licensed under the SIL Open Font License 1.1. The font file and the licence text are in `brand/source/font/` of the same `.github` repository (`BricolageGrotesque.ttf`, `OFL.txt`).
+- The text in the social preview is set in [Bricolage Grotesque](https://github.com/ateliertriay/bricolage), licensed under the SIL Open Font License 1.1. The font file and the license text are in `brand/source/font/` of the same `.github` repository (`BricolageGrotesque.ttf`, `OFL.txt`).
