@@ -159,6 +159,13 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Security: timers in the standalone app now belong to the person who created them. Listing shows only your own timers and cancelling needs the owner or an admin, also when a shared cooking session is ended (admins see all; timers stored without an owner are admin only). The timer limit counts only active timers, with at most 20 per account.
 - Security: `journal_set` now needs the write level in the standalone app, because the journal is one shared object that a reader could overwrite. The app reports `features.shared_journal`, so the cards hide journal actions from readers there.
 - Sign-in throttle behind a reverse proxy: the server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty, because all users would then share one throttle counter.
+- Recipe and cook dialogs open above the Home Assistant sidebar instead of being partly covered by it.
+- Re-rendering an open dialog no longer moves focus into its first field.
+- The cooking mode swipe hint and the new-list dialog heading are translated instead of always German.
+- Optimistic rollbacks undo only their own change, so a write that succeeded in between is no longer wiped. A failed write reloads the collection, and pending rows are disabled while saving.
+- A queued entry the user took back is never replayed, and a failed tick holds back later ticks on the same item so their order holds.
+- Losing the write grant clears the offline queue instead of replaying it.
+- Behind a reverse proxy, one attacker no longer locks out every user.
 
 ### Changed
 
@@ -169,16 +176,6 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Hardened the web app image, response headers and sign-in handling. Sign-in lockouts are now at most 60 seconds, and IPv6 clients are keyed by /64.
 - Hardcoded interface text was moved into the German and English locale files, and failed actions now show a message.
 - The plain-text ingredient path is replaced by the structured editor. The commands `ingredient_preview`, `ingredient_save`, `ingredient_catalog` and the route `/api/recipe-image/*` stay as deprecated aliases during 0.10.x.
-
-### Fixed
-
-- Recipe and cook dialogs open above the Home Assistant sidebar instead of being partly covered by it.
-- Re-rendering an open dialog no longer moves focus into its first field.
-- The cooking mode swipe hint and the new-list dialog heading are translated instead of always German.
-- Optimistic rollbacks undo only their own change, so a write that succeeded in between is no longer wiped. A failed write reloads the collection, and pending rows are disabled while saving.
-- A queued entry the user took back is never replayed, and a failed tick holds back later ticks on the same item so their order holds.
-- Losing the write grant clears the offline queue instead of replaying it.
-- Behind a reverse proxy, one attacker no longer locks out every user.
 
 ## [0.9.5]
 
@@ -339,3 +336,6 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 ### Fixed
 
 - Meal plan API parameters (`start_date`, `end_date`).
+
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/mealie-atelier/mealie-atelier-cards/releases/tag/v0.10.0
