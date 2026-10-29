@@ -388,11 +388,6 @@
 .atelier .icon-btn:active:not(:disabled) {
   transform: translateY(0) scale(0.985);
 }
-.atelier .btn:disabled,
-.atelier button:disabled {
-  opacity: 0.56;
-  filter: saturate(0.6);
-}
 .atelier .toolbar {
   flex-wrap: wrap;
   gap: var(--ds-space-2);
@@ -1266,13 +1261,15 @@
   max-width: 60ch;
   line-height: 1.65;
 }
-.atelier.light .eyebrow,
 .atelier.light .tile-body small,
 .atelier.light .studio-suggestion-copy small,
 .atelier.light .studio-group h3,
 .atelier.light .ds-page-header h1 em,
 .atelier.light .editor-context {
   color: var(--ds-brand);
+}
+.atelier.light .eyebrow {
+  color: var(--ds-brand-text, var(--ds-brand));
 }
 .atelier.light .nav button.active svg {
   color: var(--ds-brand);

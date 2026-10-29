@@ -69,6 +69,13 @@ test("eyebrows are uppercased by CSS and use a readable light-theme text colour"
     read("../src/design-system/polish.css"),
     /\.atelier \.eyebrow \{[^}]*text-transform: uppercase;[^}]*--ds-brand-text/,
   );
+  // No later rule may paint light-theme eyebrows with the low-contrast brand colour again.
+  const polishCss = read("../src/design-system/polish.css");
+  for (const m of polishCss.matchAll(/([^{}]*)\{([^}]*)\}/g)) {
+    if (/\.light \.eyebrow\b/.test(m[1]) && /(^|[;\s])color:/.test(m[2])) {
+      assert.match(m[2], /color: var\(--ds-brand-text/);
+    }
+  }
   assert.match(
     read("../src/design-system/tokens.css"),
     /--ds-brand-text: color-mix\(in srgb, var\(--at-accent\) 40%/,
@@ -86,7 +93,10 @@ test("checked shopping rows keep full opacity, disabled primary buttons stay leg
     read("../src/design-system/motion.css"),
     /\.shopping-row\.checked \{\s*opacity/,
   );
-  assert.match(read("../src/design-system/polish.css"), /\.btn\.primary:disabled \{\s*background:/);
+  const polish = read("../src/design-system/polish.css");
+  // Later top-level rules must not fade disabled buttons again (contrast of the label).
+  assert.doesNotMatch(polish, /button:disabled \{[^}]*opacity/);
+  assert.match(polish, /\.btn\.primary:disabled \{\s*background:/);
   assert.match(
     read("../src/design-system/components.css"),
     /\.notice > \.btn \{[^}]*white-space: nowrap/,
