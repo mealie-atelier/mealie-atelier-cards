@@ -6561,6 +6561,10 @@ ha-card {
   display: flex;
   flex-wrap: wrap;
 }
+.atelier .sidebar-footer .atelier-credit a {
+  /* The version line follows the link, so the padding stays in flow: no overlap with the 44px hit area. */
+  margin-block: 0;
+}
 .atelier .sidebar-footer .atelier-version {
   display: block;
   margin-top: var(--ds-space-1);

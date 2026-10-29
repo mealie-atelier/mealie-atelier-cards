@@ -264,3 +264,10 @@ test("German settings copy uses the correct gender for light stone", () => {
   const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
   assert.equal(de.editorDeepGreenWarmLightEditorial, "Tiefgrün · Heller Stein · großzügig");
 });
+
+test("sidebar credit link keeps its padded hit area in flow so the version line cannot cover it", () => {
+  const css = readFileSync(new URL("../src/design-system/layout.css", import.meta.url), "utf8");
+  const rule = css.match(/\.atelier \.sidebar-footer \.atelier-credit a \{[^}]*\}/)?.[0];
+  assert.ok(rule, "sidebar override rule exists");
+  assert.match(rule, /margin-block: 0/);
+});
