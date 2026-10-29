@@ -6161,6 +6161,9 @@ ha-card {
     min-height: 48px;
     justify-content: center;
   }
+  .atelier .cook-actions .btn.primary {
+    grid-column: 1 / -1;
+  }
   .atelier .cook-utility {
     order: 4;
   }
@@ -9551,6 +9554,9 @@ ha-card {
     min-height: 44px;
     width: 100%;
   }
+  .atelier .cook-actions .btn.primary {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (orientation: landscape) and (min-height: 521px) and (max-height: 700px) {
@@ -9635,7 +9641,7 @@ ha-card {
     bottom: 0;
     z-index: 6;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     padding: 8px 0 max(8px, env(safe-area-inset-bottom));
     margin: 0;
@@ -12190,16 +12196,13 @@ class MealieAtelierCard extends HTMLElement {
   }
   _persistTimers() {
     try {
-      // Keep local timers that another card wrote and this one never held.
+      // Keep timers (local and server-armed) that another card wrote and this one never held.
       const known = (this._timerIds ||= new Set());
       this._syncTimersFromStorage();
       const mine = new Set(this._timers.map((x) => String(x.id)));
       const foreign = (this._storedTimers() || []).filter(
         (x) =>
-          !x.serverArmed &&
-          x.deadline > Date.now() - 3600000 &&
-          !mine.has(String(x.id)) &&
-          !known.has(String(x.id)),
+          x.deadline > Date.now() - 3600000 && !mine.has(String(x.id)) && !known.has(String(x.id)),
       );
       for (const id of mine) known.add(id);
       localStorage.setItem("mealie-atelier:timers", JSON.stringify([...foreign, ...this._timers]));
@@ -13001,8 +13004,7 @@ class MealieAtelierCard extends HTMLElement {
         } catch (error) {
           // Gone or already dispatched (or due within clock skew): nothing is left to cancel.
           const settled =
-            error?.code === "timer_not_found" ||
-            /already been dispatched/i.test(String(error?.message || "")) ||
+            /already been dispatched|timer not found/i.test(String(error?.message || "")) ||
             timer.deadline <= Date.now() + 60000;
           if (!settled) {
             this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");
@@ -13993,19 +13995,19 @@ const dialogMethods = {
           recipe.nutrition && Object.values(recipe.nutrition).some(Boolean)
             ? `<div class="nutri-current"><span>${esc(this.t("nutrition"))} · Mealie</span>${[
                 ["calories", ""],
-                ["proteinContent", this.t("uiProtein")],
-                ["carbohydrateContent", this.t("uiCarbs")],
-                ["fatContent", this.t("uiFat")],
-                ["fiberContent", this.t("printDocFiber")],
-                ["sugarContent", this.t("printDocSugar")],
-                ["sodiumContent", this.t("uiSodium")],
+                ["proteinContent", this.t("uiProtein"), " g"],
+                ["carbohydrateContent", this.t("uiCarbs"), " g"],
+                ["fatContent", this.t("uiFat"), " g"],
+                ["fiberContent", this.t("printDocFiber"), " g"],
+                ["sugarContent", this.t("printDocSugar"), " g"],
+                ["sodiumContent", this.t("uiSodium"), " mg"],
               ]
                 .filter(([k]) => recipe.nutrition[k])
-                .map(([k, label]) => {
+                .map(([k, label, suffix = ""]) => {
                   const value = String(recipe.nutrition[k]).trim();
                   if (k === "calories")
                     return `<strong>${esc(/^[\d.,]+$/.test(value) ? `${value} kcal` : value)}</strong>`;
-                  const unit = k === "sodiumContent" && /^[\d.,]+$/.test(value) ? " mg" : "";
+                  const unit = suffix && /^[\d.,]+$/.test(value) ? suffix : "";
                   return `<strong>${esc(label)} ${esc(value + unit)}</strong>`;
                 })
                 .join("")}</div>`

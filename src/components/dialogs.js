@@ -122,19 +122,19 @@ export const dialogMethods = {
           recipe.nutrition && Object.values(recipe.nutrition).some(Boolean)
             ? `<div class="nutri-current"><span>${esc(this.t("nutrition"))} · Mealie</span>${[
                 ["calories", ""],
-                ["proteinContent", this.t("uiProtein")],
-                ["carbohydrateContent", this.t("uiCarbs")],
-                ["fatContent", this.t("uiFat")],
-                ["fiberContent", this.t("printDocFiber")],
-                ["sugarContent", this.t("printDocSugar")],
-                ["sodiumContent", this.t("uiSodium")],
+                ["proteinContent", this.t("uiProtein"), " g"],
+                ["carbohydrateContent", this.t("uiCarbs"), " g"],
+                ["fatContent", this.t("uiFat"), " g"],
+                ["fiberContent", this.t("printDocFiber"), " g"],
+                ["sugarContent", this.t("printDocSugar"), " g"],
+                ["sodiumContent", this.t("uiSodium"), " mg"],
               ]
                 .filter(([k]) => recipe.nutrition[k])
-                .map(([k, label]) => {
+                .map(([k, label, suffix = ""]) => {
                   const value = String(recipe.nutrition[k]).trim();
                   if (k === "calories")
                     return `<strong>${esc(/^[\d.,]+$/.test(value) ? `${value} kcal` : value)}</strong>`;
-                  const unit = k === "sodiumContent" && /^[\d.,]+$/.test(value) ? " mg" : "";
+                  const unit = suffix && /^[\d.,]+$/.test(value) ? suffix : "";
                   return `<strong>${esc(label)} ${esc(value + unit)}</strong>`;
                 })
                 .join("")}</div>`

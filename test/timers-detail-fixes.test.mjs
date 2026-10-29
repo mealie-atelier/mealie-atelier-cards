@@ -32,7 +32,7 @@ test("removing a finished server-armed timer still tries to cancel and drops it 
 
 test("removing a timer the server no longer knows or has just started sending drops it", async () => {
   for (const [error, offset] of [
-    [Object.assign(new Error("Timer not found"), { code: "timer_not_found" }), 600000],
+    [Object.assign(new Error("Timer not found"), { code: "invalid_request" }), 600000],
     [new Error("busy"), 20000],
   ]) {
     const { card, flashes } = setup();
@@ -107,6 +107,21 @@ test("persisting timers keeps local timers written by another card", () => {
   );
 });
 
+test("persisting timers keeps a server-armed timer another card holds", () => {
+  const cards = loadCards({ globals: { crypto: { randomUUID: () => "id-1" } } });
+  const a = makeCard(cards);
+  const b = makeCard(cards);
+  a._timers = [{ id: "X", label: "A", deadline: Date.now() + 60000, serverArmed: true }];
+  a._persistTimers();
+  b._timers = [{ id: "b1", label: "B", deadline: Date.now() + 60000 }];
+  b._persistTimers();
+  a._tickTimers();
+  assert.deepEqual(
+    a._timers.map((x) => x.id),
+    ["X"],
+  );
+});
+
 test("a timer this card removed is not resurrected from storage", () => {
   const cards = loadCards({ globals: { crypto: { randomUUID: () => "id-1" } } });
   const a = makeCard(cards);
@@ -169,7 +184,13 @@ test("recipe detail shows category, notes, tags, source, ingredient groups and f
       { display: "salt", title: "Sauce" },
     ],
     recipeInstructions: [{ text: "a" }],
-    nutrition: { calories: "612", fiberContent: "5", sugarContent: "3", sodiumContent: "400" },
+    nutrition: {
+      calories: "612",
+      proteinContent: "20",
+      fiberContent: "5",
+      sugarContent: "3",
+      sodiumContent: "400",
+    },
   };
   card._modal = "recipe";
   const html = card._modalHtml();
@@ -182,8 +203,9 @@ test("recipe detail shows category, notes, tags, source, ingredient groups and f
   );
   assert.equal((html.match(/<h4 class="step-section">(Puree|Sauce)/g) || []).length, 2);
   assert.match(html, /<strong>612 kcal<\/strong>/);
-  assert.match(html, /Fiber 5/);
-  assert.match(html, /Sugar 3/);
+  assert.match(html, /Fiber 5 g/);
+  assert.match(html, /Sugar 3 g/);
+  assert.match(html, /Protein 20 g/);
   assert.match(html, /Sodium 400 mg/);
   assert.match(html, /<a href="https:\/\/example\.org\/a" target="_blank"/);
 });

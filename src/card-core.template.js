@@ -854,16 +854,13 @@ class MealieAtelierCard extends HTMLElement {
   }
   _persistTimers() {
     try {
-      // Keep local timers that another card wrote and this one never held.
+      // Keep timers (local and server-armed) that another card wrote and this one never held.
       const known = (this._timerIds ||= new Set());
       this._syncTimersFromStorage();
       const mine = new Set(this._timers.map((x) => String(x.id)));
       const foreign = (this._storedTimers() || []).filter(
         (x) =>
-          !x.serverArmed &&
-          x.deadline > Date.now() - 3600000 &&
-          !mine.has(String(x.id)) &&
-          !known.has(String(x.id)),
+          x.deadline > Date.now() - 3600000 && !mine.has(String(x.id)) && !known.has(String(x.id)),
       );
       for (const id of mine) known.add(id);
       localStorage.setItem("mealie-atelier:timers", JSON.stringify([...foreign, ...this._timers]));
@@ -1665,8 +1662,7 @@ class MealieAtelierCard extends HTMLElement {
         } catch (error) {
           // Gone or already dispatched (or due within clock skew): nothing is left to cancel.
           const settled =
-            error?.code === "timer_not_found" ||
-            /already been dispatched/i.test(String(error?.message || "")) ||
+            /already been dispatched|timer not found/i.test(String(error?.message || "")) ||
             timer.deadline <= Date.now() + 60000;
           if (!settled) {
             this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");

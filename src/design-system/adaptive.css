@@ -786,6 +786,9 @@
     min-height: 48px;
     justify-content: center;
   }
+  .atelier .cook-actions .btn.primary {
+    grid-column: 1 / -1;
+  }
   .atelier .cook-utility {
     order: 4;
   }
