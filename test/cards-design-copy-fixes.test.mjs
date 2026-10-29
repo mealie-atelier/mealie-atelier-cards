@@ -73,8 +73,32 @@ test("a scroll-driven header strip keeps content from being cut by the sticky cl
   assert.match(refinement, /@keyframes at-close-strip \{\s*to \{\s*opacity: 1/);
   assert.match(
     refinement,
-    /max-height: 700px\) \{\s*\.atelier \.modal\.large:has\(> \.modal-hero\) > \.modal-close::before \{\s*display: none/,
+    /max-height: 700px\) \{\s*\.atelier \.modal > \.modal-close::before \{\s*display: none/,
   );
+});
+
+test("the header strip never takes clicks, leaves no 1px gap and is not re-enabled under @supports", () => {
+  const strip = rule(refinement, ".atelier .modal > .modal-close::before");
+  assert.match(strip, /pointer-events:\s*none/);
+  assert.match(strip, /top:\s*calc\(-20px - 1px\)/);
+  assert.match(strip, /height:\s*calc\(var\(--at-close-size\) \+ 33px\)/);
+  assert.doesNotMatch(refinement, /pointer-events:\s*auto/);
+});
+
+test("the mealie_auth text names the server token in the web app and the settings in Home Assistant", () => {
+  for (const [language, web, expected] of [
+    ["de", true, /MEALIE_API_TOKEN/],
+    ["en", true, /MEALIE_API_TOKEN/],
+    ["de", false, /Einstellungen/],
+    ["en", false, /settings/],
+  ]) {
+    const card = makeCard(loadCards(), {
+      hass: { language, atelierOfflineHost: web, callWS: async () => ({}) },
+    });
+    const text = card._errorText({ code: "mealie_auth", message: "raw" });
+    assert.match(text, expected, `${language} web=${web}`);
+    if (!web) assert.doesNotMatch(text, /MEALIE_API_TOKEN/);
+  }
 });
 
 test("the HA scene hint names the Cooking light button, not cooking start", () => {
@@ -432,8 +456,23 @@ test("nutrition save and calculate show the translated text for a Bridge error c
 
 test("nutrition keeps the specific reason for a bare invalid_request and translates the web app codes", async () => {
   for (const [language, code, message, expected] of [
-    ["de", "invalid_request", "Recipe must have a valid serving count", /^Recipe must have/],
-    ["en", "invalid_request", "Recipe must have a valid serving count", /^Recipe must have/],
+    ["de", "invalid_request", "Recipe must have a valid serving count", /Portionsangabe/],
+    ["de", "invalid_request", "Recipe changed since preview. Reopen it", /anderswo geändert/],
+    [
+      "de",
+      "invalid_request",
+      "USDA item 5 has incomplete basic nutritional information",
+      /Nährwertangaben/,
+    ],
+    [
+      "de",
+      "invalid_request",
+      "Search query must contain 2–100 characters",
+      /^Die Anfrage war ungültig/,
+    ],
+    ["en", "invalid_request", "Search query must contain 2–100 characters", /^Search query must/],
+    ["en", "invalid_request", "Recipe changed since preview. Reopen it", /changed elsewhere/],
+    ["en", "invalid_request", "Recipe must have a valid serving count", /no valid serving count/],
     ["de", "recipe_servings_invalid", "raw", /Portionsangabe/],
     ["en", "recipe_servings_invalid", "raw", /no valid serving count/],
     ["de", "usda_food_incomplete", "raw", /Nährwertangaben/],
@@ -455,7 +494,10 @@ test("nutrition keeps the specific reason for a bare invalid_request and transla
     const el = { dataset: { action: "nutri-calc", value: "" }, disabled: false, closest: () => el };
     await card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
     assert.match(card._nutrition.notice, expected, `${language} ${code}`);
-    assert.doesNotMatch(card._nutrition.notice, /ungültig\. Prüfe|not valid\. Check/);
+    if (code !== "invalid_request")
+      assert.doesNotMatch(card._nutrition.notice, /ungültig\. Prüfe|not valid\. Check/);
+    if (language === "de")
+      assert.doesNotMatch(card._nutrition.notice, /\b(Recipe|Search|USDA item)\b/);
   }
 });
 

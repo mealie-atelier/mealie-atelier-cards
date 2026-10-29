@@ -332,10 +332,11 @@
   content: "";
   position: absolute;
   z-index: -1;
-  top: -20px;
+  /* The button's 1px border sits between its border box and this padding-box origin, so reach one pixel further. */
+  top: calc(-20px - 1px);
   right: -20px;
   width: 3000px;
-  height: calc(var(--at-close-size) + 32px);
+  height: calc(var(--at-close-size) + 33px);
   background: var(--at-surface);
   border-bottom: 1px solid var(--at-line);
   opacity: 0;
@@ -343,15 +344,14 @@
 }
 @supports (animation-timeline: scroll()) {
   .atelier .modal > .modal-close::before {
-    pointer-events: auto;
     animation: at-close-strip linear both;
     animation-timeline: scroll(nearest block);
     animation-range: 0 48px;
   }
 }
-/* In the landscape grid the button is absolute and only the right column scrolls, so no strip there. */
+/* In short landscape the strip would take a quarter of the dialog (and the hero grid scrolls per column), so no strip. */
 @media (orientation: landscape) and (max-height: 700px) {
-  .atelier .modal.large:has(> .modal-hero) > .modal-close::before {
+  .atelier .modal > .modal-close::before {
     display: none;
   }
 }

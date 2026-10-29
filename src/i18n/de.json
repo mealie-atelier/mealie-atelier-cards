@@ -881,6 +881,7 @@
   "errNotConfigured": "Mealie Atelier ist noch nicht eingerichtet.",
   "errInvalidRequest": "Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.",
   "errMealieAuth": "Mealie hat das API-Token abgelehnt. Prüfe das Token in den Einstellungen.",
+  "errMealieAuthWeb": "Mealie hat das API-Token abgelehnt. Prüfe MEALIE_API_TOKEN in der Serverkonfiguration der Web-App.",
   "errMealieForbidden": "Mealie erlaubt diesem Token diese Aktion nicht. Prüfe die Rechte des Mealie-Benutzers.",
   "errMealieError": "Mealie ist nicht erreichbar oder hat unerwartet geantwortet. Versuche es gleich noch einmal.",
   "errAiError": "Der KI-Anbieter hat nicht geantwortet oder eine unbrauchbare Antwort geliefert. Prüfe den API-Key und versuche es erneut.",

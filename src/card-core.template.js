@@ -490,20 +490,35 @@ class MealieAtelierCard extends HTMLElement {
   _errorText(err) {
     const code = typeof err?.code === "string" ? err.code : "";
     if (/^[a-z][a-z0-9_]*$/.test(code)) {
-      const key = "err" + code.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase());
+      // The Mealie token lives in the server environment of the web app, not in a settings screen.
+      const key =
+        "err" +
+        (code === "mealie_auth" && this._isWebApp ? "mealie_auth_web" : code).replace(
+          /(?:^|_)([a-z0-9])/g,
+          (_, c) => c.toUpperCase(),
+        );
       const text = this.t(key);
       if (text && text !== key) return text;
     }
     return err?.message || this.t("error");
   }
   /**
-   * Nutrition lab errors. A bare `invalid_request` (the Bridge raises ValueError without a
-   * code of its own) carries a specific reason such as a missing serving count, so the
-   * message is kept instead of the generic "invalid input" text.
+   * Nutrition lab errors. The Bridge and the web app raise most validation problems as a bare
+   * `invalid_request` with an English message and no code of their own. Known messages are mapped to
+   * their translated `err*` text (compatibility with hosts that predate dedicated codes). Any other
+   * message is shown as is only in English; other languages get the translated generic text, never
+   * English text inside a translated card.
    */
   _nutritionErrorText(err) {
-    if (err?.code === "invalid_request" && typeof err.message === "string" && err.message.trim())
-      return err.message;
+    if (err?.code === "invalid_request" && typeof err.message === "string" && err.message.trim()) {
+      const known = [
+        [/recipe changed since preview/i, "recipe_changed"],
+        [/valid serving count/i, "recipe_servings_invalid"],
+        [/incomplete basic nutritional information/i, "usda_food_incomplete"],
+      ].find(([pattern]) => pattern.test(err.message));
+      if (known) return this._errorText({ code: known[1] });
+      if (this._language === "en") return err.message;
+    }
     return this._errorText(err);
   }
   /** An error text that always ends like a sentence, for templates that append more text. */
