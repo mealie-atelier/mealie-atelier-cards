@@ -129,13 +129,44 @@ const AtelierStudio = (() => {
       return { unit: "stück", factor: 1 };
     return { unit: s, factor: 1 };
   };
+  // Unicode vulgar fractions as numeric values.
+  const fractionChars = {
+    "½": 0.5,
+    "⅓": 1 / 3,
+    "⅔": 2 / 3,
+    "¼": 0.25,
+    "¾": 0.75,
+    "⅕": 0.2,
+    "⅖": 0.4,
+    "⅗": 0.6,
+    "⅘": 0.8,
+    "⅙": 1 / 6,
+    "⅚": 5 / 6,
+    "⅛": 0.125,
+    "⅜": 0.375,
+    "⅝": 0.625,
+    "⅞": 0.875,
+  };
+  // One amount: "1 1/2", "1/3", "1½", "½", "1,5" or "2".
+  const amountPattern = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*\\s?[${Object.keys(fractionChars).join("")}]|\\d+(?:[.,]\\d+)?)`;
+  const ingredientAmount = new RegExp(
+    `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(kg|g|gramm|ml|l|stück|stueck|stk|el|tl)?(?:\\s+|$)`,
+    "i",
+  );
+  function amountValue(text) {
+    const t = String(text).trim();
+    const unicode = t.match(new RegExp(`^(\\d*)\\s?([${Object.keys(fractionChars).join("")}])$`));
+    if (unicode) return Number(unicode[1] || 0) + fractionChars[unicode[2]];
+    const mixed = t.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);
+    if (mixed) {
+      const den = Number(mixed[3]);
+      return den ? Number(mixed[1] || 0) + Number(mixed[2]) / den : NaN;
+    }
+    return Number(t.replace(",", "."));
+  }
   function parseIngredient(row) {
     const raw = typeof row === "string" ? row : ingredient(row);
-    const m = raw
-      .trim()
-      .match(
-        /^(\d+(?:[.,]\d+)?)(?:\s*[-–]\s*(\d+(?:[.,]\d+)?))?\s*(kg|g|gramm|ml|l|stück|stueck|stk|el|tl)?(?:\s+|$)/i,
-      );
+    const m = raw.trim().match(ingredientAmount);
     const structured =
       typeof row === "object" &&
       row !== null &&
@@ -147,7 +178,7 @@ const AtelierStudio = (() => {
     const quantity = structured
       ? Math.round(row.quantity * source.factor * 1000) / 1000
       : m
-        ? Math.round(Number((m[2] || m[1]).replace(",", ".")) * source.factor * 1000) / 1000
+        ? Math.round(amountValue(m[2] || m[1]) * source.factor * 1000) / 1000
         : null;
     const label = structured
       ? String(row.food.name).trim()
@@ -668,13 +699,50 @@ const AtelierStudio = (() => {
     );
   }
   // Aisle ids; the UI maps them to localized headings (studioAisle*).
+  // Word-start stems on the diacritic-free text produced by clean(); never substring matches.
+  const aisleStems = [
+    [
+      "chilled",
+      /^(milch|kase|kaese|joghurt|yoghurt|quark|sahne|butter|feta|mozzarella|parmesan|mascarpone|ricotta|schmand|ei$|eier|frischkase|creme)/,
+    ],
+    [
+      "protein",
+      /^(fleisch|wurst|fisch|tofu|tempeh|hahnchen|hanchen|huhn|hahn|rind|ochsen|schwein|hack$|hackfleisch|speck|schinken|lachs|thunfisch|garnele|lamm|pute|truthahn|salami)/,
+    ],
+    [
+      "pantry",
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein|rotwein|weisswein|bier|bruhe)/,
+    ],
+    [
+      "spices",
+      /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$)/,
+    ],
+  ];
   const category = (name) => {
-    const s = clean(name);
-    if (/milch|kaese|käse|joghurt|quark|sahne|butter/.test(s)) return "chilled";
-    if (/brot|mehl|nudel|reis|hafer|linsen|bohnen|kichererbse/.test(s)) return "pantry";
-    if (/gewurz|salz|pfeffer|ol|öl|essig|zucker/.test(s)) return "spices";
-    if (/fleisch|wurst|fisch|tofu|tempeh/.test(s)) return "protein";
+    const tokens = clean(name).split(" ").filter(Boolean);
+    for (const [aisle, stem] of aisleStems) if (tokens.some((w) => stem.test(w))) return aisle;
     return "produce";
+  };
+  // Counting words that read as units ("1 Handvoll Basilikum"), singular and plural display forms.
+  const countUnits = {
+    handvoll: ["Handvoll", "Handvoll"],
+    scheibe: ["Scheibe", "Scheiben"],
+    scheiben: ["Scheibe", "Scheiben"],
+    knolle: ["Knolle", "Knollen"],
+    knollen: ["Knolle", "Knollen"],
+    stange: ["Stange", "Stangen"],
+    stangen: ["Stange", "Stangen"],
+    zehe: ["Zehe", "Zehen"],
+    zehen: ["Zehe", "Zehen"],
+    bund: ["Bund", "Bund"],
+    zweig: ["Zweig", "Zweige"],
+    zweige: ["Zweig", "Zweige"],
+    dose: ["Dose", "Dosen"],
+    dosen: ["Dose", "Dosen"],
+    packung: ["Packung", "Packungen"],
+    packungen: ["Packung", "Packungen"],
+    kopf: ["Kopf", "Köpfe"],
+    köpfe: ["Kopf", "Köpfe"],
   };
   function shoppingNeeds(recipes, pantry = [], profile = {}) {
     const combined = [];
@@ -690,6 +758,15 @@ const AtelierStudio = (() => {
       for (const row of recipe?.recipeIngredient || []) {
         const ing = parseIngredient(row);
         if (!ing.label) continue;
+        // Preparation notes after a comma are not part of the food ("Knoblauchzehen, fein gehackt").
+        ing.label = ing.label.split(",")[0].trim() || ing.label;
+        const lead = ing.label.match(/^(\S+)\s+(.+)$/);
+        const counted = lead && countUnits[lead[1].toLocaleLowerCase("de")];
+        if (counted && ing.quantity !== null && ing.unit === "stück") {
+          ing.unit = counted[0].toLocaleLowerCase("de");
+          ing.label = lead[2];
+          ing.estimated = false;
+        }
         if (ing.quantity !== null) ing.quantity = Math.round(ing.quantity * factor * 100) / 100;
         const found = combined.find(
           (x) =>
@@ -730,15 +807,19 @@ const AtelierStudio = (() => {
     return combined
       .map((item) => {
         const s = stock.get(identity(item.name) + "/" + item.unit);
-        const supported = ["g", "ml", "stück"].includes(item.unit);
+        const counted = countUnits[item.unit];
+        const supported = ["g", "ml", "stück"].includes(item.unit) || !!counted;
         const have = s && supported ? (s.staple ? Infinity : s.amount) : 0;
-        const needed =
+        let needed =
           item.quantity === null || !supported
             ? null
             : Math.max(0, Math.round((item.quantity - have) * 100) / 100);
+        // Whole pieces cannot be bought in halves.
+        if (needed !== null && item.unit === "stück") needed = Math.ceil(needed - 1e-9);
         if (s && !s.staple && needed !== null) s.amount = Math.max(0, s.amount - item.quantity);
         return {
           ...item,
+          unit: counted && needed !== null ? counted[needed === 1 ? 0 : 1] : item.unit,
           have,
           needed,
           inStock: needed === 0 && item.quantity !== null,

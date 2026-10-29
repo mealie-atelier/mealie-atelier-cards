@@ -658,3 +658,49 @@ test("Kochinspo keeps every option of a line and named cheeses out of plant diet
     assert.equal(style(line), "vegetarian,vegan", line);
   assert.equal(style("200 ml Kondensmilch"), "vegetarian");
 });
+test("ingredient amounts accept fractions, mixed numbers and unicode fractions", () => {
+  const parse = (text) => Studio.parseIngredient(text);
+  assert.equal(parse("1/3 TL Salz").quantity, 0.333);
+  assert.equal(parse("1/3 TL Salz").label, "Salz");
+  const mixed = parse("1 1/2 kg Ochsenbacke");
+  assert.equal(mixed.quantity, 1500);
+  assert.equal(mixed.unit, "g");
+  assert.equal(mixed.label, "Ochsenbacke");
+  assert.equal(parse("½ l Milch").quantity, 500);
+  assert.equal(parse("1½ kg Mehl").quantity, 1500);
+  assert.equal(parse("1,5 kg Mehl").quantity, 1500);
+  assert.equal(parse("2-3 Eier").quantity, 3);
+});
+test("grocery list keeps counting words as units, merges notes, rounds pieces and files foods by aisle", () => {
+  const r = recipe(
+    "G",
+    [
+      "1 Handvoll Basilikum",
+      "2 Scheiben Sauerteigbrot",
+      "1/2 Zwiebel",
+      "1/2 Zwiebel",
+      "1/2 Knoblauchzehe",
+      "1 Knoblauchzehen, fein gehackt",
+      "200 g Feta",
+      "300 g Hähnchenbrust",
+      "1/2 kg Ochsenbacke",
+      "200 ml Rotwein",
+      "1 Knollen Sellerie",
+    ],
+    25,
+    2,
+  );
+  const list = Studio.shoppingNeeds([r], []);
+  const row = (name) => list.find((x) => x.name === name);
+  assert.deepEqual([row("Basilikum").needed, row("Basilikum").unit], [1, "Handvoll"]);
+  assert.deepEqual([row("Sauerteigbrot").needed, row("Sauerteigbrot").unit], [2, "Scheiben"]);
+  assert.equal(row("Zwiebel").needed, 1);
+  assert.equal(row("Zwiebel").unit, "stück");
+  assert.equal(list.filter((x) => /Knoblauchzehe/.test(x.name)).length, 1);
+  assert.equal(row("Ochsenbacke").needed, 500);
+  assert.equal(row("Feta").category, "chilled");
+  assert.equal(row("Hähnchenbrust").category, "protein");
+  assert.equal(row("Ochsenbacke").category, "protein");
+  assert.equal(row("Rotwein").category, "pantry");
+  assert.equal(row("Sellerie").category, "produce");
+});

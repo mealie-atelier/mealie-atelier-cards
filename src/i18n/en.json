@@ -200,6 +200,8 @@
   "studioAdd": "Add",
   "studioStapleLabel": "Pantry staple",
   "studioUntil": "until {date}",
+  "studioExpired": "Expired",
+  "studioExpiresSoon": "Expires soon",
   "studioRemove": "Remove",
   "studioPantryEmpty": "No pantry items yet. Adding them is optional.",
   "studioGroceryKicker": "02 / SHOPPING ASSISTANT",

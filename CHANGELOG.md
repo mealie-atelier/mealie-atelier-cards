@@ -51,6 +51,11 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 - Recipe tiles show the title only once (the placeholder title appears only for tiles without a photo and scales with the tile width so three lines fit), long durations no longer touch the open button and phone titles show three lines.
 - Today meal rows share one leading column, mealplan buttons reach 44px on phones, the week strip scrolls with readable columns, fades at the end edge and shows a scroll hint up to 1080px, long meal names avoid splitting short words where the browser supports hyphenation limits, shopping action rows fill evenly, and narrow cards keep the toolbar tidy with an ellipsis for long breadcrumbs.
 - Kochinspo headings and choices use the display and UI fonts again, eyebrows share one uppercase style, accent eyebrows keep readable contrast in the light theme, checked shopping items and disabled primary buttons stay legible, photo index labels get a dark backing, and the error banner button no longer breaks letter by letter.
+- Ingredient amounts such as `1/3 TL`, `1 1/2 kg` and `½ l` are read correctly in the recipe check, grocery assistant and nutrition parsing.
+- The grocery assistant keeps counting words as units (1 Handvoll Basilikum), merges rows that differ only by a preparation note, rounds piece counts up, files cheese, meat and wine in the right aisle, and its preview hint no longer says "Click".
+- The pantry list flows with the page instead of cutting rows in an inner scroller. Dates show no zero padding, add the year when it is not the current one, never wrap, and read the calendar day without a timezone shift. Expired and soon expiring items are marked with text.
+- Editing a pantry item shows a Save button and a Cancel button, and the edit survives a re-render.
+- The cookbook shows a placeholder for recipes without a photo, and its print preview has a close button and a mobile viewport.
 - Cooking mode shows the Studio tools (read step aloud, voice command, ingredient substitute, scene, music, speech) again, and shared timers appear in the timer list.
 - The replace-session dialog focuses Cancel first, Cancel now really cancels, and a new "Cook here only" button starts the recipe on this device only. Ending a shared session also focuses Cancel first.
 - The cookbook selection heading updates while you tick recipes.

@@ -200,6 +200,8 @@
   "studioAdd": "Hinzufügen",
   "studioStapleLabel": "Basisvorrat",
   "studioUntil": "bis {date}",
+  "studioExpired": "Abgelaufen",
+  "studioExpiresSoon": "Läuft bald ab",
   "studioRemove": "Entfernen",
   "studioPantryEmpty": "Noch kein Vorrat erfasst. Das ist optional.",
   "studioGroceryKicker": "02 / EINKAUFSASSISTENT",

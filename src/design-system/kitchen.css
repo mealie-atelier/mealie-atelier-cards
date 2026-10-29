@@ -219,9 +219,14 @@
   font-size: 10px;
 }
 .atelier .studio-pantry-list {
-  max-height: 340px;
-  overflow: auto;
   margin-top: 12px;
+}
+.atelier .studio-expiry {
+  font-weight: 700;
+}
+.atelier .studio-book-photo--empty {
+  display: block;
+  background: var(--at-panel2);
 }
 .atelier .studio-pantry-row {
   display: flex;

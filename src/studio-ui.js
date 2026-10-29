@@ -8,11 +8,28 @@ const _atOriginalOpenRecipe = MealieAtelierCard.prototype._openRecipe;
 const _atOriginalTick = MealieAtelierCard.prototype._tickTimers;
 const _atOriginalConnected = MealieAtelierCard.prototype.connectedCallback;
 const _atOriginalDisconnected = MealieAtelierCard.prototype.disconnectedCallback;
+// Date-only values are read as local calendar days (never UTC) so no timezone shifts them by one day.
+const atParseDay = (d) => {
+  const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d));
+  return day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(d);
+};
+// The year appears only when it is not the current one; spaces are non-breaking so a date never wraps.
 const atDate = (d, locale = "en-US") => {
-  const x = new Date(d);
-  return Number.isNaN(x.getTime())
-    ? ""
-    : x.toLocaleDateString(locale, { day: "2-digit", month: "short" });
+  const x = atParseDay(d);
+  if (Number.isNaN(x.getTime())) return "";
+  const options = { day: "numeric", month: "short" };
+  if (x.getFullYear() !== new Date().getFullYear()) options.year = "numeric";
+  return x.toLocaleDateString(locale, options).replace(/ /g, "\u00a0");
+};
+// "expired" when the day has passed, "soon" within the next three days, otherwise "".
+const atExpiry = (d) => {
+  const x = atParseDay(d);
+  if (!d || Number.isNaN(x.getTime())) return "";
+  const today = new Date();
+  const days = Math.round(
+    (x - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000,
+  );
+  return days < 0 ? "expired" : days < 4 ? "soon" : "";
 };
 const atQty = (n, locale = "en-US") =>
   n == null ? "?" : Number(n).toLocaleString(locale, { maximumFractionDigits: 1 });
@@ -481,7 +498,9 @@ Object.assign(MealieAtelierCard.prototype, {
   },
   _studioPantry() {
     const p = this._studio.pantry || [],
-      needs = this._grocery || [];
+      needs = this._grocery || [],
+      editing = p.find((x) => x.id === this._pantryEdit),
+      field = (value) => (value == null ? "" : ` value="${esc(value)}"`);
     return this._studioShell(
       this.t("studioPantryTitle"),
       this.t("studioPantryLead"),
@@ -490,12 +509,23 @@ Object.assign(MealieAtelierCard.prototype, {
       ${
         !this._permissions.can_write
           ? ""
-          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required></label></div>
-      <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit"><option value="g">${this.t("studioGrams")}</option><option value="ml">${this.t("studioMilliliters")}</option><option value="stück">${this.t("studioPieces")}</option></select></label><label>${this.t("studioBestBefore")}<input type="date" name="expires"></label></div>
-      <label class="studio-inline"><input type="checkbox" name="staple"><span>${this.t("studioStaple")}</span></label>
-      <button class="btn primary" type="submit">${icon("plus", 15)} ${this.t("studioAdd")}</button></form>`
+          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"${field(editing?.name)}></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required${field(editing?.amount)}></label></div>
+      <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit">${[
+        ["g", "studioGrams"],
+        ["ml", "studioMilliliters"],
+        ["stück", "studioPieces"],
+      ]
+        .map(
+          ([unit, key]) =>
+            `<option value="${unit}"${editing?.unit === unit ? " selected" : ""}>${this.t(key)}</option>`,
+        )
+        .join(
+          "",
+        )}</select></label><label>${this.t("studioBestBefore")}<input type="date" name="expires"${field(editing?.expires)}></label></div>
+      <label class="studio-inline"><input type="checkbox" name="staple"${editing?.staple ? " checked" : ""}><span>${this.t("studioStaple")}</span></label>
+      <div class="studio-actions"><button class="btn primary" type="submit">${editing ? icon("check", 15) + " " + this.t("save") : icon("plus", 15) + " " + this.t("studioAdd")}</button>${editing ? `<button class="btn" type="button" data-action="studio-pantry-edit-cancel">${this.t("studioCancel")}</button>` : ""}</div></form>`
       }
-      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(this._studioUnit(x.unit))} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
+      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(this._studioUnit(x.unit))} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}${atExpiry(x.expires) ? ` · <b class="studio-expiry studio-expiry--${atExpiry(x.expires)}">${this.t(atExpiry(x.expires) === "expired" ? "studioExpired" : "studioExpiresSoon")}</b>` : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
       ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioGroceryKicker")}</span><h2>${this.t("studioGroceryTitle")}</h2><p>${this.t("studioGroceryDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-grocery-build">${icon("refresh", 14)} ${this.t("studioGroceryCalculate")}</button>${needs.length && this._permissions.can_write ? `<button class="btn" data-action="studio-grocery-send">${icon("cart", 14)} ${this.t("studioGrocerySend")}</button>` : ""}</div>
       ${
@@ -551,7 +581,7 @@ Object.assign(MealieAtelierCard.prototype, {
           .slice(0, 120)
           .map(
             (r) =>
-              `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}>${recipeImage(r, "studio-book-photo")}<span>${esc(r.name)}</span></label>`,
+              `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}>${recipeImage(r, "studio-book-photo") || '<span class="studio-book-photo studio-book-photo--empty" aria-hidden="true"></span>'}<span>${esc(r.name)}</span></label>`,
           )
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
@@ -716,9 +746,9 @@ Object.assign(MealieAtelierCard.prototype, {
             .join("")}</section></div></article>`,
       )
       .join("");
-    const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+    const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
       *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
-      </style></head><body><nav class="toolbar"><button onclick="window.print()">${this.t("printSavePdf")}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
+      </style></head><body><nav class="toolbar"><button type="button" onclick="window.print()">${esc(this.t("printSavePdf"))}</button> <button type="button" onclick="window.close()">${esc(this.t("close"))}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
@@ -978,16 +1008,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-pantry-edit") {
       const v = this._studio.pantry.find((x) => x.id === el.dataset.id);
       if (!v) return;
+      this._pantryEdit = v.id;
+      this._render();
       const form = this.shadowRoot.querySelector('[data-form="studio-pantry"]');
-      if (form) {
-        form.elements.name.value = v.name;
-        form.elements.amount.value = v.amount;
-        form.elements.unit.value = v.unit;
-        form.elements.expires.value = v.expires || "";
-        form.elements.staple.checked = v.staple === true;
-        form.dataset.rowId = v.id;
-        this._revealPantryForm(form);
-      }
+      if (form) this._revealPantryForm(form);
+      return;
+    }
+    if (action === "studio-pantry-edit-cancel") {
+      this._pantryEdit = null;
+      this._render();
       return;
     }
     if (action === "studio-member-remove") {
@@ -1329,15 +1358,19 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
           .filter(Boolean)
           .slice(0, 30),
       });
-    if (type === "studio-pantry")
+    if (type === "studio-pantry") {
+      const editId = this._pantryEdit;
+      this._pantryEdit = null;
       ok = await this._studioWrite("pantry_put", {
-        id: form.dataset.rowId || undefined,
+        id: editId || undefined,
         name: values.name,
         amount: Number(values.amount),
         unit: values.unit,
         expires: values.expires || "",
         staple: values.staple === "on",
       });
+      if (!ok) this._pantryEdit = editId;
+    }
     if (type === "studio-member")
       ok = await this._studioWrite("family_member", {
         name: values.name,
