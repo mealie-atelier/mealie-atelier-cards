@@ -220,7 +220,7 @@ test("landing pages carry the links, social tags and JSON-LD", () => {
     assert.match(html, /<meta property="og:title" content="[^"]+"/);
     assert.match(html, /<meta property="og:description" content="[^"]+"/);
     assert.ok(
-      html.includes(`<meta property="og:image" content="${baseUrl}photos/`),
+      html.includes(`<meta property="og:image" content="${baseUrl}og/${locale}/home.jpg">`),
       `${locale} og:image must be absolute and self-hosted`,
     );
     assert.ok(html.includes(`<meta property="og:url" content="${baseUrl}${locale}/"`));
@@ -439,7 +439,7 @@ test("recipe pages share the design, keep h3 step titles and carry SEO tags", ()
     assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, page);
     assert.match(
       html,
-      /<meta name="twitter:image" content="https:\/\/mealie\.example\.test\/photos\//,
+      /<meta name="twitter:image" content="https:\/\/mealie\.example\.test\/og\/(de|en)\/[^"]+\.jpg">/,
       page,
     );
     const dePath = html.match(/hreflang="de" href="([^"]+)"/)[1];
@@ -535,14 +535,14 @@ test("credits pages carry the same social tags as the other pages", () => {
   ]) {
     for (const path of ["de/bildnachweise", "en/credits"]) {
       const html = read(join(build, path, "index.html"));
-      assert.match(html, /<meta property="og:image" content="[^"]*photos\/[^"]+\.webp">/, path);
+      assert.match(html, /<meta property="og:image" content="[^"]*og\/(de|en)\/home\.jpg">/, path);
       assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, path);
       assert.match(html, /<meta name="twitter:title" content="[^"]+">/, path);
       assert.match(html, /<meta name="twitter:description" content="[^"]+">/, path);
-      assert.match(html, /<meta name="twitter:image" content="[^"]*photos\//, path);
+      assert.match(html, /<meta name="twitter:image" content="[^"]*og\/(de|en)\/home\.jpg">/, path);
       if (base) {
         assert.ok(html.includes(`<meta property="og:url" content="${base}${path}/">`), path);
-        assert.ok(html.includes(`<meta property="og:image" content="${base}photos/`), path);
+        assert.ok(html.includes(`<meta property="og:image" content="${base}og/`), path);
       }
     }
   }
@@ -906,5 +906,49 @@ for (const frame of document.querySelectorAll("iframe")) {
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// Every page must point its share image at a real 1200x630 JPEG under 300 KB that the build wrote.
+function pagesBelow(root) {
+  const pages = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) {
+      if (["assets", "showcase", "photos", "data", "og"].includes(entry.name)) continue;
+      pages.push(...pagesBelow(path));
+    } else if (entry.name === "index.html") pages.push(path);
+  }
+  return pages;
+}
+
+test("every generated page has og:image and twitter:image pointing at an existing 1200x630 JPEG", () => {
+  for (const [build, base] of [
+    [builds.deployed, baseUrl],
+    [builds.local, ""],
+  ]) {
+    const pages = pagesBelow(build).filter((page) => page !== join(build, "index.html"));
+    assert.ok(pages.length >= 2 + 2 + 20, "landing, credits and recipe pages are covered");
+    for (const page of pages) {
+      const html = read(page);
+      const og = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+      const twitter = html.match(/<meta name="twitter:image" content="([^"]+)">/)?.[1];
+      assert.ok(og, `${page} has og:image`);
+      assert.equal(twitter, og, `${page} twitter:image matches og:image`);
+      if (base) assert.ok(og.startsWith(`${base}og/`), `${page} og:image is absolute`);
+      const file = base ? join(build, og.slice(base.length)) : join(dirname(page), og);
+      assert.ok(existsSync(file), `${page} og:image target exists: ${file}`);
+      const bytes = readFileSync(file);
+      assert.ok(bytes.length < 300 * 1024, `${file} stays under 300 KB`);
+      assert.deepEqual([...bytes.subarray(0, 2)], [0xff, 0xd8], `${file} is a JPEG`);
+      assert.match(html, /<meta property="og:image:width" content="1200">/, page);
+      assert.match(html, /<meta property="og:image:height" content="630">/, page);
+      assert.match(html, /<meta property="og:image:alt" content="[^"]{10,}">/, page);
+      const locale = html.match(/<html lang="(de|en)"/)[1];
+      const own = locale === "de" ? "de_DE" : "en_US";
+      const other = locale === "de" ? "en_US" : "de_DE";
+      assert.ok(html.includes(`<meta property="og:locale" content="${own}">`), page);
+      assert.ok(html.includes(`<meta property="og:locale:alternate" content="${other}">`), page);
+    }
   }
 });
