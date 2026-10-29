@@ -497,7 +497,20 @@ async function mutate(action, payload, req) {
       // A free-text item has no food: its name is the note, so a new name must replace the note.
       if (changes.display !== undefined && !current?.food && !("note" in changes))
         changes.note = changes.display;
-      return mealie("PUT", `/api/households/shopping/items/${id}`, { ...current, ...changes });
+      // Mealie rebuilds `display` (quantity, unit, name, note) only when it is empty, so the old
+      // one must never be sent back. A renamed food item has no other way to carry its new name.
+      const next = { ...current, ...changes, display: "" };
+      const unit = String(next.unit?.name || next.unit?.abbreviation || "").trim();
+      if (changes.display !== undefined && current?.food)
+        next.display = [
+          next.quantity > 0 && (next.quantity !== 1 || unit) ? String(next.quantity) : "",
+          unit,
+          changes.display,
+          String(next.note || "").trim(),
+        ]
+          .filter(Boolean)
+          .join(" ");
+      return mealie("PUT", `/api/households/shopping/items/${id}`, next);
     }
     case "shopping_clear_checked": {
       const listId = typeof payload.list_id === "string" ? payload.list_id : "";

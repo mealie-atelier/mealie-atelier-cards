@@ -288,3 +288,56 @@ test("replay sends the new actions through offline_replay in order and empties t
   );
   assert.deepEqual(queue(card), []);
 });
+
+test("a quantity-only or note-only edit changes the row label at once", async () => {
+  const { card } = setup();
+  await click(card, { action: "shopping-edit-form", id: "i2" });
+  await submit(card, { name: "Flour", quantity: "3", note: "organic" });
+  assert.equal(card._shoppingLabel(card._data.shopping.items[1]), "3 Flour organic");
+  await click(card, { action: "shopping-edit-form", id: "i2" });
+  await submit(card, { name: "Flour", quantity: "3", note: "fine" });
+  assert.equal(card._shoppingLabel(card._data.shopping.items[1]), "3 Flour fine");
+  await click(card, { action: "shopping-edit-form", id: "i1" });
+  await submit(card, { name: "Milk", quantity: "2" });
+  assert.equal(card._shoppingLabel(card._data.shopping.items[0]), "2 Milk");
+});
+
+test("a waiting quantity edit shows in the label of the offline view", async () => {
+  const { card } = offlineSetup();
+  await card._mutate("shopping_update", { item_id: "i1", quantity: 4 }, "shopping");
+  assert.equal(card._shoppingLabel(card._offlineItems(card._data.shopping.items)[0]), "4 Milk");
+});
+
+test("a failed write blocks later writes on the same item in the same replay", async () => {
+  const { card, calls, script } = offlineSetup();
+  await card._mutate("shopping_update", { item_id: "i1", quantity: 2 }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i1", quantity: 3 }, "shopping");
+  await card._mutate("shopping_delete", { item_id: "i1" }, "shopping");
+  await card._mutate("shopping_update", { item_id: "i3", quantity: 5 }, "shopping");
+  script.mutate = async () => ({});
+  const inner = card._hass.callWS;
+  card._hass.callWS = async (msg) => {
+    if (msg.type === "mealie_atelier/offline_replay" && msg.operation.payload.quantity === 2) {
+      calls.push(plain(msg));
+      throw Object.assign(new Error("boom"), { code: "mealie_error" });
+    }
+    return inner(msg);
+  };
+  await card._offlineReplay();
+  const sent = calls.filter((c) => c.type === "mealie_atelier/offline_replay");
+  assert.deepEqual(
+    sent.map((c) => [c.operation.action, c.operation.payload.item_id]),
+    [
+      ["shopping_update", "i1"],
+      ["shopping_update", "i3"],
+    ],
+  );
+  assert.deepEqual(
+    queue(card).map((o) => [o.payload.item_id, o.state || "pending"]),
+    [
+      ["i1", "failed"],
+      ["i1", "pending"],
+      ["i1", "pending"],
+    ],
+  );
+});

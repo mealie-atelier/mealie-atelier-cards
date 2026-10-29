@@ -180,10 +180,13 @@ export const offlineQueueMethods = {
           String(item.id) === String(p.item_id)
             ? {
                 ...item,
-                ...Object.fromEntries(
-                  ["note", "display", "quantity"]
-                    .filter((key) => key in p)
-                    .map((key) => [key, p[key]]),
+                ...this._shoppingEditLocal(
+                  item,
+                  Object.fromEntries(
+                    ["note", "display", "quantity"]
+                      .filter((key) => key in p)
+                      .map((key) => [key, p[key]]),
+                  ),
                 ),
               }
             : item,
@@ -248,14 +251,20 @@ export const offlineQueueMethods = {
     this._offlineBusy = true;
     let sent = 0;
     let dropped = 0;
-    // Items with a failed tick in this run: later ticks on them wait, so their order holds.
+    // Items with a failed write in this run: later writes on them wait, so their order holds.
     const blocked = new Set();
+    const itemWrites = ["shopping_toggle", "shopping_update", "shopping_delete"];
     try {
       for (const { id } of this._offlineLoad()) {
         // Re-read each entry: the user may have taken it back or discarded it meanwhile.
         const op = this._offlineLoad().find((x) => x.id === id);
-        if (!op || op.state === "conflict") continue;
-        if (op.action === "shopping_toggle" && blocked.has(op.payload.item_id)) continue;
+        if (!op) continue;
+        if (op.state === "conflict") {
+          // A conflicted write waits for the user: later writes on the same item wait with it.
+          if (itemWrites.includes(op.action)) blocked.add(op.payload.item_id);
+          continue;
+        }
+        if (itemWrites.includes(op.action) && blocked.has(op.payload.item_id)) continue;
         // Once sent, an operation may have reached Mealie: it is never dropped silently again.
         this._offlineSave(
           this._offlineLoad().map((x) => (x.id === op.id ? { ...x, attempted: true } : x)),
@@ -276,6 +285,7 @@ export const offlineQueueMethods = {
             break;
           }
           if (OFFLINE_CONFLICT_CODES.includes(err?.code)) {
+            if (itemWrites.includes(op.action)) blocked.add(op.payload.item_id);
             this._offlineSave(
               this._offlineLoad().map((x) =>
                 x.id === op.id ? { ...x, state: "conflict", reason: err.code } : x,
@@ -283,7 +293,7 @@ export const offlineQueueMethods = {
             );
             continue;
           }
-          if (op.action === "shopping_toggle") blocked.add(op.payload.item_id);
+          if (itemWrites.includes(op.action)) blocked.add(op.payload.item_id);
           this._offlineSave(
             this._offlineLoad().map((x) =>
               x.id === op.id

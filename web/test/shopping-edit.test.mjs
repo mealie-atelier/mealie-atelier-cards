@@ -49,8 +49,17 @@ async function mealie() {
       if (index < 0) return json(res, 404, {});
       if (req.method === "GET") return json(res, 200, items[index]);
       if (req.method === "PUT") {
-        items[index] = body;
-        return json(res, 200, body);
+        // Like Mealie: `display` is built from quantity, name and note only when it arrives empty.
+        const stored = { ...body };
+        if (!stored.display)
+          stored.display = [
+            stored.quantity > 0 ? stored.quantity : "",
+            stored.food?.name || stored.note,
+          ]
+            .filter(Boolean)
+            .join(" ");
+        items[index] = stored;
+        return json(res, 200, stored);
       }
       if (req.method === "DELETE") {
         items.splice(index, 1);
@@ -132,7 +141,7 @@ test("the web server mirrors delete, update and clear against the Mealie API", a
         id: "b",
         shoppingListId: "l1",
         note: "organic",
-        display: "Spelt flour",
+        display: "3 Spelt flour organic",
         food: { name: "Flour" },
         quantity: 3,
         checked: true,
@@ -141,8 +150,16 @@ test("the web server mirrors delete, update and clear against the Mealie API", a
     r = await call("shopping_update", { item_id: "a", display: "Oat milk" });
     assert.equal(r.status, 200);
     const milk = remote.items.find((x) => x.id === "a");
-    assert.equal(milk.display, "Oat milk");
+    assert.equal(milk.display, "1 Oat milk");
     assert.equal(milk.note, "Oat milk");
+    // A quantity-only edit must not send the old display back, or the list never shows it.
+    r = await call("shopping_update", { item_id: "c", quantity: 3 });
+    assert.equal(r.status, 200);
+    assert.equal(remote.items.find((x) => x.id === "c").display, "3 Eggs");
+    // A free-text rename keeps the quantity in the label.
+    r = await call("shopping_update", { item_id: "c", display: "Toast" });
+    assert.equal(remote.items.find((x) => x.id === "c").display, "3 Toast");
+    r = await call("shopping_update", { item_id: "c", display: "Eggs", quantity: 1 });
     assert.equal(milk.checked, false, "untouched fields survive the update");
 
     r = await call("shopping_delete", { item_id: "a" });

@@ -14209,8 +14209,27 @@ const viewMethods = {
     }
     return Object.keys(changes).length ? changes : null;
   },
+  /**
+   * The item as Mealie shows it after an edit. Mealie rebuilds `display` (quantity, unit, name, note)
+   * itself, so the label is derived here the same way and a quantity or note edit is visible at once.
+   */
   _shoppingEditLocal(item, changes) {
-    return { ...changes };
+    const merged = { ...item, ...changes };
+    const quantity = Number(merged.quantity);
+    const unit = String(merged.unit?.name || merged.unit?.abbreviation || "").trim();
+    const name = item.food
+      ? String(changes.display ?? item.food.name ?? "").trim()
+      : String(merged.note || changes.display || "").trim();
+    const note = item.food ? String(merged.note || "").trim() : "";
+    const display = [
+      quantity > 0 && (quantity !== 1 || unit) ? String(quantity) : "",
+      unit,
+      name,
+      note,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { ...changes, display: display || merged.display };
   },
   /** Open items first, grouped by Mealie label (unlabelled last); ticked items sink to the bottom. */
   _shoppingRows(items) {
@@ -17503,10 +17522,13 @@ const offlineQueueMethods = {
           String(item.id) === String(p.item_id)
             ? {
                 ...item,
-                ...Object.fromEntries(
-                  ["note", "display", "quantity"]
-                    .filter((key) => key in p)
-                    .map((key) => [key, p[key]]),
+                ...this._shoppingEditLocal(
+                  item,
+                  Object.fromEntries(
+                    ["note", "display", "quantity"]
+                      .filter((key) => key in p)
+                      .map((key) => [key, p[key]]),
+                  ),
                 ),
               }
             : item,
@@ -17571,14 +17593,20 @@ const offlineQueueMethods = {
     this._offlineBusy = true;
     let sent = 0;
     let dropped = 0;
-    // Items with a failed tick in this run: later ticks on them wait, so their order holds.
+    // Items with a failed write in this run: later writes on them wait, so their order holds.
     const blocked = new Set();
+    const itemWrites = ["shopping_toggle", "shopping_update", "shopping_delete"];
     try {
       for (const { id } of this._offlineLoad()) {
         // Re-read each entry: the user may have taken it back or discarded it meanwhile.
         const op = this._offlineLoad().find((x) => x.id === id);
-        if (!op || op.state === "conflict") continue;
-        if (op.action === "shopping_toggle" && blocked.has(op.payload.item_id)) continue;
+        if (!op) continue;
+        if (op.state === "conflict") {
+          // A conflicted write waits for the user: later writes on the same item wait with it.
+          if (itemWrites.includes(op.action)) blocked.add(op.payload.item_id);
+          continue;
+        }
+        if (itemWrites.includes(op.action) && blocked.has(op.payload.item_id)) continue;
         // Once sent, an operation may have reached Mealie: it is never dropped silently again.
         this._offlineSave(
           this._offlineLoad().map((x) => (x.id === op.id ? { ...x, attempted: true } : x)),
@@ -17599,6 +17627,7 @@ const offlineQueueMethods = {
             break;
           }
           if (OFFLINE_CONFLICT_CODES.includes(err?.code)) {
+            if (itemWrites.includes(op.action)) blocked.add(op.payload.item_id);
             this._offlineSave(
               this._offlineLoad().map((x) =>
                 x.id === op.id ? { ...x, state: "conflict", reason: err.code } : x,
@@ -17606,7 +17635,7 @@ const offlineQueueMethods = {
             );
             continue;
           }
-          if (op.action === "shopping_toggle") blocked.add(op.payload.item_id);
+          if (itemWrites.includes(op.action)) blocked.add(op.payload.item_id);
           this._offlineSave(
             this._offlineLoad().map((x) =>
               x.id === op.id

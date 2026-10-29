@@ -177,8 +177,27 @@ export const viewMethods = {
     }
     return Object.keys(changes).length ? changes : null;
   },
+  /**
+   * The item as Mealie shows it after an edit. Mealie rebuilds `display` (quantity, unit, name, note)
+   * itself, so the label is derived here the same way and a quantity or note edit is visible at once.
+   */
   _shoppingEditLocal(item, changes) {
-    return { ...changes };
+    const merged = { ...item, ...changes };
+    const quantity = Number(merged.quantity);
+    const unit = String(merged.unit?.name || merged.unit?.abbreviation || "").trim();
+    const name = item.food
+      ? String(changes.display ?? item.food.name ?? "").trim()
+      : String(merged.note || changes.display || "").trim();
+    const note = item.food ? String(merged.note || "").trim() : "";
+    const display = [
+      quantity > 0 && (quantity !== 1 || unit) ? String(quantity) : "",
+      unit,
+      name,
+      note,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    return { ...changes, display: display || merged.display };
   },
   /** Open items first, grouped by Mealie label (unlabelled last); ticked items sink to the bottom. */
   _shoppingRows(items) {
