@@ -69,7 +69,7 @@ Pick one:
 
 ### 3. Add a card
 
-Open **Edit dashboard → Add card**, search for **Mealie Atelier** and pick **Complete Kitchen** or a focused card. The visual editor finds your Mealie connection and walks you through view and appearance. No YAML needed.
+Open **Edit dashboard → Add card**, search for **Mealie Atelier** and pick **Complete kitchen** or a focused card. The visual editor finds your Mealie connection and walks you through view and appearance. No YAML needed.
 
 Step-by-step guides in German: [setup](https://alles-automatisch.de/lernen/mealie-atelier-einrichten) and [troubleshooting](https://alles-automatisch.de/lernen/mealie-atelier-fehlerbehebung). Answers to common questions are in the [FAQ](docs/FAQ.md).
 

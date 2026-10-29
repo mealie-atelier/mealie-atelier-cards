@@ -12,6 +12,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
 - The card follows the Home Assistant light or dark mode by default (`theme: auto`); in the light theme the default accent swatch in the Design Studio is shown and named plum, matching the colour you see.
+- Design Studio and the editor offer the automatic theme; print documents get a normal-case title (the file name when saving as PDF); the shopping card is called "Einkaufsliste" in the German picker.
 - Card picker: one name per view in the picker, navigation and settings (Discover, Meal plan, Family, Manage), neutral parallel descriptions in English and German, and the picker follows a language switch without a reload. Stub configs no longer write an unused `title`.
 - German UI: sidebar, menu label, Print Studio and Design Studio headings and the print masthead are translated. Week and shopping prints no longer ask "How was it last time?", the print credit link matches the sheet colours, and the week range uses an en dash.
 - The start-view hint now says that only the overview keeps the navigation.

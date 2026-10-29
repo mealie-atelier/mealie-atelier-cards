@@ -2455,7 +2455,7 @@ const CARD_TYPES_DE = {
     "Wochenplan mit durchsuchbarer Rezeptauswahl",
   ],
   "mealie-atelier-shopping": [
-    "Mealie Atelier · Einkauf",
+    "Mealie Atelier · Einkaufsliste",
     "Einkaufslisten zum Abhaken und Ergänzen, auch offline",
   ],
   "mealie-atelier-discover": [

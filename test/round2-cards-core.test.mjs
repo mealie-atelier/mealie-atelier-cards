@@ -90,3 +90,27 @@ test("the card picker follows the language at access time", () => {
   navigator.language = "de-DE";
   assert.equal(today.name, "Mealie Atelier · Heute");
 });
+
+test("Design Studio offers auto and the editor defaults to it without relabelling", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._modal = "settings";
+  const html = card._modalHtml();
+  assert.match(html, /data-field="theme" data-value="auto" aria-pressed="true"/);
+  assert.match(html, /data-value="dark" aria-pressed="false"/);
+  card._setDesign("theme", "auto");
+  const editor = new (cards.registry.get("mealie-atelier-card-editor"))();
+  Object.defineProperty(editor, "isConnected", { value: true });
+  editor._hass = { language: "en" };
+  editor._wizardMode = false;
+  editor.setConfig({ type: "custom:mealie-atelier-card" });
+  const markup = editor.shadowRoot.innerHTML;
+  assert.match(markup, /<option value="auto"\s+selected\s*>Automatic</);
+  assert.doesNotMatch(markup, /not a preset/);
+  assert.doesNotMatch(markup, /Evening studio/);
+});
+
+test("print document titles are not all caps", () => {
+  assert.match(printed("shopping", "de"), /<title>Einkaufsliste<\/title>/);
+  assert.match(printed("mealplan", "en"), /<title>Weekly plan<\/title>/);
+});

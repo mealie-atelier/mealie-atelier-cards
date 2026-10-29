@@ -338,7 +338,7 @@ export const dialogMethods = {
       const d = this._design;
       const theme = this._resolvedTheme(d.theme);
       content = `<div class="modal-content"><div class="eyebrow">${esc(this.t("designSystemEyebrow"))}</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
-        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
         <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map(
           (value) => {
             // The light theme paints the default accent plum, so that swatch must look and read plum.
