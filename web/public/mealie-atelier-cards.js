@@ -11726,7 +11726,6 @@ class MealieAtelierCard extends HTMLElement {
       limits: chosen?.limits && typeof chosen.limits === "object" ? chosen.limits : {},
     };
   }
-  /** The user may view the kitchen but holds no write grant (the kitchen itself is not read-only). */
   /** True inside the standalone web app, whose shell hands the card a hass shim with this flag. */
   get _isWebApp() {
     return this._hass?.atelierOfflineHost === true;
@@ -11735,6 +11734,7 @@ class MealieAtelierCard extends HTMLElement {
   get _noWriteGrantText() {
     return this.t(this._isWebApp ? "uiNoWriteGrantWeb" : "uiNoWriteGrant");
   }
+  /** The user may view the kitchen but holds no write grant (the kitchen itself is not read-only). */
   get _noWriteGrant() {
     const p = this._permissions;
     return (
