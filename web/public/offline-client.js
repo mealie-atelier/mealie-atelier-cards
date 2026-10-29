@@ -136,7 +136,8 @@ export class AtelierOfflineClient {
         if ("name" in data)
           data.expected_name = String(item.display || item.note || item.food?.name || "");
         if ("note" in data) data.expected_note = String(item.note || "");
-        if ("quantity" in data) data.expected_quantity = Number(item.quantity) || 0;
+        if ("quantity" in data || "name" in data)
+          data.expected_quantity = Number(item.quantity) || 0;
       }
     } else if (action === "shopping_clear_checked") {
       if (!this.snapshot.lists.some((l) => String(l.id) === String(data.list_id)))

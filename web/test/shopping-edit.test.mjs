@@ -391,7 +391,10 @@ test("the offline client queues edits, deletes and clears and shows them in the 
   assert.deepEqual(
     client.operations.map((x) => [x.action, x.payload]),
     [
-      ["shopping_update", { item_id: "a", name: "Oat milk", expected_name: "Milk" }],
+      [
+        "shopping_update",
+        { item_id: "a", name: "Oat milk", expected_name: "Milk", expected_quantity: 1 },
+      ],
       [
         "shopping_update",
         {
@@ -691,7 +694,7 @@ test("another device's note or name change makes a rename a conflict, a quantity
   }
 });
 
-test("a number in a free text name is no amount, and a bare note alone does not match a food item", async () => {
+test("a number in a free text name is no amount, and the label the cards show for an empty display matches", async () => {
   const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
   try {
     const state = {
@@ -701,15 +704,18 @@ test("a number in a free text name is no amount, and a bare note alone does not 
         b: { id: "b", note: "Eier", display: "Eier", isFood: false, quantity: 0 },
         // The free text item the user saw is still unchanged.
         c: { id: "c", note: "2 Milch", display: "2 Milch", isFood: false, quantity: 0 },
-        // Another device changed the food and the display is empty.
+        // The display is empty, so the cards show and send the note alone.
         d: {
           id: "d",
           note: "fettarm",
           display: "",
           isFood: true,
-          food: { name: "Hafer" },
+          food: { name: "Milch" },
           quantity: 0,
         },
+        // Another device renamed "10 Eier" to "Eier" and set the quantity to 2.
+        e: { id: "e", note: "Eier", display: "2 Eier", isFood: false, quantity: 2 },
+        f: { id: "f", note: "Milch", display: "3 Milch", isFood: false, quantity: 3 },
       },
     };
     const { ledger } = await conflictLedger(dir, state);
@@ -722,9 +728,18 @@ test("a number in a free text name is no amount, and a bare note alone does not 
       atelierCode: "offline_conflict",
     });
     assert.equal((await ledger.process(rename("c", "2 Milch"))).ok, true);
-    await assert.rejects(ledger.process(rename("d", "fettarm")), {
+    assert.equal((await ledger.process(rename("d", "fettarm"))).ok, true);
+    const seenQuantity = (id, expected, quantity) =>
+      op("shopping_update", {
+        item_id: id,
+        name: "Soja",
+        expected_name: expected,
+        expected_quantity: quantity,
+      });
+    await assert.rejects(ledger.process(seenQuantity("e", "10 Eier", 0)), {
       atelierCode: "offline_conflict",
     });
+    assert.equal((await ledger.process(seenQuantity("f", "2 Milch", 2))).ok, true);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -745,6 +760,7 @@ test("the German texts call a shopping item Artikel, never Eintrag", async () =>
     "studioShoppingSuccess.one",
     "studioShoppingSuccess.other",
     "editorPrintCompletedItems",
+    "printDocNoItems",
   ])
     assert.doesNotMatch(de[key], /Eintr/, key);
 });

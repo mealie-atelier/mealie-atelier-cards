@@ -164,7 +164,8 @@ export const offlineQueueMethods = {
         if ("name" in entry)
           entry.expected_name = String(shown.display || shown.note || shown.food?.name || "");
         if ("note" in entry) entry.expected_note = String(shown.note || "");
-        if ("quantity" in entry) entry.expected_quantity = Number(shown.quantity) || 0;
+        if ("quantity" in entry || "name" in entry)
+          entry.expected_quantity = Number(shown.quantity) || 0;
       }
       return entry;
     }

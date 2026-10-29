@@ -393,7 +393,7 @@ test("an offline edit carries the value the user saw for every changed field", a
   assert.deepEqual(
     queue(card).map((op) => op.payload),
     [
-      { item_id: "i1", name: "Oat milk", expected_name: "Milk" },
+      { item_id: "i1", name: "Oat milk", expected_name: "Milk", expected_quantity: 1 },
       { item_id: "i2", note: "fine", expected_note: "organic" },
       { item_id: "i2", quantity: 5, expected_quantity: 2 },
       // The second edit saw the waiting first edit.

@@ -93,13 +93,16 @@ const bareLabel = (item) =>
 /**
  * Drops the leading quantity and unit of the item from a label the user saw. Only an item with a
  * quantity above zero shows an amount: a number in a free text item with quantity 0 ("2 Milch"
- * stored as the note) is part of the name and stays.
+ * stored as the note) is part of the name and stays. The quantity the user saw, when known, decides
+ * which leading number is an amount.
  */
-const withoutAmount = (text, item) => {
-  const quantity = item.quantity;
+const withoutAmount = (text, item, shown) => {
+  const quantity = typeof shown === "number" ? shown : item.quantity;
   if (typeof quantity !== "number" || !(quantity > 0)) return text;
-  const found = /^\s*\d+(?:[.,]\d+)?\s+/.exec(text);
+  const found = /^\s*(\d+(?:[.,]\d+)?)\s+/.exec(text);
   if (!found) return text;
+  // When the quantity the user saw is known, only that number is an amount.
+  if (typeof shown === "number" && Number(found[1].replace(",", ".")) !== shown) return text;
   const stripped = text.slice(found[0].length);
   for (const unit of [item.unit?.name, item.unit?.abbreviation]) {
     const prefix = String(unit || "").trim();
@@ -113,14 +116,19 @@ const withoutAmount = (text, item) => {
  * so a name matches when it equals the display text, the rebuilt label, or the name and note without
  * quantity and unit. A name or note changed by another device never matches, only a quantity edit.
  */
-const seen = (key, item, wanted) => {
+const seen = (key, item, wanted, shown) => {
   if (key !== "name") return item[key];
   const bare = bareLabel(item);
   const given = String(wanted || "").trim();
-  if (same("name", withoutAmount(given, item), bare)) return given;
-  const candidates = [item.display, bare, rebuilt(item, true), rebuilt(item, false)].map((value) =>
-    String(value || "").trim(),
-  );
+  if (same("name", withoutAmount(given, item, shown), bare)) return given;
+  // The label the cards show: display, else note, else food name.
+  const candidates = [
+    item.display || item.note || item.food?.name,
+    item.display,
+    bare,
+    rebuilt(item, true),
+    rebuilt(item, false),
+  ].map((value) => String(value || "").trim());
   return candidates.find((value) => same("name", value, wanted)) ?? candidates[0];
 };
 function same(key, current, wanted) {
@@ -238,7 +246,7 @@ export class OfflineLedger {
             `expected_${key}` in op.payload &&
             !same(
               key,
-              seen(key, current, op.payload[`expected_${key}`]),
+              seen(key, current, op.payload[`expected_${key}`], op.payload.expected_quantity),
               op.payload[`expected_${key}`],
             ),
         )
