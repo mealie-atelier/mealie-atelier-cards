@@ -416,7 +416,7 @@
   "studioOnlyHomeAssistant": "Available in Home Assistant only.",
   "studioSpeechStartFailed": "Speech recognition could not start.",
   "studioIngredientNoMatch": "I could not find a clear matching ingredient in this recipe.",
-  "studioSubstituteError": "No verified local alternative found. AI is optional and requires an API key. {error}",
+  "studioSubstituteError": "No verified local alternative found. {error}",
   "studioRecipeAuditDisclaimer": "Basic structure check · not a culinary review",
   "studioDeletePantryTitle": "Remove pantry item?",
   "studioDeletePantryBody": "This item will be removed from your Atelier pantry.",
@@ -647,7 +647,7 @@
   "uiCarbohydrates": "Carbohydrates",
   "uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches": "Nutrient values come from food data, not AI guesses. Review all weights and matches.",
   "uiFoodsMatched": "Foods matched",
-  "uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv": "USDA API key not configured. Add it in the settings or the .env file.",
+  "uiUsdaKeyMissingWeb": "USDA API key not configured. Set USDA_FDC_API_KEY in the server’s .env file.",
   "uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt": "This recipe already has nutrition data. Explicit approval is required to replace it.",
   "uiSendsIngredientTextToAIProviderNoInventedMacros": "Sends ingredient text to the AI provider (OpenAI or Anthropic); no invented macros.",
   "uiOptionalConfigureAIAPIKey": "Optional: configure an AI API key (OpenAI or Anthropic)",
@@ -1174,8 +1174,9 @@
   "printNotes": "Notes",
   "accentPlumLightDefault": "Plum (default in the light theme)",
   "studioSessionReplaceLocal": "Cook here only",
-  "studioAiNotConfigured": "No AI key is configured.",
+  "studioAiNotConfigured": "AI is optional and needs an AI API key.",
   "nutriUsdaKeyMissingHa": "USDA API key not configured. Add it in the integration options.",
   "syncReadOnly": "This dashboard is in read-only mode.",
-  "editorEntityDomainWarning": "Expected an entity from the {domain} domain, for example {example}."
+  "editorEntityDomainWarning": "Expected an entity from the {domain} domain, for example {example}.",
+  "studioAiAuditBodyProvider": "This recipe’s ingredients, amounts and steps will be sent to {provider}. Nothing will be changed automatically."
 }

@@ -10,6 +10,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Fixed
 
+- AI review and substitute helpers: "Review with AI" is hidden when no AI key is set, the consent dialog names the configured provider (OpenAI or Anthropic), requests carry the card language, and the missing-key texts use one term ("AI API key"). The web app reports `ai_enabled` and `ai_provider` in its status. The web app's USDA hint points to `USDA_FDC_API_KEY` in the server's `.env` file. Every destructive confirm (remove pantry item, remove member, end or replace a session) focuses Cancel.
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
 - Theme auto follows the system colour scheme in the web app, the setup wizard offers Automatic next to the two presets, the Family page title and the provider banner eyebrow are translated, and the recipe print word is normal case.
 - The card follows the Home Assistant light or dark mode by default (`theme: auto`); in the light theme the default accent swatch in the Design Studio is shown and named plum, matching the colour you see.

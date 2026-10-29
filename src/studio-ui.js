@@ -803,6 +803,18 @@ MealieAtelierCard.prototype._openRecipe = async function (slug) {
     this._catalogDetail = this._detail;
   }
 };
+// AI availability as the Bridge or the web server reports it. An older Bridge says nothing, so the
+// optional AI helpers stay available there and the server answers with its own "not configured" error.
+MealieAtelierCard.prototype._aiInfo = function () {
+  const entry = this._statusEntry || {};
+  const flag = [entry.ai_enabled, entry.features?.ai, this._status?.ai_enabled].find(
+    (v) => typeof v === "boolean",
+  );
+  const named = [entry.ai_provider, this._status?.ai_provider].find((v) => typeof v === "string");
+  const provider = { openai: "OpenAI", anthropic: "Anthropic" }[named];
+  const enabled = named === "none" ? false : (flag ?? true);
+  return { enabled, provider: enabled ? provider || "" : "" };
+};
 // A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
 MealieAtelierCard.prototype._aiErrorText = function (error) {
   const translated = this._errorText(error);
@@ -840,7 +852,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
               .slice(0, 3)
               .join(" · ")
           : this.t("studioRecipeAuditNone")
-      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${this._statusEntry?.features?.ai === false ? "" : this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}:</b> ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
+      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${!this._aiInfo().enabled ? "" : this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}:</b> ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
     );
   }
   return html;
@@ -1010,6 +1022,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           title: this.t("studioDeletePantryTitle"),
           body: this.t("studioDeletePantryBody"),
           confirmLabel: this.t("studioRemove"),
+          focusCancel: true,
         })
       )
         await this._studioWrite("pantry_delete", { id: el.dataset.id });
@@ -1035,6 +1048,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           title: this.t("familyRemoveConfirmTitle"),
           body: this.t("familyRemoveConfirmBody"),
           confirmLabel: this.t("familyRemoveMember"),
+          focusCancel: true,
         })
       )
         await this._studioWrite("family_member", { id: el.dataset.id, remove: true });
@@ -1226,11 +1240,14 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       let output = found
         .map((x) => `${x.from}: ${this.t(x.to)} (${this.t(x.warning)})`)
         .join(" · ");
-      if (!output) {
+      if (!output && !this._aiInfo().enabled) {
+        output = this.t("studioSubstituteError", { error: this.t("studioAiNotConfigured") });
+      } else if (!output) {
         try {
           const answer = await this._ws("studio_substitute", {
             ingredient: raw.slice(0, 160),
             recipe: this._detail.name.slice(0, 200),
+            language: this._language,
           });
           output =
             answer.alternatives.map((x) => `${x.name}: ${x.adjustment}`).join(" · ") +
@@ -1248,17 +1265,27 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     }
     if (action === "studio-ai-audit") {
       if (!this._detail) return;
+      const ai = this._aiInfo();
+      if (!ai.enabled) {
+        this._flash(this.t("studioAiUnavailable", { error: this.t("studioAiNotConfigured") }));
+        return;
+      }
       if (
         !(await this._atelierDialog({
           title: this.t("studioAiAuditTitle"),
-          body: this.t("studioAiAuditBody"),
+          body: ai.provider
+            ? this.t("studioAiAuditBodyProvider", { provider: ai.provider })
+            : this.t("studioAiAuditBody"),
           confirmLabel: this.t("studioAiConsent"),
         }))
       )
         return;
       this._flash(this.t("studioAiStarting"));
       try {
-        const result = await this._ws("studio_ai_audit", { slug: this._detail.slug });
+        const result = await this._ws("studio_ai_audit", {
+          slug: this._detail.slug,
+          language: this._language,
+        });
         this._aiAudit = result;
         this._render();
       } catch (error) {

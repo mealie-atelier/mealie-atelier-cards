@@ -201,7 +201,7 @@ test("German copy keeps one address, one term per concept and complete sentences
   assert.equal(de.studioAICheck, "Mit KI prüfen");
   assert.doesNotMatch(de.studioDeviceInvalid, /Entity/);
   assert.doesNotMatch(de.editorRunSetupWizard, /Wizard/);
-  assert.match(de.uiUSDAAPIKeyNotConfiguredAddItInIntegrationSettingsOrEnv, /^USDA-API-Key/);
+  assert.match(de.uiUsdaKeyMissingWeb, /^USDA-API-Key/);
   assert.match(de.uiFoodsMatched, /zugeordnet/);
   for (const key of [
     "uieGLemonPastaWithSpinach",

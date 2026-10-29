@@ -601,6 +601,8 @@ async function bridge(req) {
             name: "Standalone Mealie",
             connected: await mealieReachable(),
             read_only: READ_ONLY,
+            ai_enabled: !!AI_KEY,
+            ai_provider: AI_KEY?.provider || "none",
             permissions,
             features: {
               shopping_sync: false,
