@@ -423,3 +423,9 @@ test("the open item count reads in singular and plural", () => {
   assert.equal(card.tp("openItems", 1), "1 offener Artikel");
   assert.equal(card.tp("openItems", 4), "4 offene Artikel");
 });
+
+test("the card credit line is translated for German", () => {
+  assert.equal(locales.de.creditMadeWith, "Mit");
+  assert.equal(locales.de.creditBy, "von");
+  assert.equal(locales.en.creditMadeWith, "Made with");
+});

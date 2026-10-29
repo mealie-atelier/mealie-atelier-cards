@@ -365,6 +365,8 @@
   "printSavePdf": "Als PDF speichern / Drucken",
   "printCollection": "REZEPTSAMMLUNG",
   "printMadeWithLove": "MIT LIEBE ZUSAMMENGESTELLT",
+  "creditMadeWith": "Mit",
+  "creditBy": "von",
   "printContents": "INHALTSVERZEICHNIS",
   "printRecipes": "Die Rezepte.",
   "printRecipe": "REZEPT {number} / {total}",

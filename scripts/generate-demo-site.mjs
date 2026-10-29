@@ -108,7 +108,7 @@ const copy = {
     cooking: "Kochen",
     servings: "Portionen",
     photographer: "Foto von",
-    unsplash: "Fotos von Unsplash, mit Credits zu den Fotograf:innen.",
+    madeWith: "Mit Liebe gemacht von",
     ctaEyebrow: "Gefällt dir die Demo?",
     ctaTitle: "Hol dir das Mealie Atelier in deine Küche.",
     ctaCopy:
@@ -159,7 +159,7 @@ const copy = {
     cooking: "cooking",
     servings: "servings",
     photographer: "Photo by",
-    unsplash: "Photography by Unsplash contributors, with credit to each photographer.",
+    madeWith: "Made with love by",
     ctaEyebrow: "Like the demo?",
     ctaTitle: "Bring Mealie Atelier into your kitchen.",
     ctaCopy:
@@ -356,7 +356,7 @@ function renderRecipeDirectory(locale) {
         )
         .join("");
       const time = recipe.prepMinutes + recipe.cookMinutes;
-      return `<article class="demo-recipe"><details><summary><img src="${escapeHtml(photoUrl(recipe, "../"))}" alt="${escapeHtml(recipe.image.alt[locale])}" loading="lazy" decoding="async" width="640" height="600"><span class="demo-recipe-summary-copy"><span class="demo-recipe-meta">${time} ${words.minutes} · ${recipe.servings} ${words.servings}</span><h3>${escapeHtml(recipe.title[locale])}</h3><span class="demo-recipe-meta">${escapeHtml(recipe.category[locale])}</span></span></summary><div class="demo-recipe-body"><p>${escapeHtml(recipe.description[locale])}</p><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol><p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Unsplash</a> · <a href="${escapeHtml(url)}">${words.recipeLabel}</a></p></div></details></article>`;
+      return `<article class="demo-recipe"><details><summary><img src="${escapeHtml(photoUrl(recipe, "../"))}" alt="${escapeHtml(recipe.image.alt[locale])}" decoding="async" width="640" height="600"><span class="demo-recipe-summary-copy"><span class="demo-recipe-meta">${time} ${words.minutes} · ${recipe.servings} ${words.servings}</span><h3>${escapeHtml(recipe.title[locale])}</h3><span class="demo-recipe-meta">${escapeHtml(recipe.category[locale])}</span></span></summary><div class="demo-recipe-body"><p>${escapeHtml(recipe.description[locale])}</p><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol><p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Unsplash</a> · <a href="${escapeHtml(url)}">${words.recipeLabel}</a></p></div></details></article>`;
     })
     .join("\n");
 }
@@ -400,7 +400,7 @@ function renderIndexPage(locale) {
     __DIRECTORY_TITLE__: words.directoryTitle,
     __DIRECTORY_COPY__: words.directoryCopy,
     __SEO_RECIPE_DIRECTORY__: renderRecipeDirectory(locale),
-    __UNSPLASH_COPY__: words.unsplash,
+    __MADE_WITH__: words.madeWith,
     __DEMO_HOME__: pageUrl || "../",
     __JSON_LD__: jsonLd,
     __APP_JSON_LD__: applicationJsonLd(locale, pageUrl),
@@ -473,7 +473,7 @@ function renderRecipePage(locale, recipe) {
   const steps = recipe.steps[locale]
     .map(
       (step, index) =>
-        `<li><h2>${index + 1}. ${escapeHtml(step.title)}</h2><p class="seo-step-summary">${escapeHtml(step.summary)}</p><p>${escapeHtml(step.text)}</p></li>`,
+        `<li><h3>${index + 1}. ${escapeHtml(step.title)}</h3><p class="seo-step-summary">${escapeHtml(step.summary)}</p><p>${escapeHtml(step.text)}</p></li>`,
     )
     .join("");
   const structured = safeJson({
@@ -488,7 +488,7 @@ function renderRecipePage(locale, recipe) {
   ]
     .filter(Boolean)
     .join(" · ");
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(recipe.description[locale])}"><meta name="theme-color" content="#111613"><meta property="og:type" content="article"><meta property="og:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta property="og:description" content="${escapeHtml(recipe.description[locale])}"><meta property="og:image" content="${escapeHtml(photoUrl(recipe, "../../../"))}"><link rel="icon" type="image/png" href="../../../assets/${faviconAsset}">${canonical}<link rel="alternate" hreflang="de" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="en" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("en", recipe)}` : counterpartLocale === "en" ? counterpartUrl : currentDemoUrl)}"><link rel="stylesheet" href="../../../assets/live-demo.css"><title>${escapeHtml(recipe.title[locale])} · Mealie Atelier</title><script type="application/ld+json">${structured}</script></head><body class="seo-recipe-body"><main class="seo-recipe-page"><header class="demo-header"><a class="demo-brand" href="${escapeHtml(currentDemoUrl)}"><span class="demo-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z"/><path d="M5 20c2-4 5-7 10-10"/></svg></span><span>Mealie Atelier</span></a><a class="seo-back-link" href="${escapeHtml(currentDemoUrl)}">${words.backToDemo}</a></header><article><p class="demo-eyebrow">${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="seo-recipe-description">${escapeHtml(recipe.description[locale])}</p><p class="seo-recipe-meta">${escapeHtml(metricLabel)}</p>${image}<p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Unsplash</a></p><section><h2>${words.recipeIngredients}</h2><p>${recipe.servings} ${words.servings}</p><ul class="seo-ingredient-list">${ingredients}</ul></section><section><h2>${words.recipeSteps}</h2><ol class="seo-instruction-list">${steps}</ol></section><p><a class="seo-back-link" href="${escapeHtml(counterpartUrl)}">${counterpartLocale.toUpperCase()}</a></p></article><footer class="demo-footer"><span>Made with love by <a href="https://alles-automatisch.de/" target="_blank" rel="noopener">Daniel</a></span>${renderFooterLinks(locale)}</footer></main></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(recipe.description[locale])}"><meta name="theme-color" content="#111613"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta name="color-scheme" content="dark"><meta property="og:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta property="og:description" content="${escapeHtml(recipe.description[locale])}"><meta property="og:image" content="${escapeHtml(photoUrl(recipe, "../../../"))}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(recipe.title[locale])} · Mealie Atelier"><meta name="twitter:description" content="${escapeHtml(recipe.description[locale])}"><meta name="twitter:image" content="${escapeHtml(photoUrl(recipe, "../../../"))}"><link rel="icon" type="image/png" href="../../../assets/${faviconAsset}">${canonical}<link rel="alternate" hreflang="de" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="x-default" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("de", recipe)}` : counterpartLocale === "de" ? counterpartUrl : currentDemoUrl)}"><link rel="alternate" hreflang="en" href="${escapeHtml(deploymentBase ? `${deploymentBase}${recipePath("en", recipe)}` : counterpartLocale === "en" ? counterpartUrl : currentDemoUrl)}"><link rel="stylesheet" href="../../../assets/live-demo.css"><title>${escapeHtml(recipe.title[locale])} · Mealie Atelier</title><script type="application/ld+json">${structured}</script></head><body class="seo-recipe-body"><main class="seo-recipe-page"><header class="demo-header"><a class="demo-brand" href="${escapeHtml(currentDemoUrl)}"><span class="demo-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 19c7-1 10-6 12-14-8 1-13 5-14 12l2 2Z"/><path d="M5 20c2-4 5-7 10-10"/></svg></span><span>Mealie Atelier</span></a><a class="seo-back-link" href="${escapeHtml(currentDemoUrl)}">${words.backToDemo}</a></header><article><p class="demo-eyebrow">${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="seo-recipe-description">${escapeHtml(recipe.description[locale])}</p><p class="seo-recipe-meta">${escapeHtml(metricLabel)}</p>${image}<p class="demo-credit">${words.photographer} <a href="${escapeHtml(recipe.image.photographerUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(recipe.image.photographer)}</a> · <a href="${escapeHtml(recipe.image.sourceUrl)}" target="_blank" rel="noopener noreferrer">Unsplash</a></p><section><h2>${words.recipeIngredients}</h2><p>${recipe.servings} ${words.servings}</p><ul class="seo-ingredient-list">${ingredients}</ul></section><section><h2>${words.recipeSteps}</h2><ol class="seo-instruction-list">${steps}</ol></section><p><a class="seo-back-link" href="${escapeHtml(counterpartUrl)}">${counterpartLocale.toUpperCase()}</a></p></article><footer class="demo-footer"><span>${escapeHtml(words.madeWith)} <a href="https://alles-automatisch.de/" target="_blank" rel="noopener noreferrer">Daniel</a></span>${renderFooterLinks(locale)}</footer></main></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {

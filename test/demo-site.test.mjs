@@ -116,3 +116,82 @@ test("every page has footer links and no page references Unsplash image hosting"
     rmSync(out, { recursive: true, force: true });
   }
 });
+
+test("footer follows the page locale, carries no photo credit and every photo is credited", () => {
+  const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+  try {
+    execFileSync("node", ["scripts/generate-demo-site.mjs"], {
+      env: { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: baseUrl },
+      stdio: "pipe",
+    });
+    const expected = { de: "Mit Liebe gemacht von", en: "Made with love by" };
+    for (const page of listHtml(out)) {
+      if (page === join(out, "index.html")) continue;
+      const html = readFileSync(page, "utf8");
+      const locale = html.match(/<html lang="(de|en)">/)[1];
+      const footer = html.match(/<footer class="demo-footer">[\s\S]*?<\/footer>/)?.[0] ?? "";
+      assert.ok(footer.includes(expected[locale]), `${page} footer language`);
+      if (locale === "de") assert.ok(!footer.includes("Made with love"), page);
+      assert.doesNotMatch(footer, /Unsplash|Foto/i, `${page} footer must not carry photo credits`);
+      assert.match(html, /<meta name="color-scheme" content="dark"/, page);
+    }
+    for (const locale of ["de", "en"]) {
+      const html = readFileSync(join(out, locale, "index.html"), "utf8");
+      const credits = html.match(/class="demo-credit"/g) ?? [];
+      assert.equal(credits.length, 10, `${locale} catalogue credits every photo`);
+    }
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("recipe pages use h3 step titles and carry social and hreflang tags", () => {
+  const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+  try {
+    execFileSync("node", ["scripts/generate-demo-site.mjs"], {
+      env: { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: baseUrl },
+      stdio: "pipe",
+    });
+    const pages = listHtml(out).filter((page) =>
+      /seo-recipe-body/.test(readFileSync(page, "utf8")),
+    );
+    assert.equal(pages.length, 20);
+    for (const page of pages) {
+      const html = readFileSync(page, "utf8");
+      const list = html.match(/<ol class="seo-instruction-list">[\s\S]*?<\/ol>/)[0];
+      assert.doesNotMatch(list, /<h2/, page);
+      assert.match(list, /<h3>1\. /, page);
+      assert.equal((html.match(/<h2>/g) ?? []).length, 2, `${page} keeps two h2 sections`);
+      assert.match(html, /<meta property="og:site_name" content="Mealie Atelier">/, page);
+      assert.match(html, /<meta name="twitter:card" content="summary_large_image">/, page);
+      assert.match(html, /<meta name="twitter:title" content="[^"]+">/, page);
+      assert.match(html, /<meta name="twitter:description" content="[^"]+">/, page);
+      assert.match(
+        html,
+        /<meta name="twitter:image" content="https:\/\/mealie\.example\.test\/photos\//,
+        page,
+      );
+      const dePath = html.match(/hreflang="de" href="([^"]+)"/)[1];
+      assert.ok(html.includes(`hreflang="x-default" href="${dePath}"`), `${page} x-default`);
+      assert.match(html, /<link rel="canonical" href="https:\/\/mealie\.example\.test\//, page);
+    }
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("catalogue thumbnails load eagerly so no tile stays empty in captures", () => {
+  const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+  try {
+    execFileSync("node", ["scripts/generate-demo-site.mjs"], {
+      env: { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: "" },
+      stdio: "pipe",
+    });
+    const html = readFileSync(join(out, "de", "index.html"), "utf8");
+    const thumbs = html.match(/<summary><img [^>]*>/g) ?? [];
+    assert.equal(thumbs.length, 10);
+    for (const thumb of thumbs) assert.doesNotMatch(thumb, /loading="lazy"/);
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});

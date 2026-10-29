@@ -365,6 +365,8 @@
   "printSavePdf": "Save as PDF / Print",
   "printCollection": "RECIPE COLLECTION",
   "printMadeWithLove": "MADE WITH LOVE",
+  "creditMadeWith": "Made with",
+  "creditBy": "by",
   "printContents": "CONTENTS",
   "printRecipes": "The recipes.",
   "printRecipe": "RECIPE {number} / {total}",

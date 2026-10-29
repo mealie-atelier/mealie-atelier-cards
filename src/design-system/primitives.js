@@ -1,8 +1,8 @@
 /* Shared semantic UI constructors. User content is escaped at this boundary.
    The views supply data and interactions; the design system supplies structure. */
 const AtelierUI = Object.freeze({
-  attribution() {
-    return `<span class="atelier-credit">Made with <span class="atelier-credit-heart" aria-hidden="true">♥</span> by <a href="https://alles-automatisch.de/" target="_blank" rel="noopener noreferrer">Daniel</a></span>`;
+  attribution({ lead = "Made with", by = "by" } = {}) {
+    return `<span class="atelier-credit">${esc(lead)} <span class="atelier-credit-heart" aria-hidden="true">♥</span> ${esc(by)} <a href="https://alles-automatisch.de/" target="_blank" rel="noopener noreferrer">Daniel</a></span>`;
   },
   pageHeader({ title = "", description = "", kicker = "", highlight = "", compact = false } = {}) {
     const titleText = String(title);

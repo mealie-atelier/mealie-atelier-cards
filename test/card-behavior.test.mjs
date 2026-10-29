@@ -509,3 +509,16 @@ test("an ai_error rejection renders the translated errAiError text on the AI flo
   await aiClick(card, "nutri-ai");
   assert.match(card._nutrition.notice, text);
 });
+
+test("the card credit line follows the card language", () => {
+  for (const [language, pattern] of [
+    ["en", /Made with <span class="atelier-credit-heart"[^>]*>♥<\/span> by <a/],
+    ["de", /Mit <span class="atelier-credit-heart"[^>]*>♥<\/span> von <a/],
+  ]) {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._render();
+    const globalPattern = new RegExp(pattern.source, "g");
+    assert.equal(cards.document.markup.match(globalPattern)?.length, 2, language);
+  }
+});
