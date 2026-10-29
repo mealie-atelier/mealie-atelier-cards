@@ -138,7 +138,7 @@ test("footer follows the page locale, carries no photo credit and every photo is
     for (const locale of ["de", "en"]) {
       const html = readFileSync(join(out, locale, "index.html"), "utf8");
       const credits = html.match(/class="demo-credit"/g) ?? [];
-      assert.equal(credits.length, 10, `${locale} catalogue credits every photo`);
+      assert.equal(credits.length, 10, `${locale} catalog credits every photo`);
     }
   } finally {
     rmSync(out, { recursive: true, force: true });
@@ -180,7 +180,7 @@ test("recipe pages use h3 step titles and carry social and hreflang tags", () =>
   }
 });
 
-test("catalogue thumbnails load eagerly so no tile stays empty in captures", () => {
+test("catalog thumbnails load eagerly so no tile stays empty in captures", () => {
   const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
   try {
     execFileSync("node", ["scripts/generate-demo-site.mjs"], {

@@ -333,3 +333,13 @@ test("enter animations do not hold their end frame, so text is not left on a blu
     assert.match(rule, /\bbackwards;$/, rule);
   }
 });
+
+test("architecture doc groups the Bridge WebSocket surface and does not list a stale seven-command set", () => {
+  const architecture = file("docs/ARCHITECTURE.md");
+  assert.ok(!architecture.includes("{recipes,recipe,mealplan,shopping,metadata,mutate,status}"));
+  for (const group of ["upload_*", "nutrition_*", "studio_*", "sync_*", "offline_replay"]) {
+    assert.ok(architecture.includes(group), `${group} is documented`);
+  }
+  assert.ok(!/^\s*\|\s{20,}\/api\//m.test(architecture), "diagram keeps its inner | column");
+  assert.ok(!file("docs/FAQ.md").includes("Open an Issue"));
+});

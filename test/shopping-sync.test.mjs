@@ -180,7 +180,7 @@ test("status panel renders every outcome as text with an icon and never says Don
     const html = markup(env.cards);
     assert.match(html, pattern);
     assert.doesNotMatch(html, /\bDone\b/, "no success wording");
-    assert.match(html, /<svg/, "state is never colour alone");
+    assert.match(html, /<svg/, "state is never color alone");
     if (problem) assert.match(html, /role="alert"|Partly sent|Not sent/);
   }
 });

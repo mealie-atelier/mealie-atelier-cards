@@ -73,7 +73,7 @@ test("every icon path in the manifest and index.html exists and is served by ser
     if (path === "/") continue;
     assert.ok(server.includes(`"${path}": [`), `server.mjs does not serve ${path}`);
   }
-  // The shell paints #101613 first (dark default), so theme and splash colour match it.
+  // The shell paints #101613 first (dark default), so theme and splash color match it.
   const css = await readFile(new URL("../public/shell.css", import.meta.url), "utf8");
   const dark = css.match(/--shell-page:\s*(#[0-9a-f]{6})/i)[1];
   assert.equal(dark.toLowerCase(), "#101613");
@@ -97,7 +97,7 @@ test("the notification badge is a monochrome 96 px PNG that is served and precac
   assert.equal(png.subarray(1, 4).toString(), "PNG");
   assert.equal(png.readUInt32BE(16), 96);
   assert.equal(png.readUInt32BE(20), 96);
-  assert.equal(png[25], 6, "RGBA colour type, so Android can use the alpha channel");
+  assert.equal(png[25], 6, "RGBA color type, so Android can use the alpha channel");
 });
 
 test("install dialog localizes the later button, avoids the outdated iOS claim and em dashes", async () => {
