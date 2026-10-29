@@ -177,7 +177,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Hardcoded interface text was moved into the German and English locale files, and failed actions now show a message.
 - The plain-text ingredient path is replaced by the structured editor. The commands `ingredient_preview`, `ingredient_save`, `ingredient_catalog` and the route `/api/recipe-image/*` stay as deprecated aliases during 0.10.x.
 
-## [0.9.5]
+## 0.9.5
 
 ### Added
 
@@ -193,7 +193,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - The standalone app and demo moved into the Cards repository (`web/` and `demo/`). The Bridge integration lives in its own repository.
 - Catalog paging, signed recipe and step photos, cookbooks, shopping and planning stay Bridge features. The Core provider requests up to 500 matches and pages them locally in sets of 24.
 
-## [0.9.3]
+## 0.9.3
 
 ### Changed
 
@@ -204,7 +204,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - HTTP level contract tests for the ingredient workflow, photo upload, write limits and the Home Assistant handlers.
 
-## [0.9.2]
+## 0.9.2
 
 ### Added
 
@@ -221,7 +221,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - Mobile overflow in the dashboard and in Manage caused by the recipe gallery rail.
 
-## [0.9.1]
+## 0.9.1
 
 ### Added
 
@@ -234,7 +234,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Shopping and family checkboxes have the correct role and an accessible name.
 - Accent, theme, motion and print template choices report their state with `aria-pressed`.
 
-## [0.9.0]
+## 0.9.0
 
 ### Added
 
@@ -251,7 +251,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Studio main view no longer squeezes into two narrow panels between 900 and 1180 px.
 - HTML in recipe titles is escaped.
 
-## [0.8.0]
+## 0.8.0
 
 ### Added
 
@@ -268,7 +268,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - A new shared cooking session no longer replaces a running one without consent, and family members with open tasks cannot be removed silently.
 
-## [0.7.0]
+## 0.7.0
 
 ### Added
 
@@ -281,7 +281,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Shared motion language: page transitions, card depth, dialog opening, success feedback and loading states.
 - Stronger keyboard focus rings, focus returns after a dialog closes, larger touch targets.
 
-## [0.6.0]
+## 0.6.0
 
 ### Added
 
@@ -295,7 +295,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Cooking cockpit with timers, browser text to speech and voice input, and optional Home Assistant scene, volume and TTS actions.
 - Wall tablet kiosk layout and a graphical Lovelace editor.
 
-## [0.5.0]
+## 0.5.0
 
 ### Added
 
@@ -303,7 +303,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Multiple on-device cooking timers and a personal recipe journal.
 - Optional nutrition values in the Print Studio.
 
-## [0.4.0]
+## 0.4.0
 
 ### Added
 
@@ -316,7 +316,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - UI write permissions default to off until the backend confirms them.
 
-## [0.3.0]
+## 0.3.0
 
 ### Added
 
@@ -324,7 +324,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Guided forms for creating, importing and editing recipes, shopping lists and the week plan.
 - German and English card interface.
 
-## [0.2.0]
+## 0.2.0
 
 ### Added
 
