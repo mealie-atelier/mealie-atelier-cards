@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import test from "node:test";
 import { searchDemoRecipes } from "../demo/recipe-search.js";
 
@@ -35,10 +35,10 @@ function catalog(locale) {
 
 test("demo recipe search finds ingredient matches, not only titles", () => {
   const { recipes, details } = catalog("en");
-  const matches = searchDemoRecipes(recipes, details, "shiitake");
+  const matches = searchDemoRecipes(recipes, details, "bean sprouts");
   assert.deepEqual(
     matches.map((recipe) => recipe.slug),
-    ["ramen-mit-haehnchen-und-gemuese"],
+    ["pho-mit-rindfleisch-und-kraeutern"],
   );
 });
 
@@ -95,4 +95,11 @@ test("demo catalog remains exactly ten complete bilingual recipes with photo cre
       assert.ok(recipe.steps[locale].length >= 3);
     }
   }
+});
+
+test("demo photo folder holds only photos that a recipe uses", async () => {
+  const files = (await readdir(new URL("../demo/photos/", import.meta.url))).filter((name) =>
+    name.endsWith(".webp"),
+  );
+  assert.deepEqual(files.sort(), data.recipes.map((recipe) => `${recipe.slug}.webp`).sort());
 });

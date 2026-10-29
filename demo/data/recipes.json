@@ -198,8 +198,8 @@
         "en": "Chicken salad with Parmesan and croutons"
       },
       "description": {
-        "de": "Gegrillte Hähnchenstreifen auf Romanasalat mit Paprika, Gurke, Kirschtomaten und schwarzen Oliven. Knusprige Croutons, gehobelter Parmesan und Basilikum machen den Salat zur Hauptmahlzeit.",
-        "en": "Grilled chicken strips on romaine with bell pepper, cucumber, cherry tomatoes and black olives. Crisp croutons, shaved Parmesan and basil make it a full meal."
+        "de": "Gegrillte Hähnchenstreifen auf Romanasalat mit Paprika, Gurke, roter Zwiebel, Kirschtomaten und schwarzen Oliven. Knusprige Croutons, gehobelter Parmesan und Basilikum machen den Salat zur Hauptmahlzeit.",
+        "en": "Grilled chicken strips on romaine with bell pepper, cucumber, red onion, cherry tomatoes and black olives. Crisp croutons, shaved Parmesan and basil make it a full meal."
       },
       "category": {
         "de": "Salat",
@@ -219,6 +219,7 @@
           "1 Romanasalat",
           "1 rote Paprika",
           "½ Salatgurke",
+          "½ rote Zwiebel, in feinen Streifen",
           "150 g Kirschtomaten",
           "50 g schwarze Oliven, entsteint",
           "2 Scheiben Weißbrot",
@@ -232,6 +233,7 @@
           "1 romaine lettuce",
           "1 red bell pepper",
           "½ cucumber",
+          "½ red onion, thinly sliced",
           "150 g cherry tomatoes",
           "50 g pitted black olives",
           "2 slices white bread",
@@ -256,7 +258,7 @@
           {
             "title": "Salat anrichten",
             "summary": "Mit Parmesan und Basilikum vollenden",
-            "text": "Salatblätter zupfen, Paprika in Streifen schneiden, Gurke würfeln, Tomaten halbieren. Restliches Olivenöl mit Zitronensaft, Salz und Pfeffer verrühren. Gemüse und Oliven damit mischen. Hähnchen und Croutons darauf verteilen, Parmesan darüberhobeln und mit Basilikum servieren."
+            "text": "Salatblätter zupfen, Paprika in Streifen schneiden, Gurke würfeln, Zwiebel in feine Streifen schneiden, Tomaten halbieren. Restliches Olivenöl mit Zitronensaft, Salz und Pfeffer verrühren. Gemüse und Oliven damit mischen. Hähnchen und Croutons darauf verteilen, Parmesan darüberhobeln und mit Basilikum servieren."
           }
         ],
         "en": [
@@ -273,15 +275,15 @@
           {
             "title": "Assemble the salad",
             "summary": "Finish with Parmesan and basil",
-            "text": "Tear the lettuce, slice the pepper, dice the cucumber and halve the tomatoes. Whisk the remaining olive oil with the lemon juice, salt and pepper and toss with the vegetables and olives. Top with the chicken and croutons, shave over the Parmesan and serve with basil."
+            "text": "Tear the lettuce, slice the pepper, dice the cucumber, thinly slice the onion and halve the tomatoes. Whisk the remaining olive oil with the lemon juice, salt and pepper and toss with the vegetables and olives. Top with the chicken and croutons, shave over the Parmesan and serve with basil."
           }
         ]
       },
       "image": {
         "file": "../photos/haehnchensalat-mit-parmesan-und-croutons.webp",
         "alt": {
-          "de": "Salat mit gegrilltem Hähnchen, Romanasalat, roter Paprika, Gurke, Kirschtomaten, schwarzen Oliven, Croutons, gehobeltem Parmesan und Basilikum in einer hellen Schale auf einem Juteläufer",
-          "en": "Salad with grilled chicken, romaine, red pepper, cucumber, cherry tomatoes, black olives, croutons, shaved Parmesan and basil in a pale bowl on a jute runner"
+          "de": "Salat mit gegrilltem Hähnchen, Romanasalat, roter Paprika, Gurke, roten Zwiebelstreifen, Kirschtomaten, schwarzen Oliven, Croutons, gehobeltem Parmesan und Basilikum in einer hellen Schale auf einem Juteläufer",
+          "en": "Salad with grilled chicken, romaine, red pepper, cucumber, red onion slivers, cherry tomatoes, black olives, croutons, shaved Parmesan and basil in a pale bowl on a jute runner"
         },
         "photographer": "Svitlana",
         "photographerUrl": "https://unsplash.com/@kekse_und_ich?utm_source=mealie_atelier&utm_medium=referral",
@@ -477,15 +479,15 @@
       }
     },
     {
-      "id": "cherry-tomato-spaghetti",
-      "slug": "spaghetti-mit-kirschtomaten-und-basilikum",
+      "id": "pesto-farfalle",
+      "slug": "farfalle-mit-pesto-und-kirschtomaten",
       "title": {
-        "de": "Spaghetti mit Kirschtomaten und Basilikum",
-        "en": "Spaghetti with cherry tomatoes and basil"
+        "de": "Farfalle mit Pesto und Kirschtomaten",
+        "en": "Farfalle with pesto and cherry tomatoes"
       },
       "description": {
-        "de": "Kirschtomaten garen in Olivenöl, bis sie aufplatzen. Dann kommen Spaghetti, Basilikum und reichlich frisch geriebener Parmesan dazu.",
-        "en": "Cherry tomatoes cook in olive oil until they burst. Spaghetti, basil and plenty of freshly grated Parmesan go in next."
+        "de": "Farfalle in frischem Basilikumpesto mit halbierten Kirschtomaten, auf jungem Blattsalat angerichtet. Schmeckt warm als schnelles Abendessen oder kalt als Nudelsalat.",
+        "en": "Farfalle tossed in fresh basil pesto with halved cherry tomatoes, served on young salad leaves. Good warm as a quick dinner or cold as a pasta salad."
       },
       "category": {
         "de": "Pasta",
@@ -497,71 +499,75 @@
       },
       "tags": ["vegetarian", "quick", "family-friendly"],
       "servings": 4,
-      "prepMinutes": 5,
-      "cookMinutes": 15,
+      "prepMinutes": 10,
+      "cookMinutes": 12,
       "ingredients": {
         "de": [
-          "400 g Spaghetti",
-          "400 g Kirschtomaten",
-          "4 EL Olivenöl",
-          "2 Knoblauchzehen, in Scheiben",
-          "1 Handvoll Basilikum",
-          "50 g Parmesan, fein gerieben"
+          "400 g Farfalle",
+          "250 g Kirschtomaten",
+          "75 g junger Blattsalat (Rucola und rote Salatblätter)",
+          "2 Bund Basilikum",
+          "40 g Pinienkerne",
+          "1 Knoblauchzehe",
+          "40 g Parmesan, fein gerieben",
+          "100 ml Olivenöl"
         ],
         "en": [
-          "400 g spaghetti",
-          "400 g cherry tomatoes",
-          "4 tbsp olive oil",
-          "2 garlic cloves, sliced",
-          "1 handful basil leaves",
-          "50 g Parmesan, finely grated"
+          "400 g farfalle",
+          "250 g cherry tomatoes",
+          "75 g young salad leaves (rocket and red lettuce)",
+          "2 bunches basil",
+          "40 g pine nuts",
+          "1 garlic clove",
+          "40 g Parmesan, finely grated",
+          "100 ml olive oil"
         ]
       },
       "steps": {
         "de": [
           {
-            "title": "Spaghetti kochen",
+            "title": "Farfalle kochen",
             "summary": "In Salzwasser al dente garen",
-            "text": "Spaghetti in reichlich Salzwasser nach Packungsangabe al dente kochen. Vor dem Abgießen eine Tasse Nudelwasser abschöpfen."
+            "text": "Farfalle in reichlich Salzwasser nach Packungsangabe al dente kochen. Vor dem Abgießen eine halbe Tasse Nudelwasser abschöpfen."
           },
           {
-            "title": "Tomaten schmoren",
-            "summary": "Kirschtomaten aufplatzen lassen",
-            "text": "Olivenöl in einer großen Pfanne erhitzen. Knoblauch 1 Minute anschwitzen, Kirschtomaten zugeben und bei mittlerer Hitze 6–8 Minuten garen, bis sie aufplatzen. Salzen."
+            "title": "Pesto mixen",
+            "summary": "Basilikum, Pinienkerne und Parmesan pürieren",
+            "text": "Pinienkerne in einer trockenen Pfanne hell anrösten. Mit Basilikumblättern, Knoblauch, Parmesan und Olivenöl zu einem groben Pesto mixen und mit Salz abschmecken."
           },
           {
-            "title": "Alles vermengen",
-            "summary": "Mit Basilikum und Parmesan servieren",
-            "text": "Spaghetti mit etwas Nudelwasser in die Pfanne geben und schwenken, bis alles glänzt. Basilikum unterheben, auf Teller verteilen und mit Parmesan bestreuen."
+            "title": "Vermengen und anrichten",
+            "summary": "Mit Tomaten auf Blattsalat servieren",
+            "text": "Farfalle mit dem Pesto und etwas Nudelwasser mischen, bis sie glänzen. Kirschtomaten halbieren und unterheben. Blattsalat auf Teller verteilen und die Nudeln darauf anrichten."
           }
         ],
         "en": [
           {
-            "title": "Cook the spaghetti",
+            "title": "Cook the farfalle",
             "summary": "Boil until al dente",
-            "text": "Cook the spaghetti in plenty of salted water according to the packet until al dente. Scoop out a cup of pasta water before draining."
+            "text": "Cook the farfalle in plenty of salted water according to the packet until al dente. Scoop out half a cup of pasta water before draining."
           },
           {
-            "title": "Blister the tomatoes",
-            "summary": "Let the cherry tomatoes burst",
-            "text": "Heat the olive oil in a large pan. Soften the garlic for 1 minute, add the cherry tomatoes and cook over medium heat for 6–8 minutes until they burst. Season with salt."
+            "title": "Blend the pesto",
+            "summary": "Purée basil, pine nuts and Parmesan",
+            "text": "Toast the pine nuts in a dry pan until pale golden. Blend with the basil leaves, garlic, Parmesan and olive oil into a coarse pesto and season with salt."
           },
           {
-            "title": "Toss together",
-            "summary": "Serve with basil and Parmesan",
-            "text": "Add the spaghetti and a splash of pasta water to the pan and toss until glossy. Fold in the basil, divide between plates and sprinkle with Parmesan."
+            "title": "Toss and serve",
+            "summary": "Serve with tomatoes on salad leaves",
+            "text": "Toss the farfalle with the pesto and a little pasta water until glossy. Halve the cherry tomatoes and fold them in. Spread the salad leaves on plates and pile the pasta on top."
           }
         ]
       },
       "image": {
-        "file": "../photos/spaghetti-mit-kirschtomaten-und-basilikum.webp",
+        "file": "../photos/farfalle-mit-pesto-und-kirschtomaten.webp",
         "alt": {
-          "de": "Spaghetti mit geschmorten Kirschtomaten, Basilikum und frisch geriebenem Parmesan auf einem hellgrauen Teller auf grauem Stein",
-          "en": "Spaghetti with blistered cherry tomatoes, basil and freshly grated Parmesan on a pale grey plate on grey stone"
+          "de": "Farfalle in grünem Basilikumpesto mit halbierten Kirschtomaten auf Rucola und roten Salatblättern in einer weißen Schale auf hellem Marmor",
+          "en": "Farfalle in green basil pesto with halved cherry tomatoes on rocket and red lettuce leaves in a white bowl on pale marble"
         },
-        "photographer": "Filipp Romanovski",
-        "photographerUrl": "https://unsplash.com/@filipp_roman_photography?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/a-plate-of-food-4HnWRpLmRKk"
+        "photographer": "Eaters Collective",
+        "photographerUrl": "https://unsplash.com/@eaterscollective?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/pesto-pasta-with-sliced-tomatoes-served-on-white-ceramic-plate-12eHC6FxPyg"
       }
     },
     {
@@ -757,105 +763,109 @@
       }
     },
     {
-      "id": "chicken-ramen",
-      "slug": "ramen-mit-haehnchen-und-gemuese",
+      "id": "beef-pho",
+      "slug": "pho-mit-rindfleisch-und-kraeutern",
       "title": {
-        "de": "Ramen mit Hähnchen und Gemüse",
-        "en": "Chicken and vegetable ramen"
+        "de": "Pho mit Rindfleisch und Kräutern",
+        "en": "Beef pho with fresh herbs"
       },
       "description": {
-        "de": "Eine würzige Brühe mit gezupftem Hähnchen, gebratenem Hackfleisch, Wakame, Radieschen und Frühlingszwiebeln über Ramen-Nudeln. Die Brühe lässt sich gut vorbereiten.",
-        "en": "A savoury broth with pulled chicken, browned minced pork, wakame, radishes and spring onions over ramen noodles. The broth is easy to prepare ahead."
+        "de": "Eine klare, würzige Rinderbrühe über Reisbandnudeln mit zarter Rinderbrust. Obenauf kommen viel Koriander, Minze, Frühlingszwiebeln, rote Zwiebel, Sojasprossen, Chili und ein Stück Limette.",
+        "en": "A clear, fragrant beef broth over flat rice noodles with tender beef brisket. Plenty of coriander, mint, spring onions, red onion, bean sprouts, chilli and a lime wedge go on top."
       },
       "category": {
         "de": "Nudelsuppe",
         "en": "Noodle soup"
       },
       "cuisine": {
-        "de": "Japanisch inspiriert",
-        "en": "Japanese inspired"
+        "de": "Vietnamesisch inspiriert",
+        "en": "Vietnamese inspired"
       },
-      "tags": ["family-friendly", "make-ahead"],
+      "tags": ["dairy-free", "make-ahead"],
       "servings": 4,
       "prepMinutes": 20,
-      "cookMinutes": 25,
+      "cookMinutes": 90,
       "ingredients": {
         "de": [
-          "1,2 l Hühnerbrühe",
-          "2 EL Sojasauce",
-          "1 EL Misopaste",
-          "300 g Hähnchenbrust",
-          "200 g Schweinehack",
-          "250 g Ramen-Nudeln",
-          "20 g getrocknete Shiitake-Pilze",
-          "1 Stück Kombu (etwa 10 cm)",
-          "10 g getrocknete Wakame",
-          "6 Radieschen",
-          "2 Frühlingszwiebeln",
-          "1 TL Chiliflocken",
-          "1 TL Sesamöl"
+          "1,5 l Rinderbrühe",
+          "500 g Rinderbrust",
+          "1 Zwiebel, halbiert",
+          "1 Stück Ingwer (etwa 4 cm)",
+          "2 Sternanis",
+          "1 Zimtstange",
+          "2 EL Fischsauce",
+          "250 g breite Reisbandnudeln",
+          "100 g Sojasprossen",
+          "1 rote Zwiebel, in feinen Ringen",
+          "3 Frühlingszwiebeln",
+          "1 Bund Koriander",
+          "1 Handvoll Minze",
+          "1 rote Chilischote, in Ringen",
+          "1 Limette, geviertelt"
         ],
         "en": [
-          "1.2 l chicken stock",
-          "2 tbsp soy sauce",
-          "1 tbsp miso paste",
-          "300 g chicken breast",
-          "200 g minced pork",
-          "250 g ramen noodles",
-          "20 g dried shiitake mushrooms",
-          "1 piece kombu (about 10 cm)",
-          "10 g dried wakame",
-          "6 radishes",
-          "2 spring onions",
-          "1 tsp chilli flakes",
-          "1 tsp sesame oil"
+          "1.5 l beef stock",
+          "500 g beef brisket",
+          "1 onion, halved",
+          "1 piece fresh ginger (about 4 cm)",
+          "2 star anise",
+          "1 cinnamon stick",
+          "2 tbsp fish sauce",
+          "250 g flat rice noodles",
+          "100 g bean sprouts",
+          "1 red onion, thinly sliced",
+          "3 spring onions",
+          "1 bunch coriander",
+          "1 handful mint leaves",
+          "1 red chilli, sliced",
+          "1 lime, cut into wedges"
         ]
       },
       "steps": {
         "de": [
           {
             "title": "Brühe ansetzen",
-            "summary": "Mit Kombu und Shiitake ziehen lassen",
-            "text": "Brühe mit Sojasauce, Kombu und Shiitake aufkochen. Hähnchenbrust einlegen und 15 Minuten leise garen, bis sie durch ist. Herausnehmen und mit zwei Gabeln zupfen. Kombu entfernen, Shiitake in Scheiben schneiden und zurückgeben. Misopaste in etwas Brühe glatt rühren und einrühren."
+            "summary": "Rinderbrust mit Gewürzen garen",
+            "text": "Zwiebel und Ingwer in einer trockenen Pfanne kräftig anrösten. Mit Brühe, Sternanis, Zimt und Rinderbrust in einen Topf geben und zugedeckt bei kleiner Hitze 80–90 Minuten sieden lassen, bis das Fleisch weich ist. Brühe durch ein Sieb gießen und mit Fischsauce abschmecken."
           },
           {
-            "title": "Toppings vorbereiten",
-            "summary": "Hack braten, Wakame einweichen",
-            "text": "Wakame 5 Minuten in kaltem Wasser einweichen und abtropfen lassen. Schweinehack mit Chiliflocken in Sesamöl krümelig braten. Radieschen in dünne Scheiben, Frühlingszwiebeln in feine Ringe schneiden."
+            "title": "Einlagen vorbereiten",
+            "summary": "Fleisch aufschneiden, Kräuter zupfen",
+            "text": "Rinderbrust quer zur Faser in dünne Scheiben schneiden. Reisbandnudeln nach Packungsangabe einweichen oder garen. Frühlingszwiebeln in Ringe schneiden, Koriander und Minze zupfen."
           },
           {
             "title": "Schalen füllen",
-            "summary": "Nudeln, Brühe und Toppings anrichten",
-            "text": "Nudeln separat nach Packungsangabe garen und auf vier Schalen verteilen. Heiße Brühe mit Shiitake darübergeben. Hähnchen, Hack, Wakame, Radieschen und Frühlingszwiebeln darauf anrichten."
+            "summary": "Mit heißer Brühe übergießen",
+            "text": "Nudeln und Fleisch auf vier Schalen verteilen und mit der kochend heißen Brühe übergießen. Sojasprossen, rote Zwiebel, Frühlingszwiebeln, Kräuter und Chili darauflegen und je ein Stück Limette dazugeben."
           }
         ],
         "en": [
           {
             "title": "Start the broth",
-            "summary": "Steep with kombu and shiitake",
-            "text": "Bring the stock, soy sauce, kombu and shiitake to the boil. Add the chicken breast and simmer gently for 15 minutes until cooked through. Lift out and pull apart with two forks. Remove the kombu, slice the shiitake and return them to the pot. Loosen the miso with a little broth and stir it in."
+            "summary": "Simmer the brisket with spices",
+            "text": "Char the onion and ginger in a dry pan. Put them in a pot with the stock, star anise, cinnamon and brisket, cover and simmer over low heat for 80–90 minutes until the meat is tender. Strain the broth and season with fish sauce."
           },
           {
             "title": "Prepare the toppings",
-            "summary": "Brown the pork, soak the wakame",
-            "text": "Soak the wakame in cold water for 5 minutes and drain. Fry the minced pork with the chilli flakes in the sesame oil until crumbly. Thinly slice the radishes and finely slice the spring onions."
+            "summary": "Slice the meat, pick the herbs",
+            "text": "Slice the brisket thinly against the grain. Soak or cook the rice noodles according to the packet. Slice the spring onions and pick the coriander and mint leaves."
           },
           {
             "title": "Fill the bowls",
-            "summary": "Add noodles, broth and toppings",
-            "text": "Cook the noodles separately according to the packet and divide among four bowls. Ladle over the hot broth and shiitake. Top with the chicken, pork, wakame, radishes and spring onions."
+            "summary": "Pour over the hot broth",
+            "text": "Divide the noodles and beef among four bowls and pour over the boiling broth. Top with bean sprouts, red onion, spring onions, herbs and chilli, and add a lime wedge to each bowl."
           }
         ]
       },
       "image": {
-        "file": "../photos/ramen-mit-haehnchen-und-gemuese.webp",
+        "file": "../photos/pho-mit-rindfleisch-und-kraeutern.webp",
         "alt": {
-          "de": "Ramen mit gezupftem Hähnchen, Hackfleisch, Wakame, Radieschen und Frühlingszwiebeln in einer blau-weißen Schale auf einem Holzbrett, ringsum Radieschen, Frühlingszwiebeln, Zwiebeln, getrocknete Shiitake, Kombu, Nudeln und Chili",
-          "en": "Ramen with pulled chicken, minced pork, wakame, radishes and spring onions in a blue and white bowl on a wooden board, surrounded by radishes, spring onions, onions, dried shiitake, kombu, noodles and chilli"
+          "de": "Pho mit einer Scheibe Rinderbrust, Reisbandnudeln, Koriander, Minze, Frühlingszwiebeln, roten Zwiebelringen, Sojasprossen, Chili und einer Limettenscheibe in einer weißen Schale auf hellem Holz, quer darüber helle Essstäbchen",
+          "en": "Pho with a slice of beef brisket, flat rice noodles, coriander, mint, spring onions, red onion rings, bean sprouts, chilli and a lime slice in a white bowl on light wood, with pale chopsticks across it"
         },
-        "photographer": "Daniel Houwing",
-        "photographerUrl": "https://unsplash.com/@danielhouwing?utm_source=mealie_atelier&utm_medium=referral",
-        "sourceUrl": "https://unsplash.com/photos/bowl-of-soup-i0AlYDDlrbY"
+        "photographer": "Sergei Mironov",
+        "photographerUrl": "https://unsplash.com/@svmironov?utm_source=mealie_atelier&utm_medium=referral",
+        "sourceUrl": "https://unsplash.com/photos/a-bowl-of-food-with-chopsticks-on-a-table-LdMOXLJWfQ4"
       }
     },
     {
