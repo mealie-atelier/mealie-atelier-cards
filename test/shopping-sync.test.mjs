@@ -187,7 +187,9 @@ test("status panel renders every outcome as text with an icon and never says Don
 
 test("status panel shows route, mode text, state line and pending count", async () => {
   const env = syncCard();
-  await openStatus(env, [withRule({ mode: "move", paused: true, counts: { pending: 2 } })]);
+  await openStatus(env, [
+    withRule({ name: "Weekly shop", mode: "move", paused: true, counts: { pending: 2 } }),
+  ]);
   const html = markup(env.cards);
   assert.match(html, /Weekly groceries → Bring \(bring\)/);
   assert.match(
@@ -456,7 +458,7 @@ test("a partial run result is announced as partial, a queued run as queued", asy
   await click(env.card, { action: "sync-run", value: "r1" });
   assert.match(
     markup(env.cards),
-    /Partly sent, some items need attention: 3 sent, 1 skipped, 1 failed, 2 still waiting\./,
+    /Partly sent, some items need attention: 3 item\(s\), 1 skipped, 1 failed, 2 still waiting\./,
   );
   assert.doesNotMatch(markup(env.cards), /\bDone\b/);
   env.card._ws = async () => ({ queued: true });
@@ -673,7 +675,7 @@ test("run result has no doubled word, shows a success icon and says just now", a
   await openStatus(env, [withRule()]);
   await click(env.card, { action: "sync-run", value: "r1" });
   const html = markup(env.cards);
-  assert.match(html, /Sent: 1 sent, 0 skipped, 0 failed, 0 still waiting\./);
+  assert.match(html, /Sent: 1 item\(s\), 0 skipped, 0 failed, 0 still waiting\./);
   assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
   assert.equal(env.card._syncRelative(new Date().toISOString()), "just now");
   assert.match(html, /nothing waiting/);
@@ -693,4 +695,29 @@ test("review has one title, a distinct group heading and a back arrow that point
   assert.equal((html.match(/Items to review/g) || []).length, 1);
   assert.match(html, /<h3>Needs attention<\/h3>/);
   assert.match(html, /class="btn sync-back"/);
+});
+
+test("first-batch send shows a failure icon, not a success check, and no doubled word", async () => {
+  const env = syncCard({
+    handlers: {
+      sync_run: async () => ({ rule_id: "r1", outcome: "failed", sent: 0, failed: 1 }),
+    },
+  });
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-setup-open", value: "" });
+  input(env.card, { input: "sync-destination" }, { value: "todo.bring" });
+  await click(env.card, { action: "sync-preview" });
+  await click(env.card, { action: "sync-save", value: "send" });
+  const html = markup(env.cards);
+  const result = html.match(/<p class="sync-result">.*?<\/p>/s)?.[0] || "";
+  assert.ok(result, "result line renders");
+  assert.doesNotMatch(result, /m5 12 5 5L20 7/);
+});
+
+test("rule card shows a separator in the state line and no repeated route", async () => {
+  const env = syncCard();
+  await openStatus(env, [withRule()]);
+  const html = markup(env.cards);
+  assert.match(html, /<\/strong> <span class="sync-muted" aria-hidden="true">·<\/span>/);
+  assert.equal((html.match(/Weekly groceries → Bring/g) || []).length, 1);
 });

@@ -115,6 +115,12 @@ export const shoppingSyncMethods = {
     const good = ["sent", "nothing_to_send", "reconciled"].includes(outcome);
     return good && !(counts.needs_reconciliation > 0) ? icon("check", 15) : icon("bolt", 15);
   },
+  _syncResultIcon(result) {
+    if (result?.queued) return icon("clock", 15);
+    return this._syncOutcomeIcon(result?.outcome, {
+      needs_reconciliation: result?.needs_reconciliation,
+    });
+  },
   _syncResultText(result) {
     if (result?.queued) return this.t("syncRunQueued");
     return this.t("syncRunResult", {
@@ -288,9 +294,9 @@ export const shoppingSyncMethods = {
         : "";
     return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
       <h3 id="sync-rule-${id}">${esc(rule.name)}</h3>
-      <p class="sync-route">${esc(rule.source_list_name)} → ${esc(destName)}${destination.platform && this._syncDestinationLabel(destName, destination.platform) !== destName ? ` (${esc(this._syncPlatformLabel(destination.platform))})` : ""}</p>
+${rule.name === `${rule.source_list_name} → ${destName}` ? "" : `<p class="sync-route">${esc(rule.source_list_name)} → ${esc(destName)}${destination.platform && this._syncDestinationLabel(destName, destination.platform) !== destName ? ` (${esc(this._syncPlatformLabel(destination.platform))})` : ""}</p>`}
       <p class="sync-mode">${esc(this.t(`syncMode${mode}`))}: ${esc(this.t(`syncMode${mode}Hint`))}</p>
-      <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong> <span class="sync-count sync-muted">${esc(this._syncWaiting(rule) ? this.tp("syncPending", this._syncWaiting(rule)) : this.t("syncPendingNone"))}</span></p>
+      <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong> <span class="sync-muted" aria-hidden="true">·</span> <span class="sync-count sync-muted">${esc(this._syncWaiting(rule) ? this.tp("syncPending", this._syncWaiting(rule)) : this.t("syncPendingNone"))}</span></p>
       <p class="sync-last">${last ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRun", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}` : esc(this.t("syncNeverRun"))}</p>
       ${problems.map((p) => `<p class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span></p>`).join("")}
       ${counts.needs_reconciliation > 0 ? `<p class="notice" role="status">${icon("clock", 16)} <span>${esc(this.tp("syncReconcileHint", counts.needs_reconciliation))}</span></p>` : ""}
@@ -594,11 +600,7 @@ export const shoppingSyncMethods = {
       result = await this._ws(type, payload);
       if (show) {
         sync.result = this._syncResultText(result);
-        sync.resultIcon = result?.queued
-          ? icon("clock", 15)
-          : this._syncOutcomeIcon(result?.outcome, {
-              needs_reconciliation: result?.needs_reconciliation,
-            });
+        sync.resultIcon = this._syncResultIcon(result);
       } else sync.result = "";
     } catch (err) {
       sync.error = this._errorText(err);
@@ -743,6 +745,7 @@ export const shoppingSyncMethods = {
       try {
         const result = await this._ws("sync_run", { rule_id: rule.id, confirm_first_batch: true });
         sync.result = this._syncResultText(result);
+        sync.resultIcon = this._syncResultIcon(result);
       } catch (err) {
         sync.error = this._errorText(err);
         this._syncRefetchStatus(err);

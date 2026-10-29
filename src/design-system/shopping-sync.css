@@ -110,9 +110,6 @@
 .atelier .sync-radio-card input {
   margin: 0;
 }
-.atelier .sync-radio-card input[type="radio"] {
-  border-radius: 50%;
-}
 .atelier .sync-radio-card small {
   display: block;
   color: var(--ds-muted);

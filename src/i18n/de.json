@@ -1048,7 +1048,7 @@
   "syncLastRun": "Letzter Lauf {time}: {result}",
   "syncNeverRun": "Noch kein Lauf",
   "syncRunQueued": "Ein Lauf ist schon aktiv. Direkt danach folgt ein weiterer Durchgang.",
-  "syncRunResult": "{result}: {sent} gesendet, {skipped} übersprungen, {failed} fehlgeschlagen, {left} offen.",
+  "syncRunResult": "{result}: {sent} Artikel, {skipped} übersprungen, {failed} fehlgeschlagen, {left} offen.",
   "syncOutcomeSent": "Gesendet",
   "syncOutcomePartial": "Teilweise gesendet, einige Artikel brauchen Aufmerksamkeit",
   "syncOutcomeFailed": "Nicht gesendet",
