@@ -5125,7 +5125,7 @@ ha-card {
   }
   .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn {
     flex: 0 0 auto;
-    min-height: 42px;
+    min-height: 44px;
     white-space: nowrap;
   }
   .atelier .week-swipe-hint {

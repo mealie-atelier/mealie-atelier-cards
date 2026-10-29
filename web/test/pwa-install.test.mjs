@@ -141,16 +141,22 @@ test("rendering the install dialog fills the localized later button", () => {
     setAttribute(key, value) {
       this.attrs[key] = value;
     },
+    hasAttribute(key) {
+      return Boolean(this.flags?.includes(key));
+    },
     addEventListener() {},
     replaceChildren() {},
   });
   const later = node();
+  later.flags = ["data-install-close", "data-install-later"];
+  const closeIcon = node();
+  closeIcon.flags = ["data-install-close"];
   const trigger = { ...node(), querySelector: () => node() };
   const dialog = {
     ...node(),
     showModal() {},
     querySelector: (selector) => (selector === "[data-install-later]" ? later : node()),
-    querySelectorAll: () => [],
+    querySelectorAll: (selector) => (selector === "[data-install-close]" ? [closeIcon, later] : []),
   };
   const documentRef = {
     querySelector: (selector) => (selector === "#pwa-install-trigger" ? trigger : dialog),
@@ -166,4 +172,6 @@ test("rendering the install dialog fills the localized later button", () => {
   assert.equal(later.textContent, "Later");
   handle.refresh("de");
   assert.equal(later.textContent, "Später");
+  assert.equal(closeIcon.attrs["aria-label"], "Schließen");
+  assert.equal(later.attrs["aria-label"], undefined);
 });

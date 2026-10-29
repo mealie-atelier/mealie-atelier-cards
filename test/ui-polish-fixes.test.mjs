@@ -241,3 +241,13 @@ test("the print document brand line is localized", () => {
     if (language === "de") assert.doesNotMatch(html, /PRINT EDITION/);
   }
 });
+
+test("the phone week toolbar override does not keep buttons below 44px", () => {
+  for (const file of ["adaptive.css", "motion.css"]) {
+    const css = read(`../src/design-system/${file}`).replace(/\s+/g, " ");
+    const rule = css.match(/\[data-view="mealplan"\] \.heading \.toolbar \.btn \{[^}]*\}/);
+    assert.ok(rule, file);
+    assert.match(rule[0], /min-height: 44px/);
+    assert.doesNotMatch(rule[0], /min-height: 4[0-3]px/);
+  }
+});
