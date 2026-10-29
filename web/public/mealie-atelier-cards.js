@@ -3327,6 +3327,27 @@ ha-card {
   }
 }
 
+/* The step number is the real toggle control (a link in the step text cannot sit inside a button). */
+.atelier .step-toggle {
+  padding: 0;
+  font-family: var(--at-serif);
+  font-size: 13px;
+  color: var(--ds-brand);
+  cursor: pointer;
+  appearance: none;
+}
+.atelier .detail-cols .step:has(.step-toggle:focus-visible) {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 3px;
+}
+/* Links made from URLs in recipe text follow the brand instead of the browser default. */
+.atelier :is(.step-text, .step-summary, .description, .recipe-note p, .cook-stage) a {
+  color: var(--ds-brand-text, var(--ds-brand));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
 /* Atelier 0.6 · Kitchen Intelligence — premium, responsive and reduced-motion friendly. */
 .atelier .studio-daily {
   display: flex;
@@ -13556,6 +13577,8 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "step-check") {
+      // A link inside the step text opens its target and never toggles the step.
+      if (event.target?.closest?.("a[href]")) return;
       const n = Number(v);
       if (this._checkedSteps.has(n)) this._checkedSteps.delete(n);
       else this._checkedSteps.add(n);
@@ -14378,7 +14401,7 @@ const dialogMethods = {
                 `<img class="step-photo" src="${esc(src)}" alt="${this.t("uiRecipeStepImageAlt", { step: i + 1 })}" loading="lazy" decoding="async">`,
             )
             .join("");
-          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<button class="step ${this._checkedSteps.has(i) ? "active" : ""}" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}"><span class="step-number">${String(i + 1).padStart(2, "0")}</span><span class="step-copy">${summary ? `<strong class="step-summary">${esc(summary)}</strong>` : ""}<span class="step-text">${esc(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></button></div>`;
+          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${linkify(summary)}</strong>` : ""}<span class="step-text">${linkify(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
         })
         .join("");
       size = "large";

@@ -1953,6 +1953,8 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "step-check") {
+      // A link inside the step text opens its target and never toggles the step.
+      if (event.target?.closest?.("a[href]")) return;
       const n = Number(v);
       if (this._checkedSteps.has(n)) this._checkedSteps.delete(n);
       else this._checkedSteps.add(n);

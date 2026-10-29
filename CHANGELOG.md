@@ -10,6 +10,7 @@ All notable changes to Mealie Atelier Cards, the standalone Web app and the demo
 
 ### Fixed
 
+- URLs in the recipe detail step text are links too. The step number is now its own toggle button, so the text is no longer inside a button, and links in recipe text use the brand colour.
 - Removing a kitchen timer the server already dispatched or no longer knows now works on every server and language: the card matches the dedicated error codes (`timer_dispatched`, `timer_not_found`) instead of English message text, and a refused cancel names its real reason. The web app sends the same codes.
 - On short landscape phones the cooking navigation stays one row of three buttons.
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
