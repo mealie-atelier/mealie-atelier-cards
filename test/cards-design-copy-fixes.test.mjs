@@ -63,6 +63,20 @@ test("the dialog close button is sticky so it stays reachable", () => {
   assert.match(rule(refinement, ".atelier .modal > .modal-close"), /position:\s*sticky/);
 });
 
+test("a scroll-driven header strip keeps content from being cut by the sticky close button", () => {
+  const strip = rule(refinement, ".atelier .modal > .modal-close::before");
+  assert.match(strip, /position:\s*absolute/);
+  assert.match(strip, /z-index:\s*-1/);
+  assert.match(strip, /background:\s*var\(--at-surface\)/);
+  assert.match(strip, /opacity:\s*0/);
+  assert.match(refinement, /animation-timeline:\s*scroll\(nearest block\)/);
+  assert.match(refinement, /@keyframes at-close-strip \{\s*to \{\s*opacity: 1/);
+  assert.match(
+    refinement,
+    /max-height: 700px\) \{\s*\.atelier \.modal\.large:has\(> \.modal-hero\) > \.modal-close::before \{\s*display: none/,
+  );
+});
+
 test("the HA scene hint names the Cooking light button, not cooking start", () => {
   for (const [lang, word] of [
     ["de", "Kochlicht"],
@@ -119,7 +133,6 @@ test("bridge error codes for timers, protected values and USDA have card texts i
     "errTooManyTimers",
     "errTimerNotFound",
     "errTimerNotPermitted",
-    "errTimerDispatched",
     "errExistingValuesProtected",
     "errUsdaKeyInvalid",
     "errUsdaRateLimited",
@@ -188,7 +201,7 @@ test("German copy keeps one address, one term per concept and complete sentences
   const en = JSON.parse(read("../src/i18n/en.json"));
   for (const [key, value] of Object.entries(de))
     assert.doesNotMatch(value, /\b(euch|euer\w*|eure\w*|ihr)\b/i, `${key} uses the du-form`);
-  assert.match(de["studioDiscoverRecipeBase.other"], /^Rezeptbasis /);
+  assert.match(de["studioDiscoverRecipeBase.other"], /^Rezeptbasis: /);
   assert.match(de.studioCatalogTotal, /Rezepte\.$/);
   assert.match(en.studioCatalogTotal, /recipes\.$/);
   assert.equal(de.studioLunch, de.lunch);
@@ -255,4 +268,209 @@ test("the short landscape cooking bar keeps its labels on one line so the row st
   assert.doesNotMatch(block, /minmax\(max-content/);
   assert.match(block, /\.cook-actions \{\s*display:\s*flex;\s*gap:\s*6px/);
   assert.match(block, /\.cook-actions \.btn \{[^}]*flex:\s*1 1 auto/);
+});
+
+test("every accent coloured text uses the AA contrast token on light surfaces", () => {
+  const sheets = [
+    "foundation",
+    "editorial",
+    "kitchen",
+    "motion",
+    "adaptive",
+    "layout",
+    "components",
+    "polish",
+    "control-refinement",
+  ].map((name) => [name, read(`../src/design-system/${name}.css`)]);
+  for (const [name, css] of sheets)
+    assert.doesNotMatch(css, /^\s*color:\s*var\(--ds-brand\);/m, `${name}.css has raw brand text`);
+  const tokens = read("../src/design-system/tokens.css");
+  assert.match(rule(tokens, ".atelier"), /--ds-brand-text:\s*var\(--ds-brand\)/);
+  assert.match(rule(tokens, ".atelier.light"), /--ds-brand-text:\s*color-mix/);
+  assert.match(
+    rule(read("../src/design-system/motion.css"), ".at-premium-dialog .eyebrow"),
+    /color:\s*var\(--ds-brand-text,/,
+  );
+});
+
+test("the cooking dialog is a fixed-height flex column with the action bar on its bottom edge", () => {
+  const modal = rule(refinement, ".atelier .modal.large:has(.cook-layout)");
+  assert.match(modal, /display:\s*flex/);
+  assert.match(modal, /flex-direction:\s*column/);
+  assert.match(modal, /height:\s*min\(90dvh,\s*940px\)/);
+  assert.match(
+    rule(refinement, ".atelier .modal.large:has(.cook-layout) > .cook-layout"),
+    /flex:\s*1 0 auto/,
+  );
+  const actions = rule(refinement, ".atelier .modal:has(.cook-layout) .cook-actions");
+  assert.match(actions, /margin-block:\s*auto 0/);
+  assert.match(actions, /position:\s*sticky/);
+  assert.match(
+    refinement,
+    /\.cook-content > \*,\s*\.atelier \.modal:has\(\.cook-layout\) \.cook-controls > \* \{\s*order: 0;/,
+    "earlier breakpoint orders are reset so the bar is last in every layout",
+  );
+});
+
+test("long German words hyphenate only when the word is at least 12 letters long", () => {
+  const polish = read("../src/design-system/polish.css");
+  assert.match(rule(polish, ".atelier .day-meal-name"), /hyphenate-limit-chars:\s*12 5 5;/);
+});
+
+test("the cards UI always names the Mealie Atelier Bridge in full", () => {
+  const strings = {
+    de: JSON.parse(read("../src/i18n/de.json")),
+    en: JSON.parse(read("../src/i18n/en.json")),
+  };
+  for (const [locale, table] of Object.entries(strings))
+    for (const [key, value] of Object.entries(table)) {
+      if (typeof value !== "string") continue;
+      const bare = value.replace(/Mealie Atelier Bridge/g, "");
+      assert.doesNotMatch(bare, /\bBridge\b|Bridge-/, `${locale}.${key} shortens the Bridge name`);
+    }
+});
+
+test("docs and README spell web app in lower case within a sentence and name the full Bridge", () => {
+  for (const file of [
+    "../README.md",
+    "../docs/ARCHITECTURE.md",
+    "../docs/DESIGN_SYSTEM.md",
+    "../docs/FAQ.md",
+    "../docs/MARKETPLACE.md",
+    "../docs/REPOSITORY_MAP.md",
+    "../web/.env.example",
+  ]) {
+    const text = read(file);
+    assert.doesNotMatch(text, /[a-z,] Web app\b/, `${file} capitalises web app mid-sentence`);
+    assert.doesNotMatch(text, /Web companion|web companion/, `${file} says companion`);
+    assert.doesNotMatch(text, /(?<!Mealie )Atelier Bridge/, `${file} shortens the Bridge name`);
+  }
+});
+
+test("the premium dialog copies the accent text token it renders its eyebrow with", () => {
+  const source = read("../src/studio-ui.js");
+  const list = source.slice(source.indexOf("_atelierDialog("));
+  const tokens = list.slice(list.indexOf("for (const token of ["), list.indexOf("]) {"));
+  assert.match(tokens, /"--ds-brand-text"/);
+});
+
+test("the cooking action bar is the last child of the cook content", () => {
+  const source = read("../src/components/dialogs.js");
+  const footnote = source.indexOf('<p class="cook-footnote">');
+  const actions = source.indexOf('<div class="cook-actions">');
+  assert.ok(footnote > 0 && actions > footnote, "footnote renders before the sticky action bar");
+});
+
+test("the cook content has no bottom padding so the sticky bar stays on the dialog edge", () => {
+  assert.match(
+    rule(refinement, ".atelier .modal.large:has(.cook-layout) .cook-content"),
+    /padding-bottom:\s*0;/,
+  );
+});
+
+test("the display font token reuses the single --at-serif stack", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const tokens = await readFile(
+    new URL("../src/design-system/tokens.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(tokens, /--ds-font-display:\s*var\(--at-serif\);/);
+  assert.doesNotMatch(tokens, /Times New Roman/);
+});
+
+test("English strings use the typographic apostrophe only", () => {
+  const strings = JSON.parse(read("../src/i18n/en.json"));
+  const straight = Object.entries(strings).filter(([, value]) => /\w'\w/.test(String(value)));
+  assert.deepEqual(
+    straight.map(([key]) => key),
+    [],
+  );
+});
+
+test("the cancel wording matches the card's Remove action and the dead dispatched text is gone", () => {
+  assert.match(i18n("de").errTimerNotPermitted, /entfernen/);
+  assert.match(i18n("en").errTimerNotPermitted, /remove/);
+  assert.match(i18n("de").uiTimerStopError, /entfernt/);
+  assert.match(i18n("en").uiTimerStopError, /remove/);
+  for (const lang of ["de", "en"]) {
+    assert.doesNotMatch(i18n(lang).uiTimerStopError, /stopp/i);
+    assert.doesNotMatch(i18n(lang).errTimerNotPermitted, /abbrechen|cancel/);
+    assert.equal(i18n(lang).errTimerDispatched, undefined);
+  }
+});
+
+test("nutrition save and calculate show the translated text for a Bridge error code", async () => {
+  for (const [language, action, expected] of [
+    ["en", "nutri-save", /Existing values are protected/],
+    ["de", "nutri-calc", /Vorhandene Werte sind geschützt/],
+  ]) {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._render = () => {};
+    Object.defineProperty(card, "_permissions", { get: () => ({ can_manage: true }) });
+    card._nutrition = {
+      busy: false,
+      rows: [],
+      replaceExisting: false,
+      preview: { slug: "s", hash: "h" },
+    };
+    card._ws = async () => {
+      throw Object.assign(new Error("raw bridge message"), { code: "existing_values_protected" });
+    };
+    const el = { dataset: { action, value: "" }, disabled: false, closest: () => el };
+    await card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
+    assert.match(card._nutrition.notice, expected, `${language} ${action}`);
+    assert.doesNotMatch(card._nutrition.notice, /raw bridge/);
+  }
+});
+
+test("nutrition keeps the specific reason for a bare invalid_request and translates the web app codes", async () => {
+  for (const [language, code, message, expected] of [
+    ["de", "invalid_request", "Recipe must have a valid serving count", /^Recipe must have/],
+    ["en", "invalid_request", "Recipe must have a valid serving count", /^Recipe must have/],
+    ["de", "recipe_servings_invalid", "raw", /Portionsangabe/],
+    ["en", "recipe_servings_invalid", "raw", /no valid serving count/],
+    ["de", "usda_food_incomplete", "raw", /Nährwertangaben/],
+    ["en", "usda_food_incomplete", "raw", /missing essential nutrition data/],
+  ]) {
+    const cards = loadCards();
+    const card = makeCard(cards, { hass: { language, callWS: async () => ({}) } });
+    card._render = () => {};
+    Object.defineProperty(card, "_permissions", { get: () => ({ can_manage: true }) });
+    card._nutrition = {
+      busy: false,
+      rows: [],
+      replaceExisting: false,
+      preview: { slug: "s", hash: "h" },
+    };
+    card._ws = async () => {
+      throw Object.assign(new Error(message), { code });
+    };
+    const el = { dataset: { action: "nutri-calc", value: "" }, disabled: false, closest: () => el };
+    await card._handleClick({ target: el, preventDefault() {}, stopPropagation() {} });
+    assert.match(card._nutrition.notice, expected, `${language} ${code}`);
+    assert.doesNotMatch(card._nutrition.notice, /ungültig\. Prüfe|not valid\. Check/);
+  }
+});
+
+test("merged i18n wording stays consistent between German and English", () => {
+  assert.match(i18n("en").errMealieAuth, /API token/);
+  assert.doesNotMatch(i18n("en").errMealieAuth, /access token/);
+  // The same code arrives from the Home Assistant Bridge, so no web-only env var may be named.
+  for (const lang of ["de", "en"])
+    assert.doesNotMatch(
+      i18n(lang).errMealieAuth,
+      /MEALIE_API_TOKEN|server config|Konfiguration des Servers/i,
+    );
+  assert.equal(i18n("de").editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
+});
+
+test("Discover recipe base copy keeps the colon in German like English", () => {
+  const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
+  const en = JSON.parse(readFileSync(new URL("../src/i18n/en.json", import.meta.url), "utf8"));
+  assert.equal(de["studioDiscoverRecipeBase.one"], "Rezeptbasis: 1 Portion");
+  assert.equal(de["studioDiscoverRecipeBase.other"], "Rezeptbasis: {servings} Portionen");
+  for (const key of ["studioDiscoverRecipeBase.one", "studioDiscoverRecipeBase.other"]) {
+    assert.equal(de[key].includes(":"), en[key].includes(":"), key);
+  }
 });

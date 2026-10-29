@@ -175,3 +175,15 @@ test("rendering the install dialog fills the localized later button", () => {
   assert.equal(closeIcon.attrs["aria-label"], "Schließen");
   assert.equal(later.attrs["aria-label"], undefined);
 });
+
+test("the shell follows the live system colour scheme, including the theme colour", async () => {
+  const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.match(html, /theme: "auto"/, "the shell starts in automatic theme mode");
+  assert.match(
+    html,
+    /matchMedia\("\(prefers-color-scheme: light\)"\)\.addEventListener\("change", \(\) => \{\s*if \(card\._design\.theme !== "auto"\) return;\s*syncShellTheme\("auto"\);\s*card\._render\(\);/,
+  );
+  // The first paint already follows the saved choice or the system scheme.
+  const head = html.slice(0, html.indexOf("</head>"));
+  assert.match(head, /<script>[\s\S]*prefers-color-scheme: light[\s\S]*"#f4f1eb"/);
+});

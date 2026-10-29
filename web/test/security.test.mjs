@@ -134,9 +134,9 @@ test("server locks out a client after repeated wrong passwords and sets hardenin
 test("CSP allows exactly the inline scripts of index.html by hash", async () => {
   const html = await readFile(join(ROOT, "public", "index.html"), "utf8");
   const hashes = inlineScriptHashes(html);
-  assert.equal(hashes.length, 1);
+  assert.equal(hashes.length, 2, "the first-paint theme script and the module script");
   const csp = contentSecurityPolicy(hashes);
-  assert.ok(csp.includes(hashes[0]));
+  for (const hash of hashes) assert.ok(csp.includes(hash));
   assert.match(csp, /img-src 'self' data: blob:/);
   assert.match(csp, /object-src 'none'/);
 });

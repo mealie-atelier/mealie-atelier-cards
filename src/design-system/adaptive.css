@@ -742,7 +742,7 @@
   }
   .atelier .week-swipe-hint:before {
     content: "↔";
-    color: var(--ds-brand);
+    color: var(--ds-brand-text);
     font-size: 21px;
     line-height: 1;
   }
@@ -864,7 +864,7 @@
   height: 42px;
   border: 1px solid color-mix(in srgb, var(--at-accent) 44%, transparent);
   border-radius: 50%;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 20px;
   background: color-mix(in srgb, var(--at-panel) 70%, transparent);
 }

@@ -492,6 +492,16 @@ class MealieAtelierCard extends HTMLElement {
     }
     return err?.message || this.t("error");
   }
+  /**
+   * Nutrition lab errors. A bare `invalid_request` (the Bridge raises ValueError without a
+   * code of its own) carries a specific reason such as a missing serving count, so the
+   * message is kept instead of the generic "invalid input" text.
+   */
+  _nutritionErrorText(err) {
+    if (err?.code === "invalid_request" && typeof err.message === "string" && err.message.trim())
+      return err.message;
+    return this._errorText(err);
+  }
   /** An error text that always ends like a sentence, for templates that append more text. */
   _errorSentence(err) {
     const text = String(this._errorText(err)).trim();
@@ -1747,7 +1757,7 @@ class MealieAtelierCard extends HTMLElement {
         n.choices = await this._ws("nutrition_search", { query });
       } catch (error) {
         n.choices = [];
-        n.notice = this._errorText(error);
+        n.notice = this._nutritionErrorText(error);
         await this._recoverPermissions(error);
       } finally {
         n.busy = false;
@@ -1827,7 +1837,7 @@ class MealieAtelierCard extends HTMLElement {
           n.notice = this.t("uiCalculatedReviewBeforeSaving");
         }
       } catch (error) {
-        n.notice = error?.message || this.t("error");
+        n.notice = this._nutritionErrorText(error);
       } finally {
         n.busy = false;
         this._render();

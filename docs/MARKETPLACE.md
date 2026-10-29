@@ -7,7 +7,7 @@ Mealie Atelier Cards is built for the Home Assistant Marketplace (Home Assistant
 1. [`mealie-atelier-cards`](https://github.com/mealie-atelier/mealie-atelier-cards): HACS category `plugin`. The root `hacs.json` and the built `dist/mealie-atelier-cards.js` are what the Marketplace and HACS read.
 2. [`mealie-atelier-bridge`](https://github.com/mealie-atelier/mealie-atelier-bridge): HACS category `integration`, installed under `custom_components/mealie_atelier/`. It is optional and is needed for writes and recipe photos.
 
-The standalone Web app (`web/`) and the demo (`demo/`) live in the Cards repository but are not installed through the Marketplace. They work without Home Assistant. The demo runs at [mealie.alles-automatisch.de](https://mealie.alles-automatisch.de).
+The standalone web app (`web/`) and the demo (`demo/`) live in the Cards repository but are not installed through the Marketplace. They work without Home Assistant. The demo runs at [mealie.alles-automatisch.de](https://mealie.alles-automatisch.de).
 
 ## Release checklist
 

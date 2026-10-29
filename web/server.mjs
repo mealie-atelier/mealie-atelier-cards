@@ -213,10 +213,10 @@ function authPage(req, kind, minutes = 1) {
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222}h1{font-size:1.4rem}</style></head><body><h1>${title}</h1><p>${body}</p></body></html>`;
 }
 const wantsHtml = (req) => String(req.headers.accept || "").includes("text/html");
-function bad(text = "Invalid request") {
+function bad(text = "Invalid request", code = "invalid_request") {
   const error = new Error(text);
   error.status = 400;
-  error.code = "invalid_request";
+  error.code = code;
   return error;
 }
 /** Error for a failed permission check, shaped like the contract 0.3 codes. */
@@ -779,7 +779,10 @@ async function bridge(req) {
         Object.values(recipe.nutrition).some((x) => x !== null && x !== "" && x !== undefined) &&
         msg.overwrite_existing !== true
       )
-        throw bad("Existing nutrition values are protected. Explicitly confirm replacement");
+        throw bad(
+          "Existing nutrition values are protected. Explicitly confirm replacement",
+          "existing_values_protected",
+        );
       const report = await calculateNutrition(USDA_KEY, recipe, msg.entries, msg.expected_hash);
       const payload = {
         nutrition: mealieNutrition(report),

@@ -134,7 +134,7 @@ test("mealplan toolbar buttons meet the 44px touch target and the tablet week st
   assert.match(adaptive, /repeat\(7, minmax\(140px, 1fr\)\)/);
   assert.match(
     read("../src/design-system/polish.css"),
-    /\.day-meal-name \{[^}]*hyphens: auto;[^}]*hyphenate-limit-chars: 10 4 4;[^}]*-webkit-hyphenate-limit-before: 4;[^}]*-webkit-hyphenate-limit-after: 4/,
+    /\.day-meal-name \{[^}]*hyphens: auto;[^}]*hyphenate-limit-chars: 12 5 5;[^}]*-webkit-hyphenate-limit-before: 5;[^}]*-webkit-hyphenate-limit-after: 5/,
   );
 });
 
@@ -170,7 +170,7 @@ test("the week strip hint says scroll, not swipe, so it fits mouse users", () =>
   }
 });
 
-test("recipe tiles render the title placeholder only when there is no photo", () => {
+test("recipe tiles render the title placeholder only when images are on, as photo failure fallback", () => {
   const cards = loadCards();
   const card = makeCard(cards, {});
   card._local = { show_images: false };
@@ -185,7 +185,13 @@ test("recipe tiles render the title placeholder only when there is no photo", ()
       items: [{ slug: "a", name: "Plain Soup", imageUrl: "/api/mealie_atelier/image/a.webp" }],
     },
   };
-  assert.doesNotMatch(card._recipes(6), /class="placeholder"/);
+  // The placeholder stays in the markup so it shows when the photo fails to load;
+  // the stylesheet hides it while an image is present.
+  assert.match(card._recipes(6), /class="placeholder"/);
+  assert.match(
+    read("../src/design-system/editorial.css"),
+    /\.tile-image:has\(img\) \.placeholder \{\s*display: none;/,
+  );
 });
 
 test("sidebar brand line, conflict plurals and the audit list are localized and dash free", () => {

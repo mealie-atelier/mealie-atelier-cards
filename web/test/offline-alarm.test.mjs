@@ -160,7 +160,8 @@ test("alarm is durable after browser closes, restarts and dispatches only once",
     await b.tick();
     assert.equal(deliveries, 1);
     assert.equal((await b.list()).alarms[0].status, "sent");
-    await assert.rejects(b.cancel(id), { status: 409 });
+    await assert.rejects(b.cancel(id), { status: 409, code: "timer_dispatched" });
+    await assert.rejects(b.cancel(randomUUID()), { status: 404, code: "timer_not_found" });
   }));
 test("offline companion UI uses shared locale resources for all visible shell copy", () => {
   const source = readFileSync(new URL("../public/offline-client.js", import.meta.url), "utf8");

@@ -244,6 +244,7 @@ Object.assign(MealieAtelierCard.prototype, {
           "--at-sub",
           "--at-accent",
           "--at-accent-ink",
+          "--ds-brand-text",
           "--at-line",
           "--at-surface",
           "--at-panel",

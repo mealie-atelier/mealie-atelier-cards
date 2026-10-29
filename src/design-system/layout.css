@@ -68,11 +68,11 @@
 }
 .atelier-credit a:hover,
 .atelier-credit a:focus-visible {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier-credit-heart {
   display: inline-block;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   transform-origin: center;
 }
 .atelier-credit:hover .atelier-credit-heart,
@@ -447,7 +447,7 @@
 }
 
 .atelier .ds-page-header h1 em {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 400;
   font-style: italic;
 }
@@ -513,7 +513,7 @@
   color: var(--at-ink);
 }
 .atelier .recipe-labels span {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 750;
 }
 .atelier .recipe-notes {

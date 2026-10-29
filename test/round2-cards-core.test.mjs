@@ -341,9 +341,9 @@ test("shopping label groups sort by name and the done heading reads checked off"
   assert.deepEqual(titles, ["Äpfel", "Bakery", "Zeta", "Checked off"]);
 });
 
-test("German settings copy uses the correct gender for light stone", () => {
+test("German settings copy matches the English preset wording", () => {
   const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
-  assert.equal(de.editorDeepGreenWarmLightEditorial, "Tiefgrün · Heller Stein · großzügig");
+  assert.equal(de.editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
 });
 
 test("sidebar credit link keeps its padded hit area in flow so the version line cannot cover it", () => {
