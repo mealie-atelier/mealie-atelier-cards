@@ -881,7 +881,7 @@
   "uiNoWriteGrantWeb": "You are signed in with read access. An administrator can give your account the writer role.",
   "errNotConfigured": "Mealie Atelier is not set up yet.",
   "errInvalidRequest": "That request was not valid. Check your input and try again.",
-  "errMealieAuth": "Mealie refused the access token. Check MEALIE_API_TOKEN in the server configuration.",
+  "errMealieAuth": "Mealie refused the API token. Check MEALIE_API_TOKEN in the server configuration.",
   "errMealieError": "Mealie is unreachable or answered unexpectedly. Try again in a moment.",
   "errAiError": "The AI provider did not answer or sent an unusable answer. Check the API key and try again.",
   "errReadOnly": "This kitchen is in read-only mode, so nothing can be changed.",

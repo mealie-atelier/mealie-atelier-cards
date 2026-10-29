@@ -430,3 +430,9 @@ test("nutrition keeps the specific reason for a bare invalid_request and transla
     assert.doesNotMatch(card._nutrition.notice, /ungültig\. Prüfe|not valid\. Check/);
   }
 });
+
+test("merged i18n wording stays consistent between German and English", () => {
+  assert.match(i18n("en").errMealieAuth, /API token/);
+  assert.doesNotMatch(i18n("en").errMealieAuth, /access token/);
+  assert.equal(i18n("de").editorDeepGreenWarmLightEditorial, "Tiefgrün · heller Stein · editorial");
+});
