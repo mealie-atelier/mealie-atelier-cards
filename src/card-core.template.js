@@ -360,6 +360,14 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
+    // Theme auto outside Home Assistant follows the system colour scheme live.
+    this._schemeQuery =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    this._boundScheme = () => {
+      if (this._design.theme === "auto" && this._resolvedTheme("auto") !== this._lastRenderedTheme)
+        this._render();
+    };
+    this._schemeQuery?.addEventListener?.("change", this._boundScheme);
     this._render();
     this._timerHandle = setInterval(() => this._tickTimers(), 1000);
     // BEGIN feature H: offline queue replay on connect
@@ -385,6 +393,7 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
     document.removeEventListener("visibilitychange", this._boundVisibility);
+    this._schemeQuery?.removeEventListener?.("change", this._boundScheme);
     this._wakeLock.set(false);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);
@@ -494,6 +503,15 @@ class MealieAtelierCard extends HTMLElement {
       (typeof navigator !== "undefined" && navigator.onLine === false) ||
       /failed to fetch|networkerror|load failed/i.test(String(err?.message || ""))
     );
+  }
+  /** True when the current view has something worth printing (no empty PDF offered). */
+  _printable() {
+    if (this._view === "mealplan") return asArray(this._data.mealplan).length > 0;
+    if (this._view !== "shopping") return false;
+    const items = asArray(this._data.shopping?.items);
+    return this._activeList
+      ? items.some((i) => String(i.shoppingListId) === this._activeList)
+      : items.length > 0;
   }
   /** True when the bridge or built-in Mealie integration is missing altogether. */
   get _setupMissing() {
@@ -635,6 +653,10 @@ class MealieAtelierCard extends HTMLElement {
     this._data.metadata = null;
     this._data.recipes = await this._nativeRecipes(this._query);
     this._error = "";
+    // The bridge failure that led here no longer applies: do not keep the setup state.
+    this._errorCode = "";
+    this._failedParts = new Set();
+    this._loadFailed = false;
   }
   async _refresh() {
     if (this._busy) return;
@@ -642,6 +664,7 @@ class MealieAtelierCard extends HTMLElement {
     this._error = "";
     this._errorCode = "";
     this._loadFailed = false;
+    this._failedParts = new Set();
     this._render();
     try {
       if (this._config.provider === "home_assistant") {
@@ -667,6 +690,7 @@ class MealieAtelierCard extends HTMLElement {
             else this._data[keys[i]] = r.value;
           } else {
             failedErrors.push(r.reason);
+            this._failedParts.add(keys[i]);
             failures.push(
               r.reason?.code
                 ? this._errorText(r.reason)
@@ -691,12 +715,19 @@ class MealieAtelierCard extends HTMLElement {
             this._nativeMealieEntryIds.length === 1
           ) {
             this._config = { ...this._config, mealie_entry_id: this._nativeMealieEntryIds[0] };
-            this._emitConfig();
+            // The card has no editor methods: announce the adopted entry from the card itself.
+            this.dispatchEvent(
+              new CustomEvent("config-changed", {
+                detail: { config: { ...this._config } },
+                bubbles: true,
+                composed: true,
+              }),
+            );
           }
         }
         if (failures.length && this._providerActive !== "home_assistant") {
           // Any failed call means the page may be incomplete: never present it as an empty library.
-          this._loadFailed = true;
+          this._loadFailed = this._failedParts.has("recipes");
           if (result.every((r) => r.status === "rejected")) throw failedErrors[0];
         }
         if (!this._activeList)
@@ -705,6 +736,7 @@ class MealieAtelierCard extends HTMLElement {
     } catch (err) {
       this._errorCode = typeof err?.code === "string" ? err.code : "";
       this._loadFailed = true;
+      this._failedParts = new Set(["recipes", "mealplan", "shopping"]);
       this._error = err?.code
         ? this._errorText(err)
         : this._isNetworkFailure(err)
@@ -729,6 +761,8 @@ class MealieAtelierCard extends HTMLElement {
           search: this._query,
         });
       }
+      this._loadFailed = false;
+      this._failedParts?.delete("recipes");
       this._error = "";
     } catch (err) {
       this._error = this._errorText(err);
@@ -746,6 +780,7 @@ class MealieAtelierCard extends HTMLElement {
   async _loadShopping() {
     try {
       this._data.shopping = await this._ws("shopping");
+      this._failedParts?.delete("shopping");
       this._error = "";
     } catch (err) {
       this._error = this._errorText(err);
@@ -758,6 +793,7 @@ class MealieAtelierCard extends HTMLElement {
         start: dateYmd(this._weekStart),
         end: dateYmd(addDays(this._weekStart, 6)),
       });
+      this._failedParts?.delete("mealplan");
       this._error = "";
     } catch (err) {
       this._error = this._errorText(err);
@@ -805,7 +841,7 @@ class MealieAtelierCard extends HTMLElement {
     rail.scrollLeft += a.left - r.left - (r.width - a.width) / 2;
   }
   _topbar() {
-    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${["shopping", "mealplan"].includes(this._view) ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
+    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
   }
   _intro(title, sub, eyebrow) {
     return AtelierUI.pageHeader({
@@ -1353,12 +1389,9 @@ class MealieAtelierCard extends HTMLElement {
       // An import has nothing to undo and does not "save"; a bad URL gets its own hint.
       const failure =
         action === "recipe_import"
-          ? this.t(
-              err?.code === "invalid_request" || !err?.code
-                ? "uiImportFailedUrl"
-                : "uiImportFailed",
-              { error: this._errorSentence(err) },
-            )
+          ? this.t(err?.code === "invalid_request" ? "uiImportFailedUrl" : "uiImportFailed", {
+              error: this._errorSentence(err),
+            })
           : this.t(rollback ? "uiMutationFailed" : "uiSaveFailed", {
               error: this._errorSentence(err),
             });
@@ -1685,7 +1718,7 @@ class MealieAtelierCard extends HTMLElement {
         } catch (error) {
           // Gone or already dispatched (or due within clock skew): nothing is left to cancel.
           const settled =
-            /already been dispatched|timer not found/i.test(String(error?.message || "")) ||
+            ["timer_dispatched", "timer_not_found"].includes(error?.code) ||
             timer.deadline <= Date.now() + 60000;
           if (!settled) {
             this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");
@@ -1929,6 +1962,8 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "step-check") {
+      // A link inside the step text opens its target and never toggles the step.
+      if (event.target?.closest?.("a[href]")) return;
       const n = Number(v);
       if (this._checkedSteps.has(n)) this._checkedSteps.delete(n);
       else this._checkedSteps.add(n);
@@ -2156,7 +2191,13 @@ class MealieAtelierCard extends HTMLElement {
       item.toggleAttribute("hidden", !hit);
       if (hit) matches++;
     }
-    this.shadowRoot?.querySelector?.(".command-shortcuts")?.toggleAttribute("hidden", !matches);
+    const root = this.shadowRoot;
+    // Hide only the heading and the list: the empty notice lives in the same block.
+    root
+      ?.querySelector?.(".command-shortcuts .command-section")
+      ?.toggleAttribute("hidden", !matches);
+    root?.querySelector?.(".command-shortcuts .command-list")?.toggleAttribute("hidden", !matches);
+    root?.querySelector?.(".command-empty")?.classList.toggle("visible", !matches);
     return matches;
   }
   _commandConversionMarkup(conversion) {
@@ -2396,7 +2437,7 @@ const CARD_TYPES = [
     "mealie-atelier-recipes",
     AtelierRecipeCard,
     "Mealie Atelier · Recipes",
-    "Recipe collection, search, details and cooking mode",
+    "Recipe gallery with search, details and cooking mode",
   ],
   [
     "mealie-atelier-mealplan",
@@ -2408,7 +2449,7 @@ const CARD_TYPES = [
     "mealie-atelier-shopping",
     AtelierShoppingCard,
     "Mealie Atelier · Shopping",
-    "Shopping lists with tick, add and offline queue",
+    "Shopping lists to tick off and add to, also offline",
   ],
   [
     "mealie-atelier-discover",

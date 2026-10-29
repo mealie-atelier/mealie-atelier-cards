@@ -756,7 +756,7 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
         timer_id: id,
       });
       assert.equal(res.status, 403, `${name} cannot cancel ${id}`);
-      assert.equal((await res.json()).code, "unauthorized");
+      assert.equal((await res.json()).code, "timer_not_permitted");
     }
     const own = await call("wim", passwords.wim, "mealie_atelier/alarm_cancel", {
       timer_id: timerIds.wim,

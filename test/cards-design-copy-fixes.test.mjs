@@ -234,3 +234,25 @@ test("copy uses one spelling per concept in both locales", () => {
   assert.deepEqual(serialComma, [], "English lists use no serial comma");
   assert.match(en.editorOnlyTriggeredWhenYouTapTheCookingCockpitButton, /Cooking light/);
 });
+
+test("the short landscape cooking bar stays one row of three", () => {
+  const polish = read("../src/design-system/polish.css");
+  const sticky = polish.slice(
+    polish.indexOf("@media (orientation: landscape) and (max-height: 700px) {"),
+  );
+  assert.match(
+    sticky.slice(0, sticky.indexOf("@media (orientation: portrait)")),
+    /\.cook-actions \.btn\.primary \{\s*grid-column:\s*auto/,
+  );
+});
+
+test("the short landscape cooking bar keeps its labels on one line so the row stays level", () => {
+  const polish = read("../src/design-system/polish.css");
+  const start = polish.indexOf("@media (orientation: landscape) and (max-height: 700px) {");
+  const block = polish.slice(start, polish.indexOf("@media (orientation: portrait)", start));
+  assert.match(block, /\.cook-actions \.btn \{[^}]*white-space:\s*nowrap/);
+  // Content-sized flex items cannot be forced wider than the bar by max-content grid minimums.
+  assert.doesNotMatch(block, /minmax\(max-content/);
+  assert.match(block, /\.cook-actions \{\s*display:\s*flex;\s*gap:\s*6px/);
+  assert.match(block, /\.cook-actions \.btn \{[^}]*flex:\s*1 1 auto/);
+});

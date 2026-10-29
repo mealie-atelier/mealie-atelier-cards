@@ -1534,3 +1534,28 @@
     padding: 13px;
   }
 }
+
+/* The step number is the real toggle control (a link in the step text cannot sit inside a button).
+   Specific enough to beat the later global button rules (min-height, sans font, pill radius). */
+.atelier .detail-cols .step-number.step-toggle {
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  font-family: var(--at-serif);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ds-brand);
+  cursor: pointer;
+  appearance: none;
+}
+.atelier .detail-cols .step:has(.step-toggle:focus-visible) {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 3px;
+}
+/* Links made from URLs in recipe text follow the brand instead of the browser default. */
+.atelier :is(.step-text, .step-summary, .description, .recipe-note p, .cook-stage) a {
+  color: var(--ds-brand-text, var(--ds-brand));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}

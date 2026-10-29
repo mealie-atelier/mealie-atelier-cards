@@ -101,9 +101,9 @@ lovelace:
 | -------------------------------- | -------------------------------------------------------- |
 | `custom:mealie-atelier-card`     | Recipes, meal plan, shopping and management in one card  |
 | `custom:mealie-atelier-today`    | Today's meals and open groceries on one screen           |
-| `custom:mealie-atelier-recipes`  | Recipe collection, search, details and cooking mode      |
+| `custom:mealie-atelier-recipes`  | Recipe gallery with search, details and cooking mode     |
 | `custom:mealie-atelier-mealplan` | Weekly planner with a searchable recipe picker           |
-| `custom:mealie-atelier-shopping` | Shopping lists with tick, add and offline queue          |
+| `custom:mealie-atelier-shopping` | Shopping lists to tick off and add to, also offline      |
 | `custom:mealie-atelier-discover` | Discover recipes and a proposed seven-day menu           |
 | `custom:mealie-atelier-pantry`   | Pantry and staples for grocery planning                  |
 | `custom:mealie-atelier-family`   | Shared cooking sessions with helper tasks                |

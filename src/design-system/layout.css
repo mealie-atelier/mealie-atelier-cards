@@ -54,9 +54,9 @@
   gap: 4px;
 }
 .atelier-credit a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
+  display: inline-block;
+  padding-block: 14px;
+  margin-block: -14px;
   padding-inline: 8px;
   margin-inline: -8px;
   color: inherit;
@@ -93,6 +93,10 @@
 .atelier .sidebar-footer .atelier-credit {
   display: flex;
   flex-wrap: wrap;
+}
+.atelier .sidebar-footer .atelier-credit a {
+  /* The version line follows the link, so the padding stays in flow: no overlap with the 44px hit area. */
+  margin-block: 0;
 }
 .atelier .sidebar-footer .atelier-version {
   display: block;
