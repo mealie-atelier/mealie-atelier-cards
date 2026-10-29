@@ -251,7 +251,7 @@ function creditsPath(locale) {
   return locale === "de" ? "de/bildnachweise/" : "en/credits/";
 }
 
-// Thumbnails stay eager: they sit in the summary rows and the browser picks the 360 px file.
+// Thumbnails sit near the bottom of the page and load lazily; the browser picks the 360 px file.
 function renderRecipeDirectory(ctx) {
   const words = copy[ctx.locale];
   return catalog.recipes
@@ -266,7 +266,7 @@ function renderRecipeDirectory(ctx) {
         )
         .join("");
       const time = recipe.prepMinutes + recipe.cookMinutes;
-      const thumb = photo(ctx, recipe, "112px", { eager: true, className: "thumb" });
+      const thumb = photo(ctx, recipe, "112px", { className: "thumb" });
       return `<article class="recipe-item"><details><summary>${thumb}<span class="recipe-item-copy"><span class="meta">${time} ${words.minutes} · ${recipe.servings} ${words.servings}</span><h3>${escapeHtml(recipe.title[ctx.locale])}</h3><span class="meta">${escapeHtml(recipe.category[ctx.locale])}</span></span><span class="chev" aria-hidden="true"></span></summary><div class="recipe-item-body"><p>${escapeHtml(recipe.description[ctx.locale])}</p><div class="recipe-item-cols"><div><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul></div><div><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol></div></div><div class="recipe-item-foot"><a class="textlink" href="${escapeHtml(url)}">${words.openRecipe}<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div></details></article>`;
     })
     .join("");

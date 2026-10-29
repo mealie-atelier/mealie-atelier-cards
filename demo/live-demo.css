@@ -827,7 +827,10 @@ h2 em {
 @media (max-width: 560px) {
   .food-grid {
     grid-template-columns: 1fr;
-    grid-auto-rows: clamp(200px, 62vw, 260px);
+    grid-auto-rows: auto;
+  }
+  .dish {
+    aspect-ratio: 4 / 3;
   }
   .dish.f1,
   .dish.f2,

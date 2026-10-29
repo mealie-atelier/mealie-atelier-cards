@@ -330,11 +330,11 @@ test("every image has alt, width and height and only the first screen loads eage
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);
     const eager = (html.match(/<img\b[^>]*>/g) ?? []).filter((img) => !/loading="lazy"/.test(img));
-    // Two hero shots plus the ten directory thumbnails inside their summary rows.
-    assert.equal(eager.length, 12, `${locale} eager images`);
+    // Only the two hero shots load eagerly; the directory below the fold stays lazy.
+    assert.equal(eager.length, 2, `${locale} eager images`);
     const thumbs = html.match(/<summary><img [^>]*>/g) ?? [];
     assert.equal(thumbs.length, 10);
-    for (const thumb of thumbs) assert.doesNotMatch(thumb, /loading="lazy"/);
+    for (const thumb of thumbs) assert.match(thumb, /loading="lazy"/);
     assert.match(html, /<img [^>]*srcset="[^"]+ 800w, [^"]+ 1600w"/, `${locale} uses srcset`);
   }
 });
@@ -792,4 +792,11 @@ test("sharp photos: every master is at least 2000 px wide and ships a 1600w vari
     }
   }
   assert.match(html, /photos\/buttermilch-pancakes-mit-beeren\.webp 2400w/);
+});
+
+test("the phone photo grid sizes dishes by ratio so the quote card keeps its own height", () => {
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const phone = css.slice(css.indexOf("@media (max-width: 560px) {\n  .food-grid"));
+  assert.match(phone, /\.food-grid \{[^}]*grid-auto-rows: auto;/);
+  assert.match(phone, /\.dish \{[^}]*aspect-ratio: 4 \/ 3;/);
 });
