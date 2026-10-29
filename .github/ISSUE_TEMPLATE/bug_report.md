@@ -5,26 +5,27 @@ labels: bug
 ---
 
 <!-- Remove recipe names, hostnames, tokens, personal data and unredacted logs before submitting. -->
+<!-- Sections marked (required) must be filled in. Markdown templates cannot enforce this, so issues with empty required sections may be closed. -->
 
-## Package
+## Package (required)
 
 <!-- Cards (Home Assistant dashboard cards), Web (standalone app) or Demo. -->
 
-## Mealie Atelier version
+## Mealie Atelier version (required)
 
 <!-- For example 0.10.0. -->
 
-## Relevant versions
+## Relevant versions (required)
 
 <!-- Home Assistant, Mealie, browser and device, as applicable. -->
 
-## Steps to reproduce
+## Steps to reproduce (required)
 
 1.
 
-## Expected behavior
+## Expected behavior (required)
 
-## Actual behavior
+## Actual behavior (required)
 
 ## Relevant logs (redacted)
 

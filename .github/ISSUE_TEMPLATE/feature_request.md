@@ -4,7 +4,9 @@ about: Suggest something useful for a better kitchen experience
 labels: enhancement
 ---
 
-## What problem are you trying to solve?
+<!-- Sections marked (required) must be filled in. Markdown templates cannot enforce this, so issues with empty required sections may be closed. -->
+
+## What problem are you trying to solve? (required)
 
 ## Suggested interaction or behavior
 
