@@ -90,10 +90,17 @@ const bareLabel = (item) =>
     .map((part) => String(part || "").trim())
     .filter(Boolean)
     .join(" ");
-/** Drops a leading quantity and the unit of the item from a label the user saw. */
+/**
+ * Drops the leading quantity and unit of the item from a label the user saw. Only an item with a
+ * quantity above zero shows an amount: a number in a free text item with quantity 0 ("2 Milch"
+ * stored as the note) is part of the name and stays.
+ */
 const withoutAmount = (text, item) => {
-  const stripped = text.replace(/^\s*\d+(?:[.,]\d+)?\s+/, "");
-  if (stripped === text) return text;
+  const quantity = item.quantity;
+  if (typeof quantity !== "number" || !(quantity > 0)) return text;
+  const found = /^\s*\d+(?:[.,]\d+)?\s+/.exec(text);
+  if (!found) return text;
+  const stripped = text.slice(found[0].length);
   for (const unit of [item.unit?.name, item.unit?.abbreviation]) {
     const prefix = String(unit || "").trim();
     if (prefix && stripped.toLowerCase().startsWith(`${prefix.toLowerCase()} `))

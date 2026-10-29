@@ -679,7 +679,7 @@ test("run result has no repeated word, shows a success icon and says just now", 
   assert.match(html, /Sent: 1, skipped: 0, failed: 0, still waiting: 0\./);
   assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
   assert.equal(env.card._syncRelative(new Date().toISOString()), "just now");
-  assert.match(html, /nothing waiting/);
+  assert.match(html, /Nothing waiting/);
 });
 
 test("review has one title, a distinct group heading and a back arrow that points back", async () => {
@@ -722,7 +722,9 @@ test("rule card keeps the state line in plain flow (no stranded separator) and n
   const state = html.match(/<p class="sync-state">.*?<\/p>/s)?.[0] || "";
   assert.ok(state, "state line renders");
   assert.doesNotMatch(state, /·/);
-  assert.match(state, /<\/strong> <span class="sync-count sync-muted">/);
+  // The count is its own sentence-case line, so it never runs on after the state text.
+  assert.doesNotMatch(state, /sync-count/);
+  assert.match(html, /<\/p>\s*<p class="sync-count sync-muted">Nothing waiting<\/p>/);
   assert.equal((html.match(/Weekly groceries → Bring/g) || []).length, 1);
 });
 

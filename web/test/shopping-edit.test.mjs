@@ -691,6 +691,45 @@ test("another device's note or name change makes a rename a conflict, a quantity
   }
 });
 
+test("a number in a free text name is no amount, and a bare note alone does not match a food item", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "atelier-ledger-"));
+  try {
+    const state = {
+      items: {
+        // Another device renamed the free text items "2 Milch" and "10 Eier".
+        a: { id: "a", note: "Milch", display: "Milch", isFood: false, quantity: 0 },
+        b: { id: "b", note: "Eier", display: "Eier", isFood: false, quantity: 0 },
+        // The free text item the user saw is still unchanged.
+        c: { id: "c", note: "2 Milch", display: "2 Milch", isFood: false, quantity: 0 },
+        // Another device changed the food and the display is empty.
+        d: {
+          id: "d",
+          note: "fettarm",
+          display: "",
+          isFood: true,
+          food: { name: "Hafer" },
+          quantity: 0,
+        },
+      },
+    };
+    const { ledger } = await conflictLedger(dir, state);
+    const rename = (id, expected) =>
+      op("shopping_update", { item_id: id, name: "Soja", expected_name: expected });
+    await assert.rejects(ledger.process(rename("a", "2 Milch")), {
+      atelierCode: "offline_conflict",
+    });
+    await assert.rejects(ledger.process(rename("b", "10 Eier")), {
+      atelierCode: "offline_conflict",
+    });
+    assert.equal((await ledger.process(rename("c", "2 Milch"))).ok, true);
+    await assert.rejects(ledger.process(rename("d", "fettarm")), {
+      atelierCode: "offline_conflict",
+    });
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test("the German texts call a shopping item Artikel, never Eintrag", async () => {
   const { readFile } = await import("node:fs/promises");
   const de = JSON.parse(await readFile(join(ROOT, "../src/i18n/de.json"), "utf8"));
@@ -700,6 +739,12 @@ test("the German texts call a shopping item Artikel, never Eintrag", async () =>
     "errOfflineAddUncertain",
     "offlineItemNotEditable",
     "offlineInvalidItem",
+    "itemFallback",
+    "studioShoppingTransferBody.one",
+    "studioShoppingTransferBody.other",
+    "studioShoppingSuccess.one",
+    "studioShoppingSuccess.other",
+    "editorPrintCompletedItems",
   ])
-    assert.doesNotMatch(de[key], /Eintrag/, key);
+    assert.doesNotMatch(de[key], /Eintr/, key);
 });
