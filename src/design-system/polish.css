@@ -1524,10 +1524,12 @@
   }
 }
 
+/* The counter keeps clear of the floating close button. */
+.atelier .modal:has(.cook-layout) .cook-topline {
+  padding-inline-end: 56px;
+}
+
 @media (orientation: landscape) and (max-height: 700px) {
-  .atelier .modal:has(.cook-layout) .cook-topline {
-    padding-inline-end: 52px;
-  }
   .atelier .modal:has(.cook-layout) .cook-controls {
     display: contents;
   }

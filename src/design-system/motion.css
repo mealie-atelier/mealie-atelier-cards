@@ -1531,7 +1531,7 @@
 .at-premium-dialog .btn.primary {
   background: var(--at-accent, #a2cdb3);
   border-color: var(--at-accent, #a2cdb3);
-  color: #101c15;
+  color: var(--at-accent-ink, #101c15);
 }
 .at-premium-dialog .btn:hover {
   transform: translateY(-1px);

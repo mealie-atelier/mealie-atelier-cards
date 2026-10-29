@@ -46,3 +46,14 @@ test("two entries backed by one Mealie keep their own signed photo URLs", () => 
   render(cards, card, [tile("pie", "aaaa", "one")]);
   assert.deepEqual(render(cards, card, [other]), [other.imageUrl]);
 });
+
+test("relative demo photo paths render, absolute and traversing URLs do not", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._view = "recipes";
+  const photo = (imageUrl) => render(cards, card, [{ ...tile("tart", "", ""), imageUrl }]);
+  assert.deepEqual(photo("../photos/lemon-tart.webp"), ["../photos/lemon-tart.webp"]);
+  assert.deepEqual(photo("./photos/lemon-tart.webp"), ["./photos/lemon-tart.webp"]);
+  assert.deepEqual(photo("https://example.com/photos/lemon-tart.webp"), []);
+  assert.deepEqual(photo("../../photos/lemon-tart.webp"), []);
+});

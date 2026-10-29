@@ -79,13 +79,22 @@ const esc = (value) =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
 const colorOk = (v) => /^#[0-9a-fA-F]{6}$/.test(v || "");
+// Text on accent fills: whichever of the two inks has the higher WCAG contrast against the accent.
+const accentInk = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return 1.05 / (lum + 0.05) >= (lum + 0.05) / 0.0632 ? "#fffdfa" : "#12221b";
+};
 const imageOk = (v) =>
   typeof v === "string" &&
   (v.startsWith("/api/mealie_atelier/image/") ||
     v.startsWith("/api/mealie_atelier/recipe_asset/") ||
     v.startsWith("/api/image/") ||
     /^\/api\/recipe-asset\/[A-Za-z0-9_-]{1,150}\/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(v) ||
-    /^\.\/food\/[a-z0-9-]+\.webp$/.test(v))
+    /^\.\.?\/(food|photos)\/[a-z0-9-]+\.webp$/.test(v))
     ? v
     : "";
 const asArray = (v) => (Array.isArray(v) ? v : []);
@@ -845,7 +854,7 @@ class MealieAtelierCard extends HTMLElement {
     const displayedModal = modalChanged
       ? modalMarkup
       : modalMarkup.replace('class="modal ', 'class="modal modal-stable ');
-    const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""}" style="--at-accent:${accent};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
+    const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this.t("uiNoWriteGrant"))}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}

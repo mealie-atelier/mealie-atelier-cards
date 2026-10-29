@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
+import { loadCards, makeCard } from "./support/card-harness.mjs";
 const root = new URL("../", import.meta.url);
 const file = (x) => readFileSync(new URL(x, root), "utf8");
 const compiled = file("dist/mealie-atelier-cards.js");
@@ -76,7 +77,10 @@ test("dark and neutral stone-light palettes share central tokens and theme trans
   const standalone = file("web/public/index.html");
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--at-surface:\s*#f4f1eb/s);
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--at-panel:\s*#fffdfa/s);
-  assert.match(tokens, /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*#fffdfa/s);
+  assert.match(
+    tokens,
+    /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*var\(--at-accent-ink, #fffdfa\)/s,
+  );
   assert.match(
     tokens,
     /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8a7a2, #806877\)/s,
@@ -306,4 +310,18 @@ test("the hero eyebrow stays readable on the dark light-theme hero", () => {
   // Lightest point the copy sits on: the 86% band of the hero gradient over the photo.
   const ratio = (luminance(color) + 0.05) / (luminance("#392732") + 0.05);
   assert.ok(ratio >= 4.5, `contrast ${ratio.toFixed(2)} is below 4.5`);
+});
+
+test("text on accent fills follows the accent: white on dark accents, dark ink on light ones", () => {
+  const ink = (accent) => {
+    const cards = loadCards();
+    const card = makeCard(cards);
+    card._local = { ...card._local, accent, theme: "dark" };
+    card._render();
+    return cards.document.markup.match(/--at-accent-ink:(#[0-9a-f]{6})/)?.[1];
+  };
+  assert.equal(ink("#75465d"), "#fffdfa");
+  assert.equal(ink("#1f3a8a"), "#fffdfa");
+  assert.equal(ink("#9dcbb2"), "#12221b");
+  assert.equal(ink("#f2c94c"), "#12221b");
 });

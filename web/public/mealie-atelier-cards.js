@@ -79,13 +79,22 @@ const esc = (value) =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
 const colorOk = (v) => /^#[0-9a-fA-F]{6}$/.test(v || "");
+// Text on accent fills: whichever of the two inks has the higher WCAG contrast against the accent.
+const accentInk = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return 1.05 / (lum + 0.05) >= (lum + 0.05) / 0.0632 ? "#fffdfa" : "#12221b";
+};
 const imageOk = (v) =>
   typeof v === "string" &&
   (v.startsWith("/api/mealie_atelier/image/") ||
     v.startsWith("/api/mealie_atelier/recipe_asset/") ||
     v.startsWith("/api/image/") ||
     /^\/api\/recipe-asset\/[A-Za-z0-9_-]{1,150}\/[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(v) ||
-    /^\.\/food\/[a-z0-9-]+\.webp$/.test(v))
+    /^\.\.?\/(food|photos)\/[a-z0-9-]+\.webp$/.test(v))
     ? v
     : "";
 const asArray = (v) => (Array.isArray(v) ? v : []);
@@ -246,7 +255,7 @@ ha-card {
   height: 42px;
   border-radius: 14px;
   background: var(--at-accent);
-  color: #14211b;
+  color: var(--ds-brand-foreground);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -450,7 +459,7 @@ ha-card {
 .atelier .btn.primary {
   background: var(--at-accent);
   border-color: var(--ds-brand);
-  color: #12221b;
+  color: var(--ds-brand-foreground);
 }
 .atelier .btn.ghost {
   background: transparent;
@@ -933,7 +942,7 @@ ha-card {
   margin: 10px auto;
   z-index: 8;
   background: var(--at-accent);
-  color: #17271f;
+  color: var(--ds-brand-foreground);
   border-radius: 11px;
   padding: 11px 16px;
   font-size: 12px;
@@ -1255,7 +1264,7 @@ ha-card {
   outline-offset: 2px;
 }
 .atelier .modal .btn.primary {
-  color: #17271f;
+  color: var(--ds-brand-foreground);
 }
 @media (max-width: 780px) {
   .atelier .today-board {
@@ -5322,7 +5331,7 @@ ha-card {
 .at-premium-dialog .btn.primary {
   background: var(--at-accent, #a2cdb3);
   border-color: var(--at-accent, #a2cdb3);
-  color: #101c15;
+  color: var(--at-accent-ink, #101c15);
 }
 .at-premium-dialog .btn:hover {
   transform: translateY(-1px);
@@ -6308,7 +6317,7 @@ ha-card {
   --ds-muted: var(--at-sub);
   --ds-border: var(--at-line);
   --ds-brand: var(--at-accent);
-  --ds-brand-foreground: #12221b;
+  --ds-brand-foreground: var(--at-accent-ink, #12221b);
   --ds-ring: color-mix(in srgb, var(--at-accent) 55%, white);
   --ds-photo-fallback: linear-gradient(145deg, #304237, #67775b);
   --at-gap: var(--ds-grid-gap);
@@ -6351,7 +6360,7 @@ ha-card {
 .atelier.light {
   color-scheme: light;
   --ds-brand: color-mix(in srgb, var(--at-accent) 88%, #281b22);
-  --ds-brand-foreground: #fffdfa;
+  --ds-brand-foreground: var(--at-accent-ink, #fffdfa);
   --ds-ring: color-mix(in srgb, var(--at-accent) 82%, #241921);
   --ds-photo-fallback: linear-gradient(145deg, #b8a7a2, #806877);
   --at-surface: #f4f1eb;
@@ -7498,6 +7507,7 @@ ha-card {
   --ds-check-ink: #12251b;
 }
 .atelier {
+  --ds-check-ink: var(--ds-brand-foreground);
   --ds-control-strong: color-mix(in srgb, var(--ds-muted) 76%, var(--ds-border));
   --ds-control-hover: color-mix(in srgb, var(--ds-brand) 75%, var(--ds-border));
   --ds-control-focus: color-mix(in srgb, var(--ds-brand) 17%, transparent);
@@ -9517,10 +9527,12 @@ ha-card {
   }
 }
 
+/* The counter keeps clear of the floating close button. */
+.atelier .modal:has(.cook-layout) .cook-topline {
+  padding-inline-end: 56px;
+}
+
 @media (orientation: landscape) and (max-height: 700px) {
-  .atelier .modal:has(.cook-layout) .cook-topline {
-    padding-inline-end: 52px;
-  }
   .atelier .modal:has(.cook-layout) .cook-controls {
     display: contents;
   }
@@ -11972,7 +11984,7 @@ class MealieAtelierCard extends HTMLElement {
     const displayedModal = modalChanged
       ? modalMarkup
       : modalMarkup.replace('class="modal ', 'class="modal modal-stable ');
-    const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""}" style="--at-accent:${accent};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
+    const markup = `<ha-card><div class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this.t("uiNoWriteGrant"))}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
@@ -17596,6 +17608,7 @@ Object.assign(MealieAtelierCard.prototype, {
           "--at-ink",
           "--at-sub",
           "--at-accent",
+          "--at-accent-ink",
           "--at-line",
           "--at-surface",
           "--at-panel",

@@ -101,6 +101,18 @@
         return value;
       };
       document.documentElement.lang = demoLanguage;
+      // The card only renders relative demo photo paths, so resolve each photo against this page.
+      const photoPath = (file, catalogUrl) => {
+        const { pathname } = new URL(file, catalogUrl);
+        for (const [prefix, dir] of [
+          ["./", "."],
+          ["../", ".."],
+        ]) {
+          const base = new URL(`${dir}/`, location.href).pathname;
+          if (pathname.startsWith(base)) return prefix + pathname.slice(base.length);
+        }
+        return "";
+      };
       const recipes = catalog.recipes.map((item, index) => ({
         id: "recipe-" + (index + 1),
         slug: item.slug,
@@ -126,7 +138,7 @@
             step.text,
           ]),
         ],
-        imageUrl: new URL(item.image.file, catalogResponse.url).href,
+        imageUrl: photoPath(item.image.file, catalogResponse.url),
         totalTime: item.prepMinutes + item.cookMinutes,
         recipeCategory: [{ name: localize(item.category) }],
         recipeCuisine: [{ name: localize(item.cuisine) }],
@@ -136,7 +148,7 @@
         description: localize(item.description),
         ingredients: localize(item.ingredients),
         steps: localize(item.steps).map((step) => [step.title, step.summary, step.text]),
-        imageUrl: new URL(item.image.file, catalogResponse.url).href,
+        imageUrl: photoPath(item.image.file, catalogResponse.url),
         servings: item.servings,
       }));
 

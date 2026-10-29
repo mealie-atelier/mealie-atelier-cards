@@ -5,6 +5,7 @@
   --ds-check-ink: #12251b;
 }
 .atelier {
+  --ds-check-ink: var(--ds-brand-foreground);
   --ds-control-strong: color-mix(in srgb, var(--ds-muted) 76%, var(--ds-border));
   --ds-control-hover: color-mix(in srgb, var(--ds-brand) 75%, var(--ds-border));
   --ds-control-focus: color-mix(in srgb, var(--ds-brand) 17%, transparent);
