@@ -11861,6 +11861,10 @@ ha-card {
 .atelier .modal.bar-on > .modal-bar-title {
   opacity: 1;
 }
+/* A re-render swaps the dialog subtree: the strip must not fade again while it keeps its state. */
+.atelier .modal.modal-stable > .modal-bar-title {
+  transition: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .atelier .modal > .modal-bar-title {
     transition: none;
@@ -13327,7 +13331,10 @@ class MealieAtelierCard extends HTMLElement {
       ? modalMarkup
       : modalMarkup
           .replace('class="modal-backdrop"', 'class="modal-backdrop modal-stable"')
-          .replace('class="modal ', 'class="modal modal-stable ');
+          .replace(
+            'class="modal ',
+            `class="modal modal-stable${this.shadowRoot.querySelector(".modal")?.classList.contains("bar-on") ? " bar-on" : ""} `,
+          );
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}

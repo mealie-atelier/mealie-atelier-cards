@@ -99,6 +99,10 @@
 .atelier .modal.bar-on > .modal-bar-title {
   opacity: 1;
 }
+/* A re-render swaps the dialog subtree: the strip must not fade again while it keeps its state. */
+.atelier .modal.modal-stable > .modal-bar-title {
+  transition: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .atelier .modal > .modal-bar-title {
     transition: none;

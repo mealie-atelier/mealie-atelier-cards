@@ -493,3 +493,30 @@ test("a Home Assistant theme switch and a plain state update keep the open cooki
   assert.equal(byLabel["theme to dark"].theme, "dark");
   assert.equal(byLabel["theme to light settled"].theme, "light");
 });
+
+test("a re-render keeps the dialog header strip on, so no frame paints it transparent", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._detail = { slug: "g", name: "G", recipeInstructions: [{ text: "a" }, { text: "b" }] };
+  card._modal = "create";
+  card._render();
+  assert.doesNotMatch(cards.document.markup, /bar-on/);
+  const open = card.shadowRoot.querySelector;
+  card.shadowRoot.querySelector = (sel) =>
+    sel === ".modal"
+      ? { classList: { contains: (name) => name === "bar-on" }, querySelector: () => null }
+      : open(sel);
+  card._render();
+  assert.match(cards.document.markup, /class="modal modal-stable bar-on /);
+  card.shadowRoot.querySelector = open;
+  card._render();
+  assert.doesNotMatch(cards.document.markup, /bar-on/);
+});
+
+test("the header strip does not fade again when a stable dialog is re-rendered", () => {
+  const css = readFileSync(
+    new URL("../src/design-system/mobile-forms.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(css, /\.atelier \.modal\.modal-stable > \.modal-bar-title \{\s*transition: none;/);
+});
