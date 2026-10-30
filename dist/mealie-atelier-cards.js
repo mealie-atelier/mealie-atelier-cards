@@ -11106,7 +11106,7 @@ ha-card {
   }
 }
 /* A header strip behind the sticky button: once the dialog scrolls, content passes under the strip instead of
-   being cut by the button. It fades in with the scroll position, so it stays invisible over the hero at the top. */
+   being cut by the button. It switches on in one step when the dialog heading is under it (class bar-on), so it stays invisible over the hero at the top. */
 .atelier .modal > .modal-close::before {
   content: "";
   position: absolute;
@@ -11119,7 +11119,13 @@ ha-card {
   background: var(--at-surface);
   border-bottom: 1px solid var(--at-line);
   opacity: 0;
+  transition: opacity var(--ds-motion-fast) linear;
   pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .modal > .modal-close::before {
+    transition: none;
+  }
 }
 /* The strip is a child of the button's stacking context and would paint over the button's own background. So the
    button paints its tile on ::after (later in tree order, same layer) and keeps its own background transparent. */
@@ -11158,22 +11164,13 @@ ha-card {
 .atelier .modal.sync-modal > .modal-close::after {
   backdrop-filter: none;
 }
-@supports (animation-timeline: scroll()) {
-  .atelier .modal > .modal-close::before {
-    animation: at-close-strip linear both;
-    animation-timeline: scroll(nearest block);
-    animation-range: 0 48px;
-  }
+.atelier .modal.bar-on > .modal-close::before {
+  opacity: 1;
 }
 /* Only on phones in landscape (about 500px tall or less) the strip would take a quarter of the dialog, so no strip. Laptop windows keep it. */
 @media (orientation: landscape) and (max-height: 500px) {
   .atelier .modal > .modal-close::before {
     display: none;
-  }
-}
-@keyframes at-close-strip {
-  to {
-    opacity: 1;
   }
 }
 
@@ -11807,6 +11804,10 @@ ha-card {
 .atelier .picker-filters {
   gap: 15px;
 }
+/* The favorites hint belongs to its check row: it sits 6px below the row like other field hints, not a full form gap. */
+.atelier .picker-filters > .picker-hint {
+  margin-top: calc(6px - 15px);
+}
 .atelier .picker-filter-row > .field {
   margin: 0;
   min-width: 0;
@@ -11833,39 +11834,36 @@ ha-card {
   outline: none;
 }
 
-/* The header strip that appears behind the sticky close button names the dialog instead of staying an empty band.
-   The strip is fully opaque after 48px of scroll, so the title fades in only after that (48px to 96px), once the dialog heading is under the strip. */
+/* The header strip behind the sticky close button names the dialog. It has two states only: transparent while the
+   dialog heading is in view, and opaque with its border and the heading text once the heading is under it.
+   The card toggles .bar-on from an IntersectionObserver on the heading; there is no scroll-linked partial alpha. */
 .atelier .modal > .modal-bar-title {
-  display: none;
+  --at-bar-size: 48px;
+  display: block;
+  position: sticky;
+  top: 20px;
+  z-index: 5;
+  box-sizing: border-box;
+  height: var(--at-bar-size);
+  margin: 0 0 calc(-1 * var(--at-bar-size));
+  padding: 0 calc(20px + var(--at-bar-size) + 12px) 0 24px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: var(--at-bar-size);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--at-ink);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ds-motion-fast) linear;
 }
-@supports (animation-timeline: scroll()) {
+.atelier .modal.bar-on > .modal-bar-title {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
   .atelier .modal > .modal-bar-title {
-    --at-bar-size: 48px;
-    display: block;
-    position: sticky;
-    top: 20px;
-    z-index: 5;
-    box-sizing: border-box;
-    height: var(--at-bar-size);
-    margin: 0 0 calc(-1 * var(--at-bar-size));
-    padding: 0 calc(20px + var(--at-bar-size) + 12px) 0 24px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    line-height: var(--at-bar-size);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--at-ink);
-    pointer-events: none;
-    opacity: 0;
-    animation: at-bar-title linear both;
-    animation-timeline: scroll(nearest block);
-    animation-range: 48px 96px;
-  }
-}
-@keyframes at-bar-title {
-  to {
-    opacity: 1;
+    transition: none;
   }
 }
 @container atelier-card (max-width: 420px) {
@@ -12540,6 +12538,7 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   disconnectedCallback() {
+    this._modalBarObserver?.disconnect();
     // BEGIN feature H: offline queue listener
     this._offlineDetach();
     // END feature H
@@ -13363,6 +13362,7 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
+    this._watchModalBar();
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -13440,6 +13440,33 @@ class MealieAtelierCard extends HTMLElement {
         );
       });
     }
+  }
+  /**
+   * The sticky header strip of a dialog switches on in one step, when the dialog heading has scrolled under it:
+   * the strip becomes opaque with its border and names the dialog by the heading's own text. No scroll-linked alpha.
+   */
+  _watchModalBar() {
+    this._modalBarObserver?.disconnect();
+    this._modalBarObserver = null;
+    const modal = this.shadowRoot.querySelector(".modal");
+    const strip = modal?.querySelector(":scope > .modal-bar-title");
+    const heading = modal?.querySelector("h2");
+    if (!modal || !strip || !heading) return;
+    strip.textContent = heading.textContent.trim();
+    if (typeof IntersectionObserver === "undefined") return;
+    // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
+    const edge = 20 + (strip.offsetHeight || 48);
+    this._modalBarObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1];
+        const under =
+          !entry.isIntersecting &&
+          entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge;
+        modal.classList.toggle("bar-on", under);
+      },
+      { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
+    );
+    this._modalBarObserver.observe(heading);
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */
   _opensTouchKeyboard(el) {

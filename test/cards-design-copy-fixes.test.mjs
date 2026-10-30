@@ -63,14 +63,13 @@ test("the dialog close button is sticky so it stays reachable", () => {
   assert.match(rule(refinement, ".atelier .modal > .modal-close"), /position:\s*sticky/);
 });
 
-test("a scroll-driven header strip keeps content from being cut by the sticky close button", () => {
+test("a header strip switched by the heading observer keeps content from being cut by the sticky close button", () => {
   const strip = rule(refinement, ".atelier .modal > .modal-close::before");
   assert.match(strip, /position:\s*absolute/);
   assert.match(strip, /z-index:\s*-1/);
   assert.match(strip, /background:\s*var\(--at-surface\)/);
   assert.match(strip, /opacity:\s*0/);
-  assert.match(refinement, /animation-timeline:\s*scroll\(nearest block\)/);
-  assert.match(refinement, /@keyframes at-close-strip \{\s*to \{\s*opacity: 1/);
+  assert.match(refinement, /\.atelier \.modal\.bar-on > \.modal-close::before \{\s*opacity: 1/);
   assert.match(
     refinement,
     /max-height: 500px\) \{\s*\.atelier \.modal > \.modal-close::before \{\s*display: none/,

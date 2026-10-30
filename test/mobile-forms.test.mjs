@@ -58,14 +58,83 @@ test("the dialog header names the dialog instead of staying an empty band", () =
   const title = card.t("create");
   assert.ok(html.includes(`<div class="modal-bar-title" aria-hidden="true">${title}</div>`), html);
   assert.match(html, /role="dialog"[^>]*tabindex="-1"/);
-  assert.match(
-    rule(".atelier .modal > .modal-bar-title {\n    --at-bar-size"),
-    /position: sticky;/,
-  );
+  assert.match(rule(".atelier .modal > .modal-bar-title {\n  --at-bar-size"), /position: sticky;/);
 });
 
-test("the header title fades in only after the strip behind it is fully opaque", () => {
-  const block = rule(".atelier .modal > .modal-bar-title {\n    --at-bar-size");
-  assert.match(block, /animation: at-bar-title linear both;/);
-  assert.match(block, /animation-range: 48px 96px;/);
+test("the header strip is a two state switch with no scroll-linked alpha", () => {
+  const block = rule(".atelier .modal > .modal-bar-title {\n  --at-bar-size");
+  assert.match(block, /opacity: 0;/);
+  assert.match(block, /transition: opacity var\(--ds-motion-fast\) linear;/);
+  assert.doesNotMatch(css, /animation-timeline|@keyframes at-bar-title/);
+  assert.match(rule(".atelier .modal.bar-on > .modal-bar-title"), /opacity: 1;/);
+  assert.match(
+    rule("@media (prefers-reduced-motion: reduce) {\n  .atelier .modal > .modal-bar-title"),
+    /transition: none;/,
+  );
+  const refinement = readFileSync(
+    new URL("../src/design-system/control-refinement.css", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(refinement, /animation-timeline|at-close-strip/);
+  assert.match(refinement, /\.atelier \.modal\.bar-on > \.modal-close::before \{\s*opacity: 1;/);
+});
+
+test("the favorites hint sits close under its check row", () => {
+  assert.match(rule(".atelier .picker-filters > .picker-hint"), /margin-top: calc\(6px - 15px\);/);
+});
+
+function watchedModal({ strip = {}, headingText = " Gericht einplanen " } = {}) {
+  const observers = [];
+  const classes = new Set();
+  const stripEl = { textContent: "Wochenplan", offsetHeight: 48, ...strip };
+  const heading = { textContent: headingText };
+  const modal = {
+    classList: {
+      toggle: (name, on) => (on ? classes.add(name) : classes.delete(name)),
+    },
+    querySelector: (sel) =>
+      sel === ":scope > .modal-bar-title" ? stripEl : sel === "h2" ? heading : null,
+  };
+  class IO {
+    constructor(cb, opts) {
+      this.cb = cb;
+      this.opts = opts;
+      this.disconnected = false;
+      observers.push(this);
+    }
+    observe(el) {
+      this.target = el;
+    }
+    disconnect() {
+      this.disconnected = true;
+    }
+  }
+  const card = makeCard(loadCards({ globals: { IntersectionObserver: IO } }));
+  card.shadowRoot.querySelector = (sel) => (sel === ".modal" ? modal : null);
+  return { card, observers, classes, stripEl, heading };
+}
+
+test("the strip shows the dialog heading text and switches in one step when the heading is under it", () => {
+  const { card, observers, classes, stripEl, heading } = watchedModal();
+  card._watchModalBar();
+  assert.equal(stripEl.textContent, "Gericht einplanen");
+  const [io] = observers;
+  assert.equal(io.target, heading);
+  assert.equal(io.opts.rootMargin, "-68px 0px 0px 0px");
+  const rootBounds = { top: 100 };
+  io.cb([{ isIntersecting: false, boundingClientRect: { bottom: 150 }, rootBounds }]);
+  assert.equal(classes.has("bar-on"), true);
+  io.cb([{ isIntersecting: true, boundingClientRect: { bottom: 200 }, rootBounds }]);
+  assert.equal(classes.has("bar-on"), false);
+  // Heading below the fold (not intersecting, but not scrolled past): strip stays off.
+  io.cb([{ isIntersecting: false, boundingClientRect: { bottom: 900 }, rootBounds }]);
+  assert.equal(classes.has("bar-on"), false);
+});
+
+test("a new render replaces the heading observer", () => {
+  const { card, observers } = watchedModal();
+  card._watchModalBar();
+  card._watchModalBar();
+  assert.equal(observers[0].disconnected, true);
+  assert.equal(observers.length, 2);
 });

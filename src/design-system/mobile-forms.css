@@ -42,6 +42,10 @@
 .atelier .picker-filters {
   gap: 15px;
 }
+/* The favorites hint belongs to its check row: it sits 6px below the row like other field hints, not a full form gap. */
+.atelier .picker-filters > .picker-hint {
+  margin-top: calc(6px - 15px);
+}
 .atelier .picker-filter-row > .field {
   margin: 0;
   min-width: 0;
@@ -68,39 +72,36 @@
   outline: none;
 }
 
-/* The header strip that appears behind the sticky close button names the dialog instead of staying an empty band.
-   The strip is fully opaque after 48px of scroll, so the title fades in only after that (48px to 96px), once the dialog heading is under the strip. */
+/* The header strip behind the sticky close button names the dialog. It has two states only: transparent while the
+   dialog heading is in view, and opaque with its border and the heading text once the heading is under it.
+   The card toggles .bar-on from an IntersectionObserver on the heading; there is no scroll-linked partial alpha. */
 .atelier .modal > .modal-bar-title {
-  display: none;
+  --at-bar-size: 48px;
+  display: block;
+  position: sticky;
+  top: 20px;
+  z-index: 5;
+  box-sizing: border-box;
+  height: var(--at-bar-size);
+  margin: 0 0 calc(-1 * var(--at-bar-size));
+  padding: 0 calc(20px + var(--at-bar-size) + 12px) 0 24px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: var(--at-bar-size);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--at-ink);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--ds-motion-fast) linear;
 }
-@supports (animation-timeline: scroll()) {
+.atelier .modal.bar-on > .modal-bar-title {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
   .atelier .modal > .modal-bar-title {
-    --at-bar-size: 48px;
-    display: block;
-    position: sticky;
-    top: 20px;
-    z-index: 5;
-    box-sizing: border-box;
-    height: var(--at-bar-size);
-    margin: 0 0 calc(-1 * var(--at-bar-size));
-    padding: 0 calc(20px + var(--at-bar-size) + 12px) 0 24px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    line-height: var(--at-bar-size);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--at-ink);
-    pointer-events: none;
-    opacity: 0;
-    animation: at-bar-title linear both;
-    animation-timeline: scroll(nearest block);
-    animation-range: 48px 96px;
-  }
-}
-@keyframes at-bar-title {
-  to {
-    opacity: 1;
+    transition: none;
   }
 }
 @container atelier-card (max-width: 420px) {

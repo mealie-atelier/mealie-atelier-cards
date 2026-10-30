@@ -431,6 +431,7 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   disconnectedCallback() {
+    this._modalBarObserver?.disconnect();
     // BEGIN feature H: offline queue listener
     this._offlineDetach();
     // END feature H
@@ -1254,6 +1255,7 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
+    this._watchModalBar();
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -1331,6 +1333,33 @@ class MealieAtelierCard extends HTMLElement {
         );
       });
     }
+  }
+  /**
+   * The sticky header strip of a dialog switches on in one step, when the dialog heading has scrolled under it:
+   * the strip becomes opaque with its border and names the dialog by the heading's own text. No scroll-linked alpha.
+   */
+  _watchModalBar() {
+    this._modalBarObserver?.disconnect();
+    this._modalBarObserver = null;
+    const modal = this.shadowRoot.querySelector(".modal");
+    const strip = modal?.querySelector(":scope > .modal-bar-title");
+    const heading = modal?.querySelector("h2");
+    if (!modal || !strip || !heading) return;
+    strip.textContent = heading.textContent.trim();
+    if (typeof IntersectionObserver === "undefined") return;
+    // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
+    const edge = 20 + (strip.offsetHeight || 48);
+    this._modalBarObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1];
+        const under =
+          !entry.isIntersecting &&
+          entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge;
+        modal.classList.toggle("bar-on", under);
+      },
+      { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
+    );
+    this._modalBarObserver.observe(heading);
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */
   _opensTouchKeyboard(el) {
