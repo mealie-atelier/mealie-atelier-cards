@@ -195,26 +195,25 @@ CUTS = """(modal, withBar, margin = 14, tolerance = 0, ingredientsClean = true) 
 }"""
 
 
-CLIP: dict | None = None
-
-
 def fit_recipe_top(page) -> None:
-    """Show the recipe dialog near its top (photo, name, actions) with the product's own layout.
+    """Show the recipe dialog from its top (photo, name, actions) with the product's own layout.
 
-    The dialog keeps its stylesheet max-height (it stops growing at 1040 px). The viewport is made just tall enough
-    for that, the shot is cropped around the centred dialog back to the published aspect, and the dialog is scrolled
-    by the fewest pixels that put its bottom edge between two rows (as a reader would scroll it).
+    The dialog is never scrolled, so the photo stays whole. The viewport is shortened (the width follows, same
+    aspect as the published 1440 x 960) until the dialog's bottom edge falls between two rows: no ingredient row
+    or step card is sliced mid-text, the lists simply continue below the edge.
     """
-    global CLIP
     modal = page.locator(".modal >> visible=true").first
-    tall = 1140
-    page.set_viewport_size({"width": DESKTOP["width"], "height": tall})
-    page.wait_for_timeout(400)
-    # From the top, as the dialog opens: the photo stays whole, the lists continue below the dialog edge.
     modal.evaluate("m => { m.style.transition = 'none'; m.scrollTop = 0; }")
-    CLIP = {"x": 0, "y": (tall - DESKTOP["height"]) // 2, "width": DESKTOP["width"], "height": DESKTOP["height"]}
-    page.mouse.move(2, 2)
-    page.wait_for_timeout(600)
+    for height in range(DESKTOP["height"], DESKTOP["height"] - 400, -2):
+        page.set_viewport_size({"width": round(height * DESKTOP["width"] / DESKTOP["height"]), "height": height})
+        page.wait_for_timeout(250)
+        modal.evaluate("m => { m.style.transition = 'none'; m.scrollTop = 0; }")
+        if modal.evaluate(CUTS, True) == 0:
+            print("recipe viewport height", height)
+            page.mouse.move(2, 2)
+            page.wait_for_timeout(600)
+            return
+    raise SystemExit("no viewport height whose dialog bottom edge falls between two rows")
 
 
 FIT_NAV = """(nav) => {
@@ -332,9 +331,7 @@ def fit_desktop_viewport(page, check) -> None:
 
 
 def shot(page, tmp: Path) -> Path:
-    global CLIP
-    page.screenshot(path=str(tmp), clip=CLIP) if CLIP else page.screenshot(path=str(tmp))
-    CLIP = None
+    page.screenshot(path=str(tmp))
     return tmp
 
 
@@ -402,7 +399,7 @@ def main() -> None:
                     modal = page.locator(".modal >> visible=true").first
                     if step == "cook":
                         start_cooking(page)
-                        modal.evaluate("m => { m.scrollTop = 0; }")
+                        scroll_cook_dialog(page)
                     else:
                         modal.evaluate("m => { m.scrollTop = 0; }")
                         fit_phone_viewport(page, lambda: modal.evaluate(CUTS, False))

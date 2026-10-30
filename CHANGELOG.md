@@ -4,6 +4,13 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Web app: the app icons, favicon, touch icon, notification badge and the install dialog mark now show the herb leaf Week Dial like the logo inside the app and the demo site, instead of the old browser window glyph.
+- Demo site: the 404 page swaps its header, footer and language switch to the language of the URL below `/en/` or `/de/` and marks it as current. On any other path it stays neutral, German first with English beside it.
+- Install docs: the FAQ names where the Marketplace is (**Settings → Marketplace**, route `/marketplace/browse`).
+- README screenshots: the recipe dialog shot ends between two rows instead of slicing a step card, and the phone cooking shot shows the tools panel and the timer clear of the Back and Next bar.
+
 ## [0.11.0] - 2026-10-30
 
 ### Added
