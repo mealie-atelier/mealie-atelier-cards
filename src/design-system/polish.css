@@ -209,6 +209,14 @@
   outline-offset: 2px;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-brand) 11%, transparent);
 }
+/* The search pill draws the one ring (.search:focus-within), so the inner input must not add a second. */
+.atelier .search input:not([type="checkbox"]):not([type="radio"]):focus,
+.atelier .search input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+.atelier .command-search input:not([type="checkbox"]):not([type="radio"]):focus-visible {
+  outline: 0;
+  box-shadow: none;
+  border: 0;
+}
 .atelier textarea {
   line-height: 1.6;
   min-height: 108px;

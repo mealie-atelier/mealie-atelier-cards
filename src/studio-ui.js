@@ -55,12 +55,15 @@ function atGroup(rows) {
     rows: rows.filter((x) => x.category === k),
   }));
 }
+const STUDIO_POLL_FAST_MS = 3000;
+const STUDIO_POLL_SLOW_MS = 12000;
 Object.assign(MealieAtelierCard.prototype, {
   async _studioRefresh({ silent = false } = {}) {
     try {
       const v = await this._ws("studio_state");
       if (v && Number.isInteger(v.revision)) {
         const prev = this._studio?.revision;
+        const cookBefore = this._cookIndex;
         this._studio = v;
         this._journal = v.journal || {};
         // While this card still sends its own step, the server's older step must not win.
@@ -76,8 +79,10 @@ Object.assign(MealieAtelierCard.prototype, {
             Math.max(0, steps.length - 1),
           );
         }
+        // The displayed step must always match the internal one, even when the revision is unchanged.
         if (
           !silent ||
+          this._cookIndex !== cookBefore ||
           (prev !== v.revision &&
             !this.shadowRoot.activeElement?.matches?.("input,textarea,select"))
         )
@@ -929,10 +934,19 @@ MealieAtelierCard.prototype._tickTimers = function () {
 };
 MealieAtelierCard.prototype.connectedCallback = function () {
   _atOriginalConnected.call(this);
+  // A short tick keeps an open cooking mode close to the other cooks; other views poll every 12 s.
+  this._studioPollAt = 0;
   this._studioPoll = setInterval(() => {
-    if (["family", "discover", "pantry"].includes(this._view) || this._modal === "cook")
+    const now = Date.now();
+    const cooking = this._modal === "cook";
+    const fast = cooking && this._studio?.family?.session && document.visibilityState !== "hidden";
+    const slowDue = now - this._studioPollAt >= STUDIO_POLL_SLOW_MS - STUDIO_POLL_FAST_MS / 2;
+    if (!fast && !slowDue) return;
+    if (["family", "discover", "pantry"].includes(this._view) || cooking) {
+      this._studioPollAt = now;
       this._studioRefresh({ silent: true });
-  }, 12000);
+    }
+  }, STUDIO_POLL_FAST_MS);
 };
 MealieAtelierCard.prototype.disconnectedCallback = function () {
   _atOriginalDisconnected.call(this);
@@ -1403,6 +1417,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     const replace = Boolean(active && !existed && choice === true);
     // The dialog awaited above, so the original event no longer targets the button.
     await _atOriginalClick.call(this, { target: el });
+    if (existed && this._modal === "cook") {
+      // Joining a running shared session: open at the shared step instead of step 1.
+      const steps = asArray(this._detail.recipeInstructions);
+      this._cookIndex = Math.min(
+        Math.max(0, Number(active.step) || 0),
+        Math.max(0, steps.length - 1),
+      );
+      this._render();
+    }
     if (this._permissions.can_write && !existed && (!active || replace))
       await this._studioWrite("session_start", { slug, name, replace_existing: replace });
     return;

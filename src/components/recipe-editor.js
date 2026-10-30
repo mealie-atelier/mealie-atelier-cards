@@ -253,7 +253,7 @@ export const recipeEditorMethods = {
       (this._permissions.limits.upload_max_bytes || EDITOR_UPLOAD_MAX) / 1048576,
     );
     return `<div class="ed-photo">${image ? `<div class="ed-cover-frame">${image}</div>` : `<p class="editing-hint">${esc(this.t("editorPhotoNone"))}</p>`}
-      <div class="ed-actions"><button type="button" class="btn" data-action="ed-photo-pick" ${busy ? "disabled" : ""}>${icon("edit", 15)} ${esc(this.t("editorPhotoReplace"))}</button>${
+      <div class="ed-actions"><button type="button" class="btn" data-action="ed-photo-pick" ${busy ? "disabled" : ""}>${icon("edit", 15)} ${esc(this.t(image ? "editorPhotoReplace" : "editorPhotoAdd"))}</button>${
         image
           ? `<button type="button" class="btn" data-action="ed-photo-remove-ask" ${busy ? "disabled" : ""}>${icon("close", 15)} ${esc(this.t("editorPhotoRemove"))}</button>`
           : ""

@@ -127,8 +127,12 @@
   word-break: normal;
 }
 .atelier .notice > span {
-  flex: 1 1 0;
+  flex: 1 1 200px;
   min-width: 0;
+  overflow-wrap: break-word;
+}
+.atelier .notice > .setup-hint {
+  flex: 1 1 100%;
 }
 .atelier .btn.tiny {
   min-height: 38px;

@@ -68,6 +68,7 @@
   --at-ink: #f3f0e8;
   --at-sub: #a5aca3;
   --at-panel: #1b241e;
+  --at-danger: #f6b6a4;
   --at-panel2: #263027;
   --at-line: rgba(230, 237, 220, 0.12);
   --at-shadow: 0 30px 85px rgba(2, 9, 5, 0.3);
@@ -133,6 +134,7 @@
   --at-ink: #1f2621;
   --at-sub: #566058;
   --at-panel: #fffdfa;
+  --at-danger: #8f2f1d;
   --at-panel2: #eee9e3;
   --at-line: rgba(20, 32, 26, 0.15);
   --at-shadow: 0 18px 48px rgba(20, 32, 26, 0.085);
