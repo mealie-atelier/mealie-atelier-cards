@@ -18,6 +18,8 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
+`MEALIE_URL` is resolved inside the container, so `localhost` and `127.0.0.1` point to the container itself and `/healthz` answers 503. Use `http://host.docker.internal:9925` for Mealie on the Docker host, the host's LAN IP, or the Mealie container name on a shared Docker network. `compose.yaml` maps `host.docker.internal` to the host, so it also works on Linux.
+
 Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (the unauthenticated `/healthz`, which verifies the Mealie token on the server, caches the result for 60 seconds and answers only 200 or 503 without details), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
 
 Optional **read-only** kiosk mode: add `ATELIER_READ_ONLY=true` to `.env` and restart. The server will reject all mutation commands, not just hide buttons.
@@ -41,7 +43,9 @@ cp .env.example .env
 npm start
 ```
 
-`npm start` runs `node --env-file=.env server.mjs`, so `.env` is loaded for you (default port 3000). The server refuses to start without the required variables or with a password shorter than 12 characters.
+`npm start` runs `node --env-file=.env server.mjs`, so `.env` is loaded for you (default port 3000). The server refuses to start without the required variables, with a password shorter than 12 characters, or while `ATELIER_PASSWORD` or `MEALIE_API_TOKEN` still has the template value from `.env.example`.
+
+The Node route listens on all interfaces (`0.0.0.0`) by default, over plain HTTP with Basic auth only. For local use set `HOST=127.0.0.1` in `.env`. Outside a trusted LAN put an HTTPS reverse proxy in front, and never expose it to the Internet.
 
 ## Configuration
 

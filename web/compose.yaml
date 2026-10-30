@@ -8,6 +8,8 @@ services:
       PORT: "3000"
       HOST: 0.0.0.0
       ATELIER_DATA_DIR: /app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "127.0.0.1:${ATELIER_HOST_PORT:-3008}:3000"
     healthcheck:
