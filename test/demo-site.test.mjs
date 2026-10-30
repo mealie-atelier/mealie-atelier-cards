@@ -205,22 +205,49 @@ test("the live demo counts the rest in its total time, matching the recipe page"
   assert.match(read("demo/preview.html"), /item\.restMinutes/);
 });
 
-test("old English recipe URLs redirect permanently to the new English slugs", () => {
+test("every recipe URL origin/main published redirects permanently", () => {
   const redirects = read(join(builds.deployed, "_redirects")).trim().split("\n");
-  const moved = catalogData.recipes.filter((recipe) => recipe.slug !== recipe.slugEn);
-  assert.ok(moved.length >= 9, "most English slugs differ from the German ones");
-  for (const recipe of moved) {
-    const to = `/en/recipes/${recipe.slugEn}/`;
-    assert.ok(redirects.includes(`/en/recipes/${recipe.slug}/ ${to} 301`), recipe.slug);
-    assert.ok(redirects.includes(`/en/recipes/${recipe.slug} ${to} 301`), recipe.slug);
-    assert.ok(existsSync(join(builds.deployed, to, "index.html")), `${to} exists`);
-    assert.ok(!existsSync(join(builds.deployed, "en/recipes", recipe.slug)), recipe.slug);
+  const published = [
+    "shakshuka-mit-paprika",
+    "griechischer-salat-mit-kichererbsen",
+    "haehnchensuppe-mit-gemuese",
+    "pizza-margherita",
+    "zitronen-pasta-mit-gruenkohl-und-walnuessen",
+    "paneer-curry-mit-basmatireis",
+    "ramen-mit-haehnchen-und-gemuese",
+    "ofengemuese-mit-linsen-und-kraeuterjoghurt",
+    "buttermilch-pancakes-mit-beeren",
+    "gnocchi-alla-sorrentina",
+  ];
+  for (const slug of published) {
+    const current = catalogData.recipes.find((recipe) => recipe.slug === slug);
+    const enTo = current ? `/en/recipes/${current.slugEn}/` : "/en/";
+    if (current && current.slugEn === slug) {
+      assert.ok(existsSync(join(builds.deployed, "en/recipes", slug, "index.html")), slug);
+    } else {
+      assert.ok(redirects.includes(`/en/recipes/${slug}/ ${enTo} 301`), `en ${slug}`);
+      assert.ok(redirects.includes(`/en/recipes/${slug} ${enTo} 301`), `en ${slug} no slash`);
+    }
+    if (!current) {
+      assert.ok(redirects.includes(`/de/rezepte/${slug}/ /de/ 301`), `de ${slug}`);
+    } else {
+      assert.ok(existsSync(join(builds.deployed, "de/rezepte", slug, "index.html")), slug);
+    }
   }
   assert.ok(
-    redirects.includes(
-      "/en/recipes/zitronen-focaccia-mit-rosmarin/ /en/recipes/lemon-and-rosemary-focaccia/ 301",
-    ),
+    redirects.includes("/en/recipes/pizza-margherita/ /en/ 301"),
+    "removed recipes land on the English home",
   );
+  // Redirect sources never shadow a page that exists.
+  for (const line of redirects) {
+    const from = line.split(" ")[0];
+    assert.ok(!existsSync(join(builds.deployed, from, "index.html")), `${from} is a live page`);
+  }
+  for (const line of redirects) {
+    const to = line.split(" ")[1];
+    assert.ok(existsSync(join(builds.deployed, to, "index.html")), `${to} exists`);
+  }
+  const moved = catalogData.recipes.filter((recipe) => recipe.slug !== recipe.slugEn);
   const sitemap = read(join(builds.deployed, "sitemap.xml"));
   for (const recipe of moved) {
     assert.ok(sitemap.includes(`${baseUrl}en/recipes/${recipe.slugEn}/`), recipe.slugEn);

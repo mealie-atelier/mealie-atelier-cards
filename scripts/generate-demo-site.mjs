@@ -778,18 +778,35 @@ for (const locale of localeIds) {
   }
 }
 
-// English recipe pages used to live under the German slug. Cloudflare Pages reads _redirects from
-// the site root, so every URL published earlier keeps working with a permanent redirect.
-const movedRecipes = catalog.recipes.filter((recipe) => recipe.slug !== recipe.slugEn);
-await writeFile(
-  join(siteRoot, "_redirects"),
-  `${movedRecipes
-    .flatMap((recipe) => {
-      const to = `/en/recipes/${recipe.slugEn}/`;
-      return [`/en/recipes/${recipe.slug}/ ${to} 301`, `/en/recipes/${recipe.slug} ${to} 301`];
-    })
-    .join("\n")}\n`,
-);
+// Recipe pages that origin/main published: English pages lived under the German slug, and the
+// recipe swap later dropped most of them. Cloudflare Pages reads _redirects from the site root, so
+// every address published earlier keeps working with a permanent redirect: to the new English page
+// when the recipe is still in the catalog, otherwise to the recipe overview of that language.
+const publishedRecipeSlugs = [
+  "shakshuka-mit-paprika",
+  "gnocchi-alla-sorrentina",
+  "griechischer-salat-mit-kichererbsen",
+  "haehnchensuppe-mit-gemuese",
+  "pizza-margherita",
+  "zitronen-pasta-mit-gruenkohl-und-walnuessen",
+  "buttermilch-pancakes-mit-beeren",
+  "paneer-curry-mit-basmatireis",
+  "ramen-mit-haehnchen-und-gemuese",
+  "ofengemuese-mit-linsen-und-kraeuterjoghurt",
+];
+const redirectRules = new Map();
+const addRedirect = (from, to) => {
+  for (const path of [from, from.replace(/\/$/, "")]) {
+    if (path !== to && path !== to.replace(/\/$/, "")) redirectRules.set(path, `${path} ${to} 301`);
+  }
+};
+const legacySlugs = new Set([...publishedRecipeSlugs, ...catalog.recipes.map((r) => r.slug)]);
+for (const slug of legacySlugs) {
+  const current = catalog.recipes.find((recipe) => recipe.slug === slug);
+  addRedirect(`/en/recipes/${slug}/`, current ? `/en/recipes/${current.slugEn}/` : "/en/");
+  if (!current) addRedirect(`/de/rezepte/${slug}/`, "/de/");
+}
+await writeFile(join(siteRoot, "_redirects"), `${[...redirectRules.values()].join("\n")}\n`);
 
 if (deploymentBase) {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapUrls.map((url) => `<url><loc>${escapeHtml(url)}</loc></url>`).join("")}</urlset>`;
