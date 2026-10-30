@@ -1716,6 +1716,18 @@ html.js .live-frame:not([data-ready])::after {
   .step .inline > .phone {
     width: 100%;
   }
+  /* A tablet needs the full width to stay readable: that step keeps the stacked layout. */
+  .step:has(.inline > .tablet) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+  .step:has(.inline > .tablet) > * {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .step:has(.inline > .tablet) .inline {
+    margin-top: 14px;
+  }
 }
 
 /* features */
