@@ -20,6 +20,7 @@ const cssFiles = [
   "src/design-system/control-refinement.css",
   "src/design-system/recipe-editor.css", // feature B
   "src/design-system/shopping-sync.css",
+  "src/design-system/bring-wizard.css",
   "src/design-system/recipe-picker.css", // feature D
   "src/design-system/corners.css",
 ];
@@ -101,6 +102,7 @@ const componentMethodModules = [
   ["dialogMethods", "src/components/dialogs.js"],
   ["recipeEditorMethods", "src/components/recipe-editor.js"], // feature B
   ["shoppingSyncMethods", "src/components/shopping-sync.js"],
+  ["bringWizardMethods", "src/components/bring-wizard.js"],
   ["recipePickerMethods", "src/components/recipe-picker.js"], // feature D
   ["offlineQueueMethods", "src/components/offline-queue.js"], // feature H
 ];

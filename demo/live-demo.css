@@ -2356,6 +2356,34 @@ html.js .live-frame:not([data-ready])::after {
 .roles td {
   color: var(--sub);
 }
+.c-bring {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+.bring-copy {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+.bring-copy > p {
+  color: var(--sub);
+  font-size: 16px;
+}
+.bring-visual {
+  position: relative;
+  padding-bottom: 8%;
+}
+.bring-visual .browser {
+  width: 86%;
+}
+.bring-visual .phone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 27%;
+}
 @media (max-width: 980px) {
   .solo-grid,
   .solo-points {
@@ -2363,6 +2391,9 @@ html.js .live-frame:not([data-ready])::after {
   }
   .solo-points .span3 {
     grid-row: auto;
+  }
+  .c-bring {
+    grid-template-columns: 1fr;
   }
 }
 

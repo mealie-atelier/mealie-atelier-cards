@@ -8,16 +8,35 @@ import net from "node:net";
 import { WEB_DIR, E2E_DIR, ACCOUNTS, mealieUrl, mealieToken } from "./config.mjs";
 import { hashPassword } from "../../../security.mjs";
 
+/**
+ * A free local port. With E2E_PORT_RANGE="from-to" (for example "5130-5199") the port comes from that
+ * range, which keeps the suite inside the ports a machine reserves for it; otherwise the OS picks one.
+ */
 export async function freePort() {
-  return new Promise((resolve, reject) => {
-    const probe = net.createServer();
-    probe.listen(0, "127.0.0.1", () => {
-      const { port } = probe.address();
-      probe.close(() => resolve(port));
+  const range = /^(\d+)-(\d+)$/.exec(process.env.E2E_PORT_RANGE || "");
+  const tryPort = (port) =>
+    new Promise((resolve, reject) => {
+      const probe = net.createServer();
+      probe.once("error", reject);
+      probe.listen(port, "127.0.0.1", () => {
+        const { port: bound } = probe.address();
+        probe.close(() => resolve(bound));
+      });
     });
-    probe.on("error", reject);
-  });
+  if (!range) return tryPort(0);
+  const [from, to] = [Number(range[1]), Number(range[2])];
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    const port = from + Math.floor(Math.random() * (to - from + 1));
+    if (usedPorts.has(port)) continue;
+    try {
+      const bound = await tryPort(port);
+      usedPorts.add(bound);
+      return bound;
+    } catch {}
+  }
+  throw new Error(`no free port in ${process.env.E2E_PORT_RANGE}`);
 }
+const usedPorts = new Set();
 
 export async function usersEnv() {
   const rows = [];

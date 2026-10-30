@@ -4,6 +4,19 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Added
+
+- Web app: Smart Shopping Sync to Bring! without Home Assistant. It implements the Bridge sync contract (preview, confirmed first batch, exactly-once delivery, duplicate skip, after-add and watch triggers, move mode, pause, resume, retry and resolve) against Bring! lists, and the existing sync dialog of the cards configures it.
+- Web app: an administrator connects the Bring! account in the sync dialog (**Bring!-Konto**). The password is used for one login; only the session tokens and the account's e-mail address (shown masked, in full to administrators so that signing in again needs only the password) are stored in the data directory with file mode 600. `BRING_EMAIL` and `BRING_PASSWORD` stay available for headless setups and are never persisted.
+
+- Product page and docs: a feature block "Bring! ohne Home Assistant" (German and English) with real captures of the connected account from the web app against a fake Bring! server and a fictional account, a rewritten Bring! setup section in `web/README.md` and a capture script (`scripts/capture-bring-showcase.py`).
+
+### Changed
+
+- Home Assistant sync dialog: the run button now reads "Send now" ("Jetzt senden"), the duplicate options say "entries" instead of "items", the rule card shows its status as a facts layout (mode, status, waiting, last run), and a clean run shows no result line (screen readers still announce it).
+- Demo site: the shopping texts no longer say that the sync to Bring! needs Home Assistant, and "Bring!" is spelled with its exclamation mark throughout.
+- The note that the standalone app never sends shopping data to third parties now reads: shopping items go to Bring! only after an administrator connects an account.
+
 ## [0.11.0] - 2026-10-30
 
 ### Added

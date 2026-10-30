@@ -1,0 +1,656 @@
+/* Bring! connection: guided dialog, account card and sign-in again. Uses the shared tokens only. */
+.atelier .bw-entry {
+  gap: var(--ds-space-2);
+}
+.atelier .bw-wizard {
+  display: grid;
+  gap: var(--ds-space-4);
+}
+.atelier .bw-progress {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.atelier .bw-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.atelier .bw-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  font-weight: 650;
+  text-align: center;
+}
+.atelier .bw-step::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 13px;
+  inset-inline: calc(-50% + 18px) calc(50% + 18px);
+  block-size: 2px;
+  border-radius: var(--ds-radius-pill);
+  background: var(--ds-border);
+}
+.atelier .bw-step:first-child::before {
+  display: none;
+}
+.atelier .bw-step:is(.is-done, .is-current)::before {
+  background: var(--ds-brand);
+}
+.atelier .bw-dot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border: 1px solid var(--ds-border);
+  border-radius: 50%;
+  background: var(--ds-surface-raised);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+  font-weight: 700;
+  line-height: 1;
+}
+.atelier .bw-step.is-current {
+  color: var(--ds-text);
+}
+.atelier .bw-step.is-current .bw-dot {
+  border-color: var(--ds-brand);
+  background: var(--ds-surface);
+  color: var(--ds-brand-text);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-brand) 28%, transparent);
+}
+.atelier .bw-step.is-done .bw-dot {
+  border-color: var(--ds-brand);
+  background: var(--ds-brand);
+  color: var(--ds-brand-foreground);
+}
+.atelier .bw-stepline {
+  margin: 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+  text-align: center;
+}
+.atelier .bw-panel {
+  display: grid;
+  gap: var(--ds-space-3);
+  align-content: start;
+}
+.atelier .bw-panel > * {
+  margin: 0;
+}
+.atelier .bw-title {
+  font-family: var(--ds-font-display);
+  font-size: clamp(20px, 2.4cqi, 24px);
+  line-height: var(--ds-line-tight);
+  outline: none;
+}
+.atelier .bw-text {
+  color: var(--ds-muted);
+}
+.atelier .bw-form {
+  display: grid;
+  gap: var(--ds-space-3);
+}
+.atelier .bw-password {
+  position: relative;
+  display: block;
+}
+.atelier .bw-password > input {
+  inline-size: 100%;
+  padding-inline-end: calc(var(--ds-control-height) + var(--ds-space-1));
+}
+.atelier .bw-reveal {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: var(--ds-control-height);
+  block-size: auto;
+  background: transparent;
+  border: 0;
+  color: var(--ds-muted);
+}
+.atelier .bw-reveal[aria-pressed="true"] {
+  color: var(--ds-brand-text);
+}
+.atelier .bw-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-brand) 8%, transparent);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .bw-privacy > svg {
+  flex: none;
+  margin-block-start: 2px;
+  color: var(--ds-brand-text);
+}
+.atelier .bw-account-line {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .bw-account-line > svg {
+  color: var(--ds-brand-text);
+}
+.atelier .bw-choices {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.atelier .bw-choice > span {
+  display: grid;
+  gap: 2px;
+}
+.atelier .bw-choice strong {
+  overflow-wrap: anywhere;
+}
+.atelier .bw-badge {
+  justify-self: start;
+  padding: 1px var(--ds-space-2);
+  border-radius: var(--ds-radius-pill);
+  background: color-mix(in srgb, var(--ds-brand) 18%, transparent);
+  color: var(--ds-brand-text);
+  font-size: var(--ds-font-xs);
+  font-weight: 700;
+}
+.atelier .bw-loading,
+.atelier .bw-error {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+}
+.atelier .bw-error > span {
+  flex: 1 1 14em;
+}
+.atelier .bw-spinner {
+  inline-size: 16px;
+  block-size: 16px;
+  border: 2px solid var(--ds-border);
+  border-top-color: var(--ds-brand);
+  border-radius: 50%;
+  animation: bw-spin var(--ds-motion-loading) linear infinite;
+}
+@keyframes bw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .bw-spinner {
+    animation-duration: 4s;
+  }
+}
+.atelier .bw-defaults {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.atelier .bw-check {
+  align-items: flex-start;
+}
+.atelier .bw-check small {
+  display: block;
+  color: var(--ds-muted);
+}
+/* A quiet disclosure link with a full-width divider, not a second button next to Back. */
+.atelier .bw-more {
+  display: grid;
+  gap: 0;
+  border-block-start: 1px solid var(--ds-border);
+  padding-block-start: var(--ds-space-1);
+}
+.atelier .bw-more-toggle {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ds-radius-sm);
+  background: transparent;
+  color: var(--ds-brand-text);
+  font: inherit;
+  font-size: var(--ds-font-md);
+  font-weight: 650;
+  cursor: pointer;
+}
+.atelier .bw-more-toggle:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 2px;
+}
+.atelier .bw-more-toggle .bw-chevron {
+  display: inline-flex;
+  transform: rotate(90deg);
+}
+.atelier .bw-more-toggle[aria-expanded="true"] .bw-chevron {
+  transform: rotate(-90deg);
+}
+.atelier .bw-more-panel {
+  display: grid;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-2) var(--ds-space-1);
+}
+.atelier .bw-summary {
+  font-weight: 650;
+}
+.atelier .bw-lines {
+  gap: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+}
+.atelier .bw-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  font-weight: 400;
+}
+.atelier .bw-line + .bw-line {
+  border-block-start: 1px solid var(--ds-border);
+}
+.atelier .bw-line-main {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.atelier .bw-line-state {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  color: var(--ds-brand-text);
+  font-size: var(--ds-font-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.atelier .bw-line:not(.is-send) .bw-line-state {
+  color: var(--ds-muted);
+}
+.atelier .bw-facts {
+  display: grid;
+  margin: 0;
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+}
+.atelier .bw-row {
+  display: grid;
+  grid-template-columns: minmax(7em, 0.4fr) minmax(0, 1fr);
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+}
+.atelier .bw-row + .bw-row {
+  border-block-start: 1px solid var(--ds-border);
+}
+.atelier .bw-row dt {
+  color: var(--ds-muted);
+}
+.atelier .bw-row dd {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.atelier .bw-nav {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.atelier .bw-nav > .btn:is(.primary, .danger) {
+  margin-inline-start: auto;
+}
+.atelier .bw-done {
+  display: grid;
+  justify-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-4);
+  text-align: center;
+}
+.atelier .bw-done-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: 50%;
+  background: var(--ds-brand);
+  color: var(--ds-brand-foreground);
+}
+.atelier .bw-done.is-warn .bw-done-icon {
+  background: color-mix(in srgb, #c4543a 85%, var(--ds-surface));
+  color: #fff;
+}
+.atelier .bw-account-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+.atelier .bw-account-head h3 {
+  margin: 0;
+}
+.atelier .bw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: 2px var(--ds-space-3);
+  border-radius: var(--ds-radius-pill);
+  background: color-mix(in srgb, var(--ds-brand) 18%, transparent);
+  color: var(--ds-brand-text);
+  font-size: var(--ds-font-xs);
+  font-weight: 700;
+}
+.atelier .bw-account.is-warn .bw-pill {
+  background: color-mix(in srgb, #c4543a 18%, transparent);
+  color: inherit;
+}
+.atelier .bw-account > * + * {
+  margin-block-start: var(--ds-space-3);
+}
+.atelier .bw-account .bw-facts {
+  margin-block-end: var(--ds-space-3);
+}
+@container atelier-card (max-width: 520px) {
+  .atelier .bw-step-name {
+    display: none;
+  }
+  .atelier .bw-step.is-current .bw-step-name {
+    display: none;
+  }
+  .atelier .bw-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .atelier .bw-line {
+    flex-direction: column;
+    gap: var(--ds-space-1);
+  }
+  .atelier .bw-nav > .btn {
+    flex: 1 1 auto;
+  }
+  .atelier .bw-nav > .btn.primary {
+    order: -1;
+    flex-basis: 100%;
+  }
+}
+
+/* Tight heading block, back arrow, quiet focus on the step heading */
+.atelier .bw-head {
+  display: grid;
+  gap: var(--ds-space-1);
+}
+.atelier .bw-head > * {
+  margin: 0;
+}
+.atelier .bw-panel .bw-title:focus,
+.atelier .bw-panel .bw-title:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.atelier .bw-nav [data-action="sync-bw-back"] > svg {
+  transform: rotate(180deg);
+}
+.atelier .sync-panel .sync-live {
+  margin-block-end: var(--ds-space-3);
+}
+.atelier .bw-account .bw-facts .bw-row,
+.atelier .bw-panel .bw-facts .bw-row {
+  padding-block: var(--ds-space-2);
+}
+
+/* Errors read well on the light theme too (the shared notice colour is made for dark). */
+.atelier {
+  --bw-danger: #f6b6a4;
+}
+.atelier.light {
+  --bw-danger: #9c3a22;
+}
+.atelier .sync-panel .notice.error {
+  color: var(--bw-danger);
+  border-color: color-mix(in srgb, var(--bw-danger) 45%, var(--ds-border));
+  background: color-mix(in srgb, var(--bw-danger) 7%, var(--ds-surface));
+}
+.atelier .sync-panel .notice.error .btn {
+  color: var(--ds-text);
+}
+.atelier .sync-panel .notice.error .btn.primary {
+  color: var(--ds-brand-foreground);
+}
+.atelier.light .bw-account.is-warn .bw-pill {
+  color: var(--bw-danger);
+}
+.atelier .sync-result > svg {
+  flex: none;
+}
+.atelier .bw-done .sync-result {
+  justify-content: center;
+}
+
+/* Radio choices are circles with an inner dot. The editor card field rule would square them off. */
+.atelier .sync-panel .editor-card input[type="radio"] {
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* A destructive button: outlined in the danger colour, never mistaken for Cancel. */
+.atelier .btn.danger {
+  color: var(--bw-danger);
+  border-color: color-mix(in srgb, var(--bw-danger) 55%, var(--ds-border));
+  background: color-mix(in srgb, var(--bw-danger) 8%, var(--ds-surface));
+}
+.atelier .btn.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bw-danger) 17%, var(--ds-surface));
+  filter: none;
+}
+.atelier .btn.danger:focus-visible {
+  outline: 2px solid var(--bw-danger);
+  outline-offset: 2px;
+}
+/* A confirmation question is neutral; only its action is dangerous. */
+.atelier .bw-confirm {
+  flex-wrap: wrap;
+}
+.atelier .bw-account .bw-confirm + .bw-nav,
+.atelier .sync-rule .bw-confirm .bw-nav {
+  margin-block-start: var(--ds-space-3);
+}
+.atelier .sync-rule .bw-confirm {
+  display: grid;
+  gap: var(--ds-space-2);
+}
+.atelier .sync-rule .bw-confirm .bw-nav {
+  margin-block-start: 0;
+}
+
+/* The cart glyph in the dialog header is decoration, not a second button next to Close. */
+.atelier .sync-panel .editor-stamp {
+  inline-size: auto;
+  block-size: auto;
+  border: 0;
+  background: transparent;
+  color: var(--ds-muted);
+  opacity: 0.75;
+}
+
+/* Compact dialog header for the wizard so the first screen holds the step and its actions. */
+.atelier .bw-wizard .editor-lead {
+  margin-block-end: 0;
+}
+.atelier .bw-wizard .editor-lead h2 {
+  margin-block: var(--ds-space-1);
+  font-size: clamp(26px, 2.6cqi, 32px);
+}
+
+/* Action row: air above it, and it stays in view so the primary action never needs scrolling. */
+.atelier .bw-panel > .bw-nav,
+.atelier .bw-panel .bw-form > .bw-nav {
+  margin-block-start: var(--ds-space-5);
+}
+/* One scroll area: the dialog. The step has no card of its own inside it, and the footer sits flush
+   at the dialog's bottom edge with the same air above and below its buttons. */
+.atelier .modal.sync-modal .modal-content.bw-wizard {
+  --bw-pad: clamp(24px, 3.1cqi, 44px);
+  padding: var(--bw-pad) var(--bw-pad) 0;
+}
+.atelier .bw-wizard .bw-panel {
+  --bw-nav-bg: var(--at-surface);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.atelier .bw-panel .bw-nav {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 2;
+  align-items: center;
+  padding-block: var(--ds-space-4);
+  margin-inline: calc(-1 * var(--bw-pad));
+  padding-inline: var(--bw-pad);
+  border-block-start: 1px solid var(--ds-border);
+  background: var(--bw-nav-bg);
+}
+
+/* Rule card: the same key/value block as the account card. */
+.atelier .sync-rule > h3 {
+  line-height: var(--ds-line-tight);
+  overflow-wrap: anywhere;
+}
+.atelier .sync-facts {
+  margin-block: var(--ds-space-3);
+}
+.atelier .sync-facts dd > svg {
+  vertical-align: -0.2em;
+  margin-inline-end: var(--ds-space-1);
+}
+.atelier .sync-facts dd > small {
+  display: block;
+  font-weight: 400;
+}
+.atelier .sync-rule .bw-error .btn {
+  margin-inline-start: auto;
+}
+
+/* Phone: the dialog fills the screen and the step has no frame of its own. */
+@container atelier-card (max-width: 460px) {
+  .atelier .modal-backdrop:has(> .sync-modal) {
+    padding: 0;
+  }
+  .atelier .modal.sync-modal {
+    inline-size: 100%;
+    block-size: 100%;
+    max-block-size: 100%;
+    border-radius: 0;
+  }
+  .atelier .modal.sync-modal .modal-content {
+    padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-4);
+  }
+  .atelier .modal.sync-modal .modal-content.bw-wizard {
+    --bw-pad: var(--ds-space-4);
+  }
+  /* The wizard and pick panels fill the full-height dialog and push the action row to its bottom edge. */
+  .atelier .modal.sync-modal:has(> .bw-wizard) {
+    display: flex;
+    flex-direction: column;
+  }
+  .atelier .modal.sync-modal > .bw-wizard {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+  .atelier .bw-wizard > .bw-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+  .atelier .bw-wizard .bw-panel > .bw-nav,
+  .atelier .bw-wizard .bw-panel .bw-form > .bw-nav {
+    margin-block-start: auto;
+  }
+  .atelier .bw-wizard .bw-panel > .bw-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+  .atelier .bw-nav > .btn.primary {
+    order: 0;
+    flex: 1 1 auto;
+  }
+  .atelier .bw-nav:has(> .btn:nth-child(3)) > .btn.primary {
+    order: -1;
+    flex-basis: 100%;
+  }
+}
+
+/* A notice above the cards (a gone list, a failed command) keeps the same gap as the cards. */
+.atelier .sync-panel > .notice {
+  margin-block-end: var(--ds-space-3);
+}
+
+/* The scrolling sync panel keeps the same air below its last card as at its sides. */
+.atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) {
+  --bw-pad: clamp(24px, 3.1cqi, 44px);
+  padding-block-end: var(--bw-pad);
+}
+@container atelier-card (max-width: 460px) {
+  .atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) {
+    --bw-pad: var(--ds-space-4);
+  }
+}
+/* Padding alone is lost at the end of the scroll, so the last card carries the gap as a margin too. */
+.atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child {
+  margin-block-end: var(--bw-pad);
+}
+
+/* The shared close strip would stay behind as an empty header band once the dialog scrolls; here the
+   close button floats on its own and the content scrolls past it. */
+.atelier .modal.modal.sync-modal > .modal-close::before {
+  display: none;
+}
+
+/* Phone: the account card is compact (label and value on one row, disconnect as a text link) so the
+   rule actions below it start within the first screen. */
+@container atelier-card (max-width: 460px) {
+  .atelier .bw-account .bw-facts .bw-row {
+    grid-template-columns: auto 1fr;
+    gap: var(--ds-space-3);
+    padding-block: var(--ds-space-1);
+  }
+  .atelier .bw-account > * + * {
+    margin-block-start: var(--ds-space-2);
+  }
+  .atelier .bw-account [data-action="sync-bring-disconnect-ask"] {
+    min-block-size: 0;
+    padding-inline: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ds-muted);
+    text-decoration: underline;
+  }
+}
+
+/* The text link keeps its transparent background on hover, press and keyboard focus (the generic
+   secondary button hover would otherwise fill it). */
+@container atelier-card (max-width: 460px) {
+  .atelier
+    .bw-account
+    [data-action="sync-bring-disconnect-ask"]:is(:hover, :active, :focus-visible):not(:disabled) {
+    background: transparent;
+    border-color: transparent;
+    color: var(--ds-text);
+    text-decoration: underline;
+    transform: none;
+  }
+}

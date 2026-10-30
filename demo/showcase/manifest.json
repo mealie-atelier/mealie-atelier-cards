@@ -139,6 +139,16 @@
       "width": 1179,
       "height": 2340,
       "widths": [400, 700, 1179]
+    },
+    "app-bring-connected": {
+      "width": 1800,
+      "height": 1716,
+      "widths": [900, 1800]
+    },
+    "app-bring-phone": {
+      "width": 720,
+      "height": 1560,
+      "widths": [360, 720]
     }
   },
   "en": {
@@ -281,6 +291,16 @@
       "width": 1179,
       "height": 2337,
       "widths": [400, 700, 1179]
+    },
+    "app-bring-connected": {
+      "width": 1800,
+      "height": 1716,
+      "widths": [900, 1800]
+    },
+    "app-bring-phone": {
+      "width": 720,
+      "height": 1560,
+      "widths": [360, 720]
     }
   },
   "photos": {
