@@ -1991,7 +1991,9 @@ class MealieAtelierCard extends HTMLElement {
       const minutes = Number(rawMinutes);
       if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
         const rawLabel = this.shadowRoot.querySelector("[data-timer-label]")?.value;
-        this._flash(this.t("uiTimerMinutesRange"), "error");
+        // The toast sits behind the cooking dialog, so the range message is also shown inside the form.
+        this._timerError = this.t("uiTimerMinutesRange");
+        this._flash(this._timerError, "error");
         // The flash re-renders the card: mark and focus the new input and keep what was typed.
         const fresh = this.shadowRoot.querySelector("[data-timer-minutes]");
         if (fresh) {
@@ -2003,6 +2005,7 @@ class MealieAtelierCard extends HTMLElement {
         if (freshLabel && rawLabel !== undefined) freshLabel.value = rawLabel;
         return;
       }
+      this._timerError = "";
       // Create the audio context inside this click so iOS Safari lets the alert beep later.
       this._prepareAudio();
       const now = Date.now(),
@@ -2064,6 +2067,7 @@ class MealieAtelierCard extends HTMLElement {
         minutes = Number(v);
       if (input && [5, 10, 15].includes(minutes)) {
         input.value = String(minutes);
+        this._clearTimerError();
         input.focus({ preventScroll: true });
       }
       return;
@@ -2311,6 +2315,7 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "cook-start") {
       this._modal = "cook";
       this._cookIndex = 0;
+      this._timerError = "";
       this._render();
       return;
     }
@@ -2421,7 +2426,16 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
   }
+  _clearTimerError() {
+    if (!this._timerError) return;
+    this._timerError = "";
+    this.shadowRoot.querySelector("#cook-timer-err")?.remove?.();
+    const input = this.shadowRoot.querySelector("[data-timer-minutes]");
+    input?.removeAttribute?.("aria-invalid");
+    input?.removeAttribute?.("aria-describedby");
+  }
   _handleInput(event) {
+    if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     // BEGIN feature B: recipe editor inputs
     if (this._editorInput(event)) return;
     // END feature B

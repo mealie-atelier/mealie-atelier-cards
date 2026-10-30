@@ -1214,5 +1214,8 @@
   "shoppingClearTicked": "Clear ticked",
   "shoppingClearTitle": "Clear ticked items?",
   "shoppingClearConfirm.one": "1 ticked item will be removed from this list. This cannot be undone.",
-  "shoppingClearConfirm.other": "{count} ticked items will be removed from this list. This cannot be undone."
+  "shoppingClearConfirm.other": "{count} ticked items will be removed from this list. This cannot be undone.",
+  "journalFavoriteChip": "Favorite recipe",
+  "editorHistoryShow": "Show versions",
+  "studioMealieConnection": "Mealie connection"
 }

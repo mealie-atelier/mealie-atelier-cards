@@ -672,3 +672,14 @@
   color: var(--ds-brand-text);
   font-weight: 800;
 }
+.atelier .cook-timer-error {
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-negative);
+  font-size: var(--ds-font-xs);
+  font-weight: 650;
+}
+.atelier .journal-hint .journal-favorite {
+  border: 1px solid var(--at-line);
+  border-radius: 999px;
+  padding: 2px 8px;
+}

@@ -380,7 +380,7 @@ export const recipeEditorMethods = {
     const undo = this._ed.lastBackup
       ? `<button type="button" class="btn" data-action="ed-undo">${icon("refresh", 15)} ${esc(this.t("editorUndo"))}</button>`
       : "";
-    const toggle = `<button type="button" class="btn" data-action="ed-history" aria-expanded="${history.open}">${icon("book", 15)} ${esc(this.t(history.open ? "editorHistoryHide" : "editorHistory"))}</button>`;
+    const toggle = `<button type="button" class="btn" data-action="ed-history" aria-expanded="${history.open}">${icon("book", 15)} ${esc(this.t(history.open ? "editorHistoryHide" : "editorHistoryShow"))}</button>`;
     let list = "";
     if (history.open) {
       if (history.loading)
