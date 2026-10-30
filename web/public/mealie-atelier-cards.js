@@ -11573,7 +11573,8 @@ ha-card {
 .atelier .sync-field-error {
   font-weight: 650;
 }
-.atelier .sync-panel .editor-card + .editor-card {
+.atelier .sync-panel .editor-card + .editor-card,
+.atelier .sync-panel .form-actions + .editor-card {
   margin-block-start: var(--ds-space-3);
 }
 .atelier .sync-sr {

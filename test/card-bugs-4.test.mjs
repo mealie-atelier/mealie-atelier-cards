@@ -221,3 +221,14 @@ test("a re-render keeps the trailing rail space so a rail resting at its end is 
     "the pad is back before the scroll positions are restored",
   );
 });
+
+test("the add rule button of the shopping sync keeps a gap to the card below it", () => {
+  const css = readFileSync(
+    new URL("../src/design-system/shopping-sync.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    css,
+    /\.atelier \.sync-panel \.form-actions \+ \.editor-card \{\s*margin-block-start: var\(--ds-space-3\);/,
+  );
+});
