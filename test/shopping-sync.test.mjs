@@ -1280,7 +1280,7 @@ test("a rule named after its route still shows the platform that the title does 
   );
   assert.match(
     card._syncRouteHtml(named("Groceries"), { platform: "local_todo" }, "Home"),
-    /Weekly groceries → Home \(Local todo\)/,
+    /Weekly groceries → Home · Local todo/,
   );
 });
 

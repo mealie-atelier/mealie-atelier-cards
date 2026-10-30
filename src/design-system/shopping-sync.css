@@ -146,3 +146,14 @@
   color: var(--at-ink);
   border-radius: 50%;
 }
+
+/* The long send label ("Save and send 4 items from ... to ...") wraps inside a full-width row with a bounded radius, so it never collapses into a circle next to the secondary button. */
+.atelier .sync-panel .form-actions .btn.primary[data-action="sync-save"] {
+  flex: 1 1 100%;
+  border-radius: var(--ds-radius-md);
+  text-align: center;
+}
+/* A rule name that is longer than the field ends with an ellipsis instead of being cut mid-word. */
+.atelier .sync-panel input[data-input="sync-name"] {
+  text-overflow: ellipsis;
+}
