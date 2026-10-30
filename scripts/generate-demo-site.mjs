@@ -683,7 +683,7 @@ function renderNotFoundPage() {
   );
   const title = "Seite nicht gefunden · Page not found · Mealie Atelier";
   const assets = `${prefix}assets/`;
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta name="color-scheme" content="dark light">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}<script type="module" src="${assets}site.js"></script></body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}<script type="module" src="${assets}site.js"></script></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {
