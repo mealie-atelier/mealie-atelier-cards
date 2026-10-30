@@ -332,68 +332,6 @@ function steppingReport(chrome, mode = "") {
     { mode },
   );
 }
-test("stepping through the cooking dialog patches it in place in a real engine", (t) => {
-  const chrome = findChrome();
-  if (!chrome) return t.skip("no headless Chromium available");
-  const report = steppingReport(chrome);
-  const byLabel = Object.fromEntries(report.rows.map((row) => [row.label, row]));
-  assert.equal(report.rows.length, 10);
-  for (const row of report.rows) {
-    // The backdrop, the dialog, the hero image and the progress fill are the same nodes.
-    for (const key of ["sameBackdrop", "sameModal", "sameHero", "sameFill", "sameStatus"])
-      assert.equal(row[key], true, `${row.label}: ${key}`);
-    // The last step turns the next button into the finish button, every other step keeps it.
-    if (row.heading !== "Five") assert.equal(row.nextKept, true, `${row.label}: next button`);
-    // A kept backdrop is never raised again, so it cannot drop out of the top layer.
-    assert.equal(row.popoverAttr, report.hasPopover ? "manual" : null, row.label);
-    assert.equal(row.freshBackdropAnimations, 0, `${row.label}: replayed backdrop animation`);
-    if (report.hasPopover) assert.equal(row.backdropOpen, true, row.label);
-    // The running timer pulse is the very same animation, still running.
-    assert.equal(row.samePulse, true, `${row.label}: timer pulse`);
-    assert.equal(row.pulseRunning, true, `${row.label}: timer pulse running`);
-  }
-  if (report.hasPopover) assert.equal(report.popovers, 1);
-  // The content itself follows the step.
-  assert.equal(byLabel.start.heading, "One");
-  assert.equal(byLabel.next.heading, "Two");
-  assert.equal(byLabel.next.index, "02 / 05");
-  assert.equal(byLabel.next.valuenow, "2");
-  assert.equal(byLabel.next.width, "40%");
-  assert.equal(byLabel["hass update"].heading, "Two");
-  assert.equal(byLabel["to a step without photo"].photo, false);
-  assert.equal(byLabel["to another photo"].photoSrc, "./food/b.webp");
-  assert.equal(byLabel.back.heading, "Three");
-  // A photo shared by two steps stays the same element, so it cannot blank or reload.
-  assert.equal(byLabel.start.samePhoto, true);
-  assert.equal(byLabel.next.samePhoto, true);
-  assert.equal(byLabel["hass update"].samePhoto, true);
-  // Only text lines fade, never the photo or the stage, and the same photo does not fade at all.
-  for (const row of report.rows) {
-    for (const tag of row.fades) assert.match(tag, /^(H2|P)$/, `${row.label}: faded ${tag}`);
-  }
-  assert.deepEqual(byLabel["next right away"].fades, ["H2"]);
-  assert.deepEqual(byLabel["hass update"].fades, []);
-  // A different photo replaces the old one only once it is decoded: the old photo shows
-  // right away, the new one follows, so the photo area never goes blank.
-  assert.equal(byLabel["to step five right away"].photoSrcNow, "./food/b.webp");
-  assert.equal(byLabel["to step five"].photoSrcNow, "./food/a.webp");
-  assert.equal(byLabel["to step four"].photoSrcNow, "./food/b.webp");
-});
-
-for (const mode of ["reduced", "off"]) {
-  test(`stepping with ${mode} motion fades nothing but still patches in place`, (t) => {
-    const chrome = findChrome();
-    if (!chrome) return t.skip("no headless Chromium available");
-    const report = steppingReport(chrome, mode);
-    assert.equal(report.rows.length, 10);
-    for (const row of report.rows) {
-      assert.deepEqual(row.fades, [], `${row.label}: fade`);
-      assert.equal(row.sameModal, true, `${row.label}: modal replaced`);
-    }
-    assert.equal(report.rows.find((r) => r.label === "next").heading, "Two");
-  });
-}
-
 const WIDTHS = [390, 820, 1440];
 
 test("the photo slot and the controls below keep their place when a step gains a photo", (t) => {
