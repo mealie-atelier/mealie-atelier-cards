@@ -125,6 +125,8 @@ test("an administrator connects Bring!, only tokens are stored with mode 600", a
     const after = await entry(app);
     assert.equal(after.features.shopping_sync, true);
     assert.equal(after.bring.state, "connected");
+    assert.equal(after.bring.account, "c•••@example.test", "only the masked address is shown");
+    assert.match(after.bring.default_list, /^bring:[0-9a-f-]{36}$/);
     const lists = await app.call("mealie_atelier/sync_destinations");
     assert.deepEqual(lists.entities.map((x) => x.name).sort(), ["Einkauf", "Party"]);
     const file = (await dataFiles(app.dataDir)).find((x) => x.name === "bring-account.json");

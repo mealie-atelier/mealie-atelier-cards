@@ -49,6 +49,14 @@ export class BringRequestError extends BringError {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** "familie.beispiel@example.com" becomes "f•••@example.com": enough to recognise the account. */
+export function maskEmail(email) {
+  const value = String(email || "").trim();
+  const at = value.lastIndexOf("@");
+  if (at < 1) return "";
+  return `${value.slice(0, 1)}•••${value.slice(at)}`;
+}
+
 export function bringBase(env = process.env) {
   return String(env.BRING_API_BASE || DEFAULT_BASE).replace(/\/+$/, "");
 }
@@ -91,6 +99,16 @@ export class BringClient {
     return !!this.email && !!this.password;
   }
 
+  /** The masked e-mail address of the connected account, or an empty text. */
+  get account() {
+    return this.session?.account || maskEmail(this.email);
+  }
+
+  /** The list Bring! uses by default for this account (`bring:<uuid>`), or an empty text. */
+  get defaultList() {
+    return this.session?.defaultList ? `bring:${this.session.defaultList}` : "";
+  }
+
   /** `connected`, `reauth` (the session died and cannot be renewed) or `disconnected`. */
   get state() {
     if (!this.configured) return "disconnected";
@@ -129,7 +147,7 @@ export class BringClient {
     await probe.login();
     this.email = "";
     this.password = "";
-    this.restore(probe.session);
+    this.restore({ ...probe.session, account: maskEmail(email) });
     await this.publish();
   }
 
@@ -211,6 +229,7 @@ export class BringClient {
       refreshToken: data.refresh_token,
       expiresAt: this.now() + Number(data.expires_in || 0) * 1000,
       country: "DE",
+      defaultList: typeof data.bringListUUID === "string" ? data.bringListUUID : "",
     };
     // The account's country is a header detail; a failure here never blocks the sign-in.
     try {

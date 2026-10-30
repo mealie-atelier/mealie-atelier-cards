@@ -833,7 +833,11 @@ async function bridge(req) {
             can_write: permissions.can_write,
             can_manage: permissions.can_admin,
             can_edit_ingredients: permissions.can_admin && structured,
-            bring: { state: bringClient.state },
+            bring: {
+              state: bringClient.state,
+              account: bringClient.account,
+              default_list: bringClient.defaultList,
+            },
           },
         ],
         version: VERSION,

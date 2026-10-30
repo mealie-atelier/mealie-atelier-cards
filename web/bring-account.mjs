@@ -1,6 +1,7 @@
 /**
  * Keeps the Bring! session tokens of the connected account in the data directory. Only tokens are
- * stored (file mode 0600): the password is used for one login and never written anywhere.
+ * stored (file mode 0600): the password is used for one login and never written anywhere. The
+ * only hint about the account is its masked e-mail address, so the app can show who is connected.
  */
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -37,6 +38,9 @@ export class BringAccountStore {
             refreshToken: data.session.refreshToken,
             expiresAt: data.session.expiresAt,
             country: /^[A-Z]{2}$/.test(data.session.country) ? data.session.country : "DE",
+            account: typeof data.session.account === "string" ? data.session.account : "",
+            defaultList:
+              typeof data.session.defaultList === "string" ? data.session.defaultList : "",
           }
         : null;
     } catch (error) {
@@ -55,7 +59,9 @@ export class BringAccountStore {
       const data = {
         version: 1,
         session: Object.fromEntries(
-          [...TEXT_FIELDS, "publicUuid", "country", "expiresAt"].map((key) => [key, session[key]]),
+          [...TEXT_FIELDS, "publicUuid", "country", "account", "defaultList", "expiresAt"].map(
+            (key) => [key, session[key]],
+          ),
         ),
       };
       await writeFile(temp, JSON.stringify(data), { mode: 0o600, flag: "wx" });

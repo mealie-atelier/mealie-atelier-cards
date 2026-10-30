@@ -593,89 +593,177 @@ function bringCard({ state = "disconnected", admin = true, readOnly = false, han
 }
 const typeInto = (card, key, value) => input(card, { input: `sync-bring-${key}` }, { value });
 
-test("web app: an administrator sees the Bring! sign-in form with the privacy note", async () => {
+const CONNECTED_STATUS = (bring = { state: "connected", account: "c•••@example.test" }) => ({
+  entries: [
+    {
+      entry_id: "e1",
+      can_write: true,
+      can_manage: true,
+      features: { shopping_sync: true, bring_setup: true },
+      bring,
+    },
+  ],
+});
+const submit = (card, form = "bring-login") => {
+  const el = { dataset: { form }, closest: () => el };
+  return card._handleSubmit({ target: el, preventDefault() {} });
+};
+
+test("web app: the shopping view offers 'Connect to Bring!' and opens the wizard at the sign-in", async () => {
   const env = bringCard();
   env.card._render();
-  await click(env.card, { action: "sync-open" });
+  assert.match(markup(env.cards), /data-action="sync-bw-open"[^>]*>[^]*Connect to Bring!/);
+  await click(env.card, { action: "sync-bw-open" });
   const html = markup(env.cards);
-  assert.equal(env.card._modal, "sync-info");
-  assert.match(html, /Bring! account/);
-  assert.match(html, /No account connected yet/);
+  assert.equal(env.card._modal, "sync-wizard");
+  assert.match(html, /Step 1 of 5: Sign in/);
+  assert.match(html, /<form[^>]*data-form="bring-login"/);
+  assert.match(html, /type="email"[^>]*autocomplete="username"/);
   assert.match(html, /type="password"[^>]*autocomplete="current-password"/);
-  assert.match(html, /only after an administrator connects an account/);
-  assert.match(html, /data-action="sync-bring-connect" disabled/);
+  assert.match(html, /data-action="sync-bw-reveal"[^>]*aria-pressed="false"/);
+  assert.match(html, /never your password/);
+  assert.equal(env.names().length, 0, "no call before the user signs in");
 });
 
-test("web app: other users and read-only mode get no Bring! form", async () => {
+test("web app: other users and read-only mode get no wizard and no form", async () => {
   for (const options of [{ admin: false }, { readOnly: true }]) {
     const env = bringCard(options);
     env.card._render();
-    await click(env.card, { action: "sync-open" });
+    await click(env.card, { action: "sync-bw-open" });
+    assert.equal(env.card._modal, "sync-info");
     assert.doesNotMatch(markup(env.cards), /type="password"/);
-    await click(env.card, { action: "sync-bring-connect" });
+    await submit(env.card);
     assert.doesNotMatch(env.names().join(), /bring_connect/);
   }
 });
 
-test("web app: connecting sends the credentials once, drops the password and opens the sync", async () => {
+test("web app: an empty sign-in shows the way out and makes no call", async () => {
+  const env = bringCard();
+  env.card._render();
+  await click(env.card, { action: "sync-bw-open" });
+  await submit(env.card);
+  assert.match(markup(env.cards), /role="alert"[^]*Enter the e-mail address and the password/);
+  assert.doesNotMatch(env.names().join(), /bring_connect/);
+});
+
+test("web app: the wizard walks sign-in, lists, preview and the confirmed first delivery", async () => {
+  const lists = {
+    entities: [
+      { entity_id: "bring:a", name: "Party", platform: "bring", available: true },
+      { entity_id: "bring:b", name: "Einkauf", platform: "bring", available: true },
+    ],
+  };
   const env = bringCard({
     handlers: {
       bring_connect: () => ({ state: "connected" }),
-      status: () => ({
-        entries: [
-          {
-            entry_id: "e1",
-            can_write: true,
-            can_manage: true,
-            features: { shopping_sync: true, bring_setup: true },
-            bring: { state: "connected" },
-          },
-        ],
-      }),
+      status: () =>
+        CONNECTED_STATUS({
+          state: "connected",
+          account: "c•••@example.test",
+          default_list: "bring:b",
+        }),
+      sync_destinations: () => lists,
     },
   });
   env.card._render();
-  await click(env.card, { action: "sync-open" });
+  await click(env.card, { action: "sync-bw-open" });
   typeInto(env.card, "email", " cook@example.test ");
   typeInto(env.card, "password", "fixture-password");
-  assert.doesNotMatch(markup(env.cards), /data-action="sync-bring-connect" disabled/);
-  await click(env.card, { action: "sync-bring-connect" });
+  await submit(env.card);
   const call = env.calls.find((c) => c.name === "bring_connect");
   assert.equal(call.message.email, "cook@example.test");
   assert.equal(call.message.password, "fixture-password");
   assert.equal(env.card._syncData().bring.password, "");
-  assert.equal(env.card._modal, "sync");
-  assert.ok(env.names().includes("sync_state"));
-  assert.match(markup(env.cards), /Connected\. Shopping items from Mealie/);
+  assert.equal(env.card._modal, "sync-wizard");
+  const w = env.card._bwData();
+  assert.equal(w.step, 2);
+  assert.equal(w.bringList, "bring:b", "the usual list is preselected");
+  assert.match(markup(env.cards), /Your usual list/);
+  assert.equal(w.mealieList, "l1", "the open Mealie list is preselected");
+  assert.equal(w.skipDuplicates, true);
+  assert.equal(w.afterAdd, true);
   assert.doesNotMatch(markup(env.cards), /fixture-password/);
+  await click(env.card, { action: "sync-bw-next" });
+  assert.equal(w.step, 3);
+  assert.doesNotMatch(markup(env.cards), /id="bw-more-panel"/);
+  await click(env.card, { action: "sync-bw-more" });
+  assert.match(markup(env.cards), /id="bw-more-panel"/);
+  await click(env.card, { action: "sync-bw-next" });
+  assert.equal(w.step, 4);
+  const preview = env.calls.find((c) => c.name === "sync_preview");
+  assert.equal(preview.message.rule.destination_entity_id, "bring:b");
+  assert.equal(preview.message.rule.duplicate_policy, "skip_exact");
+  assert.match(markup(env.cards), /1 to send, 1 skipped/);
+  await click(env.card, { action: "sync-bw-next" });
+  assert.equal(w.step, 5);
+  assert.doesNotMatch(env.names().join(), /sync_rule_save/, "nothing is saved before the release");
+  await click(env.card, { action: "sync-bw-send" });
+  const run = env.calls.find((c) => c.name === "sync_run");
+  assert.equal(run.message.confirm_first_batch, true);
+  assert.match(markup(env.cards), /All set/);
 });
 
-test("web app: a refused sign-in shows the error and clears the password", async () => {
+test("web app: a wrong password and a Bring! outage show their way out in the dialog", async () => {
+  for (const [code, text] of [
+    ["bring_auth", /reset the password in the Bring! app/],
+    ["bring_rate_limit", /Wait a few minutes/],
+    ["bring_network", /Check your internet connection/],
+  ]) {
+    const env = bringCard({
+      handlers: { bring_connect: () => Promise.reject(Object.assign(new Error("x"), { code })) },
+    });
+    env.card._render();
+    await click(env.card, { action: "sync-bw-open" });
+    typeInto(env.card, "email", "cook@example.test");
+    typeInto(env.card, "password", "wrong-password");
+    await submit(env.card);
+    assert.equal(env.card._bwData().step, 1);
+    assert.match(markup(env.cards), text);
+    assert.equal(env.card._syncData().bring.password, "");
+    assert.doesNotMatch(markup(env.cards), /wrong-password/);
+  }
+});
+
+test("web app: a double submit sends the sign-in only once", async () => {
+  let release;
   const env = bringCard({
     handlers: {
       bring_connect: () =>
-        Promise.reject(Object.assign(new Error("Bring! refused"), { code: "bring_auth" })),
+        new Promise((resolve) => (release = () => resolve({ state: "connected" }))),
+      status: () => CONNECTED_STATUS(),
     },
   });
   env.card._render();
-  await click(env.card, { action: "sync-open" });
+  await click(env.card, { action: "sync-bw-open" });
   typeInto(env.card, "email", "cook@example.test");
-  typeInto(env.card, "password", "wrong-password");
-  await click(env.card, { action: "sync-bring-connect" });
-  assert.equal(env.card._modal, "sync-info");
-  assert.match(markup(env.cards), /Bring! refused the e-mail address or the password/);
-  assert.equal(env.card._syncData().bring.password, "");
-  assert.doesNotMatch(markup(env.cards), /wrong-password/);
+  typeInto(env.card, "password", "fixture-password");
+  const first = submit(env.card);
+  await submit(env.card);
+  assert.match(markup(env.cards), /type="submit"[^>]*disabled[^>]*aria-busy="true"/);
+  release();
+  await first;
+  assert.equal(env.calls.filter((c) => c.name === "bring_connect").length, 1);
 });
 
-test("web app: a dead stored session asks to connect again", async () => {
+test("web app: a dead stored session offers a one-step sign-in that keeps the rules", async () => {
   const env = bringCard({ state: "reauth" });
-  await openStatus(env, []);
-  assert.match(markup(env.cards), /Bring! refuses the stored sign-in/);
-  assert.match(markup(env.cards), /data-action="sync-bring-connect"/);
+  await openStatus(env, [withRule()]);
+  const html = markup(env.cards);
+  assert.match(html, /Sign-in needed/);
+  assert.match(html, /Your rules and waiting items stay as they are/);
+  assert.match(html, /data-form="bring-login"/);
+  assert.match(html, /Sign in again/);
+  assert.match(html, /data-action="sync-run"/, "the rule is still listed");
 });
 
-test("web app: disconnecting asks first and then returns to the explanation", async () => {
+test("web app: a Bring! list that is gone tells how to choose another", async () => {
+  const env = bringCard({ state: "connected" });
+  const rule = withRule({ destination: { ...RULE.destination, available: false } });
+  await openStatus(env, [rule]);
+  assert.match(markup(env.cards), /no longer exists or cannot be reached[^]*with Edit/);
+});
+
+test("web app: the connected state shows the masked account and disconnecting asks first", async () => {
   const env = bringCard({
     state: "connected",
     handlers: {
@@ -693,7 +781,10 @@ test("web app: disconnecting asks first and then returns to the explanation", as
       }),
     },
   });
-  await openStatus(env, []);
+  env.card._status.entries[0].bring.account = "c•••@example.test";
+  await openStatus(env, [withRule()]);
+  assert.match(markup(env.cards), /c•••@example\.test/);
+  assert.match(markup(env.cards), /Last delivery/);
   await click(env.card, { action: "sync-bring-disconnect-ask" });
   assert.match(markup(env.cards), /Really disconnect\?/);
   assert.doesNotMatch(env.names().join(), /bring_disconnect/);
@@ -702,8 +793,16 @@ test("web app: disconnecting asks first and then returns to the explanation", as
   await click(env.card, { action: "sync-bring-disconnect-ask" });
   await click(env.card, { action: "sync-bring-disconnect" });
   assert.ok(env.names().includes("bring_disconnect"));
-  assert.equal(env.card._modal, "sync-info");
-  assert.match(markup(env.cards), /No account connected yet/);
+  assert.equal(env.card._modal, null);
+});
+
+test("Home Assistant never shows the Bring! connection", async () => {
+  const env = syncCard({ features: { shopping_sync: false } });
+  env.card._view = "shopping";
+  env.card._render();
+  assert.doesNotMatch(markup(env.cards), /sync-bw-open|Connect to Bring/);
+  await click(env.card, { action: "sync-bw-open" });
+  assert.notEqual(env.card._modal, "sync-wizard");
 });
 
 test("an older Bridge without features hides the sync entry point", () => {

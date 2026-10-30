@@ -18,7 +18,8 @@ export const shoppingSyncMethods = {
         confirmDelete: "",
         review: null,
         setup: null,
-        bring: { email: "", password: "", busy: false, error: "", confirm: false },
+        wizard: null,
+        bring: { email: "", password: "", reveal: false, busy: false, error: "", confirm: false },
       };
     return this._sync;
   },
@@ -36,6 +37,8 @@ export const shoppingSyncMethods = {
       // Only the web app offers to connect the Bring! account inside the card.
       bringSetup: !native && entry.features?.bring_setup === true,
       bringState: String(entry.bring?.state || ""),
+      bringAccount: String(entry.bring?.account || ""),
+      bringDefault: String(entry.bring?.default_list || ""),
       readOnly: entry.read_only === true,
       write: entry.read_only !== true && (grants.can_write ?? entry.can_write) === true,
       admin: (grants.can_admin ?? entry.can_manage) === true,
@@ -63,10 +66,16 @@ export const shoppingSyncMethods = {
   _syncEntryButton() {
     const caps = this._syncCaps();
     if (!caps.supported && !caps.standalone) return "";
+    // The web app offers the connection right where the shopping list is.
+    if (caps.standalone && caps.bringSetup)
+      return `<button class="btn tiny sync-open bw-entry" data-action="sync-bw-open" aria-haspopup="dialog">${icon("cart", 14)} ${esc(this.t("bwConnectEntry"))}</button>`;
     const issues = caps.supported ? this._syncIssueCount() : 0;
-    const badge = issues
-      ? `<span class="sync-badge">${icon("bolt", 12)} ${esc(this.t("syncBadgeIssues", { count: issues }))}</span>`
-      : "";
+    const badge =
+      caps.bringSetup && caps.bringState === "reauth"
+        ? `<span class="sync-badge">${icon("bolt", 12)} ${esc(this.t("bwBadgeReauth"))}</span>`
+        : issues
+          ? `<span class="sync-badge">${icon("bolt", 12)} ${esc(this.t("syncBadgeIssues", { count: issues }))}</span>`
+          : "";
     return `<button class="btn tiny sync-open" data-action="sync-open" aria-haspopup="dialog">${icon("cart", 14)} ${esc(this.t("syncOpen"))}${badge}</button>`;
   },
   _syncRelative(iso) {
@@ -214,9 +223,11 @@ export const shoppingSyncMethods = {
       sync.confirmDelete = "";
     }
     if (this._modal !== "sync-setup") sync.setup = null;
+    if (this._modal !== "sync-wizard") sync.wizard = null;
     // A closed dialog never keeps a typed password.
-    if (!["sync", "sync-info"].includes(this._modal)) {
+    if (!["sync", "sync-info", "sync-wizard"].includes(this._modal)) {
       sync.bring.password = "";
+      sync.bring.reveal = false;
       sync.bring.confirm = false;
     }
     if (
@@ -229,11 +240,12 @@ export const shoppingSyncMethods = {
   },
 
   _syncModalHtml() {
-    if (!["sync", "sync-setup", "sync-info"].includes(this._modal)) return "";
+    if (!["sync", "sync-setup", "sync-info", "sync-wizard"].includes(this._modal)) return "";
     const closing = `<button class="icon-btn modal-close" data-action="close-modal" title="${esc(this.t("close"))}" aria-label="${esc(this.t("close"))}">${icon("close")}</button>`;
     let content,
       size = "";
     if (this._modal === "sync-info") content = this._syncInfoHtml();
+    else if (this._modal === "sync-wizard") content = this._bwHtml();
     else if (this._modal === "sync-setup") {
       size = "large";
       content = this._syncSetupHtml();
@@ -246,67 +258,71 @@ export const shoppingSyncMethods = {
   _syncInfoHtml() {
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}<section class="editor-card"><p class="sync-explain" role="status">${icon("leaf", 16)} ${esc(this.t("syncStandaloneExplain"))}</p></section>${this._syncBringHtml(this._syncCaps())}</div>`;
   },
-  // Connection of the Bring! account (web app only): state, sign-in form and disconnect.
+  // Web app only: why the connection is not available to this user, and what is stored.
   _syncBringHtml(caps) {
     if (!caps.bringSetup) return "";
-    const bring = this._syncData().bring;
-    const connected = caps.bringState === "connected";
-    const reauth = caps.bringState === "reauth";
-    const editable = caps.admin && !caps.readOnly;
-    const state = this.t(
-      connected ? "syncBringConnected" : reauth ? "syncBringReauth" : "syncBringDisconnected",
-    );
-    const field = (key, label, type, value, autocomplete) =>
-      `<label class="field"><span>${esc(this.t(label))}</span><input type="${type}" data-input="sync-bring-${key}" value="${esc(value)}" autocomplete="${autocomplete}" autocapitalize="none" spellcheck="false" maxlength="256"></label>`;
-    let action = "";
-    if (!editable)
-      action = `<p class="sync-muted" role="note">${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncBringAdminOnly"))}</p>`;
-    else if (connected && bring.confirm)
-      action = `<p role="alert">${esc(this.t("syncBringDisconnectConfirm"))}</p><div class="form-actions"><button class="btn danger" data-action="sync-bring-disconnect"${bring.busy ? " disabled" : ""}>${esc(this.t("syncBringDisconnectYes"))}</button><button class="btn ghost" data-action="sync-bring-disconnect-cancel">${esc(this.t("syncCancel"))}</button></div>`;
-    else if (connected)
-      action = `<div class="form-actions"><button class="btn" data-action="sync-bring-disconnect-ask">${esc(this.t("syncBringDisconnect"))}</button></div>`;
-    else
-      action = `${field("email", "syncBringEmail", "email", bring.email, "username")}${field("password", "syncBringPassword", "password", bring.password, "current-password")}<div class="form-actions"><button class="btn primary" data-action="sync-bring-connect"${bring.busy || !bring.email.trim() || !bring.password ? " disabled" : ""}>${icon("check", 14)} ${esc(this.t(bring.busy ? "loading" : "syncBringConnect"))}</button></div>`;
-    return `<section class="editor-card sync-bring"><h3>${esc(this.t("syncBringTitle"))}</h3>
-      <p role="status">${icon(connected ? "check" : "bolt", 16)} ${esc(state)}</p>
-      ${bring.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(bring.error)}</span></div>` : ""}
-      ${action}
-      <p class="sync-muted">${esc(this.t("syncBringPrivacy"))}</p></section>`;
+    const note = this._bwCanConnect()
+      ? ""
+      : this.t(caps.readOnly ? "syncReadOnly" : "syncBringAdminOnly");
+    return `<section class="editor-card sync-bring"><h3>${esc(this.t("syncBringTitle"))}</h3>${note ? `<p class="sync-muted" role="note">${esc(note)}</p>` : ""}<p class="sync-muted">${esc(this.t("syncBringPrivacy"))}</p></section>`;
   },
   _syncBringHandleInput(el) {
     const type = el.dataset?.input || "";
     if (!type.startsWith("sync-bring-")) return false;
     const bring = this._syncData().bring;
+    // No re-render while typing: a password manager can fill both fields in one go.
     if (type === "sync-bring-email") bring.email = String(el.value);
     else if (type === "sync-bring-password") bring.password = String(el.value);
-    // The connect button follows the typing; keep the caret in the field.
-    this._syncRenderKeepFocus(el);
     return true;
   },
   async _syncBringConnect() {
     const sync = this._syncData();
     const bring = sync.bring;
-    if (bring.busy || !bring.email.trim() || !bring.password) return;
+    if (bring.busy || !this._bwCanConnect()) return;
+    if (!bring.email.trim() || !bring.password) {
+      bring.error = this.t("errBringCredentials");
+      this._render();
+      this._focusAfterRender(() =>
+        this.shadowRoot?.querySelector?.(
+          `[data-input="sync-bring-${bring.email.trim() ? "password" : "email"}"]`,
+        ),
+      );
+      return;
+    }
     bring.busy = true;
     bring.error = "";
     this._render();
+    const wizard = this._modal === "sync-wizard" ? sync.wizard : null;
+    let signedIn = false;
     try {
       await this._ws("bring_connect", { email: bring.email.trim(), password: bring.password });
+      signedIn = true;
       this._status = await this._ws("status");
       bring.email = "";
       sync.requested = false;
       sync.state = null;
       sync.raw = "";
       sync.error = "";
-      this._modal = "sync";
+      if (!wizard) this._modal = "sync";
     } catch (err) {
       bring.error = this._errorText(err);
       this._syncRefetchStatus(err);
     }
     // The password never outlives the request, whatever the outcome.
     bring.password = "";
+    bring.reveal = false;
     bring.busy = false;
+    if (wizard && signedIn && sync.wizard === wizard) {
+      this._bwGo(2);
+      await this._syncLoad({ quiet: true });
+      return;
+    }
     this._render();
+    if (!signedIn) {
+      this._focusAfterRender(() =>
+        this.shadowRoot?.querySelector?.('[data-input="sync-bring-password"]'),
+      );
+    }
     if (this._modal === "sync" && this._syncCaps().supported) await this._syncLoad();
   },
   async _syncBringDisconnect() {
@@ -322,7 +338,8 @@ export const shoppingSyncMethods = {
       sync.state = null;
       sync.raw = "";
       sync.error = "";
-      this._modal = "sync-info";
+      this._modal = null;
+      this._flash(this.t("bwDisconnected"));
     } catch (err) {
       bring.error = this._errorText(err);
       this._syncRefetchStatus(err);
@@ -343,14 +360,15 @@ export const shoppingSyncMethods = {
       : "";
     const body = rules.length
       ? rules.map((rule) => this._syncRuleHtml(rule, caps)).join("")
-      : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t("syncNoRules") : this.t("loading"))}</div></section>`;
+      : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
       <div class="sync-live" role="status" aria-live="polite">${live}</div>
       ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncNeedsWrite"))}</p>` : ""}
+      ${this._bwAccountHtml(caps)}
       ${body}
-      ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="sync-setup-open" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
-      ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}${this._syncBringHtml(caps)}</div>`;
+      ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
+      ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
   // A rule named after the built-in list in either language ("Shopping list" or "Einkaufsliste")
   // is titled with the route in the current UI language.
@@ -399,7 +417,9 @@ export const shoppingSyncMethods = {
       `<button class="btn tiny ${extra}" data-action="${action}" data-value="${id}"${caps.write ? "" : ' aria-disabled="true"'}>${label}</button>`;
     const problems = [
       destination.available === false
-        ? this.tp("syncErrorDestinationUnavailable", open, { destination: destName })
+        ? caps.bringSetup
+          ? this.t("bwListGone", { destination: destName })
+          : this.tp("syncErrorDestinationUnavailable", open, { destination: destName })
         : "",
       last?.outcome === "source_unavailable" ? this.t("syncErrorSourceUnavailable") : "",
     ].filter(Boolean);
@@ -674,10 +694,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       if (caps.supported) await this._syncLoad();
       return true;
     }
-    if (action === "sync-bring-connect") {
-      if (caps.bringSetup && caps.admin) await this._syncBringConnect();
-      return true;
-    }
+    if (action.startsWith("sync-bw-")) return caps.bringSetup ? this._bwClick(el) : true;
     if (["sync-bring-disconnect-ask", "sync-bring-disconnect-cancel"].includes(action)) {
       if (caps.bringSetup && caps.admin) {
         sync.bring.confirm = action === "sync-bring-disconnect-ask";
@@ -943,7 +960,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
   // Returns true when the input belonged to the sync setup form.
   _syncHandleInput(el) {
     const type = el.dataset?.input || "";
-    if (this._syncBringHandleInput(el)) return true;
+    if (this._syncBringHandleInput(el) || this._bwHandleInput(el)) return true;
     const d = this._syncData().setup;
     if (!type.startsWith("sync-") || !d) return false;
     const staleAndRender = () => {

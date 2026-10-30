@@ -52,6 +52,10 @@ const DEFAULTS = {
   cooking_tts_engine: "",
 };
 const ICONS = {
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  "eye-off":
+    '<path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.9 3.7M6.6 6.6A16 16 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4.2-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   home: '<path d="m3 9 9-7 9 7v11a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1Z"/>',
   book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
@@ -2796,6 +2800,16 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
 MealieAtelierCard.prototype._handleInput = function (event) {
   if (this._syncHandleInput(event.target || {})) return;
   return _syncBaseInput.call(this, event);
+};
+const _syncBaseSubmit = MealieAtelierCard.prototype._handleSubmit;
+MealieAtelierCard.prototype._handleSubmit = async function (event) {
+  const form = event.target?.closest?.("[data-form]");
+  if (form?.dataset?.form === "bring-login") {
+    event.preventDefault();
+    if (this._syncCaps().bringSetup) await this._syncBringConnect();
+    return;
+  }
+  return _syncBaseSubmit.call(this, event);
 };
 MealieAtelierCard.prototype._render = function () {
   _syncBaseRender.call(this);

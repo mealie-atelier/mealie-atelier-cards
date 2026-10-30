@@ -16,8 +16,16 @@ const json = (res, status, body, headers = {}) => {
  * Starts the fake. `state.failures.add` is a queue consumed by the next add calls:
  * `drop-after-store` (stores the item, then cuts the connection), `drop-before-store`,
  * `reject` (HTTP 400), `ratelimit` (HTTP 429), `auth` (HTTP 401 that no refresh can fix).
+ * `failures.login` takes `ratelimit` (HTTP 429) or `down` (HTTP 503) for the next sign-ins.
+ * POST /__fake/control changes the state of a running fake (see `control` below), so browser runs
+ * can walk through every error without a restart.
  */
-export async function startFakeBring({ expiresIn = 3600 } = {}) {
+export async function startFakeBring({
+  expiresIn = 3600,
+  port = 0,
+  host = "127.0.0.1",
+  email = FAKE_EMAIL,
+} = {}) {
   const state = {
     uuid: randomUUID(),
     lists: [
@@ -30,7 +38,7 @@ export async function startFakeBring({ expiresIn = 3600 } = {}) {
     calls: [],
     logins: 0,
     refreshes: 0,
-    failures: { add: [], list: [] },
+    failures: { add: [], list: [], login: [] },
     blocked: false,
     rejectLogin: false,
     expiresIn,
@@ -48,18 +56,46 @@ export async function startFakeBring({ expiresIn = 3600 } = {}) {
       return state.calls.filter((call) => call.method === "PUT");
     },
   };
+  /** `blocked`, `rejectLogin`, `loginFailures`, `expireAccess`, `resetLists`, `dropList` (name), `addList` (name), `addItem` ({ list, name, spec }). */
+  const control = (patch) => {
+    if ("blocked" in patch) state.blocked = patch.blocked === true;
+    if ("rejectLogin" in patch) state.rejectLogin = patch.rejectLogin === true;
+    if (Array.isArray(patch.loginFailures)) state.failures.login.push(...patch.loginFailures);
+    if (patch.expireAccess) {
+      state.access.clear();
+      state.refresh.clear();
+    }
+    if (patch.resetLists) {
+      state.lists = ["Einkauf", "Party"].map((name) => ({
+        listUuid: randomUUID(),
+        name,
+        theme: "default",
+      }));
+      state.items.clear();
+    }
+    if (patch.dropList) state.lists = state.lists.filter((row) => row.name !== patch.dropList);
+    if (patch.addList)
+      state.lists.push({ listUuid: randomUUID(), name: patch.addList, theme: "default" });
+  };
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
     let raw = "";
     for await (const chunk of req) raw += chunk;
     const call = { method: req.method, path: url.pathname, headers: req.headers, raw };
     state.calls.push(call);
+    if (req.method === "POST" && url.pathname === "/__fake/control") {
+      control(JSON.parse(raw || "{}"));
+      return json(res, 200, { ok: true });
+    }
     if (state.blocked) return req.socket.destroy();
     if (req.method === "POST" && url.pathname === "/v2/bringauth") {
+      const loginFailure = state.failures.login.shift();
+      if (loginFailure === "ratelimit") return json(res, 429, {}, { "Retry-After": "60" });
+      if (loginFailure === "down") return json(res, 503, {});
       const form = new URLSearchParams(raw);
       if (
         state.rejectLogin ||
-        form.get("email") !== FAKE_EMAIL ||
+        form.get("email") !== email ||
         form.get("password") !== FAKE_PASSWORD
       )
         return json(res, 401, { message: "bad credentials" });
@@ -160,7 +196,7 @@ export async function startFakeBring({ expiresIn = 3600 } = {}) {
     }
     return json(res, 404, {});
   });
-  server.listen(0, "127.0.0.1");
+  server.listen(port, host);
   await once(server, "listening");
   return {
     state,
