@@ -1289,3 +1289,50 @@ test("every recipe page sends its own recipe slug to the live demo and the demo 
   assert.match(preview, /_openRecipe\(wantedSlug\)/);
   assert.match(preview, /data-action="cook-start"/);
 });
+
+test("recipe pages show rest time and total so they agree with the landing and JSON-LD", () => {
+  const catalog = JSON.parse(read("demo/data/recipes.json")).recipes;
+  const resting = catalog.filter((recipe) => recipe.restMinutes);
+  assert.ok(resting.length >= 2);
+  for (const recipe of resting) {
+    const total = recipe.prepMinutes + recipe.cookMinutes + recipe.restMinutes;
+    for (const [locale, name, rest, sum] of [
+      ["de", `de/rezepte/${recipe.slug}`, "Ruhezeit", "Gesamt"],
+      ["en", `en/recipes/${recipe.slugEn}`, "Resting", "Total"],
+    ]) {
+      const html = read(join(builds.local, name, "index.html"));
+      const metrics = html.match(/<div class="recipe-metrics">[\s\S]*?<\/header>/)[0];
+      assert.match(
+        metrics,
+        new RegExp(`<b>${recipe.restMinutes} [^<]+</b><span>${rest}</span>`),
+        name,
+      );
+      assert.match(metrics, new RegExp(`<b>${total} [^<]+</b><span>${sum}</span>`), name);
+      assert.ok(html.includes(`"totalTime":"PT${total}M"`), `${locale} JSON-LD total`);
+    }
+  }
+});
+
+test("every salt or pepper a recipe step calls for is on its ingredient list", () => {
+  const catalog = JSON.parse(read("demo/data/recipes.json")).recipes;
+  for (const recipe of catalog) {
+    for (const [locale, salt, pepper] of [
+      ["de", /Salz(?!wasser)|salzen/, /Pfeffer/],
+      ["en", /\bsalt\b(?!ed)/i, /pepper/i],
+    ]) {
+      const steps = recipe.steps[locale].map((step) => step.text).join(" ");
+      const list = recipe.ingredients[locale].join(" ");
+      if (salt.test(steps.replace(/Meersalz/g, "")))
+        assert.match(list, salt, `${recipe.slug} ${locale} salt`);
+      if (pepper.test(steps)) assert.match(list, pepper, `${recipe.slug} ${locale} pepper`);
+    }
+  }
+});
+
+test("German landing copy uses idiomatic words for tap areas and nominal Abhaken", () => {
+  const html = landing(builds.local, "de");
+  assert.doesNotMatch(html, /große Ziele|Große Ziele/);
+  assert.match(html, /Große Tippflächen für nasse Finger/);
+  assert.match(html, /große Tippflächen am Küchentablet/);
+  assert.match(html, /Daumen und Abhaken auch ohne Netz/);
+});

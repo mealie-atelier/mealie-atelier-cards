@@ -216,6 +216,8 @@ const copy = {
     withRest: "inkl. Ruhezeit",
     prep: "Vorbereitung",
     cooking: "Kochen",
+    rest: "Ruhezeit",
+    total: "Gesamt",
     servings: "Portionen",
     appDescription:
       "Eine ruhige Küchenoberfläche für Mealie: Wochenplan, Einkaufsliste, Kochmodus und Vorräte, als Karten für Home Assistant oder als eigenständige Web-App.",
@@ -237,6 +239,8 @@ const copy = {
     withRest: "incl. resting",
     prep: "prep",
     cooking: "cooking",
+    rest: "resting",
+    total: "total",
     servings: "servings",
     appDescription:
       "A calm kitchen interface for Mealie: meal plan, shopping list, cooking mode and pantry, as cards for Home Assistant or as a standalone web app.",
@@ -549,6 +553,11 @@ function renderRecipePage(locale, recipe) {
     recipe.prepMinutes ? [`${recipe.prepMinutes} ${words.minutes}`, capitalize(words.prep)] : null,
     recipe.cookMinutes
       ? [`${recipe.cookMinutes} ${words.minutes}`, capitalize(words.cooking)]
+      : null,
+    // Dough rests are part of the facts so the page agrees with the total on the landing and in JSON-LD.
+    recipe.restMinutes ? [`${recipe.restMinutes} ${words.minutes}`, capitalize(words.rest)] : null,
+    recipe.restMinutes
+      ? [`${totalMinutes(recipe)} ${words.minutes}`, capitalize(words.total)]
       : null,
     [`${recipe.servings}`, capitalize(words.servings)],
     [escapeHtml(recipe.cuisine[locale]), t("Küche", "Cuisine")],
