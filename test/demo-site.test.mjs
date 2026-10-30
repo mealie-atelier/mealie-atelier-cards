@@ -1246,3 +1246,22 @@ test("small saffron and avatar text keep AA contrast in the light scheme", () =>
   assert.match(css, /\.who i \{[^}]*color: var\(--mint2\)/);
   assert.ok(ratio(token("--mint2"), token("--panel3")) >= 4.5, "rights avatar initial");
 });
+
+test("the compare hint stays AA readable on the shadowed Oat backdrop in the light scheme", () => {
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const hint = css.match(/\n\.hint \{([^}]*)\}/)[1];
+  assert.match(hint, /color: var\(--sub\)/);
+  const light = css.match(/@media \(prefers-color-scheme: light\) \{\s*:root \{([^}]*)\}/)[1];
+  const hex = light.match(/--sub:\s*(#[0-9a-f]{6})/)[1];
+  const lum = (h) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const v = parseInt(h.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  // Worst measured backdrop behind the hint under the frame shadow is about 3.8:1 against #56635A.
+  const worstBackdrop = "#d4cbb8";
+  const [hi, lo] = [lum(hex), lum(worstBackdrop)].sort((a, b) => b - a);
+  assert.ok((hi + 0.05) / (lo + 0.05) >= 4.5);
+});

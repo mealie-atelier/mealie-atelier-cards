@@ -990,7 +990,7 @@ h2 em {
   gap: 10px;
   justify-content: center;
   margin-top: 18px;
-  color: var(--faint);
+  color: var(--sub);
   font-size: 14px;
 }
 .ba-notes {
