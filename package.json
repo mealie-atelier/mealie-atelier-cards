@@ -1,6 +1,6 @@
 {
   "name": "mealie-atelier-cards",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Mealie recipes, meal plans and shopping lists as polished Home Assistant Lovelace cards and a standalone web app",
   "type": "module",
   "private": true,

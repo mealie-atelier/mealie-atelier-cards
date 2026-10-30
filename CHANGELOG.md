@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-30
+
 ### Added
 
 - Shopping: edit an item (name, quantity, note), delete it, or clear all ticked items of a list after a confirmation. The offline queue keeps these edits too, and the web app server mirrors them with the same permission rules. The Mealie Atelier Bridge provides the matching actions `shopping_update`, `shopping_delete` and `shopping_clear_checked`.
@@ -379,5 +381,6 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/mealie-atelier/mealie-atelier-cards/releases/tag/v0.10.0

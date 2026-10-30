@@ -27,8 +27,8 @@
       name="description"
       content="Mealie Atelier: Rezepte, Wochenplanung und Einkauf, privat gehostet."
     />
-    <link rel="stylesheet" href="/shell.css?v=0.10.0" />
-    <link rel="stylesheet" href="/pwa-install.css?v=0.10.0" />
+    <link rel="stylesheet" href="/shell.css?v=0.11.0" />
+    <link rel="stylesheet" href="/pwa-install.css?v=0.11.0" />
     <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -133,7 +133,7 @@
     <script type="module">
       import { initPwaInstall } from "/pwa-install.js";
       const pwaInstall = initPwaInstall();
-      await import("/mealie-atelier-cards.js?v=0.10.0");
+      await import("/mealie-atelier-cards.js?v=0.11.0");
       const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi, OFFLINE_ACTIONS } =
         await import("/offline-client.js");
       const registrationPromise =
