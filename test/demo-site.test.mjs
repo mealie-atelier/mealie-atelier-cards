@@ -65,6 +65,15 @@ function listFiles(directory, extension) {
   });
 }
 const read = (path) => readFileSync(path, "utf8");
+// The build fails open without Chromium: share images that are neither cached nor renderable are
+// skipped with a warning. Tests that need them skip with a clear reason.
+const ogRendered = (out) =>
+  ["de", "en"].every((locale) => existsSync(join(out, "og", locale, "home.jpg"))) &&
+  catalogData.recipes.every((recipe) =>
+    ["de", "en"].every((locale) =>
+      existsSync(join(out, "og", locale, `${locale === "de" ? recipe.slug : recipe.slugEn}.jpg`)),
+    ),
+  );
 const landing = (out, locale) => read(join(out, locale, "index.html"));
 const contentPages = (out) => listFiles(out, ".html").filter((p) => p !== join(out, "index.html"));
 const footerOf = (html) => html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/)?.[0] ?? "";
@@ -173,6 +182,52 @@ test("long resting recipes include the rest in the total time chip and structure
   const dir = join(builds.local, "de", "rezepte");
   const page = readFileSync(join(dir, "zitronen-focaccia-mit-rosmarin", "index.html"), "utf8");
   assert.match(page, /"totalTime":"PT165M"/);
+});
+
+test("the live demo counts the rest in its total time, matching the recipe page", () => {
+  for (const locale of ["de", "en"]) {
+    const data = JSON.parse(read(join(builds.local, "data", `${locale}.json`)));
+    const dir = locale === "de" ? "de/rezepte" : "en/recipes";
+    for (const [id, minutes] of [
+      ["pizza", 107],
+      ["focaccia", 165],
+    ]) {
+      const recipe = data.recipes.find((item) => item.slug.includes(id));
+      assert.ok(recipe, `${locale} ${id} in the live demo data`);
+      const total = recipe.prepMinutes + recipe.cookMinutes + (recipe.restMinutes ?? 0);
+      assert.equal(total, minutes, `${locale} ${id} live demo total`);
+      const slug =
+        locale === "de" ? recipe.slug : catalogData.recipes.find((r) => r.id === recipe.id).slugEn;
+      const page = read(join(builds.local, dir, slug, "index.html"));
+      assert.match(page, new RegExp(`"totalTime":"PT${total}M"`), `${locale} ${id} page total`);
+    }
+  }
+  assert.match(read("demo/preview.html"), /item\.restMinutes/);
+});
+
+test("old English recipe URLs redirect permanently to the new English slugs", () => {
+  const redirects = read(join(builds.deployed, "_redirects")).trim().split("\n");
+  const moved = catalogData.recipes.filter((recipe) => recipe.slug !== recipe.slugEn);
+  assert.ok(moved.length >= 9, "most English slugs differ from the German ones");
+  for (const recipe of moved) {
+    const to = `/en/recipes/${recipe.slugEn}/`;
+    assert.ok(redirects.includes(`/en/recipes/${recipe.slug}/ ${to} 301`), recipe.slug);
+    assert.ok(redirects.includes(`/en/recipes/${recipe.slug} ${to} 301`), recipe.slug);
+    assert.ok(existsSync(join(builds.deployed, to, "index.html")), `${to} exists`);
+    assert.ok(!existsSync(join(builds.deployed, "en/recipes", recipe.slug)), recipe.slug);
+  }
+  assert.ok(
+    redirects.includes(
+      "/en/recipes/zitronen-focaccia-mit-rosmarin/ /en/recipes/lemon-and-rosemary-focaccia/ 301",
+    ),
+  );
+  const sitemap = read(join(builds.deployed, "sitemap.xml"));
+  for (const recipe of moved) {
+    assert.ok(sitemap.includes(`${baseUrl}en/recipes/${recipe.slugEn}/`), recipe.slugEn);
+    assert.ok(!sitemap.includes(`${baseUrl}en/recipes/${recipe.slug}/`), recipe.slug);
+  }
+  // A rebuild into a reused folder keeps the file (nothing prunes the site root).
+  assert.ok(existsSync(join(builds.local, "_redirects")));
 });
 
 test("English pages do not call the Cards or the Bridge an add-on", () => {
@@ -401,6 +456,7 @@ test("every asset a page references exists in the generated site", () => {
     for (const ref of refs) {
       const path = ref.split("#")[0].split("?")[0];
       if (!path) continue;
+      if (!ogRendered(out) && /(^|\/)og\/(de|en)\//.test(path)) continue; // no Chromium, see ogRendered
       let target = join(dirname(page), path);
       if (path.endsWith("/")) target = join(target, "index.html");
       assert.ok(existsSync(target), `${relative(out, page)} references missing ${ref}`);
@@ -653,12 +709,6 @@ test("recipe photos carry no clutter claims in their alt text", () => {
     alts.join("\n"),
     /Beere am|red berry|Knäckebrot|crispbread|Frühlingszwiebelring|sliced spring onion/,
   );
-});
-
-test("the skillet eggs recipe promises nothing the photo does not show", () => {
-  const catalog = JSON.parse(read(new URL("../demo/data/recipes.json", import.meta.url)));
-  const recipe = catalog.recipes.find((item) => item.id === "skillet-eggs");
-  assert.doesNotMatch(JSON.stringify(recipe), /Knäckebrot|crispbread|crackers/i);
 });
 
 test("the skillet eggs recipe promises nothing the photo does not show", () => {
@@ -971,7 +1021,10 @@ function pagesBelow(root) {
 // Every page, the bare domain redirect included, must point its share image at a real JPEG of
 // 1200x630 pixels under 300 KB that the build wrote. Crawlers such as Twitter/X ignore a meta refresh,
 // so the root page needs the full card itself.
-test("every generated page has og:image and twitter:image pointing at an existing 1200x630 JPEG", () => {
+test("every generated page has og:image and twitter:image pointing at an existing 1200x630 JPEG", (t) => {
+  if (!ogRendered(builds.local) || !ogRendered(builds.deployed)) {
+    return t.skip("share images were not rendered: no headless Chromium and an empty OG cache");
+  }
   for (const [build, base] of [
     [builds.deployed, baseUrl],
     [builds.local, ""],
@@ -1192,14 +1245,20 @@ test("OG recipe titles keep compound words whole instead of breaking at the hyph
 });
 
 test("OG source screenshots show no dialog close button and the German shopping bar has three tabs", (t) => {
+  // Only a missing Pillow skips. A missing screenshot or a probe error must fail the test.
+  try {
+    execFileSync("python3", ["-I", "-c", "import PIL.Image"], { stdio: "pipe" });
+  } catch {
+    return t.skip("python3 with Pillow is not installed");
+  }
   const probe = `
-import sys
 from PIL import Image
 def px(path, box):
     im = Image.open(path).convert("RGB")
     k = im.width / 720
     x0, y0, x1, y1 = [int(v * k) for v in box]
-    return im.crop((x0, y0, x1, y1)).getdata()
+    data = im.crop((x0, y0, x1, y1)).tobytes()
+    return list(zip(data[0::3], data[1::3], data[2::3]))
 dark = lambda path: sum(1 for r, g, b in px(path, (580, 56, 665, 143)) if max(r, g, b) < 80)
 bright = lambda path, box: sum(1 for r, g, b in px(path, box) if r + g + b > 450)
 for loc in ("de", "en"):
@@ -1207,13 +1266,7 @@ for loc in ("de", "en"):
         print("x", loc, size, dark("demo/showcase/%s/app-phone-recipe-%d.webp" % (loc, size)))
 print("tab", bright("demo/showcase/de/app-phone-shopping-720.webp", (420, 85, 640, 110)))
 `;
-  let out;
-  try {
-    out = execFileSync("python3", ["-I", "-c", probe], { encoding: "utf8" });
-  } catch {
-    t.skip("python3 with Pillow is not available");
-    return;
-  }
+  const out = execFileSync("python3", ["-I", "-W", "error", "-c", probe], { encoding: "utf8" });
   for (const line of out.trim().split("\n")) {
     const [kind, ...rest] = line.split(" ");
     const count = Number(rest.at(-1));

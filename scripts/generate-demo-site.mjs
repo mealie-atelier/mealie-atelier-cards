@@ -317,6 +317,7 @@ function localizedData(locale) {
       servings: recipe.servings,
       prepMinutes: recipe.prepMinutes,
       cookMinutes: recipe.cookMinutes,
+      restMinutes: recipe.restMinutes ?? 0,
       ingredients: recipe.ingredients[locale],
       steps: recipe.steps[locale],
       image: {
@@ -776,6 +777,19 @@ for (const locale of localeIds) {
     if (deploymentBase) sitemapUrls.push(`${deploymentBase}${publicPath}`);
   }
 }
+
+// English recipe pages used to live under the German slug. Cloudflare Pages reads _redirects from
+// the site root, so every URL published earlier keeps working with a permanent redirect.
+const movedRecipes = catalog.recipes.filter((recipe) => recipe.slug !== recipe.slugEn);
+await writeFile(
+  join(siteRoot, "_redirects"),
+  `${movedRecipes
+    .flatMap((recipe) => {
+      const to = `/en/recipes/${recipe.slugEn}/`;
+      return [`/en/recipes/${recipe.slug}/ ${to} 301`, `/en/recipes/${recipe.slug} ${to} 301`];
+    })
+    .join("\n")}\n`,
+);
 
 if (deploymentBase) {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapUrls.map((url) => `<url><loc>${escapeHtml(url)}</loc></url>`).join("")}</urlset>`;

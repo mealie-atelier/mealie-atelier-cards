@@ -267,9 +267,12 @@ export async function renderOgImages(jobs, cacheDir) {
   if (missing.length > 0) {
     const chrome = findChrome();
     if (!chrome) {
-      throw new Error(
-        `Chromium is needed to render ${missing.length} Open Graph image(s). Set CHROME_BIN or install the Playwright Chromium headless shell.`,
-      );
+      const message = `Chromium is needed to render ${missing.length} Open Graph image(s). Set CHROME_BIN or install the Playwright Chromium headless shell.`;
+      // Fail open: a machine without Chromium still builds the site, only without the missing
+      // share images. A release build sets ATELIER_DEMO_REQUIRE_OG=1 to make this an error.
+      if (process.env.ATELIER_DEMO_REQUIRE_OG === "1") throw new Error(message);
+      console.warn(`Warning: ${message} Skipping them.`);
+      return results;
     }
     const { child, socket, cdp } = await launch(chrome);
     try {

@@ -355,8 +355,25 @@ test("the sidebar identity shows the Week Dial mark, not the old leaf tile", () 
   assert.ok(identity.includes("${WEEK_DIAL_MARK}"), "identity renders the Week Dial constant");
   assert.doesNotMatch(identity, /icon\("leaf"/);
   const mark = compiled.match(/const WEEK_DIAL_MARK =\s*'([^']+)'/)?.[1] ?? "";
-  for (const fill of ["#F2E9D8", "#B8532E", "#DCCDB0", "#3E6B48"])
-    assert.ok(mark.includes(fill), fill);
+  for (const part of ["plate", "today", "rim", "glyph"])
+    assert.ok(mark.includes(`class="${part}"`), part);
+  assert.doesNotMatch(mark, /fill="#/, "colours come from the theme CSS, not from the markup");
+});
+
+test("the Week Dial mark has contrast on the light sidebar: Night plate instead of the cream plate", () => {
+  const css = file("src/design-system/editorial.css");
+  const fillOf = (selector) =>
+    css.match(
+      new RegExp(`${selector.replaceAll(".", "\\.")}\\s*\\{\\s*fill:\\s*(#[0-9a-f]{6})`),
+    )?.[1];
+  assert.equal(fillOf(".atelier .week-dial .plate"), "#f2e9d8", "dark theme keeps the cream plate");
+  assert.equal(
+    fillOf(".atelier.light .week-dial .plate"),
+    "#14201a",
+    "light theme uses the Night plate",
+  );
+  assert.equal(fillOf(".atelier.light .week-dial .rim"), "#2b3b31");
+  assert.equal(fillOf(".atelier.light .week-dial .glyph"), "#9dcbb2");
 });
 
 test("in the light theme the ink on brand fills is chosen against the darkened brand, not the raw accent", () => {

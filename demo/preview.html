@@ -95,7 +95,7 @@
           ]),
         ],
         imageUrl: photoPath(item.image.file, catalogResponse.url),
-        totalTime: item.prepMinutes + item.cookMinutes,
+        totalTime: item.prepMinutes + item.cookMinutes + (item.restMinutes ?? 0),
         recipeCategory: [{ name: localize(item.category) }],
         recipeCuisine: [{ name: localize(item.cuisine) }],
         tags: item.tags.map((name) => ({ name })),

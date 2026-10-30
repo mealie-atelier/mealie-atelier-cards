@@ -34,6 +34,28 @@
   width: 100%;
   height: 100%;
 }
+/* Week Dial colours: cream plate on the dark sidebar, Night plate on the light one. */
+.atelier .week-dial .plate {
+  fill: #f2e9d8;
+}
+.atelier .week-dial .rim {
+  fill: #dccdb0;
+}
+.atelier .week-dial .today {
+  fill: #b8532e;
+}
+.atelier .week-dial .glyph {
+  fill: #3e6b48;
+}
+.atelier.light .week-dial .plate {
+  fill: #14201a;
+}
+.atelier.light .week-dial .rim {
+  fill: #2b3b31;
+}
+.atelier.light .week-dial .glyph {
+  fill: #9dcbb2;
+}
 .atelier .identity strong {
   font-weight: 750;
   line-height: 1.13;
