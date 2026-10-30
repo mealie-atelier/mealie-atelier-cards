@@ -2552,6 +2552,10 @@ class MealieAtelierCard extends HTMLElement {
     if (!live) return;
     live.setAttribute("aria-busy", String(Boolean(busy)));
     live.innerHTML = markup;
+    // The "no matching views" notice must not sit above recipe hits that do match.
+    this.shadowRoot
+      .querySelector(".command-empty")
+      ?.toggleAttribute("hidden", this._commandTotal > 0);
   }
   async _searchCommandRecipes(query) {
     const seq = this._commandSearchSeq;

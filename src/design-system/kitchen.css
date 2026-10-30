@@ -38,6 +38,10 @@
   flex-wrap: wrap;
   align-items: center;
 }
+/* An action row that follows a paragraph keeps the same gap as the other elements of its card. */
+.atelier .studio-actions--after-text {
+  margin-top: var(--ds-space-4);
+}
 .atelier .studio-top {
   padding: 12px 0 32px;
 }

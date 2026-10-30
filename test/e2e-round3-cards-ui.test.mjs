@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
 
 let formValues = {};
@@ -129,4 +130,59 @@ test("the in-card timer message matches the push and Home Assistant wording", ()
   const en = makeCard(loadCards());
   assert.equal(de.t("uiTimerDone", { label: "Ofen" }), "Ofen ist fertig!");
   assert.equal(en.t("uiTimerDone", { label: "Oven" }), "Oven is ready!");
+});
+
+const css = (name) =>
+  readFileSync(new URL(`../src/design-system/${name}.css`, import.meta.url), "utf8");
+const locale = (name) =>
+  JSON.parse(readFileSync(new URL(`../src/i18n/${name}.json`, import.meta.url), "utf8"));
+
+test("the helper mode has one name per language across button, tag and footnote", () => {
+  for (const [language, name] of [
+    ["en", "Helper view"],
+    ["de", "Helferansicht"],
+  ]) {
+    const texts = locale(language);
+    assert.equal(texts.familyHelperMode, name);
+    assert.equal(texts.familyHelper, name);
+    assert.ok(texts.familySafety.includes(language === "en" ? name.toLowerCase() : name));
+    assert.ok(
+      !/child view|Kinderansicht|Helfermodus|Helper mode|Simple helper/.test(JSON.stringify(texts)),
+    );
+  }
+});
+
+test("the browse button of the empty shared cooking card is spaced from the hint", () => {
+  const { card } = familyCard();
+  card._studio.family.session = null;
+  assert.match(
+    card._studioFamily(),
+    /<\/p><div class="studio-actions studio-actions--after-text"><button class="btn primary" data-action="nav" data-value="recipes">/,
+  );
+  assert.match(
+    css("kitchen"),
+    /\.studio-actions--after-text\s*\{\s*margin-top: var\(--ds-space-4\);/,
+  );
+});
+
+test("the quick-actions empty notice is hidden while recipe hits are shown", () => {
+  const { card } = familyCard();
+  const notice = { hidden: null, toggleAttribute: (name, on) => (notice.hidden = on) };
+  const live = { setAttribute() {}, innerHTML: "" };
+  card.shadowRoot.querySelector = (selector) =>
+    selector === ".command-empty" ? notice : selector === "[data-command-live]" ? live : null;
+  card._commandTotal = 3;
+  card._commandPaint("<p>hits</p>");
+  assert.equal(notice.hidden, true);
+  card._commandTotal = 0;
+  card._commandPaint("");
+  assert.equal(notice.hidden, false);
+  assert.match(css("motion"), /\.command-empty\[hidden\]\s*\{\s*display: none;/);
+});
+
+test("the search clear button is drawn in the Atelier color instead of browser blue", () => {
+  assert.match(
+    css("motion"),
+    /\.command-search, \.search\) input\[type="search"\]::-webkit-search-cancel-button\s*\{[^}]*appearance: none;[^}]*var\(--ds-brand-text/s,
+  );
 });
