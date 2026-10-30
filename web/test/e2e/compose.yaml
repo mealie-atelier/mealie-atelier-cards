@@ -1,0 +1,38 @@
+# Disposable end-to-end stack for the standalone web app: a throwaway Mealie and the web app built
+# from ../../Dockerfile. Fictional data only; never point it at a real household. Driven by run.mjs.
+# Ports are deliberately not the defaults (Mealie 9925, app 3008) and not 19925 (the Home Assistant rig).
+name: atelier-web-e2e
+services:
+  mealie:
+    image: ${MEALIE_IMAGE:-ghcr.io/mealie-recipes/mealie:v3.29.0}
+    ports: ["127.0.0.1:${E2E_MEALIE_PORT:-29925}:9000"]
+    environment:
+      ALLOW_SIGNUP: "false"
+      BASE_URL: http://127.0.0.1:${E2E_MEALIE_PORT:-29925}
+      TZ: Europe/Berlin
+    tmpfs: [/app/data]
+  atelier:
+    build: ../..
+    profiles: [app]
+    depends_on: [mealie]
+    # The env file is written by run.mjs into a private temp directory (never committed).
+    env_file: ${E2E_ENV_FILE:-/dev/null}
+    environment:
+      PORT: "3000"
+      HOST: 0.0.0.0
+      ATELIER_DATA_DIR: /app/data
+    ports: ["127.0.0.1:${ATELIER_HOST_PORT:-23008}:3000"]
+    read_only: true
+    tmpfs: [/tmp]
+    volumes: [atelier_data:/app/data]
+    healthcheck:
+      # Same command as the image's own HEALTHCHECK, probed faster so the run does not idle 30 s.
+      test: ["CMD", "node", "healthcheck.mjs"]
+      interval: 3s
+      timeout: 6s
+      start_period: 5s
+      retries: 10
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+volumes:
+  atelier_data:

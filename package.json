@@ -35,7 +35,8 @@
     "test": "node --test test/*.test.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:web": "node --test web/test/*.test.mjs"
+    "test:web": "node --test web/test/*.test.mjs",
+    "test:e2e": "node web/test/e2e/run.mjs"
   },
   "devDependencies": {
     "prettier": "3.6.2"

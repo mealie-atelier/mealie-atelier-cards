@@ -112,6 +112,22 @@ These tests boot a mock Mealie API and test authorization, recipe listing and ed
 
 The opt-in live read-only smoke check in `test/live-readonly-smoke.mjs` requires `MEALIE_ATELIER_TEST_READONLY=1`, `MEALIE_URL` and `MEALIE_API_TOKEN`. Run it only against a dedicated test instance with a read-only token; do not include secrets in logs or archives.
 
+## Development
+
+### End-to-end tests
+
+`npm run test:e2e` (from the repository root) runs a headless Chromium suite against a disposable Mealie and this web app, with fictional recipes, a meal plan and a shopping list seeded by `test/e2e/seed.mjs`. It needs Docker and runs both delivery routes: the plain Node route (`node server.mjs` with an env file) and the Docker image built from `web/Dockerfile`.
+
+```bash
+npm run test:e2e                      # both routes
+npm run test:e2e -- --route=node      # one route (node or docker)
+npm run test:e2e -- --only=roles      # only spec files whose name contains "roles"
+npm run test:e2e -- --strict          # exit 1 instead of skipping when Docker is missing
+npm run test:e2e -- --keep            # leave the disposable Mealie running (debugging)
+```
+
+Mealie listens on port 29925 and the container on 23008 (override with `E2E_MEALIE_PORT` and `E2E_DOCKER_PORT`), so it does not collide with other local stacks. The suite tears everything down when it ends. The first run installs Playwright into `test/e2e/node_modules`. Without Docker it prints a skip message and exits 0. The AI, USDA, Web Push and Home Assistant paths run against a local mock, so no real key or network service is involved. The suite is not part of GitHub Actions or the pre-commit hook.
+
 ## Notes
 
 - No npm packages; just Node 22 built-in server and fetch.

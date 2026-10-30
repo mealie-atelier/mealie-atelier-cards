@@ -55,6 +55,8 @@ async function startMealie() {
     queries: [],
     patches: [],
     dropWrites: false,
+    // Like real Mealie: a rename moves the recipe to a new slug and the old one answers 404.
+    slugFollowsName: false,
     recipeStatus: 0,
     foods: [
       { id: "food-1", name: "Gnocchi", pluralName: "" },
@@ -65,7 +67,12 @@ async function startMealie() {
   };
   const http = createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
-    const path = url.pathname;
+    let path = url.pathname;
+    if (state.slugFollowsName && path.startsWith("/api/recipes/")) {
+      const current = `/api/recipes/${state.recipe.slug}`;
+      if (path === current) path = "/api/recipes/gnocchi";
+      else if (path === "/api/recipes/gnocchi" && current !== path) return json(res, 404, {});
+    }
     if (req.headers.authorization !== `Bearer ${TOKEN}`) return json(res, 401, {});
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
@@ -98,6 +105,8 @@ async function startMealie() {
       await state.onPatch?.(patch);
       state.patches.push(patch);
       if (!state.dropWrites) state.recipe = { ...state.recipe, ...patch };
+      if (state.slugFollowsName && patch.name)
+        state.recipe.slug = patch.name.toLowerCase().replaceAll(" ", "-");
       return json(res, 200, state.recipe);
     }
     if (path === "/api/media/recipes/recipe-42/images/original.webp") {
@@ -421,6 +430,27 @@ test("restore writes the snapshot fields after taking a restore snapshot", async
     const missing = await app.api("recipe_restore", { slug: "gnocchi", backup_id: randomUUID() });
     assert.equal(missing.status, 404);
     assert.equal(missing.body.code, "backup_not_found");
+  });
+});
+
+test("restoring a backup that changes the name succeeds although the recipe moves to a new slug", async () => {
+  await withApp({}, async ({ app, state }) => {
+    state.slugFollowsName = true;
+    const renamed = await app.api("mutate", {
+      action: "recipe_update",
+      payload: { slug: "gnocchi", name: "Potato Gnocchi" },
+    });
+    assert.equal(renamed.status, 200, JSON.stringify(renamed.body));
+    assert.equal(state.recipe.slug, "potato-gnocchi");
+    const { backups } = (await app.api("recipe_backups", { slug: "potato-gnocchi" })).body;
+    const restored = await app.api("recipe_restore", {
+      slug: "potato-gnocchi",
+      backup_id: backups[0].backup_id,
+    });
+    assert.equal(restored.status, 200, JSON.stringify(restored.body));
+    assert.equal(state.recipe.name, "Gnocchi");
+    assert.equal(restored.body.restored, true);
+    assert.equal(restored.body.recipe.name, "Gnocchi");
   });
 });
 
