@@ -46,7 +46,7 @@ function everyday(ctx) {
     ),
     family: t(
       "Gemeinsam kochen in der einfachen Helferansicht: Alex und ein Küchenhelfer im Helfermodus",
-      "Family in the simple helper view: Alex and a little helper in helper mode",
+      "Cook together in the simple helper view: Alex and a little helper in helper mode",
     ),
     pantry: t(
       "Einkaufsassistent: was für die geplanten Gerichte wirklich fehlt, sortiert nach Kühlregal, Vorrat und Gemüse",
@@ -133,7 +133,7 @@ function everyday(ctx) {
       title: t("Gemeinsam kochen.", "Cook together."),
       text: t(
         "Gemeinsam kochen verteilt Helferaufgaben. Kinder sehen in einer einfachen Ansicht nur die Aufgaben, die Erwachsene freigegeben haben. Alle verfolgen denselben Kochfortschritt.",
-        "Family hands out helper tasks. Children see only the tasks an adult approved, in a simple view, and everyone follows the same cooking progress.",
+        "In Cook together, adults hand out helper tasks. Children see only the tasks an adult approved, in a simple view, and everyone follows the same cooking progress.",
       ),
       list: [
         t("Einfache Helferansicht für Kinder", "A simple helper view for children"),
@@ -225,7 +225,7 @@ function features(ctx) {
       "Shopping list with items to tick off",
     ),
     " d1",
-  )}${tile("timer", t("Kochmodus", "Cooking mode"), t("Ein Schritt pro Bildschirm, Timer direkt am Schritt, der Bildschirm bleibt an.", "One step per screen, timers right at the step, the screen stays on."))}${tile("spark", t("Kochinspo", "Discover"), t("Vorschläge nach Ernährung, Zeit und Vorrat. Aus deiner eigenen Sammlung.", "Suggestions by diet, time and pantry. From your own collection."), " d1")}${tile("jar", t("Vorräte", "Pantry"), t("Mit Mindesthaltbarkeit. Die Einkaufsvorschau zieht ab, was noch da ist.", "With best-before dates. The shopping preview subtracts what you still have."), " d2")}${tile("kids", t("Gemeinsam kochen", "Family"), t("Helferaufgaben für Kinder in einer einfachen Ansicht, ein Fortschritt für alle.", "Helper tasks for children in a simple view, one progress for everyone."))}${tile("print", t("Kochbuch und Druck", "Cookbook and print"), t("Cover, Inhaltsverzeichnis, A4-Rezeptseiten. Als PDF oder gedruckt als Geschenk.", "Cover, contents, A4 recipe pages. As a PDF or printed as a gift."), " d1")}${tile("leaf", t("Nährwerte", "Nutrition"), t("Pro Portion berechnet aus USDA FoodData Central, mit einem kostenlosen Schlüssel.", "Per serving from USDA FoodData Central, with a free key."), " d2")}${tile("edit", t("Rezepteditor", "Recipe editor"), t("Rezepte anlegen, importieren und bearbeiten. Vor jeder Änderung wird gesichert.", "Create, import and edit recipes. Every change is backed up first."))}${tile("book", t("Rezeptsammlung", "Recipe collection"), t("Große Fotos, Suche, Kategorien. Deine Sammlung, endlich zum Stöbern.", "Big photos, search, categories. Your collection, finally fun to browse."), " d1")}${tile("globe", t("Deutsch und Englisch", "English and German"), t("Komplett übersetzt. In Home Assistant folgt die Karte deiner Sprache.", "Fully translated. In Home Assistant the card follows your language."), " d2", " full-m")}</div></div></section>`;
+  )}${tile("timer", t("Kochmodus", "Cooking mode"), t("Ein Schritt pro Bildschirm, Timer direkt am Schritt, der Bildschirm bleibt an.", "One step per screen, timers right at the step, the screen stays on."))}${tile("spark", t("Kochinspo", "Discover"), t("Vorschläge nach Ernährung, Zeit und Vorrat. Aus deiner eigenen Sammlung.", "Suggestions by diet, time and pantry. From your own collection."), " d1")}${tile("jar", t("Vorräte", "Pantry"), t("Mit Mindesthaltbarkeit. Die Einkaufsvorschau zieht ab, was noch da ist.", "With best-before dates. The shopping preview subtracts what you still have."), " d2")}${tile("kids", t("Gemeinsam kochen", "Cook together"), t("Helferaufgaben für Kinder in einer einfachen Ansicht, ein Fortschritt für alle.", "Helper tasks for children in a simple view, one progress for everyone."))}${tile("print", t("Kochbuch und Druck", "Cookbook and print"), t("Cover, Inhaltsverzeichnis, A4-Rezeptseiten. Als PDF oder gedruckt als Geschenk.", "Cover, contents, A4 recipe pages. As a PDF or printed as a gift."), " d1")}${tile("leaf", t("Nährwerte", "Nutrition"), t("Pro Portion berechnet aus USDA FoodData Central, mit einem kostenlosen Schlüssel.", "Per serving from USDA FoodData Central, with a free key."), " d2")}${tile("edit", t("Rezepteditor", "Recipe editor"), t("Rezepte anlegen, importieren und bearbeiten. Vor jeder Änderung wird gesichert.", "Create, import and edit recipes. Every change is backed up first."))}${tile("book", t("Rezeptsammlung", "Recipe collection"), t("Große Fotos, Suche, Kategorien. Deine Sammlung, endlich zum Stöbern.", "Big photos, search, categories. Your collection, finally fun to browse."), " d1")}${tile("globe", t("Deutsch und Englisch", "English and German"), t("Komplett übersetzt. In Home Assistant folgt die Karte deiner Sprache.", "Fully translated. In Home Assistant the card follows your language."), " d2", " full-m")}</div></div></section>`;
 }
 
 function devices(ctx) {

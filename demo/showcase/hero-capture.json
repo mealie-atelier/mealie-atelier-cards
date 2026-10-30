@@ -64,7 +64,7 @@
       "rail": {
         "cut": [],
         "activeWhole": true,
-        "shown": ["Shopping", "Family", "Cookbook", "Manage"],
+        "shown": ["Shopping", "Cook together", "Cookbook", "Manage"],
         "gapLeft": 25,
         "gapRight": 20
       },

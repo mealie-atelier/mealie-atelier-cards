@@ -169,6 +169,17 @@ test("page copy names the card features and buttons exactly as the card labels t
   assert.match(de, /Dein eigenes Kochbuch/);
 });
 
+test("the family view is called Cook together in English and Gemeinsam kochen in German, never Family", () => {
+  const en = landing(builds.local, "en");
+  const de = landing(builds.local, "de");
+  assert.doesNotMatch(en, /\bFamily\b/);
+  assert.doesNotMatch(de, /Familienansicht|Familienmodus/);
+  assert.match(en, /Cook together in the simple helper view/);
+  assert.match(en, /In Cook together, adults hand out helper tasks/);
+  assert.match(de, /Gemeinsam kochen in der einfachen Helferansicht/);
+  assert.match(de, /Gemeinsam kochen verteilt Helferaufgaben/);
+});
+
 test("long resting recipes include the rest in the total time chip and structured data", () => {
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);
