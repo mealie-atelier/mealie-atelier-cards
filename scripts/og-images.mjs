@@ -98,8 +98,8 @@ export function titleWords(title) {
   const out = [];
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
-    // "mit" stays with the word after it, so a line never ends on the preposition.
-    if (word === "mit" && i + 1 < words.length) {
+    // "mit" and "und" stay with the word after them, so a line never ends on the preposition or conjunction.
+    if ((word === "mit" || word === "und") && i + 1 < words.length) {
       out.push(`<span class="nb">${escapeHtml(word)} ${escapeHtml(words[i + 1])}</span>`);
       i++;
     } else if (word.includes("-")) {

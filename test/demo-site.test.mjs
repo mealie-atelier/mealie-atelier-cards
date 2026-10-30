@@ -1185,7 +1185,7 @@ test("OG recipe titles keep compound words whole instead of breaking at the hyph
       font: "file:///f.ttf",
       mark: "file:///m.svg",
     }),
-    /<span class="nb">mit Kartoffeln<\/span> und Karotten/,
+    /<span class="nb">mit Kartoffeln<\/span> <span class="nb">und Karotten<\/span>/,
   );
   assert.match(html, /\.nb \{ white-space: nowrap; \}/);
   assert.match(html, /fontSize/);
