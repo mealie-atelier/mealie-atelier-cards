@@ -1,0 +1,19 @@
+# Disposable end-to-end stack for the standalone web app: a throwaway Mealie. Fictional data only;
+# never point it at a real household. Driven by run.mjs, which layers the SHIPPED web/compose.yaml
+# and app.override.yaml on top of this file for the Docker route, so the app container is the one
+# an operator gets, with its own hardening and health check.
+# Ports are deliberately not the defaults (Mealie 9925, app 3008) and not 19925 (the Home Assistant rig).
+name: atelier-web-e2e
+services:
+  mealie:
+    image: ${MEALIE_IMAGE:-ghcr.io/mealie-recipes/mealie:v3.29.0}
+    ports: ["127.0.0.1:${E2E_MEALIE_PORT:-29925}:9000"]
+    environment:
+      ALLOW_SIGNUP: "false"
+      BASE_URL: http://127.0.0.1:${E2E_MEALIE_PORT:-29925}
+      TZ: Europe/Berlin
+      # Mealie refuses to scrape local addresses; the import test serves its page from the host.
+      HTTP_ALLOW_LIST: host.docker.internal
+    # Lets the recipe import test point Mealie at a page served by the test process on the host.
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    tmpfs: [/app/data]

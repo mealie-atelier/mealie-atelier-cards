@@ -1010,7 +1010,7 @@ test("hero captures: what the run measured is what was published", () => {
 });
 
 test(
-  "hero render: both screens decode at every breakpoint, files crisp, no layout shift, entrance and rail as designed",
+  "hero render: both screens decode at every breakpoint, files crisp, no layout shift, entrance as designed",
   { skip: spawnSync("uv", ["--version"]).error ? "uv is not installed" : false, timeout: 600000 },
   () => {
     const run = spawnSync(

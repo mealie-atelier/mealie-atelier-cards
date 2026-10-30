@@ -323,9 +323,15 @@ export function createRecipeEditing({
     const changes = Object.fromEntries(
       Object.entries(snapshot.fields || {}).filter(([, value]) => value !== null),
     );
-    if (Object.keys(changes).length) await mealie("PATCH", `/api/recipes/${slug}`, changes);
-    if (bytes) await putCover(slug, { bytes, mime: "image/webp", ext: "webp" });
-    return { restored: true, backup_id: before.backup_id, recipe: sign(await fetchRecipe(slug)) };
+    // Restoring an older name moves the recipe to a new slug in Mealie, so carry on with the slug
+    // Mealie answers with; the old one is gone and would turn a finished restore into a 502.
+    let target = slug;
+    if (Object.keys(changes).length) {
+      const patched = await mealie("PATCH", `/api/recipes/${slug}`, changes);
+      if (typeof patched?.slug === "string" && patched.slug) target = identifier(patched.slug);
+    }
+    if (bytes) await putCover(target, { bytes, mime: "image/webp", ext: "webp" });
+    return { restored: true, backup_id: before.backup_id, recipe: sign(await fetchRecipe(target)) };
   }
   async function coverSet(msg) {
     adminGate();

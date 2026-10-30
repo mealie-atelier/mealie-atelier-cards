@@ -2264,6 +2264,12 @@ class MealieAtelierCard extends HTMLElement {
         localStorage.removeItem("mealie-atelier:design");
       } catch {}
       this._render();
+      // The standalone page keeps its own theme, language and motion; tell it what the reset restored.
+      const announce = (type, detail) =>
+        this.dispatchEvent(new CustomEvent(type, { bubbles: true, composed: true, detail }));
+      announce("mealie-atelier-theme-change", { theme: this._design.theme });
+      announce("mealie-atelier-motion-change", { motion: this._design.motion });
+      announce("mealie-atelier-language-change", { language: this._language });
       return;
     }
     if (action === "edit-form") {

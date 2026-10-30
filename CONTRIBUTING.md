@@ -39,6 +39,8 @@ node --test web/test/*.test.mjs
 npm run build:demo
 ```
 
+The standalone web app also has a Docker based browser suite (`npm run test:e2e`, see the Development section of `web/README.md`). Run it by hand when you change `web/`; it is not part of CI or the pre-commit hook.
+
 Check formatting of Markdown with `npx prettier --check docs CHANGELOG.md CONTRIBUTING.md`.
 
 The card build must leave `dist/mealie-atelier-cards.js` and `web/public/mealie-atelier-cards.js` byte-identical. The demo generator must use only reviewed fictional data and produce separate German and English routes. Set `ATELIER_DEMO_BASE_URL` to the public URL for canonical links and the sitemap; the public demo runs at https://mealie.alles-automatisch.de.

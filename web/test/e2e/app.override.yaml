@@ -1,0 +1,13 @@
+# Applied on top of the shipped web/compose.yaml for the Docker route. It may only change where the
+# image is built from, which env file it reads and which host port it publishes, and make it wait for
+# Mealie. Hardening (read_only, cap_drop, security_opt, limits, healthcheck, tmpfs) must stay with the
+# shipped file: image.docker.e2e.mjs fails when this file starts to set any of it.
+services:
+  mealie-atelier:
+    build: !override
+      context: ../..
+    env_file: !override
+      - ${E2E_ENV_FILE:-/dev/null}
+    ports: !override
+      - "127.0.0.1:${ATELIER_HOST_PORT:-23008}:3000"
+    depends_on: [mealie]

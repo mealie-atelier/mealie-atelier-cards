@@ -441,6 +441,48 @@ test("step photos address the step by index and id and can replace a file in one
   assert.match(card._editorStepPhotosInner(""), /Save this step first/);
 });
 
+test("after a step photo change the step rows follow the new step ids Mealie assigned", async () => {
+  // Mealie writes new step ids on every PATCH, so the photo controls must be re-pointed.
+  const renewed = {
+    ...RECIPE,
+    recipeInstructions: [
+      { id: "step-a2", text: "Boil", imageUrls: ["/api/recipe-asset/recipe-42/pic-2.png"] },
+      { id: "step-b2", text: "Serve", imageUrls: [] },
+    ],
+  };
+  const { card } = editor({
+    callWS: async (message) => {
+      if (message.type.endsWith("upload_begin")) return { upload_id: "u", chunk_bytes: 262144 };
+      if (message.type.endsWith("step_image_add"))
+        return { saved: true, backup_id: "b", file_name: "pic-2.png", recipe: renewed };
+      return {};
+    },
+  });
+  const row = (id) => {
+    const box = { dataset: { edStepPhotos: id }, innerHTML: "" };
+    return { dataset: { stepId: id }, box, querySelector: () => box };
+  };
+  const rows = [row("step-a"), row("step-b")];
+  card.shadowRoot.querySelectorAll = (selector) =>
+    selector === "[data-editor-step]"
+      ? rows
+      : selector === "[data-ed-step-photos]"
+        ? rows.map((r) => r.box)
+        : [];
+  card._editorOpen();
+  card._ed.pick = { target: "step-a" };
+  await card._editorUploadFlow(pngFile(2000).file);
+  assert.deepEqual(
+    rows.map((r) => r.dataset.stepId),
+    ["step-a2", "step-b2"],
+  );
+  assert.deepEqual(
+    rows.map((r) => r.box.dataset.edStepPhotos),
+    ["step-a2", "step-b2"],
+  );
+  assert.match(card._editorStepPhotosInner("step-a2"), /data-ed-file-name="pic-2.png"/);
+});
+
 test("cover removal and restore go through the commands with their revision guards", async () => {
   const { card, calls } = editor({
     callWS: async (message) => {
