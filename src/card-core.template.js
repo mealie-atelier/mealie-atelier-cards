@@ -272,6 +272,8 @@ class MealieAtelierCard extends HTMLElement {
     this._error = "";
     this._toast = "";
     this._toastKind = "status";
+    /** Text of the polite live region inside the cooking dialog (timer started). */
+    this._timerAnnouncement = "";
     this._providerTruncated = false;
     this._wakeLock = AtelierWakeLock.create();
     this._boundVisibility = () => {
@@ -930,6 +932,10 @@ class MealieAtelierCard extends HTMLElement {
     rail.scrollLeft += a.left - r.left - NAV_EDGE;
     this._syncNavHints(rail);
   }
+  /** Put the trailing rail space of the replaced rail on the new one right after a render. */
+  _keepNavEndPad(pad) {
+    this.shadowRoot?.querySelector(".sidebar .nav")?.style?.setProperty("--nav-end-pad", pad);
+  }
   /**
    * The edge fades only show on a side where more tabs wait behind it. The end of the rail also
    * ends on a whole tab: trailing space is added so the last scroll position starts on a tab
@@ -1195,6 +1201,11 @@ class MealieAtelierCard extends HTMLElement {
           const el = this.shadowRoot.querySelector(selector);
           return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
         });
+    // The swapped rail starts without the trailing space of the old one: carry it over before the
+    // scroll position is restored, or a rail resting at its end is clamped onto a cut tab.
+    const navEndPad =
+      this.shadowRoot.querySelector(".sidebar .nav")?.style?.getPropertyValue("--nav-end-pad") ||
+      "";
     const motion = ["off", "balanced", "expressive"].includes(d.motion) ? d.motion : "expressive";
     if (!this._styleReady) {
       this.shadowRoot.innerHTML = STYLE;
@@ -1246,6 +1257,7 @@ class MealieAtelierCard extends HTMLElement {
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
+    if (navEndPad) this._keepNavEndPad(navEndPad);
     if (!viewChanged)
       for (const snap of scrolls) {
         const el = this.shadowRoot.querySelector(snap.selector);
@@ -2004,6 +2016,7 @@ class MealieAtelierCard extends HTMLElement {
         this._timers.push(timer);
         this._persistTimers();
         this._render();
+        this._announceTimer(timer);
         if (armError) {
           // A refusal without a known code (default web app, read-only) is raw English: show the local notice.
           const translated = this._errorText(armError) !== armError?.message;
@@ -2012,7 +2025,8 @@ class MealieAtelierCard extends HTMLElement {
               ? this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) })
               : this.t("uiLocalTimerEnabled"),
           );
-        } else {
+        } else if (this._modal !== "cook") {
+          // In cooking mode the dialog covers the toast: the live region announces the timer.
           this._flash(
             this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"),
           );
@@ -2495,6 +2509,27 @@ class MealieAtelierCard extends HTMLElement {
     this._commandQuery = "";
     this._commandResults = [];
     this._commandTotal = 0;
+  }
+  /**
+   * Announce a started timer through the live region that already exists inside the dialog.
+   * Nothing is scrolled or focused: the new timer card sits right under the start button.
+   */
+  _announceTimer(timer) {
+    const minutes = Math.round((Number(timer.durationMs) || 0) / 60000);
+    const text = this.t("uiTimerStartedAnnouncement", {
+      label: timer.label,
+      minutes,
+      unit: this.tp("uiMinute", minutes),
+    });
+    // Emptied first so an identical text is announced again, then filled in the same live node.
+    this._timerAnnouncement = "";
+    const live = this.shadowRoot?.querySelector("[data-timer-announce]");
+    if (live) live.textContent = "";
+    this._timerAnnouncement = text;
+    setTimeout(() => {
+      const node = this.shadowRoot?.querySelector("[data-timer-announce]");
+      if (node && this._timerAnnouncement === text) node.textContent = text;
+    }, 50);
   }
   _commandPaint(markup = "", busy = false) {
     const live = this.shadowRoot.querySelector("[data-command-live]");

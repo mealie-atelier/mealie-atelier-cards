@@ -785,3 +785,16 @@ test("counting-unit spellings merge into one row and fractions round up", () => 
   const basil = list.find((x) => x.name === "Basilikum");
   assert.deepEqual([basil.needed, basil.unit], [1, "Handvoll"]);
 });
+
+test("the kid-friendly bonus applies to German and English family tags", () => {
+  const withTag = (id, name) => ({ ...recipe(id, ["200 g Nudeln"]), tags: [{ name }] });
+  for (const name of ["familienfreundlich", "family-friendly", "kinderfreundlich", "mild"]) {
+    const [match] = Studio.suggest([withTag("a", name)], { kidFriendly: true });
+    assert.ok(
+      match.reasons.some((reason) => reason.key === "studioReasonFamilyFriendly"),
+      `${name} counts as kid friendly`,
+    );
+  }
+  const [other] = Studio.suggest([withTag("b", "schnell")], { kidFriendly: true });
+  assert.ok(!other.reasons.some((reason) => reason.key === "studioReasonFamilyFriendly"));
+});

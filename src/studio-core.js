@@ -549,7 +549,9 @@ const AtelierStudio = (() => {
       profile.usePantry === false
         ? 0
         : (rows.length ? (available.length / rows.length) * 32 : 0) + expiring.length * 8;
-    const kidTags = recipeTags(recipe).some((x) => /\b(kind|kinder|family|familie|mild)\b/.test(x));
+    const kidTags = recipeTags(recipe).some((x) =>
+      /\b(kind(er\w*)?|famil(y|ie|ien)\w*|mild)\b/.test(x),
+    );
     const mildBonus = profile.kidFriendly === true && kidTags ? 8 : 0;
     const serves = recipeServings(recipe) || 0,
       people = Math.max(1, Number(profile.people) || 2);

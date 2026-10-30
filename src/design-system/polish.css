@@ -1184,7 +1184,8 @@
     gap: 23px;
   }
   .atelier .cook-content {
-    padding: 23px 20px 26px;
+    --cook-pad-x: 20px;
+    padding: 23px var(--cook-pad-x) 26px;
   }
   .atelier .cook-actions .btn {
     min-height: 49px;
@@ -1360,7 +1361,8 @@
     min-height: 154px;
   }
   .atelier .modal .cook-content {
-    padding: 22px 20px 25px;
+    --cook-pad-x: 20px;
+    padding: 22px var(--cook-pad-x) 25px;
     gap: 15px;
   }
   .atelier .modal .cook-stage {
@@ -1437,7 +1439,8 @@
   }
   .atelier .cook-content {
     min-height: 0;
-    padding: 16px 19px 10px;
+    --cook-pad-x: 19px;
+    padding: 16px var(--cook-pad-x) 10px;
     gap: 10px;
   }
   .atelier .cook-stage {
@@ -1532,7 +1535,8 @@
     min-height: 520px;
   }
   .atelier .cook-content {
-    padding: 25px 27px 23px;
+    --cook-pad-x: 27px;
+    padding: 25px var(--cook-pad-x) 23px;
     gap: 15px;
   }
   .atelier .cook-stage {
@@ -1548,14 +1552,26 @@
   }
 }
 
-/* The counter and the progress bar keep clear of the floating close button at every width. The bar
-   sits right under the counter, so both end at the same inset: the close button is 48px wide and sits
-   22px from the dialog edge, content padding is at least 24px, so 56px leaves a gap of 8px or more. */
+/* The counter and the progress bar end a fixed 12px before the close button at every width. The
+   button sits 20px inside the dialog edge (its margin) and is --cook-close-size wide; the
+   content padding differs per width (--cook-pad-x), so the space to keep free is what is left of
+   button, inset and gap after the padding. */
+.atelier .modal:has(.cook-layout) {
+  --cook-close-size: 48px;
+}
+@container atelier-card (max-width: 420px) {
+  .atelier .modal:has(.cook-layout) {
+    --cook-close-size: 44px;
+  }
+}
+.atelier .modal:has(.cook-layout) .cook-content {
+  --cook-close-clear: max(0px, calc(20px + var(--cook-close-size) + 12px - var(--cook-pad-x)));
+}
 .atelier .modal:has(.cook-layout) .cook-topline {
-  padding-inline-end: 56px;
+  padding-inline-end: var(--cook-close-clear);
 }
 .atelier .modal:has(.cook-layout) .cook-track {
-  margin-inline-end: 56px;
+  margin-inline-end: var(--cook-close-clear);
 }
 
 @media (orientation: landscape) and (max-height: 700px) {
@@ -1659,7 +1675,8 @@
   }
   .atelier .modal:has(.cook-layout) .cook-content {
     gap: 9px;
-    padding: 14px 18px 10px;
+    --cook-pad-x: 18px;
+    padding: 14px var(--cook-pad-x) 10px;
   }
   .atelier .modal:has(.cook-layout) .cook-controls {
     display: contents;

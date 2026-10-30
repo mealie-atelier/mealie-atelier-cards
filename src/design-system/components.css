@@ -356,11 +356,26 @@
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
+/* The timers sit under the start form, so a new timer grows the list downwards and never moves
+   the start button. The live region next to the form is read aloud, not shown. */
 .atelier .cook-timers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: var(--ds-space-2);
   min-width: 0;
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--ds-border);
+}
+.atelier .cook-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 .atelier .cook-timer {
   display: flex;
@@ -477,9 +492,6 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  /* As tall as one running timer card (dial, card padding, border), so the first timer replaces
-     this note without pushing the start button down. */
-  min-height: calc(var(--cook-timer-dial, 60px) + 2 * var(--ds-space-2));
   color: var(--ds-muted);
   font-size: var(--ds-font-xs);
   line-height: 1.5;
@@ -498,8 +510,6 @@
   display: grid;
   gap: var(--ds-space-2);
   min-width: 0;
-  padding-block-start: var(--ds-space-3);
-  border-block-start: 1px solid var(--ds-border);
 }
 .atelier .cook-timer-presets {
   display: flex;
@@ -580,9 +590,6 @@
     grid-column: 1/-1;
     width: 100%;
     justify-content: center;
-  }
-  .atelier .cook-timers {
-    --cook-timer-dial: 56px;
   }
   .atelier .cook-timer-card {
     grid-template-columns: 56px minmax(0, 1fr) 44px;

@@ -1554,3 +1554,16 @@ test("localized demo data carries tags in the page language, never the English i
     assert.ok(!german.includes(english), `${english} leaked into the German data`);
   assert.ok(en.recipes.flatMap((recipe) => recipe.tags).includes("family-friendly"));
 });
+
+test("the raw preview shows tags in the page language and searches by both languages like the built site", () => {
+  const preview = readFileSync("demo/preview.html", "utf8");
+  assert.match(
+    preview,
+    /tags: item\.tags\.map\(\(tag\) => \(\{ name: catalog\.tagLabels\?\.\[tag\]\?\.\[demoLanguage\] \?\? tag \}\)\)/,
+  );
+  const terms = preview.slice(preview.indexOf("searchTerms: ["), preview.indexOf("imageUrl:"));
+  assert.match(
+    terms,
+    /item\.tags\s*\.map\(\(tag\) => catalog\.tagLabels\?\.\[tag\]\?\.\[demoLanguage === "de" \? "en" : "de"\]\)/,
+  );
+});

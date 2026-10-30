@@ -1,67 +1,89 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
 
 const css = (file) =>
   readFileSync(new URL(`../src/design-system/${file}`, import.meta.url), "utf8");
 
 // Bug 2: the cooking progress bar ran under the close button.
-test("the cooking progress bar ends before the close button, like the counter above it", () => {
+test("the counter and the progress bar end a fixed gap before the close button at every padding", () => {
   const polish = css("polish.css");
-  const topline = polish.match(
-    /\.atelier \.modal:has\(\.cook-layout\) \.cook-topline \{\s*padding-inline-end: (\d+)px;/,
+  const clear = polish.match(
+    /\.cook-content \{\s*--cook-close-clear: max\(0px, calc\((\d+)px \+ var\(--cook-close-size\) \+ (\d+)px - var\(--cook-pad-x\)\)\);/,
   );
-  const track = polish.match(
-    /\.atelier \.modal:has\(\.cook-layout\) \.cook-track \{\s*margin-inline-end: (\d+)px;/,
+  assert.ok(clear, "the free space is computed from the close button and the content padding");
+  assert.equal(clear[1], "20", "button inset from the dialog edge");
+  assert.equal(clear[2], "12", "gap between bar and button");
+  assert.match(polish, /\.cook-topline \{\s*padding-inline-end: var\(--cook-close-clear\);/);
+  assert.match(polish, /\.cook-track \{\s*margin-inline-end: var\(--cook-close-clear\);/);
+  assert.match(polish, /\.modal:has\(\.cook-layout\) \{\s*--cook-close-size: 48px;/);
+  assert.match(
+    polish,
+    /max-width: 420px\) \{\s*\.atelier \.modal:has\(\.cook-layout\) \{\s*--cook-close-size: 44px;/,
   );
-  assert.ok(topline, "the counter keeps clear of the close button");
-  assert.ok(track, "the progress bar keeps clear of the close button");
-  assert.equal(track[1], topline[1], "bar and counter end at the same inset");
-  // The close button is 48px wide and sits 20px from the dialog edge.
-  assert.ok(Number(track[1]) >= 48 + 8, "the inset leaves a gap after the 48px button");
+});
+
+test("every padding rule of the cooking content publishes its inline padding", () => {
+  for (const file of readdirSync(new URL("../src/design-system/", import.meta.url))) {
+    if (!file.endsWith(".css")) continue;
+    for (const rule of css(file).matchAll(/\.cook-content \{([^}]*)\}/g)) {
+      const body = rule[1];
+      const padding = body.match(/(?:^|\s)padding:\s*([^;]+);/);
+      if (!padding) continue;
+      assert.match(body, /--cook-pad-x: [^;]+;/, `${file} sets --cook-pad-x with its padding`);
+      assert.match(padding[1], /var\(--cook-pad-x\)/, `${file} pads with --cook-pad-x`);
+    }
+  }
 });
 
 // Bug 4: starting a timer must not move the view.
-test("the empty timer note is as tall as a running timer card, so the first timer shifts nothing", () => {
-  const components = css("components.css");
-  assert.match(
-    components,
-    /\.atelier \.cook-timers-empty \{[^}]*min-height: calc\(var\(--cook-timer-dial, 60px\) \+ 2 \* var\(--ds-space-2\)\);/,
-  );
-  assert.match(components, /\.atelier \.cook-timers \{\s*--cook-timer-dial: 56px;/);
-  assert.match(
-    components,
-    /\.atelier \.cook-timer-dial \{[^}]*inline-size: 60px;[^}]*block-size: 60px;/,
+test("the timer list sits under the start form so a new timer never pushes the button", () => {
+  const dialogs = readFileSync(new URL("../src/components/dialogs.js", import.meta.url), "utf8");
+  const compose = dialogs.indexOf('class="cook-timer-compose"');
+  const list = dialogs.indexOf('class="cook-timers"');
+  const live = dialogs.indexOf("data-timer-announce");
+  assert.ok(compose > 0 && list > compose, "start form comes before the timer list");
+  assert.ok(
+    live > 0 && live < compose,
+    "the live region is part of the dialog and exists beforehand",
   );
 });
 
-test("starting a timer never scrolls or moves focus, the toast announces it politely", async () => {
+test("starting a timer never scrolls or moves focus and announces it in the dialog live region", async () => {
   const cards = loadCards({ globals: { crypto: { randomUUID: () => "id-1" } } });
   const card = makeCard(cards);
   const calls = [];
+  card._modal = "cook";
   card._render = () => {};
   card._flash = (text) => calls.push(["flash", text]);
+  const live = { textContent: "stale" };
   const input = { value: "5", focus: () => calls.push(["focus"]) };
   const label = { value: "Pasta" };
   const spy = new Proxy({}, { get: (_, name) => () => calls.push([String(name)]) });
   card.shadowRoot.querySelector = (s) =>
-    s === "[data-timer-minutes]" ? input : s === "[data-timer-label]" ? label : spy;
+    s === "[data-timer-minutes]"
+      ? input
+      : s === "[data-timer-label]"
+        ? label
+        : s === "[data-timer-announce]"
+          ? live
+          : spy;
   const button = { dataset: { action: "timer-start" }, disabled: false, closest: () => button };
   await card._handleClick({ target: { closest: () => button }, preventDefault() {} });
   assert.equal(card._timers.length, 1);
-  assert.deepEqual(
-    calls.filter(([name]) => name !== "flash"),
-    [],
-  );
-  assert.equal(calls.filter(([name]) => name === "flash").length, 1);
+  assert.deepEqual(calls, [], "no scroll, no focus move, no toast hidden behind the dialog");
+  assert.equal(live.textContent, "", "the region is emptied first so the same text is read again");
+  assert.match(card._timerAnnouncement, /Pasta/);
+  assert.match(card._timerAnnouncement, /5/);
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  assert.equal(live.textContent, card._timerAnnouncement);
   const source = readFileSync(new URL("../src/card-core.template.js", import.meta.url), "utf8");
   const handler = source.slice(
     source.indexOf('if (action === "timer-start")'),
     source.indexOf('if (action === "timer-preset")'),
   );
   assert.doesNotMatch(handler, /scrollIntoView|scrollTo|\.focus\(\)/);
-  assert.match(source, /aria-live="\$\{this\._toastKind === "error" \? "assertive" : "polite"\}"/);
 });
 
 // Bug 3: the phone tab rail.
@@ -182,4 +204,20 @@ test("the phone rail snaps to tab starts and fades only where tabs wait", () => 
   assert.match(corners, /\.nav \{[^}]*mask-image: none;/);
   assert.match(corners, /\.nav\[data-more-start\] \{/);
   assert.match(corners, /\.nav\[data-more-end\] \{/);
+});
+
+test("a re-render keeps the trailing rail space so a rail resting at its end is not clamped", () => {
+  const tabs = [[0, 80]];
+  tabs.active = 0;
+  const rail = railWith({ tabs });
+  railCard(rail)._keepNavEndPad("90px");
+  assert.equal(rail.style.v["--nav-end-pad"], "90px");
+  const source = readFileSync(new URL("../src/card-core.template.js", import.meta.url), "utf8");
+  const render = source.slice(source.indexOf("  _render() {"));
+  assert.match(render, /if \(navEndPad\) this\._keepNavEndPad\(navEndPad\);/);
+  assert.ok(
+    render.indexOf("this._keepNavEndPad(navEndPad)") <
+      render.indexOf("for (const snap of scrolls)"),
+    "the pad is back before the scroll positions are restored",
+  );
 });
