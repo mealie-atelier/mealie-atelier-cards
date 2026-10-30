@@ -201,7 +201,7 @@ test("English footers group the German-only guides under one note", () => {
     );
     if (!html.includes('<html lang="en">')) continue;
     english += 1;
-    assert.match(footer, /<h3>Guides <span class="col-note">in German<\/span><\/h3>/, page);
+    assert.match(footer, /<h2>Guides <span class="col-note">in German<\/span><\/h2>/, page);
   }
   assert.equal(english, 12);
 });
@@ -1205,4 +1205,44 @@ print("tab", bright("demo/showcase/de/app-phone-shopping-720.webp", (420, 85, 64
     if (kind === "x") assert.ok(count < 20, `close button remnant in ${rest.join(" ")}`);
     else assert.ok(count > 300, "third German tab label is missing from the shopping screen");
   }
+});
+
+test("footer columns use h2 so the credits page never skips a heading level", () => {
+  for (const page of contentPages(builds.local)) {
+    const levels = [...read(page).matchAll(/<h([1-6])[\s>]/g)].map((m) => Number(m[1]));
+    levels.reduce((previous, level) => {
+      assert.ok(level <= previous + 1, `${page} jumps from h${previous} to h${level}`);
+      return level;
+    }, 0);
+  }
+});
+
+test("the three language switches have distinct landmark names on every page", () => {
+  for (const page of contentPages(builds.local)) {
+    const names = [
+      ...read(page).matchAll(/<nav class="lang-switch[^"]*" aria-label="([^"]+)"/g),
+    ].map((m) => m[1]);
+    assert.equal(names.length, 3, page);
+    assert.equal(new Set(names).size, 3, `${page} reuses a landmark name: ${names}`);
+  }
+});
+
+test("small saffron and avatar text keep AA contrast in the light scheme", () => {
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const light = css.match(/@media \(prefers-color-scheme: light\) \{\s*:root \{([^}]*)\}/)[1];
+  const token = (name) => light.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`))[1];
+  const lum = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const ratio = (a, b) => {
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+  assert.ok(ratio(token("--saffron"), token("--bg2")) >= 4.5, "AI source label");
+  assert.match(css, /\.who i \{[^}]*color: var\(--mint2\)/);
+  assert.ok(ratio(token("--mint2"), token("--panel3")) >= 4.5, "rights avatar initial");
 });

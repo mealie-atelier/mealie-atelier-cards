@@ -124,8 +124,13 @@ function anchor(ctx, key) {
   return ctx.onLanding ? `#${id}` : `${ctx.home[ctx.locale]}#${id}`;
 }
 
-function languageSwitch(ctx, className) {
-  const label = ctx.locale === "de" ? "Sprache" : "Language";
+// The three switches carry distinct names so a landmark list never shows two identical entries.
+function languageSwitch(ctx, className, place) {
+  const names = {
+    de: { top: "Sprache", drawer: "Sprache im Menü", foot: "Sprache im Fußbereich" },
+    en: { top: "Language", drawer: "Language in the menu", foot: "Language in the footer" },
+  };
+  const label = names[ctx.locale][place];
   const item = (code, name) =>
     `<a href="${escapeHtml(ctx.alternate[code])}" hreflang="${code}" lang="${code}"${code === ctx.locale ? ' aria-current="page"' : ""}><span aria-hidden="true">${code.toUpperCase()}</span><span class="sr">${name}</span></a>`;
   return `<nav class="${className}" aria-label="${label}">${item("de", "Deutsch")}${item("en", "English")}</nav>`;
@@ -154,7 +159,7 @@ export function renderSiteHeader(ctx) {
   ];
   const link = ([key, label]) => `<a href="${anchor(ctx, key)}">${label}</a>`;
   const homeLabel = t("Mealie Atelier, zur Startseite", "Mealie Atelier, home");
-  return `${iconSprite()}<a class="skip" href="#main">${t("Zum Inhalt springen", "Skip to content")}</a><div class="progress" aria-hidden="true"></div><header class="top" id="top"><div class="wrap top-row"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}" aria-label="${homeLabel}">${brandMark()}<b>Mealie Atelier</b></a><nav class="nav" aria-label="${t("Hauptnavigation", "Main navigation")}">${nav.map(link).join("")}</nav>${languageSwitch(ctx, "lang-switch top-lang")}<a class="btn btn-primary top-cta" href="${anchor(ctx, "install")}">${t("Installieren", "Install")}</a><button class="menu-btn" type="button" aria-expanded="false" aria-controls="drawer" data-open-label="${t("Menü öffnen", "Open menu")}" data-close-label="${t("Menü schließen", "Close menu")}" aria-label="${t("Menü öffnen", "Open menu")}">${icon("menu")}</button></div><div class="drawer" id="drawer" hidden>${drawer.map(link).join("")}${languageSwitch(ctx, "lang-switch drawer-lang")}<a class="btn btn-primary" href="${anchor(ctx, "install")}">${t("Kostenlos installieren", "Install for free")}</a></div></header>`;
+  return `${iconSprite()}<a class="skip" href="#main">${t("Zum Inhalt springen", "Skip to content")}</a><div class="progress" aria-hidden="true"></div><header class="top" id="top"><div class="wrap top-row"><a class="brand" href="${escapeHtml(ctx.home[ctx.locale])}" aria-label="${homeLabel}">${brandMark()}<b>Mealie Atelier</b></a><nav class="nav" aria-label="${t("Hauptnavigation", "Main navigation")}">${nav.map(link).join("")}</nav>${languageSwitch(ctx, "lang-switch top-lang", "top")}<a class="btn btn-primary top-cta" href="${anchor(ctx, "install")}">${t("Installieren", "Install")}</a><button class="menu-btn" type="button" aria-expanded="false" aria-controls="drawer" data-open-label="${t("Menü öffnen", "Open menu")}" data-close-label="${t("Menü schließen", "Close menu")}" aria-label="${t("Menü öffnen", "Open menu")}">${icon("menu")}</button></div><div class="drawer" id="drawer" hidden>${drawer.map(link).join("")}${languageSwitch(ctx, "lang-switch drawer-lang", "drawer")}<a class="btn btn-primary" href="${anchor(ctx, "install")}">${t("Kostenlos installieren", "Install for free")}</a></div></header>`;
 }
 
 export function renderSiteFooter(ctx) {
@@ -166,7 +171,7 @@ export function renderSiteFooter(ctx) {
   const remote = (href, label, iconName = "ext") =>
     `<li>${ext(href, iconName === "ext" ? trailing(label) : `${icon(iconName)}${label}`)}</li>`;
   const column = (title, rows) =>
-    `<div class="foot-col"><h3>${title}</h3><ul>${rows.join("")}</ul></div>`;
+    `<div class="foot-col"><h2>${title}</h2><ul>${rows.join("")}</ul></div>`;
   const heart = `<span class="heart" role="img" aria-label="${t("Liebe", "love")}">♥</span>`;
   // Every page shows the same two support tiles here, the landing page included.
   const support = `<div class="foot-support">${ext(links.youtube, `${icon("yt")}<span><b>${t("Kanalmitglied werden", "Become a channel member")}</b><small>${t("Alles Automatisch auf YouTube", "Alles Automatisch on YouTube")}</small></span>`, "support-link")}${ext(links.kofi, `${icon("coffee")}<span><b>${t("Einen Kaffee ausgeben", "Buy me a coffee")}</b><small>${t("Unterstützen über Ko-fi", "Support on Ko-fi")}</small></span>`, "support-link")}</div>`;
@@ -189,5 +194,5 @@ export function renderSiteFooter(ctx) {
     remote(links.bridge, "Bridge", "github"),
     remote(links.discussions, t("Fragen und Ideen", "Questions and ideas")),
     remote(links.changelog, t("Änderungen", "Changelog")),
-  ])}</div></div><p class="wordmark" aria-hidden="true">Atelier</p><div class="wrap foot-base"><div class="legal"><p>© 2026 Mealie Atelier · ${t("MIT-Lizenz", "MIT license")} · <a class="foot-credits" href="${escapeHtml(ctx.creditsUrl)}">${t("Bildnachweise", "Photo credits")}</a></p><p class="disclaimer">${t("Inoffizielle Ergänzung, nicht mit Mealie oder Home Assistant verbunden.", "Unofficial companion, not affiliated with Mealie or Home Assistant.")}</p></div>${languageSwitch(ctx, "lang-switch foot-lang")}<p class="made">${t(`Mit ${heart} gemacht von`, `Made with ${heart} by`)} ${ext(links.author, "Daniel")}</p></div></footer>`;
+  ])}</div></div><p class="wordmark" aria-hidden="true">Atelier</p><div class="wrap foot-base"><div class="legal"><p>© 2026 Mealie Atelier · ${t("MIT-Lizenz", "MIT license")} · <a class="foot-credits" href="${escapeHtml(ctx.creditsUrl)}">${t("Bildnachweise", "Photo credits")}</a></p><p class="disclaimer">${t("Inoffizielle Ergänzung, nicht mit Mealie oder Home Assistant verbunden.", "Unofficial companion, not affiliated with Mealie or Home Assistant.")}</p></div>${languageSwitch(ctx, "lang-switch foot-lang", "foot")}<p class="made">${t(`Mit ${heart} gemacht von`, `Made with ${heart} by`)} ${ext(links.author, "Daniel")}</p></div></footer>`;
 }
