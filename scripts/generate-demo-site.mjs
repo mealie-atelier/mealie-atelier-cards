@@ -92,8 +92,8 @@ function ogAlt(locale, recipe) {
       : `${recipe.title.en}: recipe photo with the Mealie Atelier logo`;
   }
   return locale === "de"
-    ? "Mealie Atelier: eine ruhige Küche für dein Mealie, mit Wochenplan und Kochmodus auf dem Smartphone"
-    : "Mealie Atelier: a calm kitchen for your Mealie, with the meal plan and cooking mode on a phone";
+    ? "Mealie Atelier: eine ruhige Küche für dein Mealie, mit Rezeptkarte und Einkaufsliste auf dem Smartphone"
+    : "Mealie Atelier: a calm kitchen for your Mealie, with a recipe card and the shopping list on a phone";
 }
 
 // Meta tags for the share image of a page. Local builds fall back to a relative URL.

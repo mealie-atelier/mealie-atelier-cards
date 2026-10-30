@@ -94,12 +94,21 @@ h1 em { font-style: normal; color: #9dcbb2; }
 // A title never breaks at a compound hyphen: every hyphenated word is kept whole and the font
 // shrinks (in the page, once the font has loaded) until the widest such word fits the panel.
 export function titleWords(title) {
-  return title
-    .split(" ")
-    .map((word) =>
-      word.includes("-") ? `<span class="nb">${escapeHtml(word)}</span>` : escapeHtml(word),
-    )
-    .join(" ");
+  const words = title.split(" ");
+  const out = [];
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    // "mit" stays with the word after it, so a line never ends on the preposition.
+    if (word === "mit" && i + 1 < words.length) {
+      out.push(`<span class="nb">${escapeHtml(word)} ${escapeHtml(words[i + 1])}</span>`);
+      i++;
+    } else if (word.includes("-")) {
+      out.push(`<span class="nb">${escapeHtml(word)}</span>`);
+    } else {
+      out.push(escapeHtml(word));
+    }
+  }
+  return out.join(" ");
 }
 
 export function recipeHtml(job) {

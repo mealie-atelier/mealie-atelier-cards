@@ -1171,7 +1171,22 @@ test("OG recipe titles keep compound words whole instead of breaking at the hyph
     font: "file:///f.ttf",
     mark: "file:///m.svg",
   });
-  assert.match(html, /<span class="nb">Zitronen-Focaccia<\/span> mit Rosmarin/);
+  assert.match(
+    html,
+    /<span class="nb">Zitronen-Focaccia<\/span> <span class="nb">mit Rosmarin<\/span>/,
+  );
+  assert.match(
+    recipeHtml({
+      locale: "de",
+      title: "Kokos-Curry mit Kartoffeln und Karotten",
+      kicker: "k",
+      foot: "x",
+      photo: "file:///p.webp",
+      font: "file:///f.ttf",
+      mark: "file:///m.svg",
+    }),
+    /<span class="nb">mit Kartoffeln<\/span> und Karotten/,
+  );
   assert.match(html, /\.nb \{ white-space: nowrap; \}/);
   assert.match(html, /fontSize/);
 });
