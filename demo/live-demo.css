@@ -2769,7 +2769,7 @@ details[open] .chev {
    so a divider never dangles at the end of a row, whatever the viewport. */
 .recipe-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-block: 1px solid var(--line);
 }
 .recipe-metrics div {
@@ -2786,6 +2786,8 @@ details[open] .chev {
   border-top: 1px solid var(--line);
 }
 .recipe-metrics b {
+  overflow-wrap: anywhere;
+  hyphens: auto;
   font: 500 22px/1.2 var(--serif);
 }
 .recipe-metrics span {
@@ -2840,6 +2842,8 @@ details[open] .chev {
     margin-top: 10px;
   }
   .recipe-hero .recipe-metrics b {
+    overflow-wrap: anywhere;
+    hyphens: auto;
     font-size: 26px;
   }
   .recipe-hero .recipe-metrics div {

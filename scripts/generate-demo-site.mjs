@@ -492,11 +492,16 @@ function renderRecipePage(locale, recipe) {
     onLanding: false,
   };
   const canonical = pageUrl ? `<link rel="canonical" href="${escapeHtml(pageUrl)}">` : "";
-  const image = photo(ctx, recipe, "(max-width: 980px) 94vw, 1100px", {
-    eager: true,
-    priority: true,
-    className: "recipe-photo",
-  });
+  const image = photo(
+    ctx,
+    recipe,
+    "(max-width: 899px) min(94vw, 520px), (max-width: 1250px) 36vw, 481px",
+    {
+      eager: true,
+      priority: true,
+      className: "recipe-photo",
+    },
+  );
   const ingredients = recipe.ingredients[locale]
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");

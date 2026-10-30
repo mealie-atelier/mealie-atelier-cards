@@ -645,7 +645,7 @@ test("recipe metrics stay an even grid at every width and the page offsets match
   const css = read(new URL("../demo/live-demo.css", import.meta.url));
   const metrics = css.match(/\.recipe-metrics \{[^}]*\}/)[0];
   assert.match(metrics, /display: grid/, "metrics use a grid outside any media query");
-  assert.match(metrics, /grid-template-columns: 1fr 1fr/);
+  assert.match(metrics, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.doesNotMatch(css, /\.recipe-metrics div \{[^}]*border-right/, "no trailing divider");
   assert.match(css, /\.credits-page \{[^}]*padding-block: 112px/, "credits offset equals recipe");
   assert.match(css, /\.recipe-page \{\s*padding-top: 112px/);
@@ -1069,4 +1069,18 @@ test("the product page light scheme and share images follow the Herb palette wit
     /#e0784c|184,\s*83,\s*46/,
     "paprika is reserved for today",
   );
+});
+
+test("recipe hero sizes hint matches the side by side layout and metrics columns are even", () => {
+  const html = readFileSync(
+    join(builds.local, "en/recipes/gnocchi-alla-sorrentina/index.html"),
+    "utf8",
+  );
+  const hero = html.match(/<img[^>]*class="recipe-photo"[^>]*>/)[0];
+  assert.match(
+    hero,
+    /sizes="\(max-width: 899px\) min\(94vw, 520px\), \(max-width: 1250px\) 36vw, 481px"/,
+  );
+  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
+  assert.match(css, /\.recipe-metrics \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });
