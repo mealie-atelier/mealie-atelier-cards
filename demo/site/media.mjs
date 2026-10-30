@@ -66,4 +66,19 @@ export const browser = (label, inner, extra = "") =>
 export const tablet = (inner, extra = "") => `<div class="tablet"${extra}>${inner}</div>`;
 export const phone = (inner, extra = "") => `<div class="phone"${extra}>${inner}</div>`;
 
+// Hero devices: CSS frames around real captures, nothing here is interactive. The status time
+// matches the frozen clock of scripts/capture-hero.py.
+const statusIcons =
+  '<span class="icons"><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 16 12"><path d="M8 2.2c2.4 0 4.6.9 6.2 2.5l1.3-1.3A10.6 10.6 0 0 0 8 .3 10.6 10.6 0 0 0 .5 3.4l1.3 1.3A8.7 8.7 0 0 1 8 2.2Zm0 3.8c1.4 0 2.6.5 3.6 1.4l1.3-1.3A7 7 0 0 0 8 4.1a7 7 0 0 0-4.9 2l1.3 1.3C5.4 6.5 6.6 6 8 6Zm0 3.7a1.8 1.8 0 0 0-1.3.5L8 11.6l1.3-1.4A1.8 1.8 0 0 0 8 9.7Z"/></svg><svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.2" fill="none" stroke="currentColor" stroke-opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="2"/><path d="M25 4v4c.8-.3 1.3-1.1 1.3-2S25.8 4.3 25 4Z" fill-opacity=".45"/></svg></span>';
+
+export const heroTablet = (img) =>
+  `<figure class="device device-tablet"><span class="cam" aria-hidden="true"></span><div class="screen">${img}</div></figure>`;
+
+export const heroPhone = (ctx, img) =>
+  `<figure class="device device-phone"><div class="screen"><div class="status" aria-hidden="true"><span>${ctx.locale === "de" ? "18:52" : "6:52"}</span><span class="island"></span>${statusIcons}</div>${img}<span class="home-bar" aria-hidden="true"></span></div></figure>`;
+
+// Seven arcs of the Week Dial, today in paprika. Shown behind the phone on small screens only.
+export const weekDialRing = () =>
+  '<svg class="dial" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="today" d="M45.42 4.23A46 46 0 0 1 80.61 15.66"/><path d="M82.93 17.88A46 46 0 0 1 95.93 52.52"/><path d="M95.64 55.72A46 46 0 0 1 76.67 87.48"/><path d="M73.99 89.25A46 46 0 0 1 37.32 94.22"/><path d="M34.27 93.23A46 46 0 0 1 7.52 67.66"/><path d="M6.40 64.65A46 46 0 0 1 9.71 27.80"/><path d="M11.36 25.04A46 46 0 0 1 42.24 4.66"/></svg>';
+
 export const host = (ctx) => (ctx.locale === "de" ? "küche.example" : "kitchen.example");

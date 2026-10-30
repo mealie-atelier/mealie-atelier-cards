@@ -257,20 +257,6 @@ if (story && "IntersectionObserver" in window) {
   activate(0);
 }
 
-// Hero timer counts down and starts over, purely decorative.
-const countdown = document.querySelector("[data-countdown]");
-if (countdown && !reduced()) {
-  const total = Number(countdown.dataset.countdown);
-  let left = total;
-  const format = (seconds) =>
-    `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  setInterval(() => {
-    if (document.hidden) return;
-    left = left > 0 ? left - 1 : total;
-    countdown.textContent = format(left);
-  }, 1000);
-}
-
 // Live demo frame: a calm placeholder until the card has rendered its first view.
 const liveFrame = document.querySelector(".live-frame");
 const liveCard = liveFrame?.querySelector("mealie-atelier-card");

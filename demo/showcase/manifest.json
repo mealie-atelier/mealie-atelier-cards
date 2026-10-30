@@ -1,10 +1,5 @@
 {
   "de": {
-    "app-desktop-dashboard": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
     "app-desktop-recipes": {
       "width": 1600,
       "height": 1000,
@@ -39,11 +34,6 @@
       "width": 1600,
       "height": 1112,
       "widths": [800, 1600]
-    },
-    "app-phone-today": {
-      "width": 720,
-      "height": 1558,
-      "widths": [360, 720]
     },
     "app-phone-recipe": {
       "width": 720,
@@ -139,14 +129,19 @@
       "width": 1600,
       "height": 1356,
       "widths": [800, 1600]
+    },
+    "hero-tablet-cook": {
+      "width": 2096,
+      "height": 1472,
+      "widths": [800, 1200, 1600]
+    },
+    "hero-phone-shopping": {
+      "width": 1179,
+      "height": 2394,
+      "widths": [400, 700, 1179]
     }
   },
   "en": {
-    "app-desktop-dashboard": {
-      "width": 1600,
-      "height": 1000,
-      "widths": [800, 1600]
-    },
     "app-desktop-recipes": {
       "width": 1600,
       "height": 1000,
@@ -181,11 +176,6 @@
       "width": 1600,
       "height": 1112,
       "widths": [800, 1600]
-    },
-    "app-phone-today": {
-      "width": 720,
-      "height": 1558,
-      "widths": [360, 720]
     },
     "app-phone-recipe": {
       "width": 720,
@@ -281,6 +271,16 @@
       "width": 1600,
       "height": 1356,
       "widths": [800, 1600]
+    },
+    "hero-tablet-cook": {
+      "width": 2096,
+      "height": 1472,
+      "widths": [800, 1200, 1600]
+    },
+    "hero-phone-shopping": {
+      "width": 1179,
+      "height": 2394,
+      "widths": [400, 700, 1179]
     }
   },
   "photos": {

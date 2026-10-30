@@ -554,68 +554,171 @@ h2 em {
   height: 16px;
   color: var(--mint);
 }
-/* One large browser the visitor can read, a phone that only touches its bottom-right corner and
-   the timer toast in the free row beside the phone, so nothing covers app text. */
 .nw {
   white-space: nowrap;
 }
-.stack {
+/* Hero stage: kitchen tablet in cooking mode behind, phone with the shopping list in front. Every
+   dimension of a device derives from its own --w, so bezels, radii and the island scale together.
+   Dark only, like the rest of the page. */
+.hero-stage {
   position: relative;
-  aspect-ratio: 1 / 0.8;
+  aspect-ratio: 100 / 84;
+  container-type: inline-size;
+  isolation: isolate;
 }
-.stack > * {
+.hero-stage .dial {
+  display: none;
   position: absolute;
+  z-index: -1;
+  left: -4cqi;
+  top: 6cqi;
+  width: 74cqi;
+  height: auto;
+  pointer-events: none;
 }
-.stack .browser {
-  top: 0;
-  left: 0;
-  width: 92%;
+.hero-stage .dial path {
+  fill: none;
+  stroke: rgba(242, 233, 216, 0.07);
+  stroke-width: 0.9;
+  stroke-linecap: round;
 }
-.stack .phone {
-  right: 0;
-  bottom: 0;
-  width: 20%;
+.hero-stage .dial .today {
+  stroke: #b8532e;
+  stroke-opacity: 0.55;
 }
-/* The capture ends in the middle of the title of today's card, which would show cut descenders on
-   the window edge. Crop at row 825 of 1000, between the last sidebar label and the card label, so no text is cut. */
-.stack .browser img {
-  aspect-ratio: 1600 / 825;
-  object-fit: cover;
-  object-position: top;
+.device {
+  position: absolute;
+  margin: 0;
+  background: #060807;
+  box-shadow:
+    0 0 0 calc(var(--w) * 0.004) #2b3530,
+    0 0 0 calc(var(--w) * 0.007) #0b0e0c,
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 28px 56px -16px rgba(0, 0, 0, 0.6),
+    0 70px 120px -40px rgba(0, 0, 0, 0.7);
 }
-.toast {
-  z-index: 3;
-  left: 3%;
-  bottom: 4%;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 16px 10px 10px;
-  border-radius: 16px;
-  background: rgba(23, 32, 26, 0.92);
-  border: 1px solid var(--line2);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-  font-size: 13px;
-  line-height: 1.35;
-  white-space: nowrap;
+.device .screen {
+  position: relative;
+  overflow: hidden;
+  background: #0c120f;
 }
-.toast .ic {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  background: var(--mint);
-  color: var(--mint-ink);
-}
-.toast b {
+.device .screen img {
   display: block;
-  font-size: 13.5px;
+  width: 100%;
+  height: auto;
 }
-.toast time {
-  font: 600 15px/1 var(--mono);
-  color: var(--mint);
+.device .screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.015) 30%,
+    transparent 46%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.device-tablet {
+  --w: 84cqi;
+  top: 0;
+  right: 0;
+  width: var(--w);
+  padding: calc(var(--w) * 0.019);
+  border-radius: calc(var(--w) * 0.036);
+}
+.device-tablet .screen {
+  border-radius: calc(var(--w) * 0.016);
+}
+.device-tablet .cam {
+  position: absolute;
+  top: calc(var(--w) * 0.0085);
+  left: 50%;
+  width: calc(var(--w) * 0.0055);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2b3a46, #07090a 70%);
+}
+.device-phone {
+  --w: 32cqi;
+  left: 0;
+  bottom: 0;
+  width: var(--w);
+  padding: calc(var(--w) * 0.034);
+  border-radius: calc(var(--w) * 0.172);
+}
+.device-phone .screen {
+  border-radius: calc(var(--w) * 0.138);
+}
+.device-phone::before,
+.device-phone::after {
+  content: "";
+  position: absolute;
+  width: calc(var(--w) * 0.012);
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1a201d, #3a443e);
+}
+.device-phone::before {
+  right: calc(var(--w) * -0.016);
+  top: 25%;
+  height: 12%;
+}
+.device-phone::after {
+  left: calc(var(--w) * -0.016);
+  top: 17%;
+  height: 4%;
+  background: linear-gradient(270deg, #1a201d, #3a443e);
+  box-shadow:
+    0 calc(var(--w) * 0.12) 0 0 #262e2a,
+    0 calc(var(--w) * 0.26) 0 0 #262e2a;
+}
+.status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--w) * 0.128);
+  padding: 0 calc(var(--w) * 0.09) 0 calc(var(--w) * 0.11);
+  background: #111713;
+  color: #f3f0e8;
+  font: 600 calc(var(--w) * 0.043) / 1 var(--sans);
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
+}
+.status .island {
+  position: absolute;
+  top: calc(var(--w) * 0.026);
+  left: 50%;
+  width: calc(var(--w) * 0.296);
+  height: calc(var(--w) * 0.087);
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #000;
+}
+.status svg {
+  height: calc(var(--w) * 0.032);
+  width: auto;
+  fill: currentColor;
+}
+.status .icons {
+  display: flex;
+  gap: calc(var(--w) * 0.016);
+  align-items: center;
+}
+.home-bar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--w) * 0.02);
+  width: 36%;
+  height: calc(var(--w) * 0.013);
+  translate: -50% 0;
+  border-radius: 999px;
+  background: rgba(243, 240, 232, 0.85);
+  z-index: 1;
 }
 @media (min-width: 981px) {
   .hero-grid {
@@ -623,7 +726,7 @@ h2 em {
   }
 }
 @media (min-width: 1280px) {
-  .stack {
+  .hero-stage {
     margin-right: -40px;
   }
 }
@@ -631,35 +734,51 @@ h2 em {
   .hero-grid {
     grid-template-columns: 1fr;
   }
-  .stack {
+  .hero-stage {
     margin-top: 16px;
-    aspect-ratio: 1 / 0.8;
   }
 }
-/* Phone: no tiny browser, the app on a phone shown whole, with the timer toast beside it. */
+/* Phone: the tablet is not rendered (and not downloaded), the phone shows the list whole in front of the Week Dial. */
 @media (max-width: 640px) {
-  .stack {
+  .hero-stage {
     aspect-ratio: auto;
     display: grid;
     justify-items: center;
     padding-bottom: 8px;
   }
-  .stack > * {
-    position: relative;
+  .hero-stage .dial {
+    display: block;
+    left: 50%;
+    top: 50%;
+    width: 118cqi;
+    translate: -50% -50%;
   }
-  .stack .browser {
+  .device-tablet {
     display: none;
   }
-  .stack .phone {
-    inset: auto;
-    width: min(64%, 250px);
+  .device-phone {
+    --w: min(70cqi, 280px);
+    position: relative;
   }
-  .toast {
-    inset: auto;
-    margin-top: 18px;
-    max-width: 100%;
-    white-space: nowrap;
-  }
+}
+/* Entrance, only when the script confirmed that motion is welcome: with reduced motion the
+   devices simply stand there. */
+.reveal-ready .hero-stage .device {
+  opacity: 0;
+  transition:
+    opacity 0.9s var(--ease),
+    translate 0.9s var(--ease);
+}
+.reveal-ready .hero-stage .device-tablet {
+  translate: 0 18px;
+}
+.reveal-ready .hero-stage .device-phone {
+  translate: 0 28px;
+  transition-delay: 0.14s;
+}
+.reveal-ready .hero-stage.in .device {
+  opacity: 1;
+  translate: none;
 }
 
 /* facts */
