@@ -2870,6 +2870,41 @@ details[open] .chev {
 .credits-page .lead {
   max-width: 62ch;
 }
+.notfound-page {
+  min-height: 70vh;
+}
+.notfound-grid {
+  display: grid;
+  gap: clamp(40px, 6vw, 72px) clamp(32px, 5vw, 80px);
+  align-content: center;
+}
+.notfound-col {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+.notfound-col h1,
+.notfound-col h2 {
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.04;
+}
+.notfound-col .btn-row {
+  margin-top: 8px;
+}
+.notfound-col + .notfound-col {
+  padding-top: clamp(32px, 5vw, 56px);
+  border-top: 1px solid var(--line);
+}
+@media (min-width: 900px) {
+  .notfound-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .notfound-col + .notfound-col {
+    padding: 0 0 0 clamp(32px, 5vw, 80px);
+    border-top: 0;
+    border-left: 1px solid var(--line);
+  }
+}
 .credit-list {
   list-style: none;
   margin: clamp(28px, 4vw, 44px) 0 0;

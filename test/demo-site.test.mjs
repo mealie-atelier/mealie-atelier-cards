@@ -76,7 +76,10 @@ const ogRendered = (out) =>
     ),
   );
 const landing = (out, locale) => read(join(out, locale, "index.html"));
-const contentPages = (out) => listFiles(out, ".html").filter((p) => p !== join(out, "index.html"));
+const contentPages = (out) =>
+  listFiles(out, ".html").filter(
+    (p) => ![join(out, "index.html"), join(out, "404.html")].includes(p),
+  );
 const footerOf = (html) => html.match(/<footer class="site-footer">[\s\S]*?<\/footer>/)?.[0] ?? "";
 
 test("each demo page is pinned to its own language", () => {
@@ -448,7 +451,7 @@ test("every asset a page references exists in the generated site", () => {
       const path = ref.split("#")[0].split("?")[0];
       if (!path) continue;
       if (!ogRendered(out) && /(^|\/)og\/(de|en)\//.test(path)) continue; // no Chromium, see ogRendered
-      let target = join(dirname(page), path);
+      let target = path.startsWith("/") ? join(out, path) : join(dirname(page), path);
       if (path.endsWith("/")) target = join(target, "index.html");
       assert.ok(existsSync(target), `${relative(out, page)} references missing ${ref}`);
     }
@@ -1503,4 +1506,41 @@ test("landing copy keeps counts honest, English footer heading in sentence case 
   }
   const catalogJson = readFileSync("demo/data/recipes.json", "utf8");
   assert.doesNotMatch(catalogJson, /chilli|favourite/i);
+});
+
+test("404.html is a noindex bilingual page with root-absolute assets, kept out of the sitemap", () => {
+  for (const [out, prefix] of [
+    [builds.local, "/"],
+    [builds.deployed, baseUrl],
+  ]) {
+    assert.ok(existsSync(join(out, "404.html")), "404.html exists");
+    const html = read(join(out, "404.html"));
+    assert.match(html, /<meta name="robots" content="noindex">/);
+    assert.doesNotMatch(html, /aria-current/, "no language link is the current page");
+    assert.doesNotMatch(html, /rel="canonical"|og:image|twitter:image|rel="alternate" hreflang/);
+    // Served at any depth, so no reference may be relative.
+    const refs = [...html.matchAll(/\s(?:src|href)="([^"]+)"/g)]
+      .map((m) => m[1])
+      .filter((ref) => !/^(https?:\/\/(?!mealie\.example\.test)|mailto:|#|data:)/.test(ref));
+    assert.ok(refs.length > 10);
+    for (const ref of refs) assert.ok(ref.startsWith(prefix), `relative reference ${ref}`);
+    assert.match(html, new RegExp(`href="${prefix}assets/live-demo\\.css"`));
+    assert.match(html, new RegExp(`src="${prefix}assets/site\\.js"`));
+    // German first, English second, both with their own language attribute.
+    const de = html.indexOf('<section class="notfound-col" lang="de">');
+    const en = html.indexOf('<section class="notfound-col" lang="en">');
+    assert.ok(de > 0 && en > de, "German block before the English block");
+    assert.match(html, /<h1>Diese Seite gibt es nicht<\/h1>/);
+    assert.match(html, /<h2>This page does not exist<\/h2>/);
+    for (const locale of ["de", "en"]) {
+      assert.ok(html.includes(`href="${prefix}${locale}/"`), `${locale} home`);
+      assert.ok(html.includes(`href="${prefix}${locale}/#live-demo"`), `${locale} live demo`);
+    }
+    assert.ok(html.includes(`href="${prefix}de/#rezepte"`));
+    assert.ok(html.includes(`href="${prefix}en/#recipes"`));
+    assert.match(footerOf(html), /Mit <span class="heart"/);
+    assert.doesNotMatch(html, /[\u2013\u2014]/);
+    assert.doesNotMatch(html, /,\s+und\b|\bund,/);
+  }
+  assert.doesNotMatch(read(join(builds.deployed, "sitemap.xml")), /404/);
 });

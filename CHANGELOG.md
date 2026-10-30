@@ -14,6 +14,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Demo site: unknown paths no longer answer 200 with the home page. `npm run build:demo` writes `404.html`, a bilingual page in the site design (noindex, no canonical, not in the sitemap) that Cloudflare Pages serves with status 404.
 - URLs in the recipe detail step text are links too. The step number is now its own toggle button, so the text is no longer inside a button, and links in recipe text use the brand colour.
 - Removing a kitchen timer the server already dispatched or no longer knows now works on every server and language: the card matches the dedicated error codes (`timer_dispatched`, `timer_not_found`) instead of English message text, and a refused cancel names its real reason. The web app reports `timer_not_found` the same way and treats a dispatched timer as already removed.
 - On short landscape phones the cooking navigation stays one level row of three buttons with every label on one line.
