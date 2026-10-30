@@ -1127,3 +1127,50 @@ test("German structured data carries German keywords and English data keeps Engl
     assert.match(keywordsOf(read(join(out, "en", "index.html"))), /family-friendly/);
   }
 });
+
+test("OG recipe titles keep compound words whole instead of breaking at the hyphen", async () => {
+  const { recipeHtml } = await import("../scripts/og-images.mjs");
+  const html = recipeHtml({
+    locale: "de",
+    title: "Zitronen-Focaccia mit Rosmarin",
+    kicker: "Backen",
+    foot: "x",
+    photo: "file:///p.webp",
+    font: "file:///f.ttf",
+    mark: "file:///m.svg",
+  });
+  assert.match(html, /<span class="nb">Zitronen-Focaccia<\/span> mit Rosmarin/);
+  assert.match(html, /\.nb \{ white-space: nowrap; \}/);
+  assert.match(html, /fontSize/);
+});
+
+test("OG source screenshots show no dialog close button and the German shopping bar has three tabs", (t) => {
+  const probe = `
+import sys
+from PIL import Image
+def px(path, box):
+    im = Image.open(path).convert("RGB")
+    k = im.width / 720
+    x0, y0, x1, y1 = [int(v * k) for v in box]
+    return im.crop((x0, y0, x1, y1)).getdata()
+dark = lambda path: sum(1 for r, g, b in px(path, (580, 56, 665, 143)) if max(r, g, b) < 80)
+bright = lambda path, box: sum(1 for r, g, b in px(path, box) if r + g + b > 450)
+for loc in ("de", "en"):
+    for size in (360, 720):
+        print("x", loc, size, dark("demo/showcase/%s/app-phone-recipe-%d.webp" % (loc, size)))
+print("tab", bright("demo/showcase/de/app-phone-shopping-720.webp", (420, 85, 640, 110)))
+`;
+  let out;
+  try {
+    out = execFileSync("python3", ["-I", "-c", probe], { encoding: "utf8" });
+  } catch {
+    t.skip("python3 with Pillow is not available");
+    return;
+  }
+  for (const line of out.trim().split("\n")) {
+    const [kind, ...rest] = line.split(" ");
+    const count = Number(rest.at(-1));
+    if (kind === "x") assert.ok(count < 20, `close button remnant in ${rest.join(" ")}`);
+    else assert.ok(count > 300, "third German tab label is missing from the shopping screen");
+  }
+});

@@ -91,6 +91,17 @@ h1 em { font-style: normal; color: #9dcbb2; }
 // picture shows. The photo meets the panel in a clean straight edge with a thin paprika accent (no
 // gradient, which smeared grey on light photos). The panel is composed top, middle, bottom: lockup,
 // then kicker and title centred in the remaining height, then a quiet one line footer.
+// A title never breaks at a compound hyphen: every hyphenated word is kept whole and the font
+// shrinks (in the page, once the font has loaded) until the widest such word fits the panel.
+export function titleWords(title) {
+  return title
+    .split(" ")
+    .map((word) =>
+      word.includes("-") ? `<span class="nb">${escapeHtml(word)}</span>` : escapeHtml(word),
+    )
+    .join(" ");
+}
+
 export function recipeHtml(job) {
   const length = job.title.length;
   const size = length > 34 ? 50 : length > 24 ? 56 : 64;
@@ -106,11 +117,21 @@ body { background: #14201a; }
   padding: 9px 20px 9px 16px; border-radius: 999px; background: rgba(157,203,178,.12); border: 1.5px solid rgba(157,203,178,.45); }
 .kicker i { width: 12px; height: 12px; border-radius: 50%; background: #9dcbb2; display: block; }
 h1 { margin-top: 22px; font-size: ${size}px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; color: #fffaf0; text-wrap: balance; }
+.nb { white-space: nowrap; }
 .foot { font-size: 21px; font-weight: 500; letter-spacing: .02em; color: #b3c2b8; }
 </style><body><div class="glow"></div><div class="photo"></div><div class="edge"></div>
 <div class="panel"><div class="lockup"><img src="${job.mark}" alt=""><b>Mealie Atelier</b></div>
-<div><span class="kicker"><i></i>${escapeHtml(job.kicker)}</span><h1>${escapeHtml(job.title)}</h1></div>
+<div><span class="kicker"><i></i>${escapeHtml(job.kicker)}</span><h1>${titleWords(job.title)}</h1></div>
 <div class="foot">${escapeHtml(job.foot)}</div></div>
+<script>document.fonts.ready.then(() => {
+  const h1 = document.querySelector("h1");
+  const limit = h1.parentElement.clientWidth;
+  let size = parseFloat(getComputedStyle(h1).fontSize);
+  while (size > 30 && [...h1.querySelectorAll(".nb")].some((w) => w.getBoundingClientRect().width > limit)) {
+    size -= 1;
+    h1.style.fontSize = size + "px";
+  }
+});</script>
 </body></html>`;
 }
 
