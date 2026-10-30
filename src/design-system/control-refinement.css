@@ -292,6 +292,14 @@
   flex: 1 0 auto;
   min-height: 0;
 }
+/* Laptop heights: the layout must shrink to the dialog so only the step column scrolls, otherwise a running
+   timer grows it past the dialog edge and the bar with Back and Next is clipped. */
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 1000px) {
+  .atelier .modal.large:has(.cook-layout) > .cook-layout {
+    flex: 1 1 auto;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
 .atelier .modal:has(.cook-layout) .cook-controls {
   display: contents;
 }
@@ -310,6 +318,27 @@
   margin-block: auto 0;
   padding: 8px 0 max(16px, env(safe-area-inset-bottom));
   background: linear-gradient(180deg, transparent, var(--at-surface) 24%);
+}
+/* Narrow cards: one compact row (Back, To recipe, Next) on a solid ground, so the bar stays low and the
+   tools panel below it cannot show through. */
+@container atelier-card (max-width: 420px) {
+  .atelier .modal:has(.cook-layout) .cook-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.3fr);
+    gap: var(--ds-space-2);
+    padding: 8px 0 max(12px, env(safe-area-inset-bottom));
+    background: var(--at-surface);
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions .btn {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions .btn.primary {
+    grid-column: auto;
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions .btn[data-action="cook-back"] {
+    background: var(--at-surface);
+  }
 }
 
 /* The close button follows the scroll instead of leaving with the hero, inset like the old absolute one. */

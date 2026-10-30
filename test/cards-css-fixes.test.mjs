@@ -66,3 +66,27 @@ test("the toast is fixed to the viewport because the card clips its overflow", (
   assert.doesNotMatch(toast, /position:\s*sticky/);
   assert.match(toast, /z-index:\s*90/);
 });
+
+test("on laptop heights the cooking layout shrinks to the dialog so the action bar is never clipped", () => {
+  const refinement = css("control-refinement");
+  const start = refinement.indexOf(
+    "@media (orientation: landscape) and (min-height: 701px) and (max-height: 1000px) {",
+  );
+  assert.ok(start >= 0, "laptop media query exists");
+  const block = refinement.slice(start, refinement.indexOf("\n}\n", start));
+  assert.match(block, /> \.cook-layout \{[^}]*flex:\s*1 1 auto/);
+  assert.match(block, /grid-template-rows:\s*minmax\(0, 1fr\)/);
+});
+
+test("on narrow cards the cooking bar is one compact row on a solid ground", () => {
+  const refinement = css("control-refinement");
+  const start = refinement.indexOf(
+    "@container atelier-card (max-width: 420px) {\n  .atelier .modal:has(.cook-layout) .cook-actions {",
+  );
+  assert.ok(start >= 0, "narrow cooking bar rule exists");
+  const block = refinement.slice(start, refinement.indexOf("\n}\n", start));
+  assert.match(block, /display:\s*grid/);
+  assert.match(block, /grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1\.3fr\)/);
+  assert.match(block, /background:\s*var\(--at-surface\)/);
+  assert.match(block, /\.btn\.primary \{\s*grid-column:\s*auto/);
+});
