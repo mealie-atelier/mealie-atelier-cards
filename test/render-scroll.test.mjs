@@ -114,7 +114,7 @@ function findChrome() {
 const bundlePath = new URL("../dist/mealie-atelier-cards.js", import.meta.url).pathname;
 
 /** Step through the cooking dialog of a real card in a real engine and report what stayed. */
-function steppingReport(chrome) {
+function steppingReport(chrome, mode = "") {
   const dir = mkdtempSync(join(tmpdir(), "atelier-cook-step-"));
   try {
     // Tiny real pictures, so the card's broken-image handler leaves them alone.
@@ -130,7 +130,7 @@ function steppingReport(chrome) {
   const show = HTMLElement.prototype.showPopover;
   if (show) HTMLElement.prototype.showPopover = function () { popovers++; return show.call(this); };
   const card = document.createElement("mealie-atelier-card");
-  card.setConfig({ type: "custom:mealie-atelier-card" });
+  card.setConfig({ type: "custom:mealie-atelier-card", ...(location.hash === "#off" ? { motion: "off" } : {}) });
   document.body.append(card);
   card._status = { entries: [{ entry_id: "e1", can_write: true, can_manage: true }] };
   card._hass = { language: "en", callWS: async () => ({}) };
@@ -141,6 +141,7 @@ function steppingReport(chrome) {
       { text: "Two", imageUrls: ["./food/a.webp"] },
       { text: "Three" },
       { text: "Four", imageUrls: ["./food/b.webp"] },
+      { text: "Five", imageUrls: ["./food/a.webp"] },
     ],
   };
   card._timers = [{ id: "t1", label: "Pasta", deadline: Date.now() + 600000, durationMs: 600000, startedAt: Date.now(), done: false }];
@@ -148,6 +149,10 @@ function steppingReport(chrome) {
   card._cookIndex = 0;
   card._render();
   const q = (selector) => card.shadowRoot.querySelector(selector);
+  const settled = async (src) => {
+    for (let i = 0; i < 80 && (q(".cook-step-photo")?.getAttribute("src") || "") !== src; i++) await wait(50);
+    await wait(100);
+  };
   const grab = () => ({
     backdrop: q(".modal-backdrop"), modal: q(".modal"), hero: q(".cook-visual img"), fill: q(".cook-fill"),
     status: q(".cook-timer-status"), photo: q(".cook-step-photo"), next: q('[data-action="cook-next"]'),
@@ -157,6 +162,13 @@ function steppingReport(chrome) {
   const first = grab();
   await wait(100);
   const rows = [];
+  const seen = new WeakSet();
+  const newFades = () => {
+    const all = q(".cook-stage").getAnimations({ subtree: true }).filter((a) => !(a instanceof CSSAnimation) && a.effect.getKeyframes().some((k) => k.opacity === "0.35"));
+    const fresh = all.filter((a) => !seen.has(a));
+    all.forEach((a) => seen.add(a));
+    return fresh.map((a) => a.effect.target.tagName);
+  };
   const record = (label, node) => {
     const now = grab();
     rows.push({
@@ -175,6 +187,8 @@ function steppingReport(chrome) {
       samePulse: Boolean(first.pulse) && now.pulse === first.pulse,
       pulseRunning: now.pulse?.playState === "running",
       samePhoto: node ? now.photo === node : null,
+      fades: newFades(),
+      photoSrcNow: q(".cook-step-photo")?.getAttribute("src") || "",
       backdropOpen: q(".modal-backdrop").matches(":popover-open"),
       popoverAttr: q(".modal-backdrop").getAttribute("popover"),
       nextKept: now.next === first.next,
@@ -192,12 +206,18 @@ function steppingReport(chrome) {
   await wait(150);
   record("to a step without photo");
   card.shadowRoot.querySelector('[data-action="cook-next"]').click();
-  await wait(150);
+  await settled("./food/b.webp");
   record("to another photo");
   card.shadowRoot.querySelector('[data-action="cook-back"]').click();
   await wait(150);
   record("back");
-  rows.popovers = popovers;
+  card.shadowRoot.querySelector('[data-action="cook-next"]').click();
+  await settled("./food/b.webp");
+  record("to step four");
+  card.shadowRoot.querySelector('[data-action="cook-next"]').click();
+  record("to step five right away");
+  await settled("./food/a.webp");
+  record("to step five");
   document.getElementById("out").textContent = JSON.stringify({ rows, popovers, hasPopover: Boolean(show) });
 })();
 </script>`,
@@ -207,11 +227,12 @@ function steppingReport(chrome) {
       [
         "--no-sandbox",
         ...(process.env.DBG ? ["--enable-logging=stderr", "--v=0"] : []),
+        ...(mode === "reduced" ? ["--force-prefers-reduced-motion"] : []),
         "--allow-file-access-from-files",
         "--virtual-time-budget=8000",
         "--window-size=900,900",
         "--dump-dom",
-        `file://${join(dir, "harness.html")}`,
+        `file://${join(dir, "harness.html")}${mode === "off" ? "#off" : ""}`,
       ],
       {
         encoding: "utf8",
@@ -231,13 +252,13 @@ test("stepping through the cooking dialog patches it in place in a real engine",
   if (!chrome) return t.skip("no headless Chromium available");
   const report = steppingReport(chrome);
   const byLabel = Object.fromEntries(report.rows.map((row) => [row.label, row]));
-  assert.equal(report.rows.length, 7);
+  assert.equal(report.rows.length, 10);
   for (const row of report.rows) {
     // The backdrop, the dialog, the hero image and the progress fill are the same nodes.
     for (const key of ["sameBackdrop", "sameModal", "sameHero", "sameFill", "sameStatus"])
       assert.equal(row[key], true, `${row.label}: ${key}`);
     // The last step turns the next button into the finish button, every other step keeps it.
-    if (row.heading !== "Four") assert.equal(row.nextKept, true, `${row.label}: next button`);
+    if (row.heading !== "Five") assert.equal(row.nextKept, true, `${row.label}: next button`);
     // A kept backdrop is never raised again, so it cannot drop out of the top layer.
     assert.equal(row.popoverAttr, report.hasPopover ? "manual" : null, row.label);
     assert.equal(row.freshBackdropAnimations, 0, `${row.label}: replayed backdrop animation`);
@@ -250,9 +271,9 @@ test("stepping through the cooking dialog patches it in place in a real engine",
   // The content itself follows the step.
   assert.equal(byLabel.start.heading, "One");
   assert.equal(byLabel.next.heading, "Two");
-  assert.equal(byLabel.next.index, "02 / 04");
+  assert.equal(byLabel.next.index, "02 / 05");
   assert.equal(byLabel.next.valuenow, "2");
-  assert.equal(byLabel.next.width, "50%");
+  assert.equal(byLabel.next.width, "40%");
   assert.equal(byLabel["hass update"].heading, "Two");
   assert.equal(byLabel["to a step without photo"].photo, false);
   assert.equal(byLabel["to another photo"].photoSrc, "./food/b.webp");
@@ -261,4 +282,29 @@ test("stepping through the cooking dialog patches it in place in a real engine",
   assert.equal(byLabel.start.samePhoto, true);
   assert.equal(byLabel.next.samePhoto, true);
   assert.equal(byLabel["hass update"].samePhoto, true);
+  // Only text lines fade, never the photo or the stage, and the same photo does not fade at all.
+  for (const row of report.rows) {
+    for (const tag of row.fades) assert.match(tag, /^(H2|P)$/, `${row.label}: faded ${tag}`);
+  }
+  assert.deepEqual(byLabel["next right away"].fades, ["H2"]);
+  assert.deepEqual(byLabel["hass update"].fades, []);
+  // A different photo replaces the old one only once it is decoded: the old photo shows
+  // right away, the new one follows, so the photo area never goes blank.
+  assert.equal(byLabel["to step five right away"].photoSrcNow, "./food/b.webp");
+  assert.equal(byLabel["to step five"].photoSrcNow, "./food/a.webp");
+  assert.equal(byLabel["to step four"].photoSrcNow, "./food/b.webp");
 });
+
+for (const mode of ["reduced", "off"]) {
+  test(`stepping with ${mode} motion fades nothing but still patches in place`, (t) => {
+    const chrome = findChrome();
+    if (!chrome) return t.skip("no headless Chromium available");
+    const report = steppingReport(chrome, mode);
+    assert.equal(report.rows.length, 10);
+    for (const row of report.rows) {
+      assert.deepEqual(row.fades, [], `${row.label}: fade`);
+      assert.equal(row.sameModal, true, `${row.label}: modal replaced`);
+    }
+    assert.equal(report.rows.find((r) => r.label === "next").heading, "Two");
+  });
+}

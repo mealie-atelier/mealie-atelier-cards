@@ -13082,6 +13082,7 @@ class MealieAtelierCard extends HTMLElement {
       card &&
       this._patchCookDialog(card, template.content.firstElementChild);
     if (!patched) {
+      this._cookPhotoPending = null;
       if (card) card.replaceWith(template.content.firstElementChild);
       else this.shadowRoot.appendChild(template.content.firstElementChild);
     }
@@ -13319,7 +13320,39 @@ class MealieAtelierCard extends HTMLElement {
     const newModal = newBackdrop?.querySelector(":scope > .modal");
     if (!oldModal || !newModal) return false;
     const oldStage = oldModal.querySelector(".cook-stage");
-    const stageChanged = oldStage?.innerHTML !== newModal.querySelector(".cook-stage")?.innerHTML;
+    const newStage = newModal.querySelector(".cook-stage");
+    // Text pieces of the step, by tag and class. Only these ever fade, never the photo.
+    const textKey = (el) => `${el.tagName}.${el.className}`;
+    const isText = (el) => !el.matches(".cook-step-figure, .muted");
+    const before = new Map();
+    for (const el of oldStage?.children || [])
+      if (isText(el)) before.set(textKey(el), el.innerHTML);
+    // A different step photo is decoded off screen first. Until then the old photo (or no
+    // photo) stays, so the photo area never goes blank between two steps.
+    this._cookPhotoPending = null;
+    const newFigure = newStage?.querySelector(".cook-step-figure");
+    const oldFigure = oldStage?.querySelector(".cook-step-figure");
+    const newImg = newFigure?.querySelector("img");
+    let pending = null;
+    if (
+      newImg &&
+      newImg.getAttribute("src") !== oldFigure?.querySelector("img")?.getAttribute("src")
+    ) {
+      // The fresh markup lives in an inert template document where images never load, so
+      // the picture is rebuilt as a live element that decodes while the old one stays.
+      const photo = document.createElement("img");
+      for (const attr of newImg.attributes)
+        if (attr.name !== "src") photo.setAttribute(attr.name, attr.value);
+      photo.src = newImg.getAttribute("src");
+      // Not placed into the inert figure yet: that would adopt it and drop the loading.
+      pending = { src: photo.getAttribute("src"), figure: newFigure, img: photo };
+      if (oldFigure) {
+        const keep = oldFigure.cloneNode(true);
+        const keepImg = keep.querySelector("img");
+        if (keepImg) keepImg.setAttribute("alt", newImg.getAttribute("alt") || "");
+        newFigure.replaceWith(keep);
+      } else newFigure.remove();
+    }
     syncAttributes(oldRoot, newRoot);
     const siblings = [...newRoot.children];
     const split = siblings.indexOf(newBackdrop);
@@ -13331,13 +13364,38 @@ class MealieAtelierCard extends HTMLElement {
     // The backdrop keeps its popover attribute, only its look classes follow the new markup.
     oldBackdrop.className = newBackdrop.className;
     morphElement(oldModal, newModal);
+    const stage = oldModal.querySelector(".cook-stage");
+    if (pending && stage) {
+      const token = pending;
+      this._cookPhotoPending = token;
+      const place = () => {
+        if (this._cookPhotoPending !== token) return;
+        this._cookPhotoPending = null;
+        const live = this.shadowRoot?.querySelector(".modal .cook-stage");
+        if (!live) return;
+        const current = live.querySelector(".cook-step-figure");
+        if (current) current.replaceWith(token.figure);
+        else live.insertBefore(token.figure, live.querySelector(":scope > .muted"));
+        token.figure.querySelector("img")?.replaceWith(token.img);
+      };
+      // A decode that never settles must not keep the old photo forever.
+      setTimeout(place, 1500);
+      if (typeof token.img.decode === "function") token.img.decode().then(place, place);
+      else place();
+    }
     const calm =
       newRoot.classList.contains("motion-off") ||
       globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-    const stage = oldModal.querySelector(".cook-stage");
-    // A short fade of the step text only, so the dialog itself never turns transparent.
-    if (stageChanged && !calm && typeof stage?.animate === "function")
-      stage.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+    // A short fade of the step text that changed. The photo, the dialog and the unchanged
+    // lines are never touched, so nothing washes out or turns transparent.
+    if (!calm && stage)
+      for (const el of stage.children)
+        if (
+          isText(el) &&
+          before.get(textKey(el)) !== el.innerHTML &&
+          typeof el.animate === "function"
+        )
+          el.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
     return true;
   }
   /**
