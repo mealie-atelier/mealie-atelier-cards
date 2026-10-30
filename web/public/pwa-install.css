@@ -108,17 +108,8 @@
   background: color-mix(in srgb, var(--shell-accent) 10%, transparent);
 }
 .pwa-install-mark svg {
-  width: 30px;
-  height: 30px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.pwa-install-mark svg path:first-of-type {
-  fill: currentColor;
-  stroke: none;
+  width: 34px;
+  height: 34px;
 }
 .pwa-install-close {
   width: 40px;
