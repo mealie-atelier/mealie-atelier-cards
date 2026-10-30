@@ -1211,12 +1211,13 @@ html.js .live-frame:not([data-ready])::after {
   align-content: center;
   gap: 18px;
   padding-block: 4vh;
-  opacity: 0.55;
-  transition: opacity 0.5s var(--ease);
+  padding-inline-start: 24px;
+  /* Inactive steps keep full text contrast (WCAG AA); the current one is marked by an accent bar. */
+  border-inline-start: 3px solid transparent;
+  transition: border-color 0.5s var(--ease);
 }
-.step.current,
-html:not(.js) .step {
-  opacity: 1;
+.step.current {
+  border-inline-start-color: var(--mint);
 }
 .step .num {
   font: 500 15px/1.5 var(--mono);
@@ -1326,7 +1327,8 @@ html:not(.js) .step {
   }
   .step {
     min-height: 0;
-    opacity: 1;
+    padding-inline-start: 0;
+    border-inline-start: 0;
     padding-block: 40px;
     border-top: 1px solid var(--line);
   }

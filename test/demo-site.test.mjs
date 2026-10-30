@@ -1344,3 +1344,10 @@ test("the open mobile drawer makes the page inert and traps Tab inside the heade
   assert.match(script, /last\.focus\(\)/);
   assert.match(script, /first\.focus\(\)/);
 });
+
+test("story steps are never dimmed with opacity (contrast stays AA)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../demo/live-demo.css", import.meta.url), "utf8");
+  const block = css.match(/\n\.step \{[^}]*\}/)[0];
+  assert.doesNotMatch(block, /opacity/);
+});
