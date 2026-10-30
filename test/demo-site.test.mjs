@@ -1896,3 +1896,23 @@ test("the design system documents the cooking timer order the card renders", () 
     "the start form renders before the running timers",
   );
 });
+
+test("the demo Manage view reports the released card version", () => {
+  const pkg = JSON.parse(read("package.json"));
+  assert.match(read("demo/preview.html"), new RegExp(`version: "${pkg.version}",`));
+  for (const page of ["de/index.html", "en/index.html"])
+    assert.match(read(join(builds.local, page)), new RegExp(`version: "${pkg.version}",`));
+});
+
+test("the narrow product page uses one feature column and an opaque full-height mobile menu", () => {
+  const css = read("demo/live-demo.css");
+  assert.match(
+    css,
+    /@media \(max-width: 400px\) \{[^@]*\.bento \{\s*grid-template-columns: minmax\(0, 1fr\);/,
+  );
+  assert.match(css, /\.tile h3 \{[^}]*overflow-wrap: anywhere;/);
+  assert.match(
+    css,
+    /\.top\.open \{\s*height: 100dvh;[^}]*background: var\(--bg, #0c120f\);[^}]*backdrop-filter: none;/,
+  );
+});
