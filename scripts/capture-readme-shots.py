@@ -165,36 +165,54 @@ def start_cooking(page) -> None:
 
 # Count the elements of the recipe dialog that a scroll position cuts through or crowds against the header strip
 # (the sticky close button draws a strip 13 px below itself) or the bottom edge.
-CUTS = """(modal) => {
+CUTS = """(modal, withBar) => {
   const box = modal.getBoundingClientRect();
   const bar = modal.querySelector(':scope > .modal-close');
-  const edges = [[box.bottom - 6, 0]];
-  if (bar) edges.push([bar.getBoundingClientRect().bottom + 13, 7]);
+  const edges = [[box.bottom - 14, 0]];
+  if (bar && withBar) edges.push([bar.getBoundingClientRect().bottom + 13, 7]);
+  // The cooking dialog's sticky step bar covers what scrolls under it: its top edge must not cut anything either.
+  const actions = modal.querySelector('.cook-actions');
+  if (actions) edges.push([actions.getBoundingClientRect().top - 14, 14]);
   let cuts = 0;
-  for (const el of modal.querySelectorAll('*')) {
-    if (el === bar || bar?.contains(el) || el.closest('.modal-hero') || el.matches('.modal-hero')) continue;
+  const all = [];
+  const collect = (root) => { for (const el of root.querySelectorAll('*')) { all.push(el); if (el.shadowRoot) collect(el.shadowRoot); } };
+  collect(modal);
+  for (const el of all) {
+    if (el === bar || bar?.contains(el) || el.closest('.cook-actions') || el.closest('.modal-hero') || el.matches('.modal-hero')) continue;
     const r = el.getBoundingClientRect();
     if (r.height < 4 || r.height > 130 || r.width < 4) continue;
+    // A group heading just above the edge would stand alone, its card cut off below it.
+    if (/^H[1-6]$/.test(el.tagName) || el.matches('.step-group, .group-title') ) { if (r.bottom > box.bottom - 70 && r.top < box.bottom) cuts += 1; continue; }
     if (edges.some(([line, gap]) => r.top < line + gap && r.bottom > line)) cuts += 1;
   }
   return cuts;
 }"""
 
 
-def scroll_recipe(page) -> None:
-    """Scroll the recipe dialog to the first position where no text or box is cut by an edge.
+def fit_recipe_top(page) -> None:
+    """Show the recipe dialog from its top (photo, name, actions), ending on a gap between two rows.
 
-    The actions, the first ingredients and the first step stay visible; the hero photo is scrolled out.
+    The dialog's own height is trimmed (it stays centred) until no text or box is cut by its bottom edge.
     """
     modal = page.locator(".modal >> visible=true").first
-    for top in range(int(os.environ.get("S0", 215)), 400):
-        modal.evaluate(f"m => {{ m.scrollTop = {top}; }}")
-        page.wait_for_timeout(60)
-        if modal.evaluate(CUTS) == 0:
-            break
+    # A taller viewport (same aspect) lets the dialog reach past the two-column rows where a clean edge exists.
+    grow = float(os.environ.get("GROW", 1.42))
+    page.set_viewport_size({"width": round(DESKTOP["width"] * grow), "height": round(DESKTOP["height"] * grow)})
+    page.wait_for_timeout(500)
+    full = int(modal.evaluate("m => m.getBoundingClientRect().height"))
+    # The hero photo may scroll up by a little, as long as it keeps filling the header strip with the close button.
+    for top in range(0, 1):
+        for height in range(full + 500, full - 40, -3):
+            modal.evaluate(f"m => {{ m.style.transition = 'none'; m.style.maxHeight = '{height}px'; m.scrollTop = {top}; }}")
+            page.wait_for_timeout(60)
+            if modal.evaluate(CUTS, False) == 0:
+                print("dialog height", height, "of", full, "scroll", top)
+                break
+        else:
+            continue
+        break
     else:
-        raise SystemExit("no clean scroll position for the recipe dialog")
-    print("scroll", top)
+        raise SystemExit("no dialog height and scroll with a clean bottom edge")
     page.mouse.move(2, 2)
     page.wait_for_timeout(600)
 
@@ -222,10 +240,77 @@ def fit_nav(page) -> None:
     page.wait_for_timeout(300)
 
 
-def scroll_to_end(page) -> None:
-    """Scroll the cooking dialog to its end so the sticky step bar covers nothing."""
-    page.locator(".modal >> visible=true").first.evaluate("m => { m.scrollTop = m.scrollHeight; }")
-    page.wait_for_timeout(600)
+# Count the boxes, texts and buttons of a page (shadow roots included) that the bottom edge of the viewport cuts
+# through or that end within 14 px of it (those look sliced too).
+PAGE_CUTS = """() => {
+  const line = innerHeight;
+  let cuts = 0;
+  const walk = (root) => {
+    for (const el of root.querySelectorAll('*')) {
+      if (el.shadowRoot) walk(el.shadowRoot);
+      if (/^(IMG|SVG|PATH|PICTURE|VIDEO|CANVAS)$/i.test(el.tagName)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height > 130 && r.top > line - 40 && r.top < line && r.width > 100) cuts += 1; // a sliver of a card
+      if (r.height < 4 || r.height > 130 || r.width < 4 || r.top >= line) continue;
+      if (getComputedStyle(el).visibility === 'hidden') continue;
+      const text = el.children.length === 0 && el.textContent.trim();
+      const solid = el.tagName === 'BUTTON' || el.tagName === 'INPUT' || /^H[1-6]$/.test(el.tagName) || text;
+      if (r.bottom > line || (solid && r.bottom > line - 14)) cuts += 1;
+    }
+  };
+  walk(document);
+  return cuts;
+}"""
+
+
+def fit_phone_viewport(page, check, keep_width: bool = False) -> None:
+    """Change the phone viewport height until nothing is cut at the bottom edge.
+
+    By default the width follows (same aspect, only shorter: a viewport wider than 425 px switches the card to its
+    tablet layout). With keep_width the width stays and the height moves both ways by at most 30 px, so the tile
+    is stretched by at most 3 percent when it is downscaled to 390 x 844.
+    """
+    if keep_width:
+        offsets = [0] + [sign * step for step in range(2, 31, 2) for sign in (1, -1)]
+    else:
+        offsets = list(range(0, -200, -2))
+    for offset in offsets:
+        height = PHONE["height"] + offset
+        width = PHONE["width"] if keep_width else round(height * PHONE["width"] / PHONE["height"])
+        page.set_viewport_size({"width": width, "height": height})
+        page.wait_for_timeout(180)
+        if check() == 0:
+            print("phone viewport height", height)
+            return
+    raise SystemExit("no phone viewport height with a clean bottom edge")
+
+
+def fit_desktop_viewport(page, check) -> None:
+    """Shorten the desktop viewport (the width follows, same aspect) until the bottom edge falls between two rows."""
+    for height in range(DESKTOP["height"], DESKTOP["height"] - 160, -2):
+        page.set_viewport_size({"width": round(height * DESKTOP["width"] / DESKTOP["height"]), "height": height})
+        page.wait_for_timeout(250)
+        if check() == 0:
+            print("desktop viewport height", height)
+            return
+    raise SystemExit("no desktop viewport height with a clean bottom edge")
+
+
+def fit_cook_dialog(page) -> None:
+    """Trim the cooking dialog (it stays centred) so its sticky step bar covers no tool or timer card.
+
+    The dialog stays at its top: photo, step title and text, servings and the swipe hint are visible.
+    """
+    modal = page.locator(".modal >> visible=true").first
+    full = int(modal.evaluate("m => m.getBoundingClientRect().height"))
+    for height in range(full, full - 400, -2):
+        modal.evaluate(f"m => {{ m.style.transition = 'none'; m.style.maxHeight = '{height}px'; m.scrollTop = 0; }}")
+        page.wait_for_timeout(80)
+        if modal.evaluate(CUTS, False) == 0:
+            print("cooking dialog height", height, "of", full)
+            page.wait_for_timeout(500)
+            return
+    raise SystemExit("no cooking dialog height without a cut card")
 
 
 def shot(page, tmp: Path) -> Path:
@@ -272,10 +357,15 @@ def main() -> None:
                     if step == "cook":
                         start_cooking(page)
                     else:
-                        scroll_recipe(page)
+                        fit_recipe_top(page)
                 else:
                     view(page, theme, mode)
+                    if name == "recipes-dark":
+                        fit_desktop_viewport(page, lambda: page.evaluate(PAGE_CUTS))
+                        page.mouse.move(2, 2)
+                        page.wait_for_timeout(500)
                 save(shot(page, tmp), name, (1440, 960))
+                page.set_viewport_size(DESKTOP)
             for ctx, _ in sessions.values():
                 ctx.close()
             browser.close()
@@ -288,13 +378,21 @@ def main() -> None:
                 set_sidebar(page, "always_hidden")
                 if step:
                     open_recipe(page, theme, PHONE_BOARD)
+                    modal = page.locator(".modal >> visible=true").first
                     if step == "cook":
                         start_cooking(page)
-                        scroll_to_end(page)
+                        fit_cook_dialog(page)
+                    else:
+                        modal.evaluate("m => { m.scrollTop = 0; }")
+                        fit_phone_viewport(page, lambda: modal.evaluate(CUTS, False))
                 else:
                     view(page, theme, mode, PHONE_BOARD)
+                    fit_phone_viewport(page, lambda: page.evaluate(PAGE_CUTS), keep_width=True)
+                    page.evaluate("window.scrollTo(0, 0)")
                     if mode == "dashboard":
                         fit_nav(page)
+                page.mouse.move(2, 2)
+                page.wait_for_timeout(500)
                 page.screenshot(path=str(tmp))
                 tiles.append(Image.open(tmp).convert("RGB").resize((390, 844), Image.LANCZOS))
                 ctx.close()
