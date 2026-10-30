@@ -411,6 +411,8 @@ const COMMAND_LEVELS = {
   ],
   write: ["offline_replay", "sync_run", "sync_pause", "sync_resume", "sync_retry", "sync_resolve"],
   admin: [
+    "bring_connect",
+    "bring_disconnect",
     "nutrition_save",
     "food_create",
     "unit_create",

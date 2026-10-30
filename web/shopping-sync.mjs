@@ -313,6 +313,11 @@ export class BringDestination {
     return !!this.client?.configured;
   }
 
+  /** Drops the cached lists, for example after another account was connected. */
+  forget() {
+    this.cache = null;
+  }
+
   async lists() {
     if (this.cache && this.clock() - this.cache.at < this.cacheMs) return this.cache.rows;
     const rows = (await this.client.lists()).map((row) => ({
@@ -531,6 +536,7 @@ export class SyncManager {
   // Lifecycle
 
   async start() {
+    this.stopped = false;
     await this.store.load();
     const interrupted = Object.values(this.records).filter((record) => record.state === "sending");
     for (const record of interrupted) {

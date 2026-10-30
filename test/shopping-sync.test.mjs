@@ -566,14 +566,144 @@ test("standalone app shows the HA-only explanation and makes no sync call", asyn
   assert.match(markup(env.cards), /data-action="sync-open"/);
   await click(env.card, { action: "sync-open" });
   assert.equal(env.card._modal, "sync-info");
-  assert.match(markup(env.cards), /Live sync to Bring! and other lists needs Home Assistant/);
-  assert.match(markup(env.cards), /does not send shopping data to third parties/);
+  assert.match(markup(env.cards), /needs a connected Bring! account \(web app\) or Home Assistant/);
+  assert.match(markup(env.cards), /Without a connection the app does not send shopping data/);
+  assert.doesNotMatch(
+    markup(env.cards),
+    /sync-bring/,
+    "the Home Assistant card has no Bring setup",
+  );
   await click(env.card, { action: "sync-setup-open", value: "" });
   assert.equal(env.card._modal, "sync-info");
   assert.deepEqual(
     env.names().filter((n) => n.startsWith("sync_")),
     [],
   );
+});
+
+/** Web app companion entry: sync off until an administrator connects a Bring! account. */
+function bringCard({ state = "disconnected", admin = true, readOnly = false, handlers = {} } = {}) {
+  const env = syncCard({
+    features: { shopping_sync: state !== "disconnected", bring_setup: true },
+    permissions: { bring: { state }, can_manage: admin, read_only: readOnly },
+    handlers,
+  });
+  env.card._view = "shopping";
+  return env;
+}
+const typeInto = (card, key, value) => input(card, { input: `sync-bring-${key}` }, { value });
+
+test("web app: an administrator sees the Bring! sign-in form with the privacy note", async () => {
+  const env = bringCard();
+  env.card._render();
+  await click(env.card, { action: "sync-open" });
+  const html = markup(env.cards);
+  assert.equal(env.card._modal, "sync-info");
+  assert.match(html, /Bring! account/);
+  assert.match(html, /No account connected yet/);
+  assert.match(html, /type="password"[^>]*autocomplete="current-password"/);
+  assert.match(html, /only after an administrator connects an account/);
+  assert.match(html, /data-action="sync-bring-connect" disabled/);
+});
+
+test("web app: other users and read-only mode get no Bring! form", async () => {
+  for (const options of [{ admin: false }, { readOnly: true }]) {
+    const env = bringCard(options);
+    env.card._render();
+    await click(env.card, { action: "sync-open" });
+    assert.doesNotMatch(markup(env.cards), /type="password"/);
+    await click(env.card, { action: "sync-bring-connect" });
+    assert.doesNotMatch(env.names().join(), /bring_connect/);
+  }
+});
+
+test("web app: connecting sends the credentials once, drops the password and opens the sync", async () => {
+  const env = bringCard({
+    handlers: {
+      bring_connect: () => ({ state: "connected" }),
+      status: () => ({
+        entries: [
+          {
+            entry_id: "e1",
+            can_write: true,
+            can_manage: true,
+            features: { shopping_sync: true, bring_setup: true },
+            bring: { state: "connected" },
+          },
+        ],
+      }),
+    },
+  });
+  env.card._render();
+  await click(env.card, { action: "sync-open" });
+  typeInto(env.card, "email", " cook@example.test ");
+  typeInto(env.card, "password", "fixture-password");
+  assert.doesNotMatch(markup(env.cards), /data-action="sync-bring-connect" disabled/);
+  await click(env.card, { action: "sync-bring-connect" });
+  const call = env.calls.find((c) => c.name === "bring_connect");
+  assert.equal(call.message.email, "cook@example.test");
+  assert.equal(call.message.password, "fixture-password");
+  assert.equal(env.card._syncData().bring.password, "");
+  assert.equal(env.card._modal, "sync");
+  assert.ok(env.names().includes("sync_state"));
+  assert.match(markup(env.cards), /Connected\. Shopping items from Mealie/);
+  assert.doesNotMatch(markup(env.cards), /fixture-password/);
+});
+
+test("web app: a refused sign-in shows the error and clears the password", async () => {
+  const env = bringCard({
+    handlers: {
+      bring_connect: () =>
+        Promise.reject(Object.assign(new Error("Bring! refused"), { code: "bring_auth" })),
+    },
+  });
+  env.card._render();
+  await click(env.card, { action: "sync-open" });
+  typeInto(env.card, "email", "cook@example.test");
+  typeInto(env.card, "password", "wrong-password");
+  await click(env.card, { action: "sync-bring-connect" });
+  assert.equal(env.card._modal, "sync-info");
+  assert.match(markup(env.cards), /Bring! refused the e-mail address or the password/);
+  assert.equal(env.card._syncData().bring.password, "");
+  assert.doesNotMatch(markup(env.cards), /wrong-password/);
+});
+
+test("web app: a dead stored session asks to connect again", async () => {
+  const env = bringCard({ state: "reauth" });
+  await openStatus(env, []);
+  assert.match(markup(env.cards), /Bring! refuses the stored sign-in/);
+  assert.match(markup(env.cards), /data-action="sync-bring-connect"/);
+});
+
+test("web app: disconnecting asks first and then returns to the explanation", async () => {
+  const env = bringCard({
+    state: "connected",
+    handlers: {
+      bring_disconnect: () => ({ state: "disconnected" }),
+      status: () => ({
+        entries: [
+          {
+            entry_id: "e1",
+            can_write: true,
+            can_manage: true,
+            features: { shopping_sync: false, bring_setup: true },
+            bring: { state: "disconnected" },
+          },
+        ],
+      }),
+    },
+  });
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-bring-disconnect-ask" });
+  assert.match(markup(env.cards), /Really disconnect\?/);
+  assert.doesNotMatch(env.names().join(), /bring_disconnect/);
+  await click(env.card, { action: "sync-bring-disconnect-cancel" });
+  assert.doesNotMatch(markup(env.cards), /Really disconnect\?/);
+  await click(env.card, { action: "sync-bring-disconnect-ask" });
+  await click(env.card, { action: "sync-bring-disconnect" });
+  assert.ok(env.names().includes("bring_disconnect"));
+  assert.equal(env.card._modal, "sync-info");
+  assert.match(markup(env.cards), /No account connected yet/);
 });
 
 test("an older Bridge without features hides the sync entry point", () => {

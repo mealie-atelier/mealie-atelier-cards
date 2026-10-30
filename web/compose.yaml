@@ -3,6 +3,8 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    # Smart Shopping Sync to Bring!: connect the account in the app (an administrator signs in once;
+    # only tokens land in the atelier_data volume) or set BRING_EMAIL and BRING_PASSWORD in .env.
     environment:
       # Fixed container-side values; they win over .env so the port mapping below always matches.
       PORT: "3000"

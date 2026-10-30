@@ -56,7 +56,8 @@ export function bringBase(env = process.env) {
 export class BringClient {
   /**
    * @param {{ email: string, password: string, base?: string, apiKey?: string, now?: () => number,
-   *   retryDelayMs?: number, fetchImpl?: typeof fetch }} options
+   *   retryDelayMs?: number, fetchImpl?: typeof fetch,
+   *   onSession?: ((session: object | null) => unknown) | null }} options
    */
   constructor({
     email,
@@ -66,6 +67,7 @@ export class BringClient {
     now = () => Date.now(),
     retryDelayMs = 1500,
     fetchImpl = (...args) => fetch(...args),
+    onSession = null,
   }) {
     this.email = email;
     this.password = password;
@@ -74,12 +76,71 @@ export class BringClient {
     this.now = now;
     this.retryDelayMs = retryDelayMs;
     this.fetchImpl = fetchImpl;
+    this.onSession = onSession;
     this.session = null;
     this.signIn = null;
+    this.authFailed = false;
   }
 
+  /** True when the account could be reached: a stored session or credentials for a login. */
   get configured() {
+    return !!this.session || this.hasCredentials;
+  }
+
+  get hasCredentials() {
     return !!this.email && !!this.password;
+  }
+
+  /** `connected`, `reauth` (the session died and cannot be renewed) or `disconnected`. */
+  get state() {
+    if (!this.configured) return "disconnected";
+    return this.authFailed ? "reauth" : "connected";
+  }
+
+  /** Tells the owner of the session store about a new or removed session; never throws. */
+  async publish() {
+    try {
+      await this.onSession?.(this.session ? { ...this.session } : null);
+    } catch {
+      // A failed save must not break a call that already succeeded.
+    }
+  }
+
+  /** Takes over a stored session (tokens only; no password is involved). */
+  restore(session) {
+    this.session = session ? { ...session } : null;
+    this.authFailed = false;
+  }
+
+  /**
+   * Signs in once with the given credentials and keeps only the tokens. The password is used for
+   * this single login and is not kept. The previous session stays untouched when the login fails.
+   */
+  async connect(email, password) {
+    const probe = new BringClient({
+      email,
+      password,
+      base: this.base,
+      apiKey: this.apiKey,
+      now: this.now,
+      retryDelayMs: this.retryDelayMs,
+      fetchImpl: this.fetchImpl,
+    });
+    await probe.login();
+    this.email = "";
+    this.password = "";
+    this.restore(probe.session);
+    await this.publish();
+  }
+
+  /** Forgets the session and any credentials held in memory. */
+  async disconnect() {
+    this.email = "";
+    this.password = "";
+    this.session = null;
+    this.signIn = null;
+    this.authFailed = false;
+    await this.publish();
   }
 
   headers(extra = {}) {
@@ -163,6 +224,8 @@ export class BringClient {
     } catch {
       // Keep the default country.
     }
+    this.authFailed = false;
+    await this.publish();
     return { uuid: this.session.uuid };
   }
 
@@ -186,6 +249,8 @@ export class BringClient {
       refreshToken: data.refresh_token || token,
       expiresAt: this.now() + Number(data.expires_in || 0) * 1000,
     });
+    this.authFailed = false;
+    await this.publish();
   }
 
   /** Makes sure a usable access token exists: login first, refresh when expired, login again if refresh fails. */
@@ -202,9 +267,14 @@ export class BringClient {
             return;
           } catch (error) {
             if (!(error instanceof BringAuthError)) throw error;
+            // Without a password in memory the stored tokens are all there is: reconnect.
+            if (!this.hasCredentials) throw this.failAuth(error);
           }
         }
-        await this.login();
+        if (!this.hasCredentials) throw this.failAuth(new BringAuthError("Login required"));
+        await this.login().catch((error) => {
+          throw error instanceof BringAuthError ? this.failAuth(error) : error;
+        });
       } finally {
         this.signIn = null;
       }
@@ -212,12 +282,17 @@ export class BringClient {
     return this.signIn;
   }
 
+  failAuth(error) {
+    this.authFailed = true;
+    return error;
+  }
+
   /** Authenticated call. Retries once after a 401 (fresh token) and once after a gateway error. */
   async request(method, path, { json } = {}, retried = false) {
     await this.ensureSession();
     const response = await this.exchange(method, path, { json, headers: this.headers() });
     if (response.status === 401) {
-      if (retried) throw new BringAuthError();
+      if (retried) throw this.failAuth(new BringAuthError());
       if (this.session) this.session.expiresAt = 0;
       return this.request(method, path, { json }, true);
     }

@@ -446,6 +446,8 @@ test("role permissions and the command matrix follow the contract", () => {
   assert.equal(level("offline_replay"), "write");
   assert.equal(level("sync_run"), "write");
   assert.equal(level("sync_run", { confirm_first_batch: true }), "admin");
+  assert.equal(level("bring_connect"), "admin");
+  assert.equal(level("bring_disconnect"), "admin");
   assert.equal(level("nutrition_save"), "admin");
   assert.equal(level("ingredient_save"), "admin");
   assert.equal(level("unknown_command"), null);

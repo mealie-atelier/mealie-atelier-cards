@@ -30,7 +30,8 @@ import { aiSubstitute, aiAudit, resolveLocale } from "./studio-ai.mjs";
 import { resolveAiConfig } from "./ai-client.mjs";
 import { OfflineLedger } from "./offline-ledger.mjs";
 import { AlarmStore } from "./alarm-store.mjs";
-import { BringClient } from "./bring-client.mjs";
+import { BringAccountStore } from "./bring-account.mjs";
+import { BringAuthError, BringClient } from "./bring-client.mjs";
 import { BringDestination, SyncManager, SyncStore, handleSyncMessage } from "./shopping-sync.mjs";
 import { createDelivery, validateNotificationEnv } from "./alarm-delivery.mjs";
 import {
@@ -102,10 +103,14 @@ const offlineLedger = new OfflineLedger({
     ).filter((x) => String(x?.shoppingListId) === String(listId)),
   mutate: (action, payload) => mutate(action, payload),
 });
-// Smart Shopping Sync to Bring!: active only when a Bring account is configured.
+// Smart Shopping Sync to Bring!: active only when a Bring account is connected, either in the
+// app (an administrator signs in once, only the tokens are kept) or with BRING_EMAIL and
+// BRING_PASSWORD from the environment (the password stays in memory and is never stored).
+const bringAccount = new BringAccountStore({ dir: DATA_DIR });
 const bringClient = new BringClient({
   email: process.env.BRING_EMAIL || "",
   password: process.env.BRING_PASSWORD || "",
+  onSession: (session) => bringAccount.save(session),
 });
 const shoppingSync = new SyncManager({
   store: new SyncStore({ dir: DATA_DIR }),
@@ -717,6 +722,59 @@ async function mutate(action, payload, req) {
       throw bad("Unknown operation");
   }
 }
+// Connecting and disconnecting the Bring! account run one at a time.
+let bringLane = Promise.resolve();
+let syncRunning = false;
+const inBringLane = (task) => {
+  const run = bringLane.then(task);
+  bringLane = run.catch(() => {});
+  return run;
+};
+function bringFailure(error) {
+  if (error instanceof BringAuthError)
+    return Object.assign(new Error("Bring! refused the e-mail address or the password"), {
+      status: 422,
+      code: "bring_auth",
+    });
+  return Object.assign(new Error("Could not reach Bring!"), {
+    status: 502,
+    atelierCode: typeof error?.code === "string" ? error.code : "bring_network",
+  });
+}
+/** The password is used for one login and dropped; only the session tokens are stored. */
+function connectBring(msg) {
+  const email = typeof msg.email === "string" ? msg.email.trim() : "";
+  const password = typeof msg.password === "string" ? msg.password : "";
+  if (!/^[^\s@]+@[^\s@]+$/.test(email) || email.length > 254 || !password || password.length > 256)
+    throw bad(
+      "Enter the e-mail address and the password of your Bring! account",
+      "bring_credentials",
+    );
+  return inBringLane(async () => {
+    try {
+      await bringClient.connect(email, password);
+    } catch (error) {
+      throw bringFailure(error);
+    }
+    shoppingSync.destination.forget();
+    if (!syncRunning) {
+      await shoppingSync.start();
+      syncRunning = true;
+    }
+    return { state: bringClient.state };
+  });
+}
+function disconnectBring() {
+  return inBringLane(async () => {
+    if (syncRunning) {
+      syncRunning = false;
+      await shoppingSync.stop();
+    }
+    await bringClient.disconnect();
+    shoppingSync.destination.forget();
+    return { state: bringClient.state };
+  });
+}
 async function bridge(req) {
   const chunks = [];
   let size = 0;
@@ -761,6 +819,8 @@ async function bridge(req) {
             permissions,
             features: {
               shopping_sync: shoppingSync.connected,
+              // The web app lets an administrator connect the Bring! account in the card.
+              bring_setup: true,
               offline_queue: true,
               structured_ingredients: structured,
               uploads: true,
@@ -773,6 +833,7 @@ async function bridge(req) {
             can_write: permissions.can_write,
             can_manage: permissions.can_admin,
             can_edit_ingredients: permissions.can_admin && structured,
+            bring: { state: bringClient.state },
           },
         ],
         version: VERSION,
@@ -796,6 +857,10 @@ async function bridge(req) {
           code: "sync_not_supported",
         });
       return handleSyncMessage(shoppingSync, { ...msg, user_id: req.atelierUser?.name || null });
+    case "mealie_atelier/bring_connect":
+      return connectBring(msg);
+    case "mealie_atelier/bring_disconnect":
+      return disconnectBring();
     // END shopping sync (feature A)
     case "mealie_atelier/offline_replay":
       return offlineLedger.process(msg.operation);
@@ -1293,15 +1358,19 @@ const server = createServer(async (req, res) => {
     });
   }
 });
-if (shoppingSync.connected)
-  for (const signal of ["SIGTERM", "SIGINT"])
-    process.once(signal, () => {
-      // Let a running pass finish and flush the outbox, so a restart never repeats a delivery.
-      shoppingSync.stop().finally(() => process.exit(0));
-    });
+for (const signal of ["SIGTERM", "SIGINT"])
+  process.once(signal, () => {
+    // Let a running pass finish and flush the outbox, so a restart never repeats a delivery.
+    (syncRunning ? shoppingSync.stop() : Promise.resolve()).finally(() => process.exit(0));
+  });
 // The outbox is loaded before the first request, so no call ever sees an empty state.
 try {
-  if (shoppingSync.connected) await shoppingSync.start();
+  const stored = await bringAccount.load();
+  if (stored) bringClient.restore(stored);
+  if (shoppingSync.connected) {
+    await shoppingSync.start();
+    syncRunning = true;
+  }
 } catch (e) {
   console.error("Shopping sync could not start:", String(e?.message || e).slice(0, 160));
 }

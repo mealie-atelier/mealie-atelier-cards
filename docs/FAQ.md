@@ -24,7 +24,7 @@ No. The [demo](https://mealie.alles-automatisch.de) uses fictional recipes in th
 
 ## Does shopping list sync to Bring! work?
 
-The cards include the interface for Smart Shopping Sync rules, which needs the Bridge and Home Assistant. The standalone app cannot sync. The safety rules are in the [Smart Shopping Sync specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).
+Yes, in two ways. With Home Assistant, the Bridge syncs a Mealie list to a To-do list such as Bring!. The standalone web app syncs to Bring! directly, without Home Assistant: an administrator connects a Bring! account in the app (see [the web app guide](../web/README.md#smart-shopping-sync-to-bring)). Shopping items are sent to Bring! only after that connection and only for lists named in a rule. The safety rules are in the [Smart Shopping Sync specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).
 
 ## What happens to my shopping edits when I am offline?
 
