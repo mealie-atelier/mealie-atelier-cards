@@ -11537,6 +11537,10 @@ ha-card {
   padding: 0;
   border: 0;
 }
+/* The fieldset gap spaces its rows; a check row adds no margin of its own on top. */
+.atelier .sync-fieldset > .editor-check {
+  margin-block-end: 0;
+}
 .atelier .sync-fieldset > legend {
   padding: 0;
   margin-block-end: var(--ds-space-2);

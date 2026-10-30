@@ -232,3 +232,11 @@ test("the add rule button of the shopping sync keeps a gap to the card below it"
     /\.atelier \.sync-panel \.form-actions \+ \.editor-card \{\s*margin-block-start: var\(--ds-space-3\);/,
   );
 });
+
+test("check rows in a sync fieldset use the fieldset gap only", () => {
+  const css = readFileSync(
+    new URL("../src/design-system/shopping-sync.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(css, /\.atelier \.sync-fieldset > \.editor-check \{\s*margin-block-end: 0;/);
+});
