@@ -15022,7 +15022,7 @@ const viewMethods = {
           return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
-      ${todays.length === 0 ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
+      ${todays.length === 0 && !this._failedParts?.has("mealplan") ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
     }).join("")}</div>`;
   },
   /** Item text without the quantity Mealie already folds into `display`; a unitless quantity of 1 shows no "1 " prefix. */
@@ -15141,7 +15141,7 @@ const viewMethods = {
     const done = filtered.filter((i) => i.checked).length;
     return `<div class="shopping-card"><div class="toolbar shopping-toolbar">${this._syncEntryButton()}${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}${this._permissions.can_write && lists.length && this._shoppingClearable(filtered) ? `<button class="btn tiny" data-action="shopping-clear-form">${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
       ${this._offlineBar()}<div class="shopping-list">${this._shoppingRows(filtered)}
-      ${!filtered.length ? `<div class="notice">${icon("cart")} ${esc(lists.length ? this.t("noShopping") : this.t("addListFirst"))}</div>` : ""}</div>
+      ${!filtered.length && !this._failedParts?.has("shopping") ? `<div class="notice">${icon("cart")} ${esc(lists.length ? this.t("noShopping") : this.t("addListFirst"))}</div>` : ""}</div>
       ${lists.length && this._permissions.can_write ? `<form class="shopping-form" data-form="shopping-add"><input name="note" required maxlength="250" placeholder="${esc(this.t("addItem"))}" aria-label="${esc(this.t("addItem"))}"><button class="btn primary" type="submit">${icon("plus", 14)} ${esc(this.t("add"))}</button></form>` : ""}</div>`;
   },
   _today() {
@@ -15154,7 +15154,7 @@ const viewMethods = {
     );
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
-    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}, "", true) ? `<div class="meal-photo">${recipeImage(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
+    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}, "", true) ? `<div class="meal-photo">${recipeImage(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : this._failedParts?.has("mealplan") ? "" : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
     <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${esc(this.tp("openItems", open.length))}</h3>
     ${
@@ -15166,7 +15166,9 @@ const viewMethods = {
                 `<div class="mini-shopping"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" role="checkbox" aria-checked="false" aria-label="${esc(String(x.id).startsWith("local-") ? this.t("offlineWaiting") : String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + this._shoppingLabel(x))}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(x.id)) ? 'disabled aria-disabled="true"' : ""}>${icon("check", 14)}</button><span class="mini-shopping-name">${esc(this._shoppingLabel(x))}</span></div>`,
             )
             .join("")
-        : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`
+        : this._failedParts?.has("shopping")
+          ? ""
+          : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`
     }
     <div class="form-actions"><button class="btn" data-action="nav" data-value="shopping">${esc(this.t("toShopping"))} ${icon("arrow", 14)}</button></div></div></div>`;
   },
@@ -20209,7 +20211,8 @@ Object.assign(MealieAtelierCard.prototype, {
     this._diagnostics = [];
     this._render();
     const checks = [
-      [this.t("studioBridge"), "status", {}],
+      // The web app has no Bridge: its status call only proves the Mealie connection.
+      [this.t(this._isWebApp ? "studioMealieConnection" : "studioBridge"), "status", {}],
       [this.t("recipes"), "recipes", { page: 1, per_page: 1, search: "" }],
       [this.t("shopping"), "shopping", {}],
       [

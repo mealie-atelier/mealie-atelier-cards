@@ -383,7 +383,8 @@ Object.assign(MealieAtelierCard.prototype, {
     this._diagnostics = [];
     this._render();
     const checks = [
-      [this.t("studioBridge"), "status", {}],
+      // The web app has no Bridge: its status call only proves the Mealie connection.
+      [this.t(this._isWebApp ? "studioMealieConnection" : "studioBridge"), "status", {}],
       [this.t("recipes"), "recipes", { page: 1, per_page: 1, search: "" }],
       [this.t("shopping"), "shopping", {}],
       [

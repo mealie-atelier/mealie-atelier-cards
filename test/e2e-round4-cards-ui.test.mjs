@@ -103,3 +103,46 @@ test("an invalid timer duration is explained inside the cooking dialog", async (
   card._clearTimerError();
   assert.equal(card._timerError, "");
 });
+
+test("the web app system check does not list a Bridge", async () => {
+  const asked = [];
+  const run = async (host) => {
+    const card = makeCard(loadCards(), {
+      hass: {
+        language: "en",
+        atelierOfflineHost: host,
+        callWS: async () => ({}),
+      },
+    });
+    card._render = () => {};
+    card._flash = () => {};
+    card._ws = async (type) => {
+      asked.push(type);
+      return {};
+    };
+    await card._studioDiagnostics();
+    return card._diagnostics.map((r) => r.name);
+  };
+  const web = await run(true);
+  assert.ok(!web.some((name) => /Bridge/.test(name)));
+  assert.equal(web[0], "Mealie connection");
+  assert.equal((await run(false))[0], "Mealie Atelier Bridge");
+});
+
+test("a failed load does not claim there is no shopping list or nothing planned", () => {
+  const card = makeCard(loadCards());
+  card._weekStart = new Date(2030, 0, 1);
+  card._data = {
+    recipes: { total: 0, items: [] },
+    mealplan: [],
+    shopping: { items: [], lists: [] },
+  };
+  assert.match(card._week(), /day-empty/);
+  assert.match(card._shopping(), /Create your first shopping list/);
+  assert.match(card._today(), /class="notice"/);
+  card._failedParts = new Set(["mealplan", "shopping"]);
+  card._loadFailed = true;
+  assert.doesNotMatch(card._week(), /day-empty|Nothing planned/);
+  assert.doesNotMatch(card._shopping(), /Create your first shopping list|class="notice"/);
+  assert.doesNotMatch(card._today(), /Nothing planned|class="notice"/);
+});
