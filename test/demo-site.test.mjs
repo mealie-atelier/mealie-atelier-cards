@@ -862,6 +862,63 @@ test("hero: the entrance only runs when motion is welcome and the hero has no li
   );
 });
 
+test("hero: the devices keep a readable width, the stage fades only through its devices, the dial leaves the phone free", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  const heroCss = css.slice(css.indexOf(".hero-stage {"), css.indexOf("/* facts */"));
+  // Two columns give the devices too little room below 1280px (app text under 7px at 1024px).
+  assert.doesNotMatch(heroCss, /min-width: 98\d?px/, "no two columns between 981px and 1279px");
+  assert.match(heroCss, /@media \(min-width: 1280px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
+  assert.match(
+    heroCss,
+    /@media \(max-width: 1279px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
+  );
+  // The stage only carries .rv for the observer: its own fade and lift would nest with the devices.
+  assert.match(
+    heroCss,
+    /\.reveal-ready \.hero-stage\.rv \{[^}]*opacity: 1;[^}]*transform: none;[^}]*transition: none/,
+  );
+  // The default dial rule never applied (display: none above 640px), so it carries no geometry.
+  const dial = heroCss.match(/\.hero-stage \.dial \{[^}]*\}/)[0];
+  assert.doesNotMatch(dial, /\b(left|top|width):/, "dial geometry lives in the 640px rule only");
+  for (const locale of ["de", "en"]) {
+    const hero = landing(builds.local, locale).match(/<section class="hero"[\s\S]*?<\/section>/)[0];
+    const arcs = [
+      ...hero.matchAll(
+        /<path( class="today")? d="M([\d.]+) ([\d.]+)A46 46 0 0 1 ([\d.]+) ([\d.]+)"/g,
+      ),
+    ];
+    assert.equal(arcs.length, 7);
+    // The phone is 70cqi wide on a small screen, the dial 118cqi: only arcs within 49 degrees of the
+    // horizontal axis clear the phone. The paprika arc must be one of them, at both ends.
+    const today = arcs.find((m) => m[1]);
+    for (const [x, y] of [
+      [today[2], today[3]],
+      [today[4], today[5]],
+    ]) {
+      const angle = Math.abs(Math.atan2(y - 50, x - 50)) * (180 / Math.PI);
+      assert.ok(
+        angle <= 49,
+        `${locale}: the today arc end at ${angle.toFixed(1)} degrees hides behind the phone`,
+      );
+    }
+  }
+});
+
+test("capture script: the phone rail is only scrolled, never resized or unmasked", () => {
+  const script = read(new URL("../scripts/capture-hero.py", import.meta.url));
+  assert.doesNotMatch(
+    script,
+    /margin-inline|mask-image\s*:\s*none|scroll-snap-type\s*:\s*none|style\.setProperty\('width'/,
+  );
+  assert.match(script, /rail\.scrollTo\(\{ left: target, behavior: 'instant' \}\)/);
+  // Each capture-only style carries its own comment line.
+  assert.match(
+    script,
+    /# Capture only: the screen is framed by the CSS device[^\n]*\n(# [^\n]*\n)*CARD_FLAT = /,
+  );
+  assert.doesNotMatch(script, /RAIL_PLAIN/);
+});
+
 test("hero captures: tablet and phone exist in both locales with every listed width", () => {
   const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));
   for (const locale of ["de", "en"]) {

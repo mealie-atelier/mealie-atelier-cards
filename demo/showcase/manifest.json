@@ -132,12 +132,12 @@
     },
     "hero-tablet-cook": {
       "width": 2096,
-      "height": 1472,
+      "height": 1546,
       "widths": [800, 1200, 1600]
     },
     "hero-phone-shopping": {
       "width": 1179,
-      "height": 2394,
+      "height": 2439,
       "widths": [400, 700, 1179]
     }
   },
@@ -274,12 +274,12 @@
     },
     "hero-tablet-cook": {
       "width": 2096,
-      "height": 1472,
+      "height": 1546,
       "widths": [800, 1200, 1600]
     },
     "hero-phone-shopping": {
       "width": 1179,
-      "height": 2394,
+      "height": 2439,
       "widths": [400, 700, 1179]
     }
   },

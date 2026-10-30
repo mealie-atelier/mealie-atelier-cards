@@ -79,6 +79,6 @@ export const heroPhone = (ctx, img) =>
 
 // Seven arcs of the Week Dial, today in paprika. Shown behind the phone on small screens only.
 export const weekDialRing = () =>
-  '<svg class="dial" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="today" d="M45.42 4.23A46 46 0 0 1 80.61 15.66"/><path d="M82.93 17.88A46 46 0 0 1 95.93 52.52"/><path d="M95.64 55.72A46 46 0 0 1 76.67 87.48"/><path d="M73.99 89.25A46 46 0 0 1 37.32 94.22"/><path d="M34.27 93.23A46 46 0 0 1 7.52 67.66"/><path d="M6.40 64.65A46 46 0 0 1 9.71 27.80"/><path d="M11.36 25.04A46 46 0 0 1 42.24 4.66"/></svg>';
+  '<svg class="dial" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="today" d="M80.96 15.98A46 46 0 0 1 96.00 49.78"/><path d="M95.90 52.99A46 46 0 0 1 78.85 85.83"/><path d="M76.28 87.75A46 46 0 0 1 39.98 94.89"/><path d="M36.87 94.09A46 46 0 0 1 8.65 70.15"/><path d="M7.35 67.22A46 46 0 0 1 8.46 30.24"/><path d="M9.94 27.39A46 46 0 0 1 39.55 5.20"/><path d="M42.70 4.58A46 46 0 0 1 78.51 13.90"/></svg>';
 
 export const host = (ctx) => (ctx.locale === "de" ? "küche.example" : "kitchen.example");

@@ -26,15 +26,15 @@ function heroStage(ctx) {
     "Cooking mode on a kitchen tablet: Gnocchi alla Sorrentina, step 1 of 3, let the cherry tomatoes burst. Below it the kitchen timer “Simmer the sauce” runs with 7:28 minutes left.",
   );
   // On a phone the tablet is hidden: its picture source swaps to a one pixel GIF, so nothing is downloaded.
-  const tabletImg = `<picture><source media="(max-width: 640px)" srcset="${GIF_BLANK}"><img src="${tablet.src}" srcset="${tablet.srcset}" sizes="(max-width: 980px) 80vw, 620px" width="${tablet.entry.width}" height="${tablet.entry.height}" alt="${escapeHtml(tabletAlt)}" decoding="async" fetchpriority="high"></picture>`;
+  const tabletImg = `<picture><source media="(max-width: 640px)" srcset="${GIF_BLANK}"><img src="${tablet.src}" srcset="${tablet.srcset}" sizes="(max-width: 1279px) min(80vw, 700px), 620px" width="${tablet.entry.width}" height="${tablet.entry.height}" alt="${escapeHtml(tabletAlt)}" decoding="async" fetchpriority="high"></picture>`;
   const phoneImg = shot(
     ctx,
     "hero-phone-shopping",
     t(
-      "Einkaufsliste auf dem Smartphone: der Wocheneinkauf für die Gnocchi mit Kartoffelgnocchi, passierten Tomaten, Knoblauch und Olivenöl, eine von neun Zutaten ist schon erledigt.",
-      "Shopping list on a phone: the weekly shop for the gnocchi with potato gnocchi, passata, garlic and olive oil, one of the nine items is already done.",
+      "Einkaufsliste auf dem Smartphone: der Wocheneinkauf für die Gnocchi mit passierten Tomaten, Knoblauch, Olivenöl, Oregano, Mozzarella, Basilikum und Salz. Die Kirschtomaten sind schon abgehakt.",
+      "Shopping list on a phone: the weekly shop for the gnocchi with passata, garlic, olive oil, oregano, mozzarella, basil and salt. The cherry tomatoes are already ticked off.",
     ),
-    "(max-width: 640px) min(65vw, 260px), (max-width: 980px) 30vw, 220px",
+    "(max-width: 640px) min(65vw, 260px), (max-width: 1279px) min(28vw, 270px), 220px",
     { eager: true },
   );
   return `<div class="hero-stage rv d2">${weekDialRing()}${heroTablet(tabletImg)}${heroPhone(ctx, phoneImg)}</div>`;
