@@ -15,6 +15,7 @@ const MODES = [
 // Error codes whose advice differs by route: the web app server is configured through its environment.
 const HOST_SPECIFIC_ERRORS = [
   "mealie_auth",
+  "sync_not_activated",
   "usda_key_missing",
   "mealie_not_mealie",
   "mealie_not_found",

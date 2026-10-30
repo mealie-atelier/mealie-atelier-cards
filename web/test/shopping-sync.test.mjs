@@ -443,7 +443,7 @@ test("rate limiting and refused logins keep items pending and report the destina
     env.bring.state.failures.add.push("auth");
     env.bring.state.rejectLogin = true;
     const refused = await env.manager.run(ruleId, "manual");
-    assert.equal(refused.outcome, "destination_unavailable");
+    assert.equal(refused.outcome, "destination_auth");
     assert.equal(env.manager.records[`${ruleId}:a`].state, "pending");
     // Bring accepts the account again: the item goes out once.
     env.bring.state.rejectLogin = false;
@@ -484,6 +484,78 @@ test("a list deleted in Bring! is reported as missing, not as unreachable", asyn
     const status = await env.manager.state();
     assert.equal(status.rules[0].destination.available, false);
     assert.equal(status.rules[0].destination.reason, "missing");
+  } finally {
+    await env.close();
+  }
+});
+
+test("a run against a deleted list is recorded as destination_missing", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save();
+    env.bring.state.lists = env.bring.state.lists.filter((row) => row.name !== "Einkauf");
+    env.manager.destination.cache = null;
+    const result = await env.manager.run(ruleId, "manual");
+    assert.equal(result.outcome, "destination_missing");
+    assert.equal(env.manager.rules[ruleId].last_run.outcome, "destination_missing");
+  } finally {
+    await env.close();
+  }
+});
+
+test("an expired Bring session is its own outcome and a new sign-in clears it", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save();
+    env.manager.destination.cache = null;
+    env.bring.state.rejectLogin = true;
+    env.bring.state.expireAccessTokens();
+    env.bring.state.refresh.clear();
+    const result = await env.manager.run(ruleId, "manual");
+    assert.equal(result.outcome, "destination_auth");
+    assert.equal((await env.manager.state()).rules[0].destination.reason, "auth");
+    assert.equal(env.manager.rules[ruleId].last_run.outcome, "destination_auth");
+    env.manager.bringReconnected();
+    assert.equal(env.manager.rules[ruleId].last_run, null);
+  } finally {
+    await env.close();
+  }
+});
+
+test("a session lost while the list names are cached is still an expired sign-in", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save();
+    env.manager.destination.cacheMs = 60000;
+    await env.manager.destination.lists();
+    env.bring.state.rejectLogin = true;
+    env.bring.state.expireAccessTokens();
+    env.bring.state.refresh.clear();
+    const result = await env.manager.run(ruleId, "manual");
+    assert.equal(result.outcome, "destination_auth");
+  } finally {
+    await env.close();
+  }
+});
+
+test("replacing the Bring list keeps a released rule released and drops the old last run", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save();
+    assert.equal((await confirm(env, ruleId)).outcome, "sent");
+    const other = {
+      ...env.draft(),
+      name: "Einkauf → Party",
+      destination_entity_id: `bring:${env.bring.state.lists[1].listUuid}`,
+    };
+    const moved = await env.manager.saveRule(other, {
+      ruleId,
+      resetRecords: true,
+      keepActivated: true,
+    });
+    assert.equal(moved.activated, true);
+    assert.equal(moved.last_run, null);
+    assert.equal(moved.name, "Einkauf → Party");
   } finally {
     await env.close();
   }

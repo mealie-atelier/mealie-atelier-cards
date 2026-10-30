@@ -133,7 +133,9 @@ async function openSync(page) {
   await settle(page);
 }
 async function signIn(page, password) {
-  await page.locator('[data-input="sync-bring-email"]').fill(EMAIL);
+  // Signing in again keeps the account: its address is shown and cannot be edited.
+  const email = page.locator('[data-input="sync-bring-email"]');
+  if (await email.isEditable()) await email.fill(EMAIL);
   await page.locator('[data-input="sync-bring-password"]').fill(password);
   await page.locator('.bw-form button[type="submit"]').click();
   await settle(page);
@@ -232,7 +234,7 @@ test("the preview shows the real Mealie items and the first batch arrives once",
         lines.some((line) => line.includes(wanted)),
         `${wanted} in the preview`,
       );
-    assert.ok(lines.some((line) => line.includes("Mehl (2)")));
+    assert.ok(lines.some((line) => line.includes("2 × Mehl")));
     // Nothing leaves Mealie before the confirmation.
     assert.deepEqual(open("Einkauf"), []);
     await release(page);
@@ -363,8 +365,12 @@ test("an expired session asks for one new sign-in that keeps the rules and pendi
     );
     await signIn(page, FAKE_PASSWORD);
     await page.locator(".bw-account .bw-form").waitFor({ state: "detached" });
-    // The failed run before the new sign-in still counts, so the pill asks for a look, not for a sign-in.
-    assert.doesNotMatch(await page.locator(".bw-account .bw-pill").innerText(), /Anmeldung nötig/);
+    // The failed run came from the expired session, so the new sign-in clears it: nothing left to check.
+    await page.locator(".bw-account .bw-pill", { hasText: "Verbunden" }).waitFor();
+    assert.doesNotMatch(
+      await page.locator(".sync-rule").first().innerText(),
+      /Anmeldung abgelaufen/,
+    );
     // Both rules are still there, and the item that waited goes out exactly once.
     assert.equal(await page.locator(".sync-rule").count(), 2);
     await rule(page, lists.main).locator('[data-action="sync-run"]').click();

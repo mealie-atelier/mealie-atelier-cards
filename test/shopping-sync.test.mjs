@@ -703,7 +703,7 @@ test("web app: the wizard walks sign-in, lists, preview and the confirmed first 
   const run = env.calls.find((c) => c.name === "sync_run");
   assert.equal(run.message.confirm_first_batch, true);
   assert.match(markup(env.cards), /All set/);
-  assert.match(markup(env.cards), /Done\. 1 item is now on &quot;Einkauf&quot;\./);
+  assert.match(markup(env.cards), /1 item is now on &quot;Einkauf&quot;\./);
   assert.doesNotMatch(markup(env.cards), /bw-stepline/, "the heading is the only All set");
   assert.doesNotMatch(
     markup(env.cards),
@@ -716,7 +716,7 @@ test("web app: a wrong password and a Bring! outage show their way out in the di
   for (const [code, text, credentials] of [
     ["bring_auth", /reset the password in the Bring! app/, true],
     ["bring_rate_limit", /Wait a few minutes/, false],
-    ["bring_network", /Check your internet connection/, false],
+    ["bring_network", /check the internet connection of your server/, false],
   ]) {
     const env = bringCard({
       handlers: { bring_connect: () => Promise.reject(Object.assign(new Error("x"), { code })) },
@@ -899,14 +899,14 @@ test("web app: the account card does not say Connected after a failed run", asyn
   await openStatus(gone, [
     withRule({
       destination: { ...RULE.destination, available: false, reason: "missing" },
-      last_run: { at: new Date().toISOString(), outcome: "destination_unavailable" },
+      last_run: { at: new Date().toISOString(), outcome: "destination_missing" },
     }),
   ]);
   let html = markup(gone.cards);
   assert.match(pill(html), /List missing/);
   assert.doesNotMatch(pill(html), /Connected/);
   assert.match(html, /bw-account is-warn/);
-  assert.match(html, /<dt>Last run<\/dt><dd>[^]*?Destination list missing, just now/);
+  assert.match(html, /<dt>Last check<\/dt><dd>[^]*?Bring! list no longer exists, just now/);
   assert.match(html, /<dt>Last delivery<\/dt><dd>None yet<\/dd>/, "a failed run is no delivery");
   const failed = bringCard({ state: "connected" });
   await openStatus(failed, [
@@ -1033,7 +1033,7 @@ test("web app: wizard copy quotes list names, hides zero counters and hints at t
   await submit(env.card);
   await click(env.card, { action: "sync-bw-next" });
   let html = markup(env.cards);
-  assert.match(html, /Bring! keeps the list tidy/);
+  assert.match(html, /If something is already on the Bring! list, it is not added twice\./);
   assert.match(
     html,
     /<button type="button" class="bw-more-toggle"/,
@@ -1404,4 +1404,130 @@ test("a rule saved with the German list name shows one title in an English UI", 
   const html = markup(env.cards);
   assert.match(html, /<h3 id="sync-rule-r1">Weekly groceries → Shopping list<\/h3>/);
   assert.equal((html.match(/Weekly groceries → Shopping list/g) || []).length, 1);
+});
+
+test("web app: replacing a deleted list keeps the release, renames the route and really sends", async () => {
+  const lists = {
+    entities: [{ entity_id: "bring:b", name: "Party", platform: "bring", available: true }],
+  };
+  const env = bringCard({ state: "connected", handlers: { sync_destinations: () => lists } });
+  const rule = withRule({
+    name: "Weekly groceries → Einkauf",
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
+  await openStatus(env, [rule]);
+  await click(env.card, { action: "sync-bw-pick-list", value: "r1" });
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  const html = markup(env.cards);
+  assert.match(html, /stays released/);
+  assert.match(html, /Use and send/);
+  await click(env.card, { action: "sync-bw-save-list" });
+  const save = env.calls.find((c) => c.name === "sync_rule_save");
+  assert.equal(
+    save.message.rule.name,
+    "Weekly groceries → Party",
+    "the old list is not in the name",
+  );
+  assert.equal(save.message.keep_activated, true);
+  const order = env.calls.map((c) => c.name);
+  assert.ok(order.indexOf("sync_run") > order.indexOf("sync_rule_save"), "it sends after saving");
+});
+
+test("web app: replacing the list of a rule that was never released does not send", async () => {
+  const lists = {
+    entities: [{ entity_id: "bring:b", name: "Party", platform: "bring", available: true }],
+  };
+  const env = bringCard({ state: "connected", handlers: { sync_destinations: () => lists } });
+  const rule = withRule({
+    activated: false,
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
+  await openStatus(env, [rule]);
+  await click(env.card, { action: "sync-bw-pick-list", value: "r1" });
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.match(markup(env.cards), /Nothing is sent until you release the first delivery/);
+  await click(env.card, { action: "sync-bw-save-list" });
+  assert.equal(env.calls.find((c) => c.name === "sync_rule_save").message.keep_activated, false);
+  assert.doesNotMatch(env.calls.map((c) => c.name).join(), /sync_run/);
+});
+
+test("web app: a gone list is said once with its way out and nothing can be sent", async () => {
+  const env = bringCard({ state: "connected" });
+  const rule = withRule({
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
+  await openStatus(env, [rule]);
+  const html = markup(env.cards);
+  assert.equal((html.match(/no longer exists/g) || []).length, 1);
+  const banner = html.match(/<p class="notice error bw-error"[^]*?<\/p>/)?.[0] || "";
+  assert.match(banner, /sync-bw-pick-list/, "the banner holds the way out");
+  assert.doesNotMatch(html, /data-action="sync-run"/, "Send now is gone while the target is gone");
+  assert.match(html, /<dt>Status<\/dt><dd>[^]*?Bring! list missing/);
+  assert.doesNotMatch(html, /Destination|Zielliste/);
+});
+
+test("web app: Last delivery survives a later failed run and an expired session has its own words", async () => {
+  const env = bringCard({ state: "connected" });
+  const failed = withRule({
+    last_run: { at: new Date().toISOString(), outcome: "destination_auth" },
+  });
+  await openStatus(env, [failed]);
+  env.setState({
+    supported: true,
+    rules: [failed],
+    audit: [
+      { at: new Date(Date.now() - 3600000).toISOString(), outcome: "sent", count: 4 },
+      { at: new Date().toISOString(), outcome: "destination_auth", count: 0 },
+    ],
+  });
+  await click(env.card, { action: "sync-open" });
+  const html = markup(env.cards);
+  assert.match(html, /<dt>Last delivery<\/dt><dd>1 hour ago<\/dd>/);
+  assert.match(html, /Sign-in expired, just now/);
+  assert.match(html, /The Bring! sign-in has expired/);
+  assert.match(html, /Sent, 4 items/);
+  assert.doesNotMatch(html, /Sign-in expired, 0 items/, "a failed run shows no count");
+  assert.doesNotMatch(html, /unreachable|cannot be reached/);
+});
+
+test("web app: preview rows show amounts like the list and badge only what differs", async () => {
+  const lines = [
+    { source_item_id: "a", title: "Milk (2)", description: null, action: "send" },
+    { source_item_id: "b", title: "Cheese (1)", description: null, action: "send" },
+    { source_item_id: "c", title: "Flour (500 g)", description: null, action: "send" },
+    { source_item_id: "d", title: "Salt", description: null, action: "skip_duplicate" },
+  ];
+  const env = bringCard({
+    state: "connected",
+    handlers: { sync_preview: () => ({ ...PREVIEW, lines, total_candidates: 4 }) },
+  });
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-bw-open" });
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  await click(env.card, { action: "sync-bw-next" });
+  await click(env.card, { action: "sync-bw-next" });
+  const html = markup(env.cards);
+  assert.match(html, /<strong>2 × Milk<\/strong>/);
+  assert.match(html, /<strong>Cheese<\/strong>/);
+  assert.match(html, /<strong>Flour<\/strong> <span class="sync-muted">500 g<\/span>/);
+  assert.equal((html.match(/bw-line-state/g) || []).length, 1, "only the skipped row has a badge");
+});
+
+test("web app: the list step offers Other account in the footer and goes back to the sign-in", async () => {
+  const env = bringCard({ state: "connected" });
+  await openStatus(env, []);
+  await click(env.card, { action: "sync-bw-open" });
+  assert.equal(env.card._bwData().step, 2);
+  assert.match(markup(env.cards), /data-action="sync-bw-back"[^>]*>[^]*?Other account/);
+  await click(env.card, { action: "sync-bw-back" });
+  assert.equal(env.card._bwData().step, 1);
+});
+
+test("web app: signing in again shows the address read-only and not twice", async () => {
+  const env = bringCard({ state: "reauth", handlers: { status: () => CONNECTED_STATUS() } });
+  env.card._status.entries[0].bring.email = "cook@example.test";
+  await openStatus(env, [withRule()]);
+  const html = markup(env.cards);
+  assert.match(html, /name="username"[^>]*readonly/);
+  assert.doesNotMatch(html, /<dt>Account<\/dt>/);
 });

@@ -137,19 +137,43 @@ export const shoppingSyncMethods = {
     return this.t("syncDestinationOption", { name, platform: label });
   },
   // Partial, failed and unclear results must never read as a success.
+  // The web app only talks to Bring!, so it says "Bring!-Liste" where the Home Assistant card
+  // says "Zielliste": a `Bring` variant of a key is used when it exists.
+  _syncBringT(key, values) {
+    const bring = `${key}Bring`;
+    const text = this._syncCaps().bringSetup ? this.t(bring, values) : bring;
+    return text === bring ? this.t(key, values) : text;
+  },
+  _syncBringTp(key, count, values) {
+    const bring = `${key}Bring`;
+    const text = this._syncCaps().bringSetup ? this.tp(bring, count, values) : bring;
+    return text === bring || String(text).startsWith(bring) ? this.tp(key, count, values) : text;
+  },
   _syncOutcomeText(outcome, counts = {}) {
     const keys = {
       sent: "syncOutcomeSent",
       partial: "syncOutcomePartial",
       failed: "syncOutcomeFailed",
       destination_unavailable: "syncOutcomeDestinationUnavailable",
+      destination_missing: "syncOutcomeDestinationMissing",
+      destination_auth: "syncOutcomeDestinationAuth",
       source_unavailable: "syncOutcomeSourceUnavailable",
       nothing_to_send: "syncOutcomeNothing",
       reconciled: "syncOutcomeReconciled",
     };
     if (outcome === "sent" && (counts.needs_reconciliation || 0) > 0)
       return this.t("syncOutcomePartial");
-    return this.t(keys[outcome] || "syncOutcomeUnknown");
+    return this._syncBringT(keys[outcome] || "syncOutcomeUnknown");
+  },
+  // A failed run sent nothing, so a count would only say "0 Einträge".
+  _syncAuditText(entry) {
+    const values = {
+      time: this._syncRelative(entry.at),
+      result: this._syncOutcomeText(entry.outcome),
+    };
+    return ["sent", "partial", "nothing_to_send", "reconciled"].includes(entry.outcome)
+      ? this.tp("syncAuditEntry", entry.count ?? 0, values)
+      : this.t("syncAuditEntryFailed", values);
   },
   _syncOutcomeIcon(outcome, counts = {}) {
     const good = ["sent", "nothing_to_send", "reconciled"].includes(outcome);
@@ -162,7 +186,7 @@ export const shoppingSyncMethods = {
     });
   },
   _syncResultText(result) {
-    if (result?.queued) return this.t("syncRunQueued");
+    if (result?.queued) return this._syncBringT("syncRunQueued");
     // Only counters that say something are shown: a zero would just add noise.
     const parts = [
       ["syncRunSent", result?.sent ?? 0],
@@ -362,6 +386,9 @@ export const shoppingSyncMethods = {
     }
     bring.busy = false;
     if (wizard && signedIn && sync.wizard === wizard) {
+      // The lists of the account that was connected before are not the new account's lists.
+      wizard.listsState = "idle";
+      wizard.lists = [];
       this._bwGo(2);
       await this._syncLoad({ quiet: true });
       return;
@@ -420,12 +447,31 @@ export const shoppingSyncMethods = {
       : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
+      ${rules.map((rule) => this._syncGoneHtml(rule, caps)).join("")}
       <div class="sync-live" role="status" aria-live="polite">${live}</div>
       ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncNeedsWrite"))}</p>` : ""}
       ${this._bwAccountHtml(caps)}
       ${body}
       ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
-      ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}</div>`;
+      ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditText(a))}</li>`).join("")}</ul></section>` : ""}</div>`;
+  },
+  // Bring! says the list is gone (not that it did not answer, which passes by itself).
+  _syncBringGone(rule, caps = this._syncCaps()) {
+    const destination = rule.destination || {};
+    return caps.bringSetup && destination.available === false && destination.reason === "missing";
+  },
+  // The one place that says a Bring! list is gone, with the way out right in it.
+  _syncGoneHtml(rule, caps) {
+    if (!this._syncBringGone(rule, caps)) return "";
+    const destination = rule.destination || {};
+    const name =
+      this._syncDestinationName(destination.name, destination.platform) ||
+      rule.destination_entity_id;
+    const pick =
+      caps.admin && this._bwCanConnect()
+        ? `<button type="button" class="btn tiny primary" data-action="sync-bw-pick-list" data-value="${esc(rule.id)}">${icon("edit", 14)} ${esc(this.t("bwPickList"))}</button>`
+        : "";
+    return `<p class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(this.t("bwListGone", { destination: name }))}</span>${pick}</p>`;
   },
   // A rule named after the built-in list in either language ("Shopping list" or "Einkaufsliste")
   // is titled with the route in the current UI language.
@@ -475,32 +521,38 @@ export const shoppingSyncMethods = {
     const write = (action, label, extra = "") =>
       `<button class="btn tiny ${extra}" data-action="${action}" data-value="${id}"${caps.write ? "" : ' aria-disabled="true"'}>${label}</button>`;
     // Bring! answering nothing is not the same as a deleted list: the first keeps the advice to wait.
-    const bringGone =
-      caps.bringSetup && destination.available === false && destination.reason !== "unreachable";
+    // A deleted list is announced once, at the top of the dialog, together with its way out.
+    const bringGone = this._syncBringGone(rule, caps);
+    const bringAuth =
+      caps.bringSetup &&
+      !bringGone &&
+      (destination.reason === "auth" || last?.outcome === "destination_auth");
     const bringUnreachable =
       caps.bringSetup &&
       !bringGone &&
+      !bringAuth &&
       (destination.reason === "unreachable" || last?.outcome === "destination_unavailable");
     const problems = [
-      bringGone
-        ? this.t("bwListGone", { destination: destName })
+      bringAuth
+        ? this.t("bwSessionExpired")
         : bringUnreachable
-          ? this.tp("bwUnreachable", open, { count: open })
+          ? open
+            ? this.tp("bwUnreachable", open, { count: open })
+            : this.t("bwUnreachableNone")
           : !caps.bringSetup && destination.available === false
             ? this.tp("syncErrorDestinationUnavailable", open, { destination: destName })
             : "",
       last?.outcome === "source_unavailable" ? this.t("syncErrorSourceUnavailable") : "",
     ].filter(Boolean);
-    // A deleted list is fixed right in the notice: the wizard opens at the list step, rule kept.
-    const pickList =
-      bringGone && caps.admin && this._bwCanConnect()
-        ? `<button type="button" class="btn tiny" data-action="sync-bw-pick-list" data-value="${id}">${icon("edit", 14)} ${esc(this.t("bwPickList"))}</button>`
-        : "";
     const actions = [
       !rule.activated && caps.admin
-        ? `<button class="btn tiny primary" data-action="sync-setup-open" data-value="${id}">${icon("arrow", 14)} ${esc(this.t("syncFirstBatch"))}</button>`
+        ? `<button class="btn tiny primary" data-action="sync-setup-open" data-value="${id}">${icon("arrow", 14)} ${esc(this._syncBringT("syncFirstBatch"))}</button>`
         : "",
-      rule.activated
+      // Nothing can be sent while the list is gone: the way out takes the primary place.
+      bringGone && caps.admin && this._bwCanConnect()
+        ? `<button type="button" class="btn tiny primary" data-action="sync-bw-pick-list" data-value="${id}">${icon("edit", 14)} ${esc(this.t("bwPickList"))}</button>`
+        : "",
+      rule.activated && !bringGone
         ? write("sync-run", `${icon("refresh", 14)} ${esc(this.t("syncRunNow"))}`, "primary")
         : "",
       rule.activated
@@ -524,7 +576,7 @@ export const shoppingSyncMethods = {
     ].join("");
     const confirm =
       sync.confirmDelete === rule.id
-        ? `<div class="notice bw-confirm" role="alert"><span>${esc(this.t("syncDeleteConfirm"))}</span><div class="form-actions bw-nav"><button class="btn tiny ghost" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button><button class="btn tiny danger" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button></div></div>`
+        ? `<div class="notice bw-confirm" role="alert"><span>${esc(this._syncBringT("syncDeleteConfirm"))}</span><div class="form-actions bw-nav"><button class="btn tiny ghost" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button><button class="btn tiny danger" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button></div></div>`
         : "";
     return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
       <h3 id="sync-rule-${id}">${esc(this._syncRuleTitle(rule, destination, destName))}</h3>
@@ -532,9 +584,14 @@ ${this._syncRouteHtml(rule, destination, destName)}
       <dl class="bw-facts sync-facts">${[
         [
           this.t("bwFactMode"),
-          `${esc(this.t(`syncMode${mode}`))} <small class="sync-muted">${esc(this.t(`syncMode${mode}Hint`))}</small>`,
+          `${esc(this.t(`syncMode${mode}`))} <small class="sync-muted">${esc(this._syncBringT(`syncMode${mode}Hint`))}</small>`,
         ],
-        [this.t("syncFactStatus"), `${stateIcon} ${esc(this.t(`syncState${state}`))}`],
+        [
+          this.t("syncFactStatus"),
+          bringGone
+            ? `${icon("bolt", 15)} ${esc(this.t("bwStatusListGone"))}`
+            : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
+        ],
         [
           this.t("bwFactPending"),
           esc(
@@ -544,21 +601,21 @@ ${this._syncRouteHtml(rule, destination, destName)}
           ),
         ],
         [
-          this.t("syncFactLastRun"),
+          this._syncBringT("syncFactLastRun"),
           last
-            ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRunValue", { time: this._syncRelative(last.at), result: bringGone && last.outcome === "destination_unavailable" ? this.t("bwOutcomeListGone") : this._syncOutcomeText(last.outcome, counts) }))}`
-            : esc(this.t("syncNeverRun")),
+            ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRunValue", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}`
+            : esc(this._syncBringT("syncNeverRun")),
         ],
       ]
         .map(
           ([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${value}</dd></div>`,
         )
         .join("")}</dl>
-      ${problems.map((p, index) => `<p class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span>${index === 0 ? pickList : ""}</p>`).join("")}
-      ${counts.needs_reconciliation > 0 ? `<p class="notice" role="status">${icon("clock", 16)} <span>${esc(this.tp("syncReconcileHint", counts.needs_reconciliation))}</span></p>` : ""}
+      <div class="form-actions sync-actions">${actions}</div>
+      ${problems.map((p) => `<p class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span></p>`).join("")}
+      ${counts.needs_reconciliation > 0 ? `<p class="notice" role="status">${icon("clock", 16)} <span>${esc(this._syncBringTp("syncReconcileHint", counts.needs_reconciliation))}</span></p>` : ""}
       ${issues > 0 ? `<p class="sync-issues">${icon("bolt", 15)} ${esc(this.t("syncBadgeIssues", { count: issues }))}</p>` : ""}
-      ${confirm}
-      <div class="form-actions sync-actions">${actions}</div></section>`;
+      ${confirm}</section>`;
   },
 
   _syncReviewHtml() {
@@ -592,9 +649,10 @@ ${this._syncRouteHtml(rule, destination, destName)}
     ].includes(record.state);
     const key = esc(record.key);
     const error = record.last_error
-      ? this.t(`syncLastError_${record.last_error}`) === `syncLastError_${record.last_error}`
+      ? this._syncBringT(`syncLastError_${record.last_error}`) ===
+        `syncLastError_${record.last_error}`
         ? ""
-        : this.t(`syncLastError_${record.last_error}`)
+        : this._syncBringT(`syncLastError_${record.last_error}`)
       : "";
     const button = (action, label) =>
       `<button class="btn tiny" data-action="${action}" data-value="${key}" data-rule="${esc(ruleId)}"${caps.write ? "" : ' aria-disabled="true"'}>${esc(label)}</button>`;
@@ -725,7 +783,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       : d.preview
         ? `${d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
             lines.length
-              ? `<p>${esc(this.tp("syncPreviewTotal", d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><strong>${esc(l.title)}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}<br><span class="sync-record-state">${icon(l.action === "send" ? "arrow" : "clock", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></li>`).join("")}</ul>`
+              ? `<p>${esc(this.tp(this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal", d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><strong>${esc(l.title)}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}<br><span class="sync-record-state">${icon(l.action === "send" ? "arrow" : "clock", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></li>`).join("")}</ul>`
               : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
           }`
         : "";
@@ -752,7 +810,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         }
         <p class="sync-capability" role="status" aria-live="polite">${destination ? `${icon(destination.supports?.description ? "check" : "close", 15)} ${esc(this.t("syncSupportsNotes", { answer: this.t(destination.supports?.description ? "syncYes" : "syncNo") }))}` : ""}</p></section>
       <section class="editor-card"><div class="eyebrow">03 / ${esc(this.t("syncStepMode").toUpperCase())}</div>
-        <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepMode"))}</legend>${radio("mode", "mode", "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${radio("mode", "mode", "move", this.t("syncModeMove"), this.t("syncModeMoveHint"))}</fieldset></section>
+        <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepMode"))}</legend>${radio("mode", "mode", "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${radio("mode", "mode", "move", this.t("syncModeMove"), this._syncBringT("syncModeMoveHint"))}</fieldset></section>
       <section class="editor-card"><div class="eyebrow">04 / ${esc(this.t("syncStepWhen").toUpperCase())}</div>
         <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepWhen"))}</legend>
         <label class="editor-check"><input type="checkbox" data-input="sync-after-add" ${d.after_atelier_add ? "checked" : ""}> ${esc(this.t("syncTriggerAfterAdd"))}</label>
@@ -765,7 +823,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         <div class="form-actions"><button class="btn" data-action="sync-preview"${ready ? "" : " disabled"}>${icon("search", 14)} ${esc(this.t("syncPreviewRun"))}</button></div>
         <div class="sync-preview" role="status" aria-live="polite" aria-busy="${d.previewBusy ? "true" : "false"}">${previewMarkup}</div></section>
       <section class="editor-card"><div class="eyebrow">07 / ${esc(this.t("syncStepConfirm").toUpperCase())}</div>
-        ${changed ? `<label class="editor-check"><input type="checkbox" data-input="sync-reset" ${d.resetConfirmed ? "checked" : ""}> ${esc(this.t("syncResetConfirm"))}</label>` : ""}
+        ${changed ? `<label class="editor-check"><input type="checkbox" data-input="sync-reset" ${d.resetConfirmed ? "checked" : ""}> ${esc(this._syncBringT("syncResetConfirm"))}</label>` : ""}
         <div class="form-actions">${
           d.activated
             ? `<button class="btn primary" data-action="sync-save" data-value="changes"${blocked ? " disabled" : ""}>${icon("check", 14)} ${esc(this.t("syncSaveChanges"))}</button>`

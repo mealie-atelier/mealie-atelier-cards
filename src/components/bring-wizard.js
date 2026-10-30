@@ -25,7 +25,14 @@ export const bringWizardMethods = {
     sync.bring.confirm = false;
     sync.wizard = {
       step: connected ? 2 : 1,
-      fixRule: rule ? { id: rule.id, name: rule.name, revision: rule.revision } : null,
+      fixRule: rule
+        ? {
+            id: rule.id,
+            name: rule.name,
+            revision: rule.revision,
+            activated: rule.activated === true,
+          }
+        : null,
       lists: [],
       listsState: "idle",
       listsError: "",
@@ -69,8 +76,10 @@ export const bringWizardMethods = {
     w.error = "";
     this._render();
     try {
+      const toName = this._bwBringName(w);
       const draft = this._syncDraftRequest({
-        name: rule.name,
+        // The old name points at the deleted list, so the route is named again.
+        name: `${rule.source_list_name || ""} → ${toName}`.slice(0, 60),
         source_list_id: rule.source_list_id,
         destination_entity_id: w.bringList,
         destinations: w.lists,
@@ -86,13 +95,27 @@ export const bringWizardMethods = {
         rule_id: rule.id,
         expected_revision: rule.revision,
         reset_records: true,
+        keep_activated: rule.activated === true,
       });
-      const name = this._bwBringName(w);
-      sync.error = "";
+      // A rule the user released before sends right away; one that never was waits for its release.
+      let result = null;
+      let runError = null;
+      if (rule.activated) {
+        try {
+          result = await this._ws("sync_run", { rule_id: rule.id });
+        } catch (err) {
+          runError = err;
+        }
+      }
+      // The rule is saved either way, so the dialog closes; a failed run is told on the status screen.
+      sync.error = runError ? this._errorText(runError) : "";
       sync.result = "";
       sync.wizard = null;
       this._modal = "sync";
-      this._flash(this.t("bwPickSaved", { list: name }));
+      if (runError) this._syncRefetchStatus(runError);
+      else if (!rule.activated) this._flash(this.t("bwPickHeld", { list: toName }));
+      else if (this._syncResultNotable(result)) this._syncShowResult(result);
+      else this._flash(this.t("bwPickSaved", { list: toName }));
     } catch (err) {
       w.error = this._errorText(err);
       this._syncRefetchStatus(err);
@@ -302,8 +325,14 @@ export const bringWizardMethods = {
         : "";
     return `<div id="bw-login-error" class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(bring.error)}</span>${retry}</div>`;
   },
-  _bwNav({ back, next, nextLabel, nextDisabled = false, nextIcon = "arrow" }) {
-    return `<div class="form-actions bw-nav">${back ? `<button type="button" class="btn ghost" data-action="sync-bw-back">${icon("chevron", 14)} ${esc(this.t("bwBack"))}</button>` : `<button type="button" class="btn ghost" data-action="close-modal">${esc(this.t("syncCancel"))}</button>`}${next ? `<button type="button" class="btn primary" data-action="${next}"${nextDisabled ? " disabled" : ""}>${esc(nextLabel || this.t("bwNext"))} ${icon(nextIcon, 14)}</button>` : ""}</div>`;
+  // `other` keeps Back in the footer on the list step: it returns to the sign-in for another account.
+  _bwNav({ back, other = false, next, nextLabel, nextDisabled = false, nextIcon = "arrow" }) {
+    const first = back
+      ? `<button type="button" class="btn ghost" data-action="sync-bw-back">${icon("chevron", 14)} ${esc(this.t("bwBack"))}</button>`
+      : other
+        ? `<button type="button" class="btn ghost" data-action="sync-bw-back">${icon("chevron", 14)} ${esc(this.t("bwOtherAccount"))}</button>`
+        : `<button type="button" class="btn ghost" data-action="close-modal">${esc(this.t("syncCancel"))}</button>`;
+    return `<div class="form-actions bw-nav">${first}${next ? `<button type="button" class="btn primary" data-action="${next}"${nextDisabled ? " disabled" : ""}>${esc(nextLabel || this.t("bwNext"))} ${icon(nextIcon, 14)}</button>` : ""}</div>`;
   },
   // E-mail and password form: the wizard's first step and the one-step sign-in again.
   _bwLoginFormHtml({ again = false } = {}) {
@@ -312,11 +341,13 @@ export const bringWizardMethods = {
     const eye = icon(bring.reveal ? "eye-off" : "eye", 16);
     // The address is known after a lapse, so signing in again is just the password and Enter.
     const email = bring.email || (again ? this._syncCaps().bringEmail : "");
+    // Signing in again keeps the account: the address is shown, not editable.
+    const locked = again && Boolean(email);
     // Only a refused e-mail or password marks the fields; a Bring! outage is the banner's business.
     const invalid = bring.error && bring.errorKind === "credentials" ? ' aria-invalid="true"' : "";
     const described = bring.error ? ' aria-describedby="bw-login-error"' : "";
     return `<form class="bw-form" data-form="bring-login" novalidate>
-      <label class="field"><span>${esc(this.t("syncBringEmail"))}</span><input type="email" name="username" data-input="sync-bring-email" value="${esc(email)}" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required${email ? "" : " data-autofocus"}${busy ? " readonly" : ""}${invalid}${described}></label>
+      <label class="field"><span>${esc(this.t("syncBringEmail"))}</span><input type="email" name="username" data-input="sync-bring-email" value="${esc(email)}" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required${email ? "" : " data-autofocus"}${busy || locked ? " readonly" : ""}${invalid}${described}></label>
       <label class="field"><span>${esc(this.t("syncBringPassword"))}</span><span class="bw-password"><input type="${bring.reveal ? "text" : "password"}" name="password" data-input="sync-bring-password" value="${esc(bring.password)}" autocomplete="current-password" autocapitalize="none" spellcheck="false" maxlength="256" required${email ? " data-autofocus" : ""}${busy ? " readonly" : ""}${invalid}${described}><button type="button" class="icon-btn bw-reveal" data-action="sync-bw-reveal" aria-pressed="${bring.reveal ? "true" : "false"}" title="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}" aria-label="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}">${eye}</button></span></label>
       <p class="bw-privacy">${icon("leaf", 15)} <span>${esc(this.t("bwPrivacy"))}</span></p>
       <div class="form-actions bw-nav">${again ? "" : `<button type="button" class="btn ghost" data-action="close-modal">${esc(this.t("syncCancel"))}</button>`}<button type="submit" class="btn primary"${busy ? ' disabled aria-busy="true"' : ""}>${busy ? esc(this.t("bwSigningIn")) : `${esc(this.t(again ? "bwReauthButton" : "bwSignIn"))} ${icon("arrow", 14)}`}</button></div></form>`;
@@ -343,9 +374,12 @@ export const bringWizardMethods = {
     const ready = w.listsState === "ready" && w.bringList;
     const fix = w.fixRule;
     const heading = fix
-      ? this._bwHeading(this.t("bwPickTitle"), this.t("bwPickText", { rule: fix.name }))
+      ? this._bwHeading(
+          this.t("bwPickTitle"),
+          this.t(fix.activated ? "bwPickText" : "bwPickTextHeld", { rule: fix.name }),
+        )
       : this._bwHeading(this.t("bwBringTitle"), this.t("bwBringText"));
-    return `${heading}${account && !fix ? `<p class="bw-account-line">${icon("check", 15)} ${esc(this.t("bwConnectedAs", { account }))}</p>` : ""}${body}${fix && w.error ? this._bwError(w.error) : ""}${this._bwNav({ next: fix ? "sync-bw-save-list" : "sync-bw-next", nextLabel: fix ? this.t("bwPickSave") : "", nextIcon: fix ? "check" : "arrow", nextDisabled: !ready || w.saving, back: false })}`;
+    return `${heading}${account && !fix ? `<p class="bw-account-line">${icon("check", 15)} ${esc(this.t("bwConnectedAs", { account }))}</p>` : ""}${body}${fix && w.error ? this._bwError(w.error) : ""}${this._bwNav({ next: fix ? "sync-bw-save-list" : "sync-bw-next", nextLabel: fix ? this.t(fix.activated ? "bwPickSaveSend" : "bwPickSave") : "", nextIcon: fix ? "check" : "arrow", nextDisabled: !ready || w.saving, back: false, other: !fix })}`;
   },
   _bwStepMealieHtml(w) {
     const entry = this._syncEntry();
@@ -362,7 +396,7 @@ export const bringWizardMethods = {
       `<label class="editor-check bw-check"><input type="checkbox" data-input="sync-bw-${key}" ${checked ? "checked" : ""}><span>${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ""}</span></label>`;
     const more = `<div class="bw-more"><button type="button" class="bw-more-toggle" data-action="sync-bw-more" aria-expanded="${w.more ? "true" : "false"}" aria-controls="bw-more-panel">${esc(this.t("bwMore"))} <span class="bw-chevron" aria-hidden="true">${icon("chevron", 14)}</span></button>${
       w.more
-        ? `<div id="bw-more-panel" class="bw-more-panel"><fieldset class="sync-fieldset"><legend>${esc(this.t("syncStepMode"))}</legend>${this._bwRadio("mode", "copy", w.mode === "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${this._bwRadio("mode", "move", w.mode === "move", this.t("syncModeMove"), this.t("syncModeMoveHint"))}</fieldset>${w.skipDuplicates ? check("merge", w.merge, this.t("syncDuplicateMerge")) : ""}<label class="field"><span>${esc(this.t("syncDebounce"))}</span><input type="text" inputmode="numeric" data-input="sync-bw-debounce" value="${esc(w.debounce)}"${w.debounceError ? ` aria-invalid="true" aria-describedby="bw-debounce-error"` : ""}>${w.debounceError ? `<span id="bw-debounce-error" class="sync-field-error" role="alert">${esc(this.t("syncInvalidNumber", { min: 5, max: 600 }))}</span>` : ""}</label></div>`
+        ? `<div id="bw-more-panel" class="bw-more-panel"><fieldset class="sync-fieldset"><legend>${esc(this.t("syncStepMode"))}</legend>${this._bwRadio("mode", "copy", w.mode === "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${this._bwRadio("mode", "move", w.mode === "move", this.t("syncModeMove"), this._syncBringT("syncModeMoveHint"))}</fieldset>${w.skipDuplicates ? check("merge", w.merge, this.t("syncDuplicateMerge")) : ""}<label class="field"><span>${esc(this.t("syncDebounce"))}</span><input type="text" inputmode="numeric" data-input="sync-bw-debounce" value="${esc(w.debounce)}"${w.debounceError ? ` aria-invalid="true" aria-describedby="bw-debounce-error"` : ""}>${w.debounceError ? `<span id="bw-debounce-error" class="sync-field-error" role="alert">${esc(this.t("syncInvalidNumber", { min: 5, max: 600 }))}</span>` : ""}</label></div>`
         : ""
     }</div>`;
     return `${this._bwHeading(this.t("bwMealieTitle"), this.t("bwMealieText"))}${body}${w.free.length ? `<div class="bw-defaults">${check("after-add", w.afterAdd, this.t("bwAfterAdd"), this.t("bwAfterAddHint"))}${check("skip-duplicates", w.skipDuplicates, this.t("bwSkipDuplicates"), this.t("bwSkipDuplicatesHint"))}</div>${more}` : ""}${this._bwNav({ back: true, next: "sync-bw-next", nextDisabled: !w.mealieList })}`;
@@ -391,7 +425,8 @@ export const bringWizardMethods = {
       ]
         .filter(Boolean)
         .join(" ");
-      body = `${note ? `<p class="bw-summary" role="status">${esc(note)}</p>` : ""}<ul class="sync-list bw-lines">${lines.map((l) => `<li class="bw-line is-${esc(l.action)}"><span class="bw-line-main"><strong>${esc(l.title)}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</span><span class="bw-line-state">${icon(l.action === "send" ? "arrow" : "clock", 13)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></li>`).join("")}</ul>`;
+      // Only rows that differ from the rest carry a badge: "Senden" on every row says nothing.
+      body = `${note ? `<p class="bw-summary" role="status">${esc(note)}</p>` : ""}<ul class="sync-list bw-lines">${lines.map((l) => this._bwLineHtml(l, actionLabel)).join("")}</ul>`;
     }
     const ready = w.preview && !w.previewBusy && !w.previewError;
     const list = this._bwBringName(w);
@@ -403,6 +438,24 @@ export const bringWizardMethods = {
           : this.t("bwPreviewTextNone", { list })
         : this.t("bwPreviewTextBase", { list });
     return `${this._bwHeading(this.t("bwPreviewTitle"), text)}${body}${this._bwNav({ back: true, next: "sync-bw-next", nextDisabled: !ready })}`;
+  },
+  // Bring! titles read "Milch (2)" or "Mehl (500 g)": an amount above one reads "2 × Milch", a lone one is dropped.
+  _bwLineParts(line) {
+    const match = /^(.*?) \((.+)\)$/.exec(String(line.title || ""));
+    const name = match ? match[1] : String(line.title || "");
+    const detail = match ? match[2] : "";
+    const amount = /^\d+(?:[.,]\d+)?$/.test(detail) ? Number(detail.replace(",", ".")) : null;
+    if (amount === null)
+      return { name, note: [detail, line.description].filter(Boolean).join(", ") };
+    return { name: amount > 1 ? `${detail} × ${name}` : name, note: line.description || "" };
+  },
+  _bwLineHtml(line, actionLabel) {
+    const { name, note } = this._bwLineParts(line);
+    const state =
+      line.action === "send"
+        ? ""
+        : `<span class="bw-line-state">${icon("clock", 13)} ${esc(this.t(actionLabel[line.action] || "syncActionSend"))}</span>`;
+    return `<li class="bw-line is-${esc(line.action)}"><span class="bw-line-main"><strong>${esc(name)}</strong>${note ? ` <span class="sync-muted">${esc(note)}</span>` : ""}</span>${state}</li>`;
   },
   _bwStepReleaseHtml(w) {
     const count = this._bwSendCount();
@@ -459,19 +512,21 @@ export const bringWizardMethods = {
     if (!connected && !reauth) return "";
     const editable = this._bwCanConnect();
     const rules = this._syncRules();
-    const waiting = rules.reduce((sum, rule) => sum + this._syncWaiting(rule), 0);
     // Only a run that went well counts as a delivery; a failed run must not say "just now".
+    // A later failed run does not undo an earlier delivery, so the history counts as well.
     const healthy = ["sent", "nothing_to_send", "reconciled"];
-    const lastRun = rules
-      .filter((rule) => healthy.includes(rule.last_run?.outcome))
-      .map((rule) => rule.last_run.at)
+    const lastRun = [
+      ...rules
+        .filter((rule) => healthy.includes(rule.last_run?.outcome))
+        .map((rule) => rule.last_run),
+      ...asArray(sync.state?.audit).filter((entry) => healthy.includes(entry.outcome)),
+    ]
+      .map((entry) => entry.at)
       .filter(Boolean)
       .sort()
       .at(-1);
     // The account is only "connected" while nothing it delivers to is broken.
-    const listGone = rules.some(
-      (rule) => rule.destination?.available === false && rule.destination?.reason !== "unreachable",
-    );
+    const listGone = rules.some((rule) => this._syncBringGone(rule, caps));
     const attention =
       connected &&
       (listGone || rules.some((rule) => rule.last_run && !healthy.includes(rule.last_run.outcome)));
@@ -482,31 +537,16 @@ export const bringWizardMethods = {
         : attention
           ? "bwStateAttention"
           : "bwStateConnected";
-    const all = [
-      caps.bringAccount ? [this.t("bwFactAccount"), caps.bringAccount] : null,
-      rules.length
-        ? [
-            this.t("bwFactTarget"),
-            rules
-              .map(
-                (r) =>
-                  this._syncDestinationName(r.destination?.name, r.destination?.platform) ||
-                  r.destination_entity_id,
-              )
-              .join(", "),
-          ]
-        : null,
-      rules.length
-        ? [this.t("bwFactLast"), lastRun ? this._syncRelative(lastRun) : this.t("bwNoDelivery")]
-        : null,
-      rules.length
-        ? [
-            this.t("bwFactPending"),
-            waiting ? this.tp("syncPending", waiting) : this.t("syncPendingNone"),
-          ]
-        : null,
-    ];
-    const facts = (reauth ? all.slice(0, 1) : all).filter(Boolean);
+    // The list and what waits are on the rule card; the account only says who and when. The sign-in
+    // form shows the address itself while signing in again.
+    const facts = reauth
+      ? []
+      : [
+          caps.bringAccount ? [this.t("bwFactAccount"), caps.bringAccount] : null,
+          rules.length
+            ? [this.t("bwFactLast"), lastRun ? this._syncRelative(lastRun) : this.t("bwNoDelivery")]
+            : null,
+        ].filter(Boolean);
     const list = facts.length
       ? `<dl class="bw-facts">${facts.map(([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>`
       : "";
@@ -549,6 +589,7 @@ export const bringWizardMethods = {
     if (action === "sync-bw-save-list") await this._bwSaveList();
     else if (action === "sync-bw-back") {
       if (!w.saving && w.step > 2) this._bwGo(w.step - 1);
+      else if (!w.saving && w.step === 2 && !w.fixRule) this._bwGo(1);
     } else if (action === "sync-bw-next") {
       if (w.step === 2 && w.bringList) this._bwGo(3);
       else if (w.step === 3) {
@@ -564,6 +605,13 @@ export const bringWizardMethods = {
     } else if (action === "sync-bw-more") {
       w.more = !w.more;
       this._render();
+      // The panel opens below the fold of a short dialog: bring it into view and start at its first control.
+      if (w.more)
+        this._focusAfterRender(() => {
+          const panel = this.shadowRoot?.querySelector?.("#bw-more-panel");
+          panel?.scrollIntoView?.({ block: "nearest" });
+          return panel?.querySelector("input");
+        });
     } else if (action === "sync-bw-reload") {
       w.listsState = "idle";
       await this._bwLoadLists();

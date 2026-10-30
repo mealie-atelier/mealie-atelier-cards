@@ -42,7 +42,7 @@ test("the phone layout drops the inner card frame and fills the screen", () => {
   const phone = css.slice(css.indexOf("/* Phone:"));
   assert.match(phone, /@container atelier-card \(max-width: 460px\)/);
   assert.match(phone, /\.atelier \.modal\.sync-modal\s*\{[^}]*border-radius:\s*0/);
-  assert.match(phone, /\.atelier \.bw-wizard \.bw-panel\s*\{[^}]*border:\s*0/);
+  assert.match(rule(".atelier .bw-wizard .bw-panel"), /border:\s*0/);
 });
 
 test("More options is a text disclosure and its panel has no frame of its own", () => {

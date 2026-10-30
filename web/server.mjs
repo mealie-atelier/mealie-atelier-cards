@@ -760,7 +760,7 @@ function connectBring(msg) {
     if (!syncRunning) {
       await shoppingSync.start();
       syncRunning = true;
-    }
+    } else shoppingSync.bringReconnected();
     return { state: bringClient.state };
   });
 }

@@ -248,8 +248,6 @@
   font-weight: 650;
 }
 .atelier .bw-lines {
-  max-block-size: min(40vh, 340px);
-  overflow: auto;
   gap: 0;
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius-md);
@@ -426,6 +424,9 @@
 .atelier .sync-panel .notice.error .btn {
   color: var(--ds-text);
 }
+.atelier .sync-panel .notice.error .btn.primary {
+  color: var(--ds-brand-foreground);
+}
 .atelier.light .bw-account.is-warn .bw-pill {
   color: var(--bw-danger);
 }
@@ -496,16 +497,28 @@
 .atelier .bw-panel .bw-form > .bw-nav {
   margin-block-start: var(--ds-space-5);
 }
-.atelier .bw-panel {
-  --bw-nav-bg: var(--ds-surface);
+/* One scroll area: the dialog. The step has no card of its own inside it, and the footer sits flush
+   at the dialog's bottom edge with the same air above and below its buttons. */
+.atelier .modal.sync-modal .modal-content.bw-wizard {
+  --bw-pad: clamp(24px, 3.1cqi, 44px);
+  padding: var(--bw-pad) var(--bw-pad) 0;
+}
+.atelier .bw-wizard .bw-panel {
+  --bw-nav-bg: var(--at-surface);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .atelier .bw-panel .bw-nav {
   position: sticky;
   inset-block-end: 0;
   z-index: 2;
-  padding-block: var(--ds-space-3);
-  margin-inline: calc(-1 * var(--ds-panel-padding));
-  padding-inline: var(--ds-panel-padding);
+  align-items: center;
+  padding-block: var(--ds-space-4);
+  margin-inline: calc(-1 * var(--bw-pad));
+  padding-inline: var(--bw-pad);
   border-block-start: 1px solid var(--ds-border);
   background: var(--bw-nav-bg);
 }
@@ -544,19 +557,8 @@
   .atelier .modal.sync-modal .modal-content {
     padding: var(--ds-space-5) var(--ds-space-4) var(--ds-space-4);
   }
-  .atelier .bw-wizard .bw-panel {
-    --bw-nav-bg: var(--at-surface);
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-  .atelier .bw-wizard .bw-panel .bw-nav {
-    margin-inline: calc(-1 * var(--ds-space-4));
-    padding-inline: var(--ds-space-4);
-    padding-block-end: var(--ds-space-4);
-    margin-block-end: calc(-1 * var(--ds-space-4));
+  .atelier .modal.sync-modal .modal-content.bw-wizard {
+    --bw-pad: var(--ds-space-4);
   }
   .atelier .bw-nav > .btn.primary {
     order: 0;
@@ -566,4 +568,9 @@
     order: -1;
     flex-basis: 100%;
   }
+}
+
+/* A notice above the cards (a gone list, a failed command) keeps the same gap as the cards. */
+.atelier .sync-panel > .notice {
+  margin-block-end: var(--ds-space-3);
 }

@@ -313,6 +313,11 @@ export class BringDestination {
     return !!this.client?.configured;
   }
 
+  /** True once Bring! refused the session for good: only signing in again helps. */
+  get sessionLost() {
+    return this.client?.state === "reauth";
+  }
+
   /** Drops the cached lists, for example after another account was connected. */
   forget() {
     this.cache = null;
@@ -601,6 +606,19 @@ export class SyncManager {
     }
   }
 
+  /**
+   * The Bring! session works again: the failed runs of the expired session are cleared and the
+   * released rules send what has been waiting.
+   */
+  bringReconnected() {
+    for (const rule of Object.values(this.rules)) {
+      if (rule.last_run?.outcome === "destination_auth") rule.last_run = null;
+      const waiting = this.ruleRecords(rule.id).some((record) => record.state === "pending");
+      if (rule.activated && !rule.paused && waiting) this.scheduleRun(rule.id, "startup", 1);
+    }
+    this.store.delaySave();
+  }
+
   scheduleRun(ruleId, trigger, delay) {
     if (this.readOnly) return;
     this.cancelScheduled(ruleId);
@@ -691,9 +709,10 @@ export class SyncManager {
     try {
       const row = await this.destination.find(entityId);
       if (row) return this.destination.describe(row);
-    } catch {
-      // Bring! did not answer: the list may well exist, so it is not reported as gone.
-      reason = "unreachable";
+    } catch (error) {
+      // Bring! did not answer: the list may well exist, so it is not reported as gone. A session
+      // that expired is its own reason, because only signing in again helps.
+      reason = error instanceof BringAuthError ? "auth" : "unreachable";
     }
     return this.destination.describe(
       { entity_id: entityId, name: fallbackName || entityId },
@@ -806,6 +825,11 @@ export class SyncManager {
     return result;
   }
 
+  /** A destination that did not answer, or one whose session is gone and needs a new sign-in. */
+  unavailableOutcome() {
+    return this.destination.sessionLost ? "destination_auth" : "destination_unavailable";
+  }
+
   async pass(ruleId, trigger, confirm) {
     const rule = this.rule(ruleId);
     const counts = Object.fromEntries(RESULT_COUNTS.map((key) => [key, 0]));
@@ -814,8 +838,12 @@ export class SyncManager {
       return this.result(ruleId, batchId, rule.paused ? "paused" : "not_activated", counts);
     const entityId = rule.destination_entity_id;
     const destination = await this.describe(entityId, rule.destination_name);
-    if (!destination.available)
-      return this.finish(rule, trigger, batchId, "destination_unavailable", counts);
+    if (!destination.available) {
+      const outcome = { missing: "destination_missing", auth: "destination_auth" }[
+        destination.reason
+      ];
+      return this.finish(rule, trigger, batchId, outcome || "destination_unavailable", counts);
+    }
     let items;
     try {
       items = await this.source.items(rule.source_list_id);
@@ -838,7 +866,7 @@ export class SyncManager {
     if (destinationItems === null && rule.duplicate_policy !== "none") {
       // Without the destination list neither duplicates nor earlier uncertain writes can be
       // checked, so nothing new is sent.
-      return this.finish(rule, trigger, batchId, "destination_unavailable", counts, {
+      return this.finish(rule, trigger, batchId, this.unavailableOutcome(), counts, {
         present: new Set(byId.keys()),
       });
     }
@@ -849,7 +877,7 @@ export class SyncManager {
     const delivered = counts.sent + counts.skipped_duplicates;
     const problems = counts.failed + counts.needs_reconciliation;
     let outcome;
-    if (lost && !delivered && !problems) outcome = "destination_unavailable";
+    if (lost && !delivered && !problems) outcome = this.unavailableOutcome();
     else if (!delivered && !problems) outcome = completionFailed ? "partial" : "nothing_to_send";
     else if (!problems && !lost && !completionFailed) outcome = "sent";
     else if (delivered) outcome = "partial";
@@ -1142,7 +1170,13 @@ export class SyncManager {
 
   async saveRuleLocked(
     draft,
-    { ruleId = null, expectedRevision = null, resetRecords = false, userId = null },
+    {
+      ruleId = null,
+      expectedRevision = null,
+      resetRecords = false,
+      keepActivated = false,
+      userId = null,
+    },
   ) {
     const fields = validateDraft(draft);
     const existing = ruleId !== null ? this.rule(ruleId) : null;
@@ -1194,7 +1228,11 @@ export class SyncManager {
       rule = existing;
       if (retarget) {
         for (const record of this.ruleRecords(rule.id)) delete this.records[record.key];
-        rule.activated = false;
+        // The old target's runs say nothing about the new one. A rule the user already released
+        // stays released when only its Bring! list was replaced, never when the source changed.
+        rule.last_run = null;
+        if (!(keepActivated && existing.source_list_id === fields.source_list_id))
+          rule.activated = false;
         this.cancelScheduled(rule.id);
       }
       Object.assign(rule, rest, {
@@ -1402,10 +1440,15 @@ export async function handleSyncMessage(manager, msg) {
         msg.reset_records === undefined || typeof msg.reset_records === "boolean",
         "reset_records must be a boolean",
       );
+      need(
+        msg.keep_activated === undefined || typeof msg.keep_activated === "boolean",
+        "keep_activated must be a boolean",
+      );
       const rule = await manager.saveRule(msg.rule, {
         ruleId: msg.rule_id ?? null,
         expectedRevision: msg.expected_revision ?? null,
         resetRecords: msg.reset_records === true,
+        keepActivated: msg.keep_activated === true,
         userId: msg.user_id ?? null,
       });
       return { rule };
