@@ -1217,5 +1217,6 @@
   "shoppingClearConfirm.other": "{count} erledigte Artikel werden aus dieser Liste entfernt. Das lässt sich nicht rückgängig machen.",
   "journalFavoriteChip": "Lieblingsrezept",
   "editorHistoryShow": "Versionen anzeigen",
-  "studioMealieConnection": "Mealie-Verbindung"
+  "studioMealieConnection": "Mealie-Verbindung",
+  "offlineAlarmStatusUnavailable": "Der Timer-Status konnte nicht geladen werden."
 }

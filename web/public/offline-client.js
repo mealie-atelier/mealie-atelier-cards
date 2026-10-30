@@ -11,6 +11,7 @@ export const OFFLINE_ACTIONS = [
   "shopping_update",
   "shopping_clear_checked",
 ];
+const ALARM_STATUS_ERROR = "offlineAlarmStatusUnavailable";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class AtelierOfflineClient {
   constructor() {
@@ -217,6 +218,7 @@ export class AtelierAlarmClient {
     this.subscription = null;
   }
   async init() {
+    this.lastError = "";
     try {
       this.capabilities = await store.bridge("mealie_atelier/alarm_capabilities");
       const status = await store.bridge("mealie_atelier/alarms");
@@ -224,7 +226,8 @@ export class AtelierAlarmClient {
       const registration = await navigator.serviceWorker?.getRegistration?.("/");
       this.subscription = (await registration?.pushManager?.getSubscription?.()) || null;
     } catch (e) {
-      this.lastError = e.code || "offlineUnexpectedError";
+      // A plain fetch failure has no code: name the cause instead of the generic offline-action text.
+      this.lastError = e.code || ALARM_STATUS_ERROR;
     }
     this.onChange();
     return this;
@@ -254,6 +257,7 @@ export class AtelierAlarmClient {
     if (!navigator.onLine) throw offlineError("offlineAlarmRequiresServer");
     const result = await store.bridge("mealie_atelier/alarm_create", { timer });
     this.alarms.push(result);
+    this.lastError = "";
     this.onChange();
     return result;
   }
@@ -268,12 +272,14 @@ export class AtelierAlarmClient {
       return null;
     }
     this.alarms = this.alarms.map((x) => (x.id === id ? result : x));
+    this.lastError = "";
     this.onChange();
     return result;
   }
   async refresh() {
     const result = await store.bridge("mealie_atelier/alarms");
     this.alarms = result.alarms || [];
+    this.lastError = "";
     this.onChange();
     return result;
   }
@@ -442,6 +448,10 @@ export function attachOfflineUi(card, offline, alarms) {
   alarms.onChange = update;
   window.addEventListener("offline", update);
   window.addEventListener("online", update);
+  // Back online: reload the timer status that may have failed while offline, so a stale error clears.
+  window.addEventListener("online", () => {
+    if (alarms.lastError) alarms.init().catch(() => {});
+  });
   card?.addEventListener("mealie-atelier-language-change", update);
   $("a-sync-enable").addEventListener("click", async () => {
     try {
@@ -467,7 +477,10 @@ export function attachOfflineUi(card, offline, alarms) {
       card._flash(localizedError(e));
     }
   });
-  $("a-sync-now").addEventListener("click", () => offline.sync());
+  $("a-sync-now").addEventListener("click", async () => {
+    await offline.sync();
+    if (alarms.lastError && navigator.onLine) await alarms.init().catch(() => {});
+  });
   $("a-sync-conflicts").addEventListener("click", () => {
     const box = $("a-conflicts");
     box.hidden = !box.hidden;
@@ -492,7 +505,7 @@ export function attachOfflineUi(card, offline, alarms) {
     try {
       await alarms.refresh();
     } catch (e) {
-      alarms.lastError = e.code || "offlineUnexpectedError";
+      alarms.lastError = e.code || ALARM_STATUS_ERROR;
       alarms.onChange();
     }
   });

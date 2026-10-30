@@ -1217,5 +1217,6 @@
   "shoppingClearConfirm.other": "{count} ticked items will be removed from this list. This cannot be undone.",
   "journalFavoriteChip": "Favorite recipe",
   "editorHistoryShow": "Show versions",
-  "studioMealieConnection": "Mealie connection"
+  "studioMealieConnection": "Mealie connection",
+  "offlineAlarmStatusUnavailable": "The timer status could not be loaded."
 }

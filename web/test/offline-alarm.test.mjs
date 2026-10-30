@@ -500,3 +500,25 @@ test("a language switch rewrites the static texts of the sync panel", async () =
   const source = readFileSync(new URL("../public/offline-client.js", import.meta.url), "utf8");
   assert.match(source, /const update = \(\) => \{\s*applyPanelTexts\(panel, t\);/);
 });
+
+test("a successful timer status reload clears a stale error and a failed one names the cause", async () => {
+  let fail = true;
+  const client = await alarmClientWith(async (path) => {
+    if (fail) throw new TypeError("Failed to fetch");
+    return path.endsWith("alarms") ? { alarms: [] } : { webPush: false };
+  });
+  await client.init();
+  assert.equal(client.lastError, "offlineAlarmStatusUnavailable");
+  fail = false;
+  await client.refresh();
+  assert.equal(client.lastError, "");
+  client.lastError = "offlineAlarmStatusUnavailable";
+  await client.init();
+  assert.equal(client.lastError, "");
+  for (const lang of ["de", "en"]) {
+    const texts = JSON.parse(
+      readFileSync(new URL(`../../src/i18n/${lang}.json`, import.meta.url), "utf8"),
+    );
+    assert.ok(texts.offlineAlarmStatusUnavailable);
+  }
+});
