@@ -560,6 +560,30 @@
   .atelier .modal.sync-modal .modal-content.bw-wizard {
     --bw-pad: var(--ds-space-4);
   }
+  /* The wizard and pick panels fill the full-height dialog and push the action row to its bottom edge. */
+  .atelier .modal.sync-modal:has(> .bw-wizard) {
+    display: flex;
+    flex-direction: column;
+  }
+  .atelier .modal.sync-modal > .bw-wizard {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+  .atelier .bw-wizard > .bw-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
+  .atelier .bw-wizard .bw-panel > .bw-nav,
+  .atelier .bw-wizard .bw-panel .bw-form > .bw-nav {
+    margin-block-start: auto;
+  }
+  .atelier .bw-wizard .bw-panel > .bw-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+  }
   .atelier .bw-nav > .btn.primary {
     order: 0;
     flex: 1 1 auto;
@@ -573,4 +597,60 @@
 /* A notice above the cards (a gone list, a failed command) keeps the same gap as the cards. */
 .atelier .sync-panel > .notice {
   margin-block-end: var(--ds-space-3);
+}
+
+/* The scrolling sync panel keeps the same air below its last card as at its sides. */
+.atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) {
+  --bw-pad: clamp(24px, 3.1cqi, 44px);
+  padding-block-end: var(--bw-pad);
+}
+@container atelier-card (max-width: 460px) {
+  .atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) {
+    --bw-pad: var(--ds-space-4);
+  }
+}
+/* Padding alone is lost at the end of the scroll, so the last card carries the gap as a margin too. */
+.atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child {
+  margin-block-end: var(--bw-pad);
+}
+
+/* The shared close strip would stay behind as an empty header band once the dialog scrolls; here the
+   close button floats on its own and the content scrolls past it. */
+.atelier .modal.modal.sync-modal > .modal-close::before {
+  display: none;
+}
+
+/* Phone: the account card is compact (label and value on one row, disconnect as a text link) so the
+   rule actions below it start within the first screen. */
+@container atelier-card (max-width: 460px) {
+  .atelier .bw-account .bw-facts .bw-row {
+    grid-template-columns: auto 1fr;
+    gap: var(--ds-space-3);
+    padding-block: var(--ds-space-1);
+  }
+  .atelier .bw-account > * + * {
+    margin-block-start: var(--ds-space-2);
+  }
+  .atelier .bw-account [data-action="sync-bring-disconnect-ask"] {
+    min-block-size: 0;
+    padding-inline: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ds-muted);
+    text-decoration: underline;
+  }
+}
+
+/* The text link keeps its transparent background on hover, press and keyboard focus (the generic
+   secondary button hover would otherwise fill it). */
+@container atelier-card (max-width: 460px) {
+  .atelier
+    .bw-account
+    [data-action="sync-bring-disconnect-ask"]:is(:hover, :active, :focus-visible):not(:disabled) {
+    background: transparent;
+    border-color: transparent;
+    color: var(--ds-text);
+    text-decoration: underline;
+    transform: none;
+  }
 }

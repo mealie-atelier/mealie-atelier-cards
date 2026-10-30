@@ -903,10 +903,10 @@ test("web app: the account card does not say Connected after a failed run", asyn
     }),
   ]);
   let html = markup(gone.cards);
-  assert.match(pill(html), /List missing/);
+  assert.match(pill(html), /Bring! list missing/);
   assert.doesNotMatch(pill(html), /Connected/);
   assert.match(html, /bw-account is-warn/);
-  assert.match(html, /<dt>Last check<\/dt><dd>[^]*?Bring! list no longer exists, just now/);
+  assert.match(html, /<dt>Last delivery<\/dt><dd>[^]*?Bring! list no longer exists, just now/);
   assert.match(html, /<dt>Last delivery<\/dt><dd>None yet<\/dd>/, "a failed run is no delivery");
   const failed = bringCard({ state: "connected" });
   await openStatus(failed, [
@@ -1464,6 +1464,29 @@ test("web app: a gone list is said once with its way out and nothing can be sent
   assert.doesNotMatch(html, /data-action="sync-run"/, "Send now is gone while the target is gone");
   assert.match(html, /<dt>Status<\/dt><dd>[^]*?Bring! list missing/);
   assert.doesNotMatch(html, /Destination|Zielliste/);
+  assert.equal(
+    (html.match(/data-action="sync-bw-pick-list"/g) || []).length,
+    1,
+    "one way out only",
+  );
+  assert.doesNotMatch(html, /List missing/, "one term for a gone list");
+});
+
+test("web app: the rule card shows the last healthy delivery from the audit when it has no current run", async () => {
+  const env = bringCard({ state: "connected" });
+  const rule = withRule({ last_run: null });
+  await openStatus(env, [rule]);
+  env.setState({
+    supported: true,
+    rules: [rule],
+    audit: [
+      { at: new Date(Date.now() - 45000).toISOString(), rule_id: "r1", outcome: "sent", count: 2 },
+    ],
+  });
+  await click(env.card, { action: "sync-open" });
+  const html = markup(env.cards);
+  assert.doesNotMatch(html, /No delivery yet/);
+  assert.match(html, /<dt>Last delivery<\/dt><dd>[^]*?Sent, 45 seconds ago/);
 });
 
 test("web app: Last delivery survives a later failed run and an expired session has its own words", async () => {

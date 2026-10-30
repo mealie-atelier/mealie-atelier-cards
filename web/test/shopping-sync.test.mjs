@@ -522,6 +522,32 @@ test("an expired Bring session is its own outcome and a new sign-in clears it", 
   }
 });
 
+test("a new sign-in restores the last healthy run instead of wiping the history", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save();
+    const at = new Date(Date.now() - 60000).toISOString();
+    env.manager.store.data.audit.push({
+      at,
+      rule_id: ruleId,
+      trigger: "manual",
+      count: 3,
+      outcome: "sent",
+    });
+    env.manager.rules[ruleId].last_run = {
+      at: new Date().toISOString(),
+      outcome: "destination_auth",
+    };
+    env.manager.bringReconnected();
+    const last = env.manager.rules[ruleId].last_run;
+    assert.equal(last.outcome, "sent");
+    assert.equal(last.at, at);
+    assert.equal(last.count, 3);
+  } finally {
+    await env.close();
+  }
+});
+
 test("a session lost while the list names are cached is still an expired sign-in", async () => {
   const env = await setup({ items: [item("a", { note: "Milch" })] });
   try {

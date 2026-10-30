@@ -50,3 +50,25 @@ test("More options is a text disclosure and its panel has no frame of its own", 
   assert.match(rule(".atelier .bw-more-toggle"), /background:\s*transparent/);
   assert.match(rule(".atelier .bw-more"), /border-block-start:\s*1px solid/);
 });
+
+test("the scrolling sync panel has bottom padding, the close strip is gone and the phone wizard fills the dialog", () => {
+  assert.match(
+    rule(".atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard)"),
+    /padding-block-end:\s*var\(--bw-pad\)/,
+  );
+  assert.match(rule(".atelier .modal.modal.sync-modal > .modal-close::before"), /display:\s*none/);
+  assert.match(css, /\.sync-modal:has\(> \.bw-wizard\)\s*\{[^}]*display:\s*flex/);
+  assert.match(css, /\.bw-wizard \.bw-panel > \.bw-nav,[^{]*\{[^}]*margin-block-start:\s*auto/);
+});
+
+test("the last sync card keeps a bottom margin and the phone disconnect link stays transparent on hover", () => {
+  assert.match(
+    rule(".atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child"),
+    /margin-block-end:\s*var\(--bw-pad\)/,
+  );
+  const hover =
+    css.match(
+      /sync-bring-disconnect-ask"\]:is\(:hover, :active, :focus-visible\)[^{]*\{([^}]*)\}/,
+    )?.[1] || "";
+  assert.match(hover, /background:\s*transparent/);
+});

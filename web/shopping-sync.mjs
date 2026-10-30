@@ -612,11 +612,23 @@ export class SyncManager {
    */
   bringReconnected() {
     for (const rule of Object.values(this.rules)) {
-      if (rule.last_run?.outcome === "destination_auth") rule.last_run = null;
+      if (rule.last_run?.outcome === "destination_auth")
+        rule.last_run = this.lastHealthyRun(rule.id);
       const waiting = this.ruleRecords(rule.id).some((record) => record.state === "pending");
       if (rule.activated && !rule.paused && waiting) this.scheduleRun(rule.id, "startup", 1);
     }
     this.store.delaySave();
+  }
+
+  /** The newest run of a rule that went well, rebuilt from the audit trail (null when there is none). */
+  lastHealthyRun(ruleId) {
+    const healthy = ["sent", "nothing_to_send", "reconciled"];
+    const entry = this.store.data.audit.findLast(
+      (e) => e.rule_id === ruleId && healthy.includes(e.outcome),
+    );
+    return entry
+      ? { at: entry.at, trigger: entry.trigger, outcome: entry.outcome, count: entry.count }
+      : null;
   }
 
   scheduleRun(ruleId, trigger, delay) {
@@ -1231,6 +1243,7 @@ export class SyncManager {
         // The old target's runs say nothing about the new one. A rule the user already released
         // stays released when only its Bring! list was replaced, never when the source changed.
         rule.last_run = null;
+        this.store.data.audit = this.store.data.audit.filter((entry) => entry.rule_id !== rule.id);
         if (!(keepActivated && existing.source_list_id === fields.source_list_id))
           rule.activated = false;
         this.cancelScheduled(rule.id);

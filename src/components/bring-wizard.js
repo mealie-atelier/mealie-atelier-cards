@@ -396,7 +396,7 @@ export const bringWizardMethods = {
       `<label class="editor-check bw-check"><input type="checkbox" data-input="sync-bw-${key}" ${checked ? "checked" : ""}><span>${esc(label)}${hint ? `<small>${esc(hint)}</small>` : ""}</span></label>`;
     const more = `<div class="bw-more"><button type="button" class="bw-more-toggle" data-action="sync-bw-more" aria-expanded="${w.more ? "true" : "false"}" aria-controls="bw-more-panel">${esc(this.t("bwMore"))} <span class="bw-chevron" aria-hidden="true">${icon("chevron", 14)}</span></button>${
       w.more
-        ? `<div id="bw-more-panel" class="bw-more-panel"><fieldset class="sync-fieldset"><legend>${esc(this.t("syncStepMode"))}</legend>${this._bwRadio("mode", "copy", w.mode === "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${this._bwRadio("mode", "move", w.mode === "move", this.t("syncModeMove"), this._syncBringT("syncModeMoveHint"))}</fieldset>${w.skipDuplicates ? check("merge", w.merge, this.t("syncDuplicateMerge")) : ""}<label class="field"><span>${esc(this.t("syncDebounce"))}</span><input type="text" inputmode="numeric" data-input="sync-bw-debounce" value="${esc(w.debounce)}"${w.debounceError ? ` aria-invalid="true" aria-describedby="bw-debounce-error"` : ""}>${w.debounceError ? `<span id="bw-debounce-error" class="sync-field-error" role="alert">${esc(this.t("syncInvalidNumber", { min: 5, max: 600 }))}</span>` : ""}</label></div>`
+        ? `<div id="bw-more-panel" class="bw-more-panel"><fieldset class="sync-fieldset"><legend>${esc(this.t("syncStepMode"))}</legend>${this._bwRadio("mode", "copy", w.mode === "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${this._bwRadio("mode", "move", w.mode === "move", this.t("syncModeMove"), this._syncBringT("syncModeMoveHint"))}</fieldset>${w.skipDuplicates ? check("merge", w.merge, this.t("syncDuplicateMergeBring")) : ""}<label class="field"><span>${esc(this.t("syncDebounce"))}</span><input type="text" inputmode="numeric" data-input="sync-bw-debounce" value="${esc(w.debounce)}"${w.debounceError ? ` aria-invalid="true" aria-describedby="bw-debounce-error"` : ""}>${w.debounceError ? `<span id="bw-debounce-error" class="sync-field-error" role="alert">${esc(this.t("syncInvalidNumber", { min: 5, max: 600 }))}</span>` : ""}</label></div>`
         : ""
     }</div>`;
     return `${this._bwHeading(this.t("bwMealieTitle"), this.t("bwMealieText"))}${body}${w.free.length ? `<div class="bw-defaults">${check("after-add", w.afterAdd, this.t("bwAfterAdd"), this.t("bwAfterAddHint"))}${check("skip-duplicates", w.skipDuplicates, this.t("bwSkipDuplicates"), this.t("bwSkipDuplicatesHint"))}</div>${more}` : ""}${this._bwNav({ back: true, next: "sync-bw-next", nextDisabled: !w.mealieList })}`;
@@ -464,8 +464,8 @@ export const bringWizardMethods = {
     const duplicates = !w.skipDuplicates
       ? this.t("syncDuplicateNone")
       : w.merge
-        ? this.t("syncDuplicateMerge")
-        : this.t("syncDuplicateSkipExact");
+        ? this.t("bwDuplicatesSummaryMerge")
+        : this.t("bwSkipDuplicates");
     const sendLabel = count ? this.tp("bwSend", count, { count }) : this.t("bwFinish");
     const again = w.ruleId && w.error;
     return `${this._bwHeading(this.t("bwReleaseTitle"), this.t(count ? "bwReleaseText" : "bwReleaseNone"))}

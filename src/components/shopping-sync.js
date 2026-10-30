@@ -455,6 +455,14 @@ export const shoppingSyncMethods = {
       ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditText(a))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
+  _syncLastHealthyAudit(ruleId) {
+    const healthy = ["sent", "nothing_to_send", "reconciled"];
+    const entries = asArray(this._syncData().state?.audit)
+      .filter((entry) => entry.rule_id === ruleId && entry.at && healthy.includes(entry.outcome))
+      .sort((x, y) => String(x.at).localeCompare(String(y.at)));
+    const entry = entries.at(-1);
+    return entry ? { at: entry.at, outcome: entry.outcome, count: entry.count || 0 } : null;
+  },
   // Bring! says the list is gone (not that it did not answer, which passes by itself).
   _syncBringGone(rule, caps = this._syncCaps()) {
     const destination = rule.destination || {};
@@ -514,7 +522,8 @@ export const shoppingSyncMethods = {
     const mode = rule.mode === "move" ? "Move" : "Copy";
     const state = !rule.activated ? "NotActivated" : rule.paused ? "Paused" : "Active";
     const stateIcon = state === "Active" ? icon("check", 15) : icon("clock", 15);
-    const last = rule.last_run;
+    // The same source as the account row: a rule without a current run still shows its last healthy one.
+    const last = rule.last_run || this._syncLastHealthyAudit(rule.id);
     const open =
       this._syncWaiting(rule) + (counts.failed || 0) + (counts.needs_reconciliation || 0);
     const id = esc(rule.id);
@@ -548,10 +557,7 @@ export const shoppingSyncMethods = {
       !rule.activated && caps.admin
         ? `<button class="btn tiny primary" data-action="sync-setup-open" data-value="${id}">${icon("arrow", 14)} ${esc(this._syncBringT("syncFirstBatch"))}</button>`
         : "",
-      // Nothing can be sent while the list is gone: the way out takes the primary place.
-      bringGone && caps.admin && this._bwCanConnect()
-        ? `<button type="button" class="btn tiny primary" data-action="sync-bw-pick-list" data-value="${id}">${icon("edit", 14)} ${esc(this.t("bwPickList"))}</button>`
-        : "",
+      // The way out of a deleted list lives in the banner at the top, not repeated here.
       rule.activated && !bringGone
         ? write("sync-run", `${icon("refresh", 14)} ${esc(this.t("syncRunNow"))}`, "primary")
         : "",
