@@ -602,3 +602,11 @@ test("Discover recipe base copy keeps the colon in German like English", () => {
     assert.equal(de[key].includes(":"), en[key].includes(":"), key);
   }
 });
+
+test("the cooking progress track stops where the counter stops, clear of the close button", () => {
+  const polish = read("../src/design-system/polish.css");
+  const topline = rule(polish, ".atelier .modal:has(.cook-layout) .cook-topline");
+  const track = rule(polish, ".atelier .modal:has(.cook-layout) .cook-track");
+  const inset = topline.match(/padding-inline-end:\s*(\d+px)/)[1];
+  assert.match(track, new RegExp(`margin-inline-end:\\s*${inset}`));
+});

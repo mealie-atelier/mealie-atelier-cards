@@ -9222,10 +9222,19 @@ ha-card {
     scrollbar-width: none;
     scroll-snap-type: x proximity;
   }
+  /* The rail fades 32px at each end. The tabs start and snap after that fade (start aligned, not
+     centred), so a tab at rest never sits half faded under it. The tab before it ends 6px earlier:
+     the left fade is fully clear until 22px, so no half label of it shows. The right end keeps the
+     full fade as the hint that more tabs follow. */
+  .atelier .sidebar .nav {
+    padding-inline: 32px;
+    scroll-padding-inline: 32px;
+  }
   .atelier .sidebar .nav {
     -webkit-mask-image: linear-gradient(
       90deg,
       transparent 0,
+      transparent 22px,
       #000 32px,
       #000 calc(100% - 32px),
       transparent 100%
@@ -9233,6 +9242,7 @@ ha-card {
     mask-image: linear-gradient(
       90deg,
       transparent 0,
+      transparent 22px,
       #000 32px,
       #000 calc(100% - 32px),
       transparent 100%
@@ -9253,7 +9263,7 @@ ha-card {
     border-radius: 12px;
     font-size: 12px;
     white-space: nowrap;
-    scroll-snap-align: center;
+    scroll-snap-align: start;
   }
   .atelier .sidebar .nav > button span {
     display: inline;
@@ -9824,9 +9834,12 @@ ha-card {
   }
 }
 
-/* The counter keeps clear of the floating close button. */
+/* The counter and the progress track keep clear of the floating close button. */
 .atelier .modal:has(.cook-layout) .cook-topline {
   padding-inline-end: 56px;
+}
+.atelier .modal:has(.cook-layout) .cook-track {
+  margin-inline-end: 56px;
 }
 
 @media (orientation: landscape) and (max-height: 700px) {
