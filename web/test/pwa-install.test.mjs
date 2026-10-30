@@ -24,6 +24,8 @@ test("web manifest includes installable and maskable raster icons", async () => 
   const manifest = JSON.parse(
     await readFile(new URL("../public/manifest.webmanifest", import.meta.url)),
   );
+  assert.equal(manifest.lang, "de");
+  assert.match(manifest.name, /Küchenstudio/);
   const pngIcons = manifest.icons.filter((icon) => icon.type === "image/png");
   assert.ok(pngIcons.some((icon) => icon.sizes === "192x192" && icon.purpose === "any"));
   assert.ok(pngIcons.some((icon) => icon.sizes === "512x512" && icon.purpose === "maskable"));
@@ -186,4 +188,21 @@ test("the shell follows the live system colour scheme, including the theme colou
   // The first paint already follows the saved choice or the system scheme.
   const head = html.slice(0, html.indexOf("</head>"));
   assert.match(head, /<script>[\s\S]*prefers-color-scheme: light[\s\S]*"#f4f1eb"/);
+});
+
+test("app icons, favicon and install dialog mark carry the herb leaf of the in-app logo", async () => {
+  const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
+  const glyph = (svg) => svg.match(/class="glyph"[^>]*\sd="([^"]+)"/)?.[1];
+  const cards = await read("../public/mealie-atelier-cards.js");
+  const logo = cards.match(/const WEEK_DIAL_MARK =\s*'([^']+)'/)?.[1];
+  const leaf = glyph(logo ?? "");
+  assert.ok(leaf, "in-app logo has a glyph path");
+  assert.equal(glyph(await read("../public/index.html")), leaf, "install dialog mark");
+  // The browser window glyph the web app icons used to carry starts with a rounded rectangle.
+  for (const file of ["icon.svg", "icon-maskable.svg", "favicon.svg"]) {
+    const path = glyph(await read(`../public/${file}`));
+    assert.ok(path, `${file} has a glyph`);
+    assert.doesNotMatch(path, /^M(401 389\.9|413 403\.1|5 5L11 5)/, `${file} is not the window`);
+  }
+  assert.equal(await read("../public/favicon.svg"), await read("../../demo/site/favicon.svg"));
 });

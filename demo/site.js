@@ -290,3 +290,17 @@ if (liveFrame && liveCard && liveFullscreen) {
       // Without the module the button stays hidden: there is no dead control.
     });
 }
+
+// The language switch keeps the section the reader is in: the other page opens at the same place.
+const sectionLinks = [...document.querySelectorAll("a[data-section-map]")];
+function syncLanguageHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  for (const link of sectionLinks) {
+    const target = JSON.parse(link.dataset.sectionMap)[id];
+    link.hash = target ? `#${target}` : "";
+  }
+}
+if (sectionLinks.length) {
+  addEventListener("hashchange", syncLanguageHash);
+  syncLanguageHash();
+}

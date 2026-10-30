@@ -114,6 +114,16 @@ for (const [name, env, message] of [
     /ATELIER_HA_TOKEN/,
   ],
   [
+    "the template ATELIER_PASSWORD",
+    { MEALIE_URL: "http://127.0.0.1:1", ATELIER_PASSWORD: "replace-with-a-long-random-password" },
+    /template value/,
+  ],
+  [
+    "the template MEALIE_API_TOKEN",
+    { MEALIE_URL: "http://127.0.0.1:1", MEALIE_API_TOKEN: "replace-with-a-mealie-api-token" },
+    /template value/,
+  ],
+  [
     "bad alarm channel",
     { MEALIE_URL: "http://127.0.0.1:1", ATELIER_ALARM_CHANNEL: "pigeon" },
     /ATELIER_ALARM_CHANNEL/,
@@ -251,6 +261,28 @@ test("missing AI key returns a specific code", async () => {
     });
     assert.equal(ai.status, 400);
     assert.equal((await ai.json()).code, "ai_not_configured");
+  } finally {
+    r.child.kill("SIGTERM");
+    stub.server.close();
+  }
+});
+
+test("unknown paths answer a localized HTML page for browsers and JSON for API clients", async () => {
+  const stub = await mealieStub();
+  const r = await start({ MEALIE_URL: `http://127.0.0.1:${stub.port}` });
+  try {
+    const url = `http://127.0.0.1:${r.port}/nope`;
+    const page = await fetch(url, {
+      headers: { ...head, Accept: "text/html", "Accept-Language": "de" },
+    });
+    assert.equal(page.status, 404);
+    assert.match(page.headers.get("content-type"), /text\/html/);
+    const html = await page.text();
+    assert.match(html, /Seite nicht gefunden/);
+    assert.match(html, /href="\/"/);
+    const api = await fetch(url, { headers: head });
+    assert.equal(api.status, 404);
+    assert.match(api.headers.get("content-type"), /json/);
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();

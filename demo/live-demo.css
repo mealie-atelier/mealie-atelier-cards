@@ -402,6 +402,14 @@ h2 em {
   .menu-btn {
     display: grid;
   }
+  /* The open menu covers the whole viewport with an opaque panel, so no page text shows below it. */
+  .top.open {
+    height: 100dvh;
+    overflow-y: auto;
+    background: var(--bg, #0c120f);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
   .drawer:not([hidden]) {
     display: grid;
     max-height: calc(100dvh - 76px - env(safe-area-inset-top, 0px));
@@ -1804,6 +1812,17 @@ html.js .live-frame:not([data-ready])::after {
     grid-column: 1 / -1;
   }
 }
+@media (max-width: 400px) {
+  /* Two columns of 135px cut long German words such as "Rezeptsammlung": one column instead. */
+  .bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tile,
+  .tile.wide,
+  .tile.full-m {
+    grid-column: 1 / -1;
+  }
+}
 @media (max-width: 620px) {
   /* Image tiles show the phone capture whole: no browser bar, the phone screen at a readable size. */
   .tile.img .browser {
@@ -1828,6 +1847,8 @@ html.js .live-frame:not([data-ready])::after {
   }
   .tile h3 {
     font-size: 19px;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
   .tile p {
     font-size: 14px;

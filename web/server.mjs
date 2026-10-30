@@ -136,6 +136,15 @@ if (!MEALIE_API_TOKEN || !MEALIE_URL || (!PASSWORD && !USERS.length)) {
   );
   process.exit(1);
 }
+if (
+  PASSWORD === "replace-with-a-long-random-password" ||
+  MEALIE_API_TOKEN === "replace-with-a-mealie-api-token"
+) {
+  console.error(
+    "ATELIER_PASSWORD or MEALIE_API_TOKEN still has the template value from .env.example. Edit .env first.",
+  );
+  process.exit(1);
+}
 if (PASSWORD && PASSWORD.length < MIN_PASSWORD_LENGTH) {
   console.error(`ATELIER_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
   process.exit(1);
@@ -222,6 +231,11 @@ const AUTH_PAGE_TEXT = {
       "Anmeldung erforderlich",
       "Melde dich bei Mealie Atelier an, um fortzufahren. Lade die Seite neu, um die Anmeldung erneut zu starten.",
     ],
+    notFound: [
+      "Seite nicht gefunden",
+      "Diese Adresse gibt es bei Mealie Atelier nicht.",
+      "Zurück zur App",
+    ],
     locked: (m) => [
       "Zu viele fehlgeschlagene Anmeldungen",
       `Aus Sicherheitsgründen ist die Anmeldung gesperrt. Versuche es in ${m} ${m === 1 ? "Minute" : "Minuten"} erneut.`,
@@ -232,6 +246,11 @@ const AUTH_PAGE_TEXT = {
       "Sign-in required",
       "Sign in to Mealie Atelier to continue. Reload the page to start the sign-in again.",
     ],
+    notFound: [
+      "Page not found",
+      "This address does not exist in Mealie Atelier.",
+      "Back to the app",
+    ],
     locked: (m) => [
       "Too many failed sign-ins",
       `Sign-in is locked for security reasons. Try again in ${m} ${m === 1 ? "minute" : "minutes"}.`,
@@ -241,9 +260,11 @@ const AUTH_PAGE_TEXT = {
 /** Small self-contained page for browser navigations that hit the sign-in gate. */
 function authPage(req, kind, minutes = 1) {
   const text = AUTH_PAGE_TEXT[resolveLocale(req.headers["accept-language"])] || AUTH_PAGE_TEXT.en;
-  const [title, body] = kind === "locked" ? text.locked(minutes) : text.signIn;
+  const [title, body, linkText] =
+    kind === "locked" ? text.locked(minutes) : kind === "notFound" ? text.notFound : text.signIn;
+  const link = linkText ? `<p><a href="/">${linkText}</a></p>` : "";
   const lang = text === AUTH_PAGE_TEXT.de ? "de" : "en";
-  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222}h1{font-size:1.4rem}</style></head><body><h1>${title}</h1><p>${body}</p></body></html>`;
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222}h1{font-size:1.4rem}</style></head><body><h1>${title}</h1><p>${body}</p>${link}</body></html>`;
 }
 const wantsHtml = (req) => String(req.headers.accept || "").includes("text/html");
 function bad(text = "Invalid request", code = "invalid_request") {
@@ -1346,6 +1367,10 @@ const server = createServer(async (req, res) => {
       let data = await readFile(join(ROOT, "public", filename));
       if (filename === "sw.js") data = renderServiceWorker(data.toString("utf8"), VERSION);
       reply(res, 200, data, contentType, { "Cache-Control": "private, max-age=3600" });
+      return;
+    }
+    if (req.method === "GET" && wantsHtml(req)) {
+      reply(res, 404, authPage(req, "notFound"), "text/html; charset=utf-8");
       return;
     }
     reply(res, 404, { error: "Not found" });

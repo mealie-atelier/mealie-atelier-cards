@@ -198,7 +198,7 @@ Live Mealie, live Home Assistant, external AI/USDA providers, and Fully Kiosk ar
 
 - The cooking timer is a visible part of the cooking cockpit, not a generic form row. Show active countdowns as clear, readable timer cards with a visual progress indicator, meaningful labels, and a reachable stop control.
 - Keep timer creation compact and fast with common duration presets, a custom duration, and an optional label. When the label is empty, use a localized kitchen-timer name and include the current recipe step in supporting metadata.
-- Put running timers before timer creation so an active countdown takes visual priority. On narrow/mobile layouts, show the current step with its text and photo first, then step navigation, then timer utilities.
+- Put the compact start form first and the running timer cards directly below it, so a new timer grows the list downward and never moves the start button. On narrow/mobile layouts, show the current step with its text and photo first, then step navigation, then timer utilities.
 - Persisted timers from older versions may lack a start time and duration. Continue displaying their remaining time without inventing progress; new timers carry start time and duration so the ring can show actual elapsed progress.
 - Timer motion follows shared motion tokens and reduced-motion preferences. The countdown remains legible and functional when animation is disabled.
 

@@ -8,11 +8,17 @@ Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **wit
 
 ## Docker quick start
 
+There is no prebuilt image: Docker builds it from the cloned repository.
+
 ```bash
+git clone https://github.com/mealie-atelier/mealie-atelier-cards.git
+cd mealie-atelier-cards/web
 cp .env.example .env
 # Edit MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD (at least 12 characters) in .env
 docker compose up -d --build
 ```
+
+`MEALIE_URL` is resolved inside the container, so `localhost` and `127.0.0.1` point to the container itself and `/healthz` answers 503. Use `http://host.docker.internal:9925` for Mealie on the Docker host, the host's LAN IP, or the Mealie container name on a shared Docker network. `compose.yaml` maps `host.docker.internal` to the host, so it also works on Linux.
 
 Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (the unauthenticated `/healthz`, which verifies the Mealie token on the server, caches the result for 60 seconds and answers only 200 or 503 without details), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
 
@@ -30,12 +36,16 @@ Behind a reverse proxy every request arrives from the proxy address, so the sign
 
 ```bash
 # Node.js 22 or later
+git clone https://github.com/mealie-atelier/mealie-atelier-cards.git
+cd mealie-atelier-cards/web
 cp .env.example .env
 # Edit MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD in .env
 npm start
 ```
 
-`npm start` runs `node --env-file=.env server.mjs`, so `.env` is loaded for you (default port 3000). The server refuses to start without the required variables or with a password shorter than 12 characters.
+`npm start` runs `node --env-file=.env server.mjs`, so `.env` is loaded for you (default port 3000). The server refuses to start without the required variables, with a password shorter than 12 characters, or while `ATELIER_PASSWORD` or `MEALIE_API_TOKEN` still has the template value from `.env.example`.
+
+The Node route listens on all interfaces (`0.0.0.0`) by default, over plain HTTP with Basic auth only. For local use set `HOST=127.0.0.1` in `.env`. Outside a trusted LAN put an HTTPS reverse proxy in front, and never expose it to the Internet.
 
 ## Configuration
 
@@ -137,7 +147,7 @@ The tests wait for defined states, never for fixed times. The card replaces its 
 
 - No npm packages; just Node 22 built-in server and fetch.
 - User credentials and Mealie tokens remain on the server. Never bake `.env` into your Docker image or expose it in Git.
-- Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos. The opt-in offline mode is the exception: it stores your shopping lists and permissions in the browser's IndexedDB on that device.
+- Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari, or in any browser on iOS 16.4 or later, and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos. The opt-in offline mode is the exception: it stores your shopping lists and permissions in the browser's IndexedDB on that device.
 - This is not an installable Home Assistant integration. The Bridge and the cards are separate optional HA packages.
 - Currently supports one Mealie token/household per web server; all logins use its Mealie permissions, narrowed by their `ATELIER_USERS` role.
 

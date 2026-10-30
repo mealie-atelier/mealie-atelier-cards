@@ -317,6 +317,7 @@ function localizedData(locale) {
     recipes: catalog.recipes.map((recipe) => ({
       id: recipe.id,
       slug: recipe.slug,
+      slugEn: recipe.slugEn,
       title: recipe.title[locale],
       description: recipe.description[locale],
       searchTerms: [
@@ -592,7 +593,7 @@ function renderRecipePage(locale, recipe) {
   const description = escapeHtml(recipe.description[locale]);
   const ogImage = ogImageMeta(locale, recipe, "../../../");
   const recipeOgUrl = pageUrl ? `<meta property="og:url" content="${escapeHtml(pageUrl)}">` : "";
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="description" content="${description}"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}">${ogImage}${recipeOgUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}">${iconLinks("../../../assets/")}${canonical}${hreflang("de", absolute.de)}${hreflang("en", absolute.en)}${hreflang("x-default", absolute.de)}<link rel="stylesheet" href="../../../assets/live-demo.css"><title>${title}</title><script type="application/ld+json">${structured}</script></head><body class="recipe-body">${renderSiteHeader(ctx)}<main id="main" class="recipe-page"><article><div class="wrap"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><a href="${escapeHtml(`${demoHome[locale]}#${locale === "de" ? "rezepte" : "recipes"}`)}">${t("Rezepte", "Recipes")}</a></nav></div><div class="wrap recipe-hero"><header class="recipe-head"><p class="kicker"><span class="dot"></span>${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="lead">${description}</p><div class="recipe-metrics">${metrics}</div></header><figure class="recipe-figure">${image}<figcaption>${photoCaption(ctx, recipe)}</figcaption></figure></div><div class="wrap recipe-grid"><section class="recipe-ingredients" aria-labelledby="ingredients-title"><h2 id="ingredients-title">${words.recipeIngredients}</h2><p class="meta">${recipe.servings} ${words.servings}</p><ul>${ingredients}</ul></section><section class="recipe-method" aria-labelledby="method-title"><h2 id="method-title">${words.recipeSteps}</h2><ol>${steps}</ol></section></div><aside class="wrap recipe-cta"><div class="recipe-cta-inner">${brandMark()}<div><h2>${words.tryInDemo}</h2><p>${t("Kochmodus mit Timer, Wochenplan und Einkaufsliste: alles in der echten Karte, direkt im Browser.", "Cooking mode with timers, meal plan and shopping list: all in the real card, right in your browser.")}</p></div><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(`${demoHome[locale]}?recipe=${encodeURIComponent(recipe.slug)}#live-demo`)}">${words.tryButton}</a><a class="btn btn-ghost" href="${escapeHtml(counterpartUrl)}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${words.otherLanguage}</a></div></div></aside></article></main>${renderSiteFooter(ctx)}<script type="module" src="../../../assets/site.js"></script></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="description" content="${description}"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}">${ogImage}${recipeOgUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}">${iconLinks("../../../assets/")}${canonical}${hreflang("de", absolute.de)}${hreflang("en", absolute.en)}${hreflang("x-default", absolute.de)}<link rel="stylesheet" href="../../../assets/live-demo.css"><title>${title}</title><script type="application/ld+json">${structured}</script></head><body class="recipe-body">${renderSiteHeader(ctx)}<main id="main" class="recipe-page"><article><div class="wrap"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><a href="${escapeHtml(`${demoHome[locale]}#${locale === "de" ? "rezepte" : "recipes"}`)}">${t("Rezepte", "Recipes")}</a></nav></div><div class="wrap recipe-hero"><header class="recipe-head"><p class="kicker"><span class="dot"></span>${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="lead">${description}</p><div class="recipe-metrics">${metrics}</div></header><figure class="recipe-figure">${image}<figcaption>${photoCaption(ctx, recipe)}</figcaption></figure></div><div class="wrap recipe-grid"><section class="recipe-ingredients" aria-labelledby="ingredients-title"><h2 id="ingredients-title">${words.recipeIngredients}</h2><p class="meta">${recipe.servings} ${words.servings}</p><ul>${ingredients}</ul></section><section class="recipe-method" aria-labelledby="method-title"><h2 id="method-title">${words.recipeSteps}</h2><ol>${steps}</ol></section></div><aside class="wrap recipe-cta"><div class="recipe-cta-inner">${brandMark()}<div><h2>${words.tryInDemo}</h2><p>${t("Kochmodus mit Timer, Wochenplan und Einkaufsliste: alles in der echten Karte, direkt im Browser.", "Cooking mode with timers, meal plan and shopping list: all in the real card, right in your browser.")}</p></div><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(`${demoHome[locale]}?recipe=${encodeURIComponent(locale === "de" ? recipe.slug : recipe.slugEn)}#live-demo`)}">${words.tryButton}</a><a class="btn btn-ghost" href="${escapeHtml(counterpartUrl)}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${words.otherLanguage}</a></div></div></aside></article></main>${renderSiteFooter(ctx)}<script type="module" src="../../../assets/site.js"></script></body></html>`;
 }
 
 // The one complete credits list, linked from every footer.
@@ -643,18 +644,27 @@ function renderCreditsPage(locale) {
 // on phones and beside it on wide screens. Not canonical, not in the sitemap, not indexable.
 function renderNotFoundPage() {
   const prefix = deploymentBase || "/";
-  const ctx = {
-    locale: "de",
+  const chromeContext = (locale, noCurrent) => ({
+    locale,
     root: prefix,
     manifest: showcase,
     recipes: catalog.recipes,
     home: { de: `${prefix}de/`, en: `${prefix}en/` },
     alternate: { de: `${prefix}de/`, en: `${prefix}en/` },
-    creditsUrl: `${prefix}${creditsPath("de")}`,
+    creditsUrl: `${prefix}${creditsPath(locale)}`,
     onLanding: false,
-    // The visitor is on no language page, so the switch must not mark one as current.
-    noCurrent: true,
+    noCurrent,
+  });
+  // The visitor is on no language page, so the neutral chrome must not mark one as current.
+  const ctx = chromeContext("de", true);
+  // A static host serves this one file for every unknown path, so a tiny script reads the URL and, below
+  // /en/ or /de/, swaps in that language's header and footer with the matching switch link marked current.
+  const chromeTemplate = (locale) => {
+    const own = chromeContext(locale, false);
+    return `<template id="notfound-chrome-${locale}">${renderSiteHeader(own)}${renderSiteFooter(own)}</template>`;
   };
+  const basePath = new URL(prefix, "https://site.invalid").pathname;
+  const chromeScript = `<script>(function(){var base=${JSON.stringify(basePath)},path=location.pathname;if(path.indexOf(base)!==0)return;var lang=path.slice(base.length).split("/")[0];if(lang!=="de"&&lang!=="en")return;var tpl=document.getElementById("notfound-chrome-"+lang),main=document.getElementById("main"),foot=document.querySelector("body > footer");if(!tpl||!main||!foot)return;var content=tpl.content,newFoot=content.querySelector("footer"),head=document.createDocumentFragment();while(main.previousSibling)main.previousSibling.remove();while(content.firstChild!==newFoot)head.appendChild(content.firstChild);main.parentNode.insertBefore(head,main);foot.replaceWith(newFoot);document.documentElement.lang=lang;})();</script>`;
   const block = (locale, kicker, heading, lead, labels) => {
     const home = `${prefix}${locale}/`;
     const tag = locale === "en" ? "h2" : "h1";
@@ -676,7 +686,7 @@ function renderNotFoundPage() {
   );
   const title = "Seite nicht gefunden · Page not found · Mealie Atelier";
   const assets = `${prefix}assets/`;
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}<script type="module" src="${assets}site.js"></script></body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}${chromeTemplate("de")}${chromeTemplate("en")}${chromeScript}<script type="module" src="${assets}site.js"></script></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {

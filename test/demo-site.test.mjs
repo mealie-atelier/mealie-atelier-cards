@@ -122,7 +122,6 @@ test("landing pages state the install route and setup facts correctly", () => {
     assert.match(html, /docker compose up -d --build/);
     assert.match(html, /OpenAI/);
     assert.match(html, /Anthropic/);
-    assert.doesNotMatch(html, /lernen\/mealie-atelier-ohne-home-assistant/);
     // The listing is submitted, not merged, so nothing may promise it is live today.
     assert.doesNotMatch(html, /jetzt im Marketplace|now in the Marketplace/i);
   }
@@ -1622,7 +1621,7 @@ test("every recipe page sends its own recipe slug to the live demo and the demo 
       assert.match(
         cta,
         new RegExp(
-          `class="btn btn-primary" href="[^"]*/${locale}/\\?recipe=${recipe.slug}#live-demo"`,
+          `class="btn btn-primary" href="[^"]*/${locale}/\\?recipe=${locale === "de" ? recipe.slug : recipe.slugEn}#live-demo"`,
         ),
         `${name} must link to its own recipe in the demo`,
       );
@@ -1631,6 +1630,19 @@ test("every recipe page sends its own recipe slug to the live demo and the demo 
   const preview = read("demo/preview.html");
   assert.match(preview, /get\("recipe"\)/);
   assert.match(preview, /_openRecipe\(wantedSlug\)/);
+  // The deep link takes the English slug of an English page and still the German one of old links.
+  assert.match(preview, /item\.slug === wantedParam \|\| item\.slugEn === wantedParam/);
+  const slugs = catalogData.recipes.flatMap((recipe) => [recipe.slug, recipe.slugEn]);
+  const owners = new Map();
+  for (const recipe of catalogData.recipes)
+    for (const slug of [recipe.slug, recipe.slugEn])
+      (assert.equal(owners.get(slug) ?? recipe.id, recipe.id, `${slug} resolves to one recipe`),
+        owners.set(slug, recipe.id));
+  assert.ok(slugs.length > 0);
+  for (const locale of ["de", "en"]) {
+    const data = JSON.parse(read(join(builds.local, "data", `${locale}.json`)));
+    for (const recipe of data.recipes) assert.ok(recipe.slugEn, `${locale} data carries slugEn`);
+  }
   assert.match(preview, /data-action="cook-start"/);
 });
 
@@ -1780,7 +1792,21 @@ test("404.html is a noindex bilingual page with root-absolute assets, kept out o
     assert.ok(existsSync(join(out, "404.html")), "404.html exists");
     const html = read(join(out, "404.html"));
     assert.match(html, /<meta name="robots" content="noindex">/);
-    assert.doesNotMatch(html, /aria-current/, "no language link is the current page");
+    // The neutral page marks no language as current; only the inert per-language templates do.
+    const live = html.replace(/<template[\s\S]*?<\/template>/g, "");
+    assert.doesNotMatch(live, /aria-current/, "no language link is the current page");
+    for (const locale of ["de", "en"]) {
+      const template = html.match(
+        new RegExp(`<template id="notfound-chrome-${locale}">([\\s\\S]*?)</template>`),
+      )?.[1];
+      assert.ok(template, `${locale} chrome template`);
+      assert.ok(
+        template.includes(`hreflang="${locale}" lang="${locale}" aria-current="page"`),
+        `${locale} template marks ${locale} current`,
+      );
+      assert.equal((template.match(/aria-current/g) ?? []).length, 3, "top, drawer and footer");
+    }
+    assert.match(html, /<script>\(function\(\)\{var base=/, "path based language script");
     assert.doesNotMatch(html, /rel="canonical"|og:image|twitter:image|rel="alternate" hreflang/);
     // Served at any depth, so no reference may be relative.
     const refs = [...html.matchAll(/\s(?:src|href)="([^"]+)"/g)]
@@ -1886,4 +1912,138 @@ test("tablet landscape layouts: story steps sit side by side, showcases are cent
     css,
     /@media \(max-width: 1120px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.top \{\s*background: #0c120f;/,
   );
+});
+
+test("the web app guide links point at the real guide page, not a missing anchor", () => {
+  for (const locale of ["de", "en"]) {
+    const html = read(join(builds.local, locale, "index.html"));
+    assert.ok(
+      html.includes(
+        'href="https://alles-automatisch.de/lernen/mealie-atelier-ohne-home-assistant"',
+      ),
+      `${locale} links the web app guide`,
+    );
+    assert.ok(!html.includes("#variante-b"), `${locale} has no dead guide anchor`);
+  }
+});
+
+test("the install card offers one-click HACS links that open in a new tab", () => {
+  for (const locale of ["de", "en"]) {
+    const html = read(join(builds.local, locale, "index.html"));
+    const card = html.slice(
+      html.indexOf('class="card c-install'),
+      html.indexOf('class="card c-rights'),
+    );
+    for (const repo of ["mealie-atelier-cards", "mealie-atelier-bridge"]) {
+      assert.match(
+        card,
+        new RegExp(
+          `href="https://my\\.home-assistant\\.io/redirect/hacs_repository/\\?owner=mealie-atelier&amp;repository=${repo}&amp;category=[a-z]+" target="_blank" rel="noopener noreferrer"`,
+        ),
+        `${locale} install card links ${repo}`,
+      );
+    }
+  }
+  const en = read(join(builds.local, "en", "index.html"));
+  assert.doesNotMatch(en, /Install it straight from HACS/);
+});
+
+test("the English day label reads Forever, not For ever", () => {
+  const en = read(join(builds.local, "en", "index.html"));
+  assert.match(en, /07 · Forever</);
+  assert.doesNotMatch(en, /For ever/);
+});
+
+test("the landing page language switch carries a section map so the other page opens at the same section", () => {
+  for (const [locale, other] of [
+    ["de", "en"],
+    ["en", "de"],
+  ]) {
+    const html = read(join(builds.local, locale, "index.html"));
+    const tags = html.match(
+      new RegExp(`<a [^>]*hreflang="${other}"[^>]*data-section-map="[^"]+"`, "g"),
+    );
+    assert.equal(tags?.length, 3, `${locale} header, menu and footer switch carry the map`);
+    const map = JSON.parse(
+      tags[0].match(/data-section-map="([^"]+)"/)[1].replaceAll("&quot;", '"'),
+    );
+    for (const key of Object.keys(sectionIds[locale])) {
+      assert.equal(map[sectionIds[locale][key]], sectionIds[other][key], `${locale} ${key}`);
+    }
+    assert.doesNotMatch(html, new RegExp(`hreflang="${locale}"[^>]*data-section-map`));
+  }
+  const recipe = read(
+    join(builds.local, "en/recipes", catalogData.recipes[0].slugEn, "index.html"),
+  );
+  assert.doesNotMatch(recipe, /data-section-map/, "recipe pages switch to the matching recipe");
+  const script = read("demo/site.js");
+  assert.match(script, /addEventListener\("hashchange", syncLanguageHash\)/);
+  assert.match(script, /link\.hash = target \? `#\$\{target\}` : ""/);
+});
+
+test("the design system documents the cooking timer order the card renders", () => {
+  const docs = read("docs/DESIGN_SYSTEM.md");
+  assert.doesNotMatch(docs, /Put running timers before timer creation/);
+  assert.match(docs, /start form first and the running timer cards directly below it/);
+  const dialogs = read("src/components/dialogs.js");
+  assert.ok(
+    dialogs.indexOf("cook-timer-compose") < dialogs.indexOf('class="cook-timers"'),
+    "the start form renders before the running timers",
+  );
+});
+
+test("the demo Manage view reports the released card version", () => {
+  const pkg = JSON.parse(read("package.json"));
+  assert.match(read("demo/preview.html"), new RegExp(`version: "${pkg.version}",`));
+  for (const page of ["de/index.html", "en/index.html"])
+    assert.match(read(join(builds.local, page)), new RegExp(`version: "${pkg.version}",`));
+});
+
+test("the narrow product page uses one feature column and an opaque full-height mobile menu", () => {
+  const css = read("demo/live-demo.css");
+  assert.match(
+    css,
+    /@media \(max-width: 400px\) \{[^@]*\.bento \{\s*grid-template-columns: minmax\(0, 1fr\);/,
+  );
+  assert.match(css, /\.tile h3 \{[^}]*overflow-wrap: anywhere;/);
+  assert.match(
+    css,
+    /\.top\.open \{\s*height: 100dvh;[^}]*background: var\(--bg, #0c120f\);[^}]*backdrop-filter: none;/,
+  );
+});
+
+test("the web app quick starts say where to run the commands", () => {
+  const readme = read("web/README.md");
+  const clone = "git clone https://github.com/mealie-atelier/mealie-atelier-cards.git";
+  assert.equal(
+    readme.split(`${clone}\ncd mealie-atelier-cards/web\ncp .env.example .env`).length,
+    3,
+  );
+  assert.match(readme, /no prebuilt image/);
+  for (const page of ["de/index.html", "en/index.html"]) {
+    const html = read(join(builds.local, page));
+    assert.ok(
+      html.indexOf(clone) > 0 && html.indexOf(clone) < html.indexOf("cp .env.example .env"),
+      `${page} clones before copying .env.example`,
+    );
+    assert.match(html, /cd mealie-atelier-cards\/web/);
+  }
+});
+
+test("the install docs name the Marketplace location and the Bridge version for shopping edits", () => {
+  const readme = read("README.md");
+  assert.match(readme, /open the Marketplace \(\*\*Settings → Marketplace\*\*/);
+  assert.match(readme, /need Bridge 0\.11 or newer/);
+  assert.match(read("CHANGELOG.md"), /needs Bridge 0\.11 or newer/);
+  assert.match(read("web/README.md"), /any browser on iOS 16\.4 or later/);
+  assert.match(read("web/public/pwa-install.js"), /iOS 16\.4/);
+});
+
+test("the changelog keeps every release heading in the Keep a Changelog form", () => {
+  const headings = read("CHANGELOG.md").match(/^## .*$/gm);
+  for (const heading of headings)
+    assert.match(
+      heading,
+      /^## (\[(Unreleased|\d+\.\d+\.\d+)\]( - \d{4}-\d{2}-\d{2})?|Developer previews .*)$/,
+    );
 });

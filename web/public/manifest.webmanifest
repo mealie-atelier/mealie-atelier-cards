@@ -1,8 +1,9 @@
 {
   "id": "/",
-  "name": "Mealie Atelier · Kitchen Studio",
+  "name": "Mealie Atelier · Dein Küchenstudio",
+  "lang": "de",
   "short_name": "Atelier",
-  "description": "Your private kitchen studio for Mealie recipes, meal planning and shopping.",
+  "description": "Dein privates Küchenstudio für Mealie-Rezepte, Wochenplanung und Einkauf.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

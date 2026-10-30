@@ -9,8 +9,11 @@ export const links = {
   discussions: "https://github.com/orgs/mealie-atelier/discussions",
   guide: "https://alles-automatisch.de/lernen/mealie-atelier",
   setup: "https://alles-automatisch.de/lernen/mealie-atelier-einrichten",
-  setupWeb:
-    "https://alles-automatisch.de/lernen/mealie-atelier-einrichten#variante-b-mealie-atelier-ohne-home-assistant",
+  setupWeb: "https://alles-automatisch.de/lernen/mealie-atelier-ohne-home-assistant",
+  hacsCards:
+    "https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-cards&category=plugin",
+  hacsBridge:
+    "https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-bridge&category=integration",
   troubleshooting: "https://alles-automatisch.de/lernen/mealie-atelier-fehlerbehebung",
   youtube: "https://www.youtube.com/@alles-automatisch/join",
   kofi: "https://ko-fi.com/allesautomatisch",
@@ -133,8 +136,23 @@ function languageSwitch(ctx, className, place) {
     en: { top: "Language", drawer: "Language in the menu", foot: "Language in the footer" },
   };
   const label = names[ctx.locale][place];
+  // On the landing page the switch keeps the reader's section: site.js reads this map (section id of
+  // this page to section id of the other page) and appends the matching hash to the link.
+  const sections = (code) =>
+    ctx.onLanding && code !== ctx.locale
+      ? ` data-section-map="${escapeHtml(
+          JSON.stringify(
+            Object.fromEntries(
+              Object.entries(sectionIds[ctx.locale]).map(([key, id]) => [
+                id,
+                sectionIds[code][key],
+              ]),
+            ),
+          ),
+        )}"`
+      : "";
   const item = (code, name) =>
-    `<a href="${escapeHtml(ctx.alternate[code])}" hreflang="${code}" lang="${code}"${code === ctx.locale && !ctx.noCurrent ? ' aria-current="page"' : ""}><span aria-hidden="true">${code.toUpperCase()}</span><span class="sr">${name}</span></a>`;
+    `<a href="${escapeHtml(ctx.alternate[code])}" hreflang="${code}" lang="${code}"${sections(code)}${code === ctx.locale && !ctx.noCurrent ? ' aria-current="page"' : ""}><span aria-hidden="true">${code.toUpperCase()}</span><span class="sr">${name}</span></a>`;
   return `<nav class="${className}" aria-label="${label}">${item("de", "Deutsch")}${item("en", "English")}</nav>`;
 }
 
