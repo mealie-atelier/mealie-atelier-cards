@@ -397,11 +397,24 @@ export const recipeEditorMethods = {
               history.confirm === item.backup_id
                 ? `<div class="ed-confirm" role="alertdialog" aria-label="${esc(this.t("editorRestoreNow"))}"><p>${esc(this.t("editorRestoreConfirm", { time }))}</p><div class="ed-actions"><button type="button" class="btn primary" data-action="ed-restore-do" data-value="${esc(item.backup_id)}">${esc(this.t("editorRestoreNow"))}</button><button type="button" class="btn" data-action="ed-restore-cancel">${esc(this.t("editorCancel"))}</button></div></div>`
                 : "";
-            return `<li class="ed-history-item"><div class="ed-history-copy"><strong>${esc(time)}</strong><span>${esc(item.user_name || "")} · ${esc(this.t(EDITOR_KIND_KEYS[item.kind] || "editorKindBasics"))}</span><small>${esc(item.summary || "")}</small></div><button type="button" class="btn tiny" data-action="ed-restore-ask" data-value="${esc(item.backup_id)}" aria-label="${esc(`${this.t("editorRestore")} · ${time}`)}">${esc(this.t("editorRestore"))}</button>${confirm}</li>`;
+            return `<li class="ed-history-item"><div class="ed-history-copy"><strong>${esc(time)}</strong><span>${esc(item.user_name || "")} · ${esc(this.t(EDITOR_KIND_KEYS[item.kind] || "editorKindBasics"))}</span><small>${esc(this._editorHistorySummary(item))}</small></div><button type="button" class="btn tiny" data-action="ed-restore-ask" data-value="${esc(item.backup_id)}" aria-label="${esc(`${this.t("editorRestore")} · ${time}`)}">${esc(this.t("editorRestore"))}</button>${confirm}</li>`;
           })
           .join("")}</ul>`;
     }
     return `<div class="ed-actions">${toggle}${undo}</div>${list}`;
+  },
+  /** Localized one line summary of a backup, built from the structured counts; old backups keep the stored text. */
+  _editorHistorySummary(item) {
+    const count = (value) =>
+      Number.isFinite(Number(value)) && value !== null && value !== "" ? Number(value) : null;
+    const ingredients = count(item.ingredient_count);
+    const steps = count(item.step_count);
+    if (item.kind === "ingredients" && ingredients !== null)
+      return this.tp("editorSummaryIngredients", ingredients);
+    if (item.kind === "instructions" && steps !== null) return this.tp("editorSummarySteps", steps);
+    if (item.kind === "image") return this.t("editorSummaryImage");
+    if (item.kind === "basics") return this.t("editorSummaryBasics");
+    return item.summary || "";
   },
   /** Photo controls inside one step row of the steps editor. */
   _editorStepPhotos(id) {
