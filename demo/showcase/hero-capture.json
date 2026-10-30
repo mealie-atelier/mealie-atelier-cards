@@ -1,0 +1,80 @@
+{
+  "de": {
+    "hero-tablet-cook": {
+      "timer": "07:28",
+      "step": "01 / 03",
+      "cut": [],
+      "viewport": {
+        "width": 1180,
+        "height": 880
+      },
+      "files": {
+        "800": "1a0e8c7f8dc26d8d889ad478427691c6c8f09dd2a3afad418438f4594c994dc8",
+        "1200": "41d923371de3ec6bf4ba244030b3f1e0adbaf00dc9eda007b35184cb1a06721c",
+        "1600": "d8aad083105d64ad92ad1e6e680a2b38633baf195e2e99603393eedb7eeea31d"
+      }
+    },
+    "hero-phone-shopping": {
+      "height": 780,
+      "ticked": 2,
+      "open": 7,
+      "total": 9,
+      "tickedShown": 2,
+      "allRowsShown": true,
+      "tickedNames": ["500 g Kirschtomaten", "2 EL Olivenöl"],
+      "rail": {
+        "cut": [],
+        "activeWhole": true,
+        "shown": ["Vorräte", "Einkaufsliste", "Gemeinsam kochen"],
+        "gapLeft": 20,
+        "gapRight": 24
+      },
+      "cut": [],
+      "statusColour": "#111613",
+      "files": {
+        "400": "fa188d06874b3d4f33c64be6ba317e49607bb78f74aa7e09fc2c0dca73b8a869",
+        "700": "2056726b02017e460021498440b06c549c82facd8b0b64e96ae0b9afd9c56aa9",
+        "1179": "d61952ac10c29b4dbceee3bc7674c3c1e0aec32a4d4674ca21de56bb8abae0f6"
+      }
+    }
+  },
+  "en": {
+    "hero-tablet-cook": {
+      "timer": "07:28",
+      "step": "01 / 03",
+      "cut": [],
+      "viewport": {
+        "width": 1180,
+        "height": 880
+      },
+      "files": {
+        "800": "6e8c61d3409891f02c7986848015ad780d0e63f20f1e6f6c38b1ccd31dd28bfd",
+        "1200": "e8fcc6e2effa1feb23b25a7e790a3547fff477ec70f13d182f0a82cf3dc84793",
+        "1600": "532bb8006a728c11bc4a55e708fc8a729fdd60922f75287e446bee5018cb214c"
+      }
+    },
+    "hero-phone-shopping": {
+      "height": 779,
+      "ticked": 2,
+      "open": 7,
+      "total": 9,
+      "tickedShown": 2,
+      "allRowsShown": true,
+      "tickedNames": ["500 g cherry tomatoes", "2 tbsp olive oil"],
+      "rail": {
+        "cut": [],
+        "activeWhole": true,
+        "shown": ["Shopping", "Family", "Cookbook", "Manage"],
+        "gapLeft": 25,
+        "gapRight": 20
+      },
+      "cut": [],
+      "statusColour": "#111613",
+      "files": {
+        "400": "6867dd5ab8cf596930d30b37f65c31010fd7ee3016048d39acfc3bfc21f3f13c",
+        "700": "8ed3c5e76e8c00773783d268188b877ad37792c09c44abb75a4b709e5739b5a3",
+        "1179": "9c637a38298fbc9de4c616cb7ddaabf7c2abeebaad60807279cfa62b1ac30336"
+      }
+    }
+  }
+}

@@ -32,6 +32,8 @@
     "build": "node scripts/build-design-system.mjs",
     "build:demo": "npm run build && node scripts/generate-demo-site.mjs",
     "check": "node --check dist/mealie-atelier-cards.js",
+    "capture:hero": "uv run --with playwright --with pillow python scripts/capture-hero.py",
+    "check:hero": "uv run --with playwright python scripts/check-hero.py",
     "test": "node --test test/*.test.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
