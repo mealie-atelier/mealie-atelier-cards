@@ -5,6 +5,7 @@ import {
   mkdir,
   readdir,
   readFile,
+  rm,
   rmdir,
   stat,
   unlink,
@@ -792,35 +793,9 @@ for (const locale of localeIds) {
   }
 }
 
-// Recipe pages that origin/main published: English pages lived under the German slug, and the
-// recipe swap later dropped most of them. Cloudflare Pages reads _redirects from the site root, so
-// every address published earlier keeps working with a permanent redirect: to the new English page
-// when the recipe is still in the catalog, otherwise to the recipe overview of that language.
-const publishedRecipeSlugs = [
-  "shakshuka-mit-paprika",
-  "gnocchi-alla-sorrentina",
-  "griechischer-salat-mit-kichererbsen",
-  "haehnchensuppe-mit-gemuese",
-  "pizza-margherita",
-  "zitronen-pasta-mit-gruenkohl-und-walnuessen",
-  "buttermilch-pancakes-mit-beeren",
-  "paneer-curry-mit-basmatireis",
-  "ramen-mit-haehnchen-und-gemuese",
-  "ofengemuese-mit-linsen-und-kraeuterjoghurt",
-];
-const redirectRules = new Map();
-const addRedirect = (from, to) => {
-  for (const path of [from, from.replace(/\/$/, "")]) {
-    if (path !== to && path !== to.replace(/\/$/, "")) redirectRules.set(path, `${path} ${to} 301`);
-  }
-};
-const legacySlugs = new Set([...publishedRecipeSlugs, ...catalog.recipes.map((r) => r.slug)]);
-for (const slug of legacySlugs) {
-  const current = catalog.recipes.find((recipe) => recipe.slug === slug);
-  addRedirect(`/en/recipes/${slug}/`, current ? `/en/recipes/${current.slugEn}/` : "/en/");
-  if (!current) addRedirect(`/de/rezepte/${slug}/`, "/de/");
-}
-await writeFile(join(siteRoot, "_redirects"), `${[...redirectRules.values()].join("\n")}\n`);
+// An earlier build wrote a _redirects file; recipe URLs are no longer redirected, so a reused
+// output folder must not keep serving it.
+await rm(join(siteRoot, "_redirects"), { force: true });
 
 if (deploymentBase) {
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapUrls.map((url) => `<url><loc>${escapeHtml(url)}</loc></url>`).join("")}</urlset>`;
