@@ -644,18 +644,27 @@ function renderCreditsPage(locale) {
 // on phones and beside it on wide screens. Not canonical, not in the sitemap, not indexable.
 function renderNotFoundPage() {
   const prefix = deploymentBase || "/";
-  const ctx = {
-    locale: "de",
+  const chromeContext = (locale, noCurrent) => ({
+    locale,
     root: prefix,
     manifest: showcase,
     recipes: catalog.recipes,
     home: { de: `${prefix}de/`, en: `${prefix}en/` },
     alternate: { de: `${prefix}de/`, en: `${prefix}en/` },
-    creditsUrl: `${prefix}${creditsPath("de")}`,
+    creditsUrl: `${prefix}${creditsPath(locale)}`,
     onLanding: false,
-    // The visitor is on no language page, so the switch must not mark one as current.
-    noCurrent: true,
+    noCurrent,
+  });
+  // The visitor is on no language page, so the neutral chrome must not mark one as current.
+  const ctx = chromeContext("de", true);
+  // A static host serves this one file for every unknown path, so a tiny script reads the URL and, below
+  // /en/ or /de/, swaps in that language's header and footer with the matching switch link marked current.
+  const chromeTemplate = (locale) => {
+    const own = chromeContext(locale, false);
+    return `<template id="notfound-chrome-${locale}">${renderSiteHeader(own)}${renderSiteFooter(own)}</template>`;
   };
+  const basePath = new URL(prefix, "https://site.invalid").pathname;
+  const chromeScript = `<script>(function(){var base=${JSON.stringify(basePath)},path=location.pathname;if(path.indexOf(base)!==0)return;var lang=path.slice(base.length).split("/")[0];if(lang!=="de"&&lang!=="en")return;var tpl=document.getElementById("notfound-chrome-"+lang),main=document.getElementById("main"),foot=document.querySelector("body > footer");if(!tpl||!main||!foot)return;var content=tpl.content,newFoot=content.querySelector("footer"),head=document.createDocumentFragment();while(main.previousSibling)main.previousSibling.remove();while(content.firstChild!==newFoot)head.appendChild(content.firstChild);main.parentNode.insertBefore(head,main);foot.replaceWith(newFoot);document.documentElement.lang=lang;})();</script>`;
   const block = (locale, kicker, heading, lead, labels) => {
     const home = `${prefix}${locale}/`;
     const tag = locale === "en" ? "h2" : "h1";
@@ -677,7 +686,7 @@ function renderNotFoundPage() {
   );
   const title = "Seite nicht gefunden · Page not found · Mealie Atelier";
   const assets = `${prefix}assets/`;
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}<script type="module" src="${assets}site.js"></script></body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="theme-color" content="#0c120f"><meta name="color-scheme" content="dark">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}${chromeTemplate("de")}${chromeTemplate("en")}${chromeScript}<script type="module" src="${assets}site.js"></script></body></html>`;
 }
 
 function localizedRecipePage(locale, slug) {

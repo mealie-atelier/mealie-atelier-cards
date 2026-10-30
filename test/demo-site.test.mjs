@@ -1767,7 +1767,21 @@ test("404.html is a noindex bilingual page with root-absolute assets, kept out o
     assert.ok(existsSync(join(out, "404.html")), "404.html exists");
     const html = read(join(out, "404.html"));
     assert.match(html, /<meta name="robots" content="noindex">/);
-    assert.doesNotMatch(html, /aria-current/, "no language link is the current page");
+    // The neutral page marks no language as current; only the inert per-language templates do.
+    const live = html.replace(/<template[\s\S]*?<\/template>/g, "");
+    assert.doesNotMatch(live, /aria-current/, "no language link is the current page");
+    for (const locale of ["de", "en"]) {
+      const template = html.match(
+        new RegExp(`<template id="notfound-chrome-${locale}">([\\s\\S]*?)</template>`),
+      )?.[1];
+      assert.ok(template, `${locale} chrome template`);
+      assert.ok(
+        template.includes(`hreflang="${locale}" lang="${locale}" aria-current="page"`),
+        `${locale} template marks ${locale} current`,
+      );
+      assert.equal((template.match(/aria-current/g) ?? []).length, 3, "top, drawer and footer");
+    }
+    assert.match(html, /<script>\(function\(\)\{var base=/, "path based language script");
     assert.doesNotMatch(html, /rel="canonical"|og:image|twitter:image|rel="alternate" hreflang/);
     // Served at any depth, so no reference may be relative.
     const refs = [...html.matchAll(/\s(?:src|href)="([^"]+)"/g)]
