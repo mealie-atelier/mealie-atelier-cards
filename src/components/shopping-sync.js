@@ -229,7 +229,8 @@ export const shoppingSyncMethods = {
       size = "large";
       content = this._syncSetupHtml();
     } else content = this._syncSyncHtml();
-    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
+    const title = /id="sync-title">(.*?)<\/h2>/s.exec(content)?.[1] || "";
+    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title" tabindex="-1">${closing}<div class="modal-bar-title" aria-hidden="true">${title}</div>${content}</div></div>`;
   },
   _syncLead(title, text) {
     return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp">${icon("cart", 26)}</div></div>`;

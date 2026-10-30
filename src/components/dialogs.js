@@ -440,6 +440,7 @@ export const dialogMethods = {
       print: this.t("uiPrintStudioSettings"),
       settings: this.t("settings"),
     };
-    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal ${size}" role="dialog" aria-modal="true" aria-label="${esc(dialogTitles[this._modal] || this.t("settings"))}">${closing}${content}</div></div>`;
+    const title = esc(dialogTitles[this._modal] || this.t("settings"));
+    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal ${size}" role="dialog" aria-modal="true" aria-label="${title}" tabindex="-1">${closing}<div class="modal-bar-title" aria-hidden="true">${title}</div>${content}</div></div>`;
   },
 };

@@ -1291,12 +1291,17 @@ class MealieAtelierCard extends HTMLElement {
     const closeButton = () =>
       this.shadowRoot.querySelector('[role="dialog"] [data-action="close-modal"]');
     if (modalChanged && dialog) {
-      this._focusAfterRender(
-        () =>
+      this._focusAfterRender(() => {
+        const first =
           this.shadowRoot.querySelector(
             '[role="dialog"] [data-input="command-search"], [role="dialog"] [data-autofocus]',
-          ) || closeButton(),
-      );
+          ) || closeButton();
+        // A text field would raise the on-screen keyboard over the dialog on touch screens, so the
+        // dialog itself takes focus there. Keyboard users still Tab into the first control.
+        return this._opensTouchKeyboard(first)
+          ? this.shadowRoot.querySelector('[role="dialog"]')
+          : first;
+      });
     } else if (modalChanged && !dialog && this._modalReturn) {
       const { action, value } = this._modalReturn;
       this._modalReturn = null;
@@ -1322,6 +1327,16 @@ class MealieAtelierCard extends HTMLElement {
         );
       });
     }
+  }
+  /** True when focusing the element would open the on-screen keyboard of a touch device. */
+  _opensTouchKeyboard(el) {
+    if (!el) return false;
+    const textual =
+      el.tagName === "TEXTAREA" ||
+      (el.tagName === "INPUT" &&
+        !/^(checkbox|radio|button|submit|reset|range|color|file|image)$/i.test(el.type || "text"));
+    if (!textual) return false;
+    return Boolean(globalThis.matchMedia?.("(pointer: coarse)")?.matches);
   }
   /**
    * Focus an element after the subtree was swapped. Home Assistant's own ha-card renders its

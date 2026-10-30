@@ -11763,6 +11763,122 @@ ha-card {
   }
 }
 
+/* Native form controls under iOS Safari: dates, selects and check rows share one box in every dialog and form. */
+
+/* Date and time inputs: iOS draws its own taller, centred, overflowing chrome unless the box is owned here. */
+.atelier
+  input:is([type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]) {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--ds-control-height);
+  min-height: var(--ds-control-height);
+  line-height: 1.4;
+  text-align: start;
+  margin: 0;
+}
+.atelier input::-webkit-date-and-time-value {
+  text-align: start;
+  min-height: 1.4em;
+  margin: 0;
+}
+.atelier input::-webkit-datetime-edit {
+  padding: 0;
+}
+.atelier input::-webkit-calendar-picker-indicator {
+  margin-inline-start: auto;
+}
+
+/* Every select, input and textarea in a field fills its field, so a form never mixes half and full widths. */
+.atelier .field > :is(input, select, textarea) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.atelier .picker-filter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 15px;
+}
+.atelier .picker-filters {
+  gap: 15px;
+}
+.atelier .picker-filter-row > .field {
+  margin: 0;
+  min-width: 0;
+}
+
+/* The kicker of a form card keeps air above its first label. */
+.atelier .editor-card > .eyebrow {
+  margin-bottom: var(--ds-space-4);
+}
+
+/* A check row in a form is a control row like the fields around it: same height, fill, border and radius. */
+.atelier .editor-card .editor-check {
+  box-sizing: border-box;
+  min-block-size: var(--ds-control-height);
+  padding: 0 var(--ds-control-padding-x);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-control-radius);
+  background: var(--ds-background);
+  margin: 0;
+}
+
+/* The dialog itself takes focus on touch screens, so it must not draw a focus ring. */
+.atelier .modal[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* The header strip that appears behind the sticky close button names the dialog instead of staying an empty band.
+   It fades in with the strip (scroll-driven), so it never doubles the heading while that is still on screen. */
+.atelier .modal > .modal-bar-title {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .atelier .modal > .modal-bar-title {
+    --at-bar-size: 48px;
+    display: block;
+    position: sticky;
+    top: 20px;
+    z-index: 5;
+    box-sizing: border-box;
+    height: var(--at-bar-size);
+    margin: 0 0 calc(-1 * var(--at-bar-size));
+    padding: 0 calc(20px + var(--at-bar-size) + 12px) 0 24px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: var(--at-bar-size);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--at-ink);
+    pointer-events: none;
+    opacity: 0;
+    animation: at-close-strip linear both;
+    animation-timeline: scroll(nearest block);
+    animation-range: 0 48px;
+  }
+}
+@container atelier-card (max-width: 420px) {
+  .atelier .modal > .modal-bar-title {
+    --at-bar-size: 44px;
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .atelier .modal > .modal-bar-title {
+    display: none;
+  }
+}
+
+/* Fields side by side or stacked in a column share one rhythm: the grid gap alone spaces them. */
+.atelier .editor-columns > .field {
+  margin: 0;
+}
+
 /* Corner style: every main surface derives its radius from --at-radius (6px square, 12px small,
    23px large). The ratios keep the default look (23px) identical to the previous fixed values. */
 .atelier {
@@ -13279,12 +13395,17 @@ class MealieAtelierCard extends HTMLElement {
     const closeButton = () =>
       this.shadowRoot.querySelector('[role="dialog"] [data-action="close-modal"]');
     if (modalChanged && dialog) {
-      this._focusAfterRender(
-        () =>
+      this._focusAfterRender(() => {
+        const first =
           this.shadowRoot.querySelector(
             '[role="dialog"] [data-input="command-search"], [role="dialog"] [data-autofocus]',
-          ) || closeButton(),
-      );
+          ) || closeButton();
+        // A text field would raise the on-screen keyboard over the dialog on touch screens, so the
+        // dialog itself takes focus there. Keyboard users still Tab into the first control.
+        return this._opensTouchKeyboard(first)
+          ? this.shadowRoot.querySelector('[role="dialog"]')
+          : first;
+      });
     } else if (modalChanged && !dialog && this._modalReturn) {
       const { action, value } = this._modalReturn;
       this._modalReturn = null;
@@ -13310,6 +13431,16 @@ class MealieAtelierCard extends HTMLElement {
         );
       });
     }
+  }
+  /** True when focusing the element would open the on-screen keyboard of a touch device. */
+  _opensTouchKeyboard(el) {
+    if (!el) return false;
+    const textual =
+      el.tagName === "TEXTAREA" ||
+      (el.tagName === "INPUT" &&
+        !/^(checkbox|radio|button|submit|reset|range|color|file|image)$/i.test(el.type || "text"));
+    if (!textual) return false;
+    return Boolean(globalThis.matchMedia?.("(pointer: coarse)")?.matches);
   }
   /**
    * Focus an element after the subtree was swapped. Home Assistant's own ha-card renders its
@@ -15607,7 +15738,8 @@ const dialogMethods = {
       print: this.t("uiPrintStudioSettings"),
       settings: this.t("settings"),
     };
-    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal ${size}" role="dialog" aria-modal="true" aria-label="${esc(dialogTitles[this._modal] || this.t("settings"))}">${closing}${content}</div></div>`;
+    const title = esc(dialogTitles[this._modal] || this.t("settings"));
+    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal ${size}" role="dialog" aria-modal="true" aria-label="${title}" tabindex="-1">${closing}<div class="modal-bar-title" aria-hidden="true">${title}</div>${content}</div></div>`;
   },
 }
 
@@ -17032,7 +17164,8 @@ const shoppingSyncMethods = {
       size = "large";
       content = this._syncSetupHtml();
     } else content = this._syncSyncHtml();
-    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
+    const title = /id="sync-title">(.*?)<\/h2>/s.exec(content)?.[1] || "";
+    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title" tabindex="-1">${closing}<div class="modal-bar-title" aria-hidden="true">${title}</div>${content}</div></div>`;
   },
   _syncLead(title, text) {
     return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp">${icon("cart", 26)}</div></div>`;

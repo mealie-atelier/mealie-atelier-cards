@@ -693,7 +693,10 @@ test("review has one title, a distinct group heading and a back arrow that point
   await openStatus(env, [withRule({ counts: { failed: 1 } })]);
   await click(env.card, { action: "sync-review", value: "r1" });
   const html = markup(env.cards);
-  assert.equal((html.match(/Items to review/g) || []).length, 1);
+  // The aria-hidden header bar repeats the title for sighted users only, so it is not a second title.
+  const exposed = html.replace(/<div class="modal-bar-title" aria-hidden="true">.*?<\/div>/, "");
+  assert.equal((exposed.match(/Items to review/g) || []).length, 1);
+  assert.match(html, /<div class="modal-bar-title" aria-hidden="true">Items to review<\/div>/);
   assert.match(html, /<h3>Needs attention<\/h3>/);
   assert.match(html, /class="btn sync-back"/);
 });
