@@ -97,7 +97,7 @@
         totalTime: item.prepMinutes + item.cookMinutes + (item.restMinutes ?? 0),
         recipeCategory: [{ name: localize(item.category) }],
         recipeCuisine: [{ name: localize(item.cuisine) }],
-        tags: item.tags.map((name) => ({ name })),
+        tags: item.tags.map((tag) => ({ name: catalog.tagLabels?.[tag]?.[demoLanguage] ?? tag })),
       }));
       const recipeStories = catalog.recipes.map((item) => ({
         description: localize(item.description),

@@ -1544,3 +1544,13 @@ test("404.html is a noindex bilingual page with root-absolute assets, kept out o
   }
   assert.doesNotMatch(read(join(builds.deployed, "sitemap.xml")), /404/);
 });
+
+test("localized demo data carries tags in the page language, never the English ids", () => {
+  const de = JSON.parse(readFileSync(join(builds.local, "data/de.json"), "utf8"));
+  const en = JSON.parse(readFileSync(join(builds.local, "data/en.json"), "utf8"));
+  const german = de.recipes.flatMap((recipe) => recipe.tags);
+  assert.ok(german.includes("vegetarisch") && german.includes("familienfreundlich"));
+  for (const english of ["vegetarian", "family-friendly", "quick", "one-pan", "dairy-free"])
+    assert.ok(!german.includes(english), `${english} leaked into the German data`);
+  assert.ok(en.recipes.flatMap((recipe) => recipe.tags).includes("family-friendly"));
+});

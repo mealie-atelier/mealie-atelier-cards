@@ -1548,9 +1548,14 @@
   }
 }
 
-/* The counter keeps clear of the floating close button. */
+/* The counter and the progress bar keep clear of the floating close button at every width. The bar
+   sits right under the counter, so both end at the same inset: the close button is 48px wide and sits
+   22px from the dialog edge, content padding is at least 24px, so 56px leaves a gap of 8px or more. */
 .atelier .modal:has(.cook-layout) .cook-topline {
   padding-inline-end: 56px;
+}
+.atelier .modal:has(.cook-layout) .cook-track {
+  margin-inline-end: 56px;
 }
 
 @media (orientation: landscape) and (max-height: 700px) {

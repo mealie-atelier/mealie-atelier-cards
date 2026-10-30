@@ -99,3 +99,45 @@
     min-height: 136px;
   }
 }
+
+/* Phone tab rail: tabs snap to their start, so the rail always starts on a whole tab and no label
+   is cut at the left edge. The edge fades are a hint only: the card sets data-more-start or
+   data-more-end on the rail when more tabs wait on that side. The fade is as wide as the scroll
+   padding, so it never touches a label of the tab that starts the rail. */
+@container atelier-card (max-width: 760px) {
+  .atelier .sidebar .nav {
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 12px;
+    /* Set by the card: space after the last tab so the last scroll position starts on a tab. */
+    padding-inline-end: var(--nav-end-pad, 0px);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .atelier .sidebar .nav > button {
+    scroll-snap-align: start;
+  }
+  .atelier .sidebar .nav[data-more-start] {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px);
+    mask-image: linear-gradient(90deg, transparent 0, #000 12px);
+  }
+  .atelier .sidebar .nav[data-more-end] {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent 100%);
+  }
+  .atelier .sidebar .nav[data-more-start][data-more-end] {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0,
+      #000 12px,
+      #000 calc(100% - 12px),
+      transparent 100%
+    );
+  }
+}

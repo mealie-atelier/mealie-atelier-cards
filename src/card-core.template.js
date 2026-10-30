@@ -111,6 +111,8 @@ const imageOk = (v) =>
     /^\.\.?\/(food|photos)\/[a-z0-9-]+\.webp$/.test(v))
     ? v
     : "";
+/** Width of the fade and of the scroll padding at the phone rail edges, in px (see the CSS). */
+const NAV_EDGE = 12;
 const asArray = (v) => (Array.isArray(v) ? v : []);
 /** Nearest scrolling ancestor across shadow roots; the document scroller when none is set. */
 function scrollParent(node) {
@@ -909,14 +911,57 @@ class MealieAtelierCard extends HTMLElement {
       </nav><div class="sidebar-footer"><div class="tiny-leaf">${icon("spark", 17)}</div>${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}<span class="atelier-version">Mealie Atelier ${VERSION}</span></div>
     </aside>`;
   }
+  /**
+   * Keep the active tab fully visible in the phone rail. Tabs snap to their start, so when the
+   * active one is cut off the rail scrolls until it starts on that whole tab (never centred, which
+   * would cut the labels on both sides). A tab that is already fully visible does not move the rail.
+   */
   _revealActiveNav() {
     const rail = this.shadowRoot?.querySelector(".sidebar .nav");
     const selected = rail?.querySelector('[data-action="nav"].active');
     if (!rail || !selected) return;
     const r = rail.getBoundingClientRect(),
       a = selected.getBoundingClientRect();
-    if (a.left >= r.left + 10 && a.right <= r.right - 10) return;
-    rail.scrollLeft += a.left - r.left - (r.width - a.width) / 2;
+    const more = rail.scrollWidth - rail.clientWidth - rail.scrollLeft > 1;
+    if (a.left >= r.left - 0.5 && a.right <= r.right - (more ? NAV_EDGE : 0) + 0.5) {
+      this._syncNavHints(rail);
+      return;
+    }
+    rail.scrollLeft += a.left - r.left - NAV_EDGE;
+    this._syncNavHints(rail);
+  }
+  /**
+   * The edge fades only show on a side where more tabs wait behind it. The end of the rail also
+   * ends on a whole tab: trailing space is added so the last scroll position starts on a tab
+   * (otherwise the end position would cut the tab at the left edge).
+   */
+  _syncNavHints(rail = this.shadowRoot?.querySelector(".sidebar .nav")) {
+    if (!rail) return;
+    if (rail.querySelectorAll && rail.style?.setProperty) {
+      const pad = parseFloat(rail.style.getPropertyValue("--nav-end-pad")) || 0;
+      const natural = rail.scrollWidth - rail.clientWidth - pad;
+      let needed = 0;
+      if (natural > 1) {
+        const r = rail.getBoundingClientRect();
+        for (const tab of rail.querySelectorAll("button")) {
+          const start = tab.getBoundingClientRect().left - r.left + rail.scrollLeft - NAV_EDGE;
+          if (start >= natural - 0.5) {
+            needed = Math.ceil(Math.max(0, start - natural));
+            break;
+          }
+        }
+      }
+      if (needed !== pad) rail.style.setProperty("--nav-end-pad", `${needed}px`);
+    }
+    const max = rail.scrollWidth - rail.clientWidth;
+    rail.toggleAttribute?.("data-more-start", max > 1 && rail.scrollLeft > 1);
+    rail.toggleAttribute?.("data-more-end", max > 1 && rail.scrollLeft < max - 1);
+    if (!rail._navHintBound && rail.addEventListener) {
+      rail._navHintBound = true;
+      rail.addEventListener("scroll", () => this._syncNavHints(rail), { passive: true });
+      if (typeof ResizeObserver === "function")
+        new ResizeObserver(() => this._syncNavHints(rail)).observe(rail);
+    }
   }
   _topbar() {
     return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
@@ -1216,6 +1261,7 @@ class MealieAtelierCard extends HTMLElement {
     this._revealTodayNext = false;
     const gridAppeared =
       !viewChanged && !gridBefore && Boolean(this.shadowRoot.querySelector(".week-grid"));
+    this._syncNavHints();
     if (viewChanged) {
       this._revealActiveNav();
       this._revealToday();

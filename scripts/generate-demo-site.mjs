@@ -323,12 +323,13 @@ function localizedData(locale) {
         recipe.description[secondaryLocale],
         recipe.category[secondaryLocale],
         recipe.cuisine[secondaryLocale],
+        ...recipe.tags.map((tag) => tagLabel(tag, secondaryLocale)),
         ...recipe.ingredients[secondaryLocale],
         ...recipe.steps[secondaryLocale].flatMap((step) => [step.title, step.summary, step.text]),
       ],
       category: recipe.category[locale],
       cuisine: recipe.cuisine[locale],
-      tags: recipe.tags,
+      tags: recipe.tags.map((tag) => tagLabel(tag, locale)),
       servings: recipe.servings,
       prepMinutes: recipe.prepMinutes,
       cookMinutes: recipe.cookMinutes,
@@ -346,19 +347,10 @@ function localizedData(locale) {
   };
 }
 
-const tagLabels = {
-  vegetarian: { de: "vegetarisch", en: "vegetarian" },
-  vegan: { de: "vegan", en: "vegan" },
-  quick: { de: "schnell", en: "quick" },
-  "one-pan": { de: "eine Pfanne", en: "one-pan" },
-  "family-friendly": { de: "familienfreundlich", en: "family-friendly" },
-  "make-ahead": { de: "vorbereiten", en: "make-ahead" },
-  "freezer-friendly": { de: "einfrierbar", en: "freezer-friendly" },
-  "dairy-free": { de: "milchfrei", en: "dairy-free" },
-};
+const tagLabels = catalog.tagLabels;
 
 function tagLabel(tag, locale) {
-  const label = tagLabels[tag]?.[locale];
+  const label = tagLabels?.[tag]?.[locale];
   assert(label, `tag "${tag}" needs a ${locale} label`);
   return label;
 }
