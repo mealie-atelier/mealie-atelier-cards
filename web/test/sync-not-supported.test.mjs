@@ -20,7 +20,7 @@ const COMMANDS = [
   "sync_records",
 ];
 
-test("standalone app answers every sync command with 501 sync_not_supported and no Mealie call", async () => {
+test("standalone app without a Bring account answers every sync command with 501 sync_not_supported and no Mealie call", async () => {
   let mealieCalls = 0;
   const remote = createServer((req, res) => {
     mealieCalls++;
@@ -73,7 +73,7 @@ test("standalone app answers every sync command with 501 sync_not_supported and 
       assert.equal(response.status, 501, name);
       const body = await response.json();
       assert.equal(body.code, "sync_not_supported", name);
-      assert.match(body.error, /Home Assistant/, name);
+      assert.match(body.error, /Bring!/, name);
     }
     assert.equal(mealieCalls, before, "sync commands must never reach Mealie");
   } finally {

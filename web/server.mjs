@@ -30,6 +30,8 @@ import { aiSubstitute, aiAudit, resolveLocale } from "./studio-ai.mjs";
 import { resolveAiConfig } from "./ai-client.mjs";
 import { OfflineLedger } from "./offline-ledger.mjs";
 import { AlarmStore } from "./alarm-store.mjs";
+import { BringClient } from "./bring-client.mjs";
+import { BringDestination, SyncManager, SyncStore, handleSyncMessage } from "./shopping-sync.mjs";
 import { createDelivery, validateNotificationEnv } from "./alarm-delivery.mjs";
 import {
   MIN_PASSWORD_LENGTH,
@@ -99,6 +101,28 @@ const offlineLedger = new OfflineLedger({
       await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
     ).filter((x) => String(x?.shoppingListId) === String(listId)),
   mutate: (action, payload) => mutate(action, payload),
+});
+// Smart Shopping Sync to Bring!: active only when a Bring account is configured.
+const bringClient = new BringClient({
+  email: process.env.BRING_EMAIL || "",
+  password: process.env.BRING_PASSWORD || "",
+});
+const shoppingSync = new SyncManager({
+  store: new SyncStore({ dir: DATA_DIR }),
+  destination: new BringDestination(bringClient),
+  language: () => process.env.ATELIER_SYNC_LANGUAGE || "de",
+  readOnly: READ_ONLY,
+  source: {
+    lists: async () =>
+      unwrap(await mealie("GET", "/api/households/shopping/lists", undefined, { perPage: -1 })),
+    items: async (listId) =>
+      unwrap(
+        await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
+      ).filter((x) => String(x?.shoppingListId) === String(listId)),
+    item: (id) => mealie("GET", `/api/households/shopping/items/${identifier(id)}`),
+    setChecked: (id, checked, current) =>
+      mealie("PUT", `/api/households/shopping/items/${identifier(id)}`, { ...current, checked }),
+  },
 });
 
 if (!MEALIE_API_TOKEN || !MEALIE_URL || (!PASSWORD && !USERS.length)) {
@@ -497,6 +521,15 @@ async function deleteShoppingItem(id) {
   return { deleted: true };
 }
 
+/** Mealie confirmed an add: the sync debounces on its own and never delays or fails the answer. */
+function syncAfterAdd(listId) {
+  try {
+    shoppingSync.notifySourceChanged(listId, "after_atelier_add");
+  } catch (error) {
+    console.error("Shopping sync could not be notified:", String(error?.message || error));
+  }
+}
+
 async function mutate(action, payload, req) {
   if (READ_ONLY)
     throw Object.assign(new Error("Mealie Atelier is in read-only mode"), {
@@ -575,15 +608,24 @@ async function mutate(action, payload, req) {
     }
     case "shopping_list_create":
       return mealie("POST", "/api/households/shopping/lists", { name: text(payload.name, 100) });
-    case "shopping_from_recipe":
-      return addRecipeToShoppingList(identifier(payload.list_id), identifier(payload.recipe_id));
-    case "shopping_add":
-      return mealie("POST", "/api/households/shopping/items", {
+    case "shopping_from_recipe": {
+      const added = await addRecipeToShoppingList(
+        identifier(payload.list_id),
+        identifier(payload.recipe_id),
+      );
+      syncAfterAdd(payload.list_id);
+      return added;
+    }
+    case "shopping_add": {
+      const added = await mealie("POST", "/api/households/shopping/items", {
         shoppingListId: identifier(payload.list_id),
         note: text(payload.note),
         quantity: 0,
         checked: false,
       });
+      syncAfterAdd(payload.list_id);
+      return added;
+    }
     case "mealplan_add": {
       const meal = payload.meal_type || "dinner";
       if (!MEAL_TYPES.has(meal)) throw bad("Invalid meal type");
@@ -718,7 +760,7 @@ async function bridge(req) {
             ai_provider: AI_KEY?.provider || "none",
             permissions,
             features: {
-              shopping_sync: false,
+              shopping_sync: shoppingSync.connected,
               offline_queue: true,
               structured_ingredients: structured,
               uploads: true,
@@ -736,7 +778,7 @@ async function bridge(req) {
         version: VERSION,
       };
     }
-    // BEGIN shopping sync (feature A): the standalone app never sends shopping data to third parties
+    // BEGIN shopping sync (feature A): Mealie to Bring!, only with a connected Bring account
     case "mealie_atelier/sync_state":
     case "mealie_atelier/sync_destinations":
     case "mealie_atelier/sync_preview":
@@ -748,10 +790,12 @@ async function bridge(req) {
     case "mealie_atelier/sync_retry":
     case "mealie_atelier/sync_resolve":
     case "mealie_atelier/sync_records":
-      throw Object.assign(
-        new Error("Shopping sync needs Home Assistant with the Mealie Atelier Bridge."),
-        { status: 501, code: "sync_not_supported" },
-      );
+      if (!shoppingSync.connected)
+        throw Object.assign(new Error("Shopping sync needs a connected Bring! account."), {
+          status: 501,
+          code: "sync_not_supported",
+        });
+      return handleSyncMessage(shoppingSync, { ...msg, user_id: req.atelierUser?.name || null });
     // END shopping sync (feature A)
     case "mealie_atelier/offline_replay":
       return offlineLedger.process(msg.operation);
@@ -1249,6 +1293,18 @@ const server = createServer(async (req, res) => {
     });
   }
 });
+if (shoppingSync.connected)
+  for (const signal of ["SIGTERM", "SIGINT"])
+    process.once(signal, () => {
+      // Let a running pass finish and flush the outbox, so a restart never repeats a delivery.
+      shoppingSync.stop().finally(() => process.exit(0));
+    });
+// The outbox is loaded before the first request, so no call ever sees an empty state.
+try {
+  if (shoppingSync.connected) await shoppingSync.start();
+} catch (e) {
+  console.error("Shopping sync could not start:", String(e?.message || e).slice(0, 160));
+}
 server.listen(PORT, HOST, async () => {
   console.log(
     `Mealie Atelier available on http://${HOST}:${server.address().port} (use HTTPS reverse proxy outside LAN)`,
