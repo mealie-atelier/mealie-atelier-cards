@@ -307,12 +307,31 @@
     grid-template-rows: minmax(0, 1fr);
   }
 }
+/* A narrow card (a one column dashboard section, at most 760px wide) on a tall tablet or a laptop screen
+   keeps the single column layout of narrow cards: the photo band keeps its height and carries the recipe
+   title, and the step column takes the second row and scrolls. Without this the rules above let the photo
+   collapse to zero height and the title floated out of the dialog. */
+@media (orientation: landscape) and (min-height: 701px) and (max-height: 1000px),
+  (orientation: portrait) and (min-width: 761px) and (min-height: 681px) {
+  @container atelier-card (max-width: 760px) {
+    .atelier .modal.large:has(.cook-layout) > .cook-layout {
+      grid-template-rows: 210px minmax(0, 1fr);
+    }
+    .atelier .modal:has(.cook-layout) .cook-visual {
+      height: 210px;
+      min-height: 210px;
+    }
+  }
+}
+
 .atelier .modal:has(.cook-layout) .cook-controls {
   display: contents;
 }
 .atelier .modal:has(.cook-layout) .cook-content > *,
 .atelier .modal:has(.cook-layout) .cook-controls > * {
   order: 0;
+  /* In a fixed height dialog the step column scrolls: rows keep their height instead of squashing into each other. */
+  flex-shrink: 0;
 }
 /* The bar owns the bottom spacing: padding below it would let it rise off the dialog edge at the end. */
 .atelier .modal.large:has(.cook-layout) .cook-content {

@@ -32,3 +32,32 @@ for (const header of [
     assert.match(block, /\.modal\.large:has\(\.cook-layout\) \.cook-controls\s*\{/);
   });
 }
+
+const refinement = readFileSync(
+  new URL("../src/design-system/control-refinement.css", import.meta.url),
+  "utf8",
+).replace(/\/\*[\s\S]*?\*\//g, "");
+
+test("a narrow card on a tall tablet keeps its photo band and a real second row for the steps", () => {
+  // The viewport rules above collapse the photo to zero height; in a card of at most 760px the band must come back.
+  const wrapper = refinement.match(
+    /@media \(orientation: landscape\) and \(min-height: 701px\) and \(max-height: 1000px\),\s*\(orientation: portrait\) and \(min-width: 761px\) and \(min-height: 681px\) \{\s*@container atelier-card \(max-width: 760px\) \{([\s\S]*?)\n  \}\n\}/,
+  );
+  assert.ok(wrapper, "container block inside both viewport ranges");
+  const body = wrapper[1];
+  assert.match(
+    body,
+    /\.modal\.large:has\(\.cook-layout\) > \.cook-layout\s*\{[^}]*grid-template-rows:\s*210px minmax\(0, 1fr\)/,
+  );
+  assert.match(
+    body,
+    /\.modal:has\(\.cook-layout\) \.cook-visual\s*\{[^}]*height:\s*210px;[^}]*min-height:\s*210px/,
+  );
+});
+
+test("rows of the scrolling cooking column keep their height instead of overlapping", () => {
+  assert.match(
+    refinement,
+    /\.cook-content > \*,\s*\.atelier \.modal:has\(\.cook-layout\) \.cook-controls > \*\s*\{[^}]*flex-shrink:\s*0/,
+  );
+});
