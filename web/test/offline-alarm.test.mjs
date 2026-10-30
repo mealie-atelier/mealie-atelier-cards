@@ -479,3 +479,24 @@ test("the connectivity panel maps Bridge error codes to their err texts", async 
     );
   }
 });
+test("a language switch rewrites the static texts of the sync panel", async () => {
+  const { applyPanelTexts } = await import("../public/offline-client.js");
+  const element = (key) => ({ dataset: { i18n: key }, textContent: "" });
+  const title = element("offlineSyncTimers");
+  const refresh = element("offlineRefreshTimers");
+  const attributes = {};
+  const panel = {
+    setAttribute: (name, value) => (attributes[name] = value),
+    querySelectorAll: () => [title, refresh],
+  };
+  const words = { de: "Timer aktualisieren", en: "Refresh timers" };
+  for (const language of ["de", "en"])
+    applyPanelTexts(panel, (key) =>
+      key === "offlineRefreshTimers" ? words[language] : `${key}:${language}`,
+    );
+  assert.equal(refresh.textContent, "Refresh timers");
+  assert.equal(title.textContent, "offlineSyncTimers:en");
+  assert.equal(attributes["aria-label"], "offlinePanelLabel:en");
+  const source = readFileSync(new URL("../public/offline-client.js", import.meta.url), "utf8");
+  assert.match(source, /const update = \(\) => \{\s*applyPanelTexts\(panel, t\);/);
+});

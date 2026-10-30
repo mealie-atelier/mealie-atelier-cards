@@ -16,6 +16,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Shared cooking: helper tasks can be removed, and the refusal to remove a person who still has tasks is shown as translated text.
 - Pantry: amounts such as 0.25 are accepted and an amount of 0 is refused.
 - Forms: a name made of spaces only is refused with a message instead of being ignored silently.
+- Web app: switching the language also translates the title, group titles, note and buttons of the Sync & kitchen timers bar at once.
 - Timers: a finished timer started on another device says "Timer abgelaufen" instead of "Aktiver Timer", and the in-card finished message ends with "!" like the push and Home Assistant messages.
 
 ## [0.11.0] - 2026-10-30
