@@ -177,3 +177,18 @@ test("the shared family step stops at the last step of the recipe", async () => 
     "a stale step beyond the end shows the last step",
   );
 });
+
+test("cooking dialog on a tall portrait tablet keeps the photo column and the action bar inside the dialog", () => {
+  const portrait = "(orientation: portrait) and (min-width: 761px) and (min-height: 681px)";
+  for (const file of ["polish.css", "control-refinement.css"]) {
+    const css = read(`src/design-system/${file}`);
+    assert.ok(css.includes(portrait), `${file} bounds the cooking layout to the dialog on tablets`);
+  }
+});
+
+test("the family feature has one English name in the nav, the title and the card picker", () => {
+  const card = makeCard(loadCards(), { hass: { language: "en", callWS: async () => ({}) } });
+  assert.equal(card.t("family"), "Cook together");
+  assert.equal(card.t("familyTitle"), "Cook together");
+  assert.match(read("src/card-core.template.js"), /"Mealie Atelier · Cook together"/);
+});

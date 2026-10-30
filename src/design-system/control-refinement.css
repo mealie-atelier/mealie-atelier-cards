@@ -300,6 +300,13 @@
     grid-template-rows: minmax(0, 1fr);
   }
 }
+/* Tall tablets in portrait: same shrink-to-the-dialog rule, so the photo column and caption stay whole. */
+@media (orientation: portrait) and (min-width: 761px) and (min-height: 681px) {
+  .atelier .modal.large:has(.cook-layout) > .cook-layout {
+    flex: 1 1 auto;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
 .atelier .modal:has(.cook-layout) .cook-controls {
   display: contents;
 }

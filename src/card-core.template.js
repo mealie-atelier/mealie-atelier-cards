@@ -2947,7 +2947,7 @@ const CARD_TYPES = [
   [
     "mealie-atelier-family",
     AtelierFamilyCard,
-    "Mealie Atelier · Family",
+    "Mealie Atelier · Cook together",
     "Shared cooking sessions with helper tasks",
   ],
   [

@@ -20,6 +20,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Quick actions (Ctrl+K): the clear button of the search field uses the Atelier color, and "no matching views" no longer shows above matching recipes.
 - Web app: switching the language also translates the title, group titles, note and buttons of the Sync & kitchen timers bar at once.
 - Timers: a finished timer started on another device says "Timer abgelaufen" instead of "Aktiver Timer", and the in-card finished message ends with "!" like the push and Home Assistant messages.
+- Cooking mode: on tall tablets in portrait the photo caption and the footnote stay inside the dialog, only the step column scrolls.
+- Shared cooking: the English feature name is "Cook together" in the navigation, the page title and the card picker, matching "Gemeinsam kochen".
 
 ## [0.11.0] - 2026-10-30
 

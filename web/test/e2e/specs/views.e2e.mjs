@@ -16,7 +16,7 @@ const VIEWS = {
   mealplan: ["Wochenplan", "Die Woche im Blick", "Meal plan", "Your week at a glance"],
   pantry: ["Vorräte", "Vorräte & Einkauf", "Pantry", "Pantry & shopping"],
   shopping: ["Einkaufsliste", "Alles für den Einkauf", "Shopping", "Shopping list"],
-  family: ["Gemeinsam kochen", "Gemeinsam kochen", "Family", "Family"],
+  family: ["Gemeinsam kochen", "Gemeinsam kochen", "Cook together", "Cook together"],
   cookbook: ["Kochbuch", "Dein eigenes Kochbuch", "Cookbook", "Your own cookbook"],
   manage: ["Verwalten", "Rezeptverwaltung", "Manage", "Manage recipes"],
 };
