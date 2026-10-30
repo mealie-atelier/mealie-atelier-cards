@@ -883,7 +883,11 @@ test("hero: the devices keep a readable width, the stage fades only through its 
   const css = read(join(builds.local, "assets/live-demo.css"));
   const heroCss = css.slice(css.indexOf(".hero-stage {"), css.indexOf("/* facts */"));
   // Two columns only from 1180px: below that the devices would shrink under the readable sizes.
-  assert.match(heroCss, /@media \(min-width: 1180px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
+  assert.match(
+    heroCss,
+    /@media \(min-width: 1180px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.hero-grid \{[^}]*clamp\(440px, 36vw, 520px\)/,
+  );
+  assert.match(heroCss, /@media \(min-width: 1366px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
   assert.match(
     heroCss,
     /@media \(max-width: 1179px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
@@ -1808,14 +1812,34 @@ test("the raw preview shows tags in the page language and searches by both langu
 });
 
 test("every page extends under the iOS Safari bar and the header absorbs the safe area", () => {
+  const files = [
+    "de/index.html",
+    "en/index.html",
+    "de/bildnachweise/index.html",
+    "en/credits/index.html",
+    "404.html",
+    "index.html",
+  ];
   for (const locale of ["de", "en"]) {
-    assert.match(landing(builds.local, locale), /viewport-fit=cover/, `${locale} landing`);
+    const dir = join(builds.local, locale, locale === "de" ? "rezepte" : "recipes");
+    files.push(
+      `${locale}/${locale === "de" ? "rezepte" : "recipes"}/${readdirSync(dir)[0]}/index.html`,
+    );
   }
-  for (const file of ["de/credits/index.html", "404.html"]) {
-    const path = join(builds.local, file);
-    if (existsSync(path)) assert.match(readFileSync(path, "utf8"), /viewport-fit=cover/, file);
+  for (const file of files) {
+    const html = readFileSync(join(builds.local, file), "utf8");
+    assert.match(html, /viewport-fit=cover/, file);
   }
   const css = readFileSync("demo/live-demo.css", "utf8");
   const header = css.slice(css.indexOf("\n.top {"), css.indexOf("\n.top.scrolled"));
   assert.match(header, /padding-top: env\(safe-area-inset-top/);
+  assert.match(
+    css,
+    /--gut: max\(\s*clamp\([^)]*\),\s*env\(safe-area-inset-left[^;]*safe-area-inset-right/,
+  );
+  const opaque = css.slice(css.indexOf("\n.top.scrolled"), css.indexOf("\n.top-row"));
+  assert.match(opaque, /background: #0c120f;/);
+  assert.doesNotMatch(opaque, /backdrop-filter/);
+  const chrome = readFileSync("demo/site/chrome.mjs", "utf8");
+  assert.match(chrome, /<header class="top" id="top"><div class="progress"/);
 });

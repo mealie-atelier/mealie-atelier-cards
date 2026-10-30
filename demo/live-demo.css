@@ -23,7 +23,13 @@
     Arial, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --wrap: 1240px;
-  --gut: clamp(20px, 4vw, 48px);
+  /* Never narrower than the side safe-area insets, so landscape phones (viewport-fit=cover) keep content
+     out from under the Dynamic Island and the rounded corners. */
+  --gut: max(
+    clamp(20px, 4vw, 48px),
+    env(safe-area-inset-left, 0px),
+    env(safe-area-inset-right, 0px)
+  );
   --r-md: 18px;
   --r-lg: 26px;
   --r-xl: 34px;
@@ -253,13 +259,16 @@ h2 em {
 
 /* header */
 .progress {
-  position: fixed;
-  inset: 0 0 auto 0;
+  position: absolute;
+  inset: auto 0 -1px 0;
   height: 3px;
   background: linear-gradient(90deg, var(--mint-deep), var(--mint2));
   transform-origin: 0 50%;
   transform: scaleX(0);
-  z-index: 60;
+  pointer-events: none;
+}
+.top.open .progress {
+  display: none;
 }
 .top {
   position: fixed;
@@ -277,9 +286,7 @@ h2 em {
 .top.open,
 .recipe-body .top,
 .credits-body .top {
-  background: rgba(12, 18, 15, 0.94);
-  backdrop-filter: blur(18px) saturate(1.3);
-  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  background: #0c120f;
   border-bottom-color: var(--line);
 }
 .top-row {
@@ -395,7 +402,7 @@ h2 em {
     display: grid;
     max-height: calc(100dvh - 76px - env(safe-area-inset-top, 0px));
     overflow-y: auto;
-    padding: 6px var(--gut) 24px;
+    padding: 6px var(--gut) max(24px, env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--line);
     animation: drop 0.3s var(--ease);
   }
@@ -724,7 +731,43 @@ h2 em {
    which the app text stays readable. Below that the stage runs full width under the copy. */
 @media (min-width: 1180px) {
   .hero-grid {
+    /* A fixed copy column wide enough for a two line headline and one button row; the stage takes the
+       rest and reaches 30px into the gutter, so the tablet keeps its readable width at 1180px. */
+    grid-template-columns: clamp(440px, 36vw, 520px) minmax(0, 1fr);
+    gap: 32px;
+  }
+  .hero-stage {
+    margin-right: -30px;
+  }
+  .hero-copy h1 {
+    font-size: clamp(52px, 4.9vw, 68px);
+  }
+  .hero-copy .kicker {
+    white-space: nowrap;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .hero-copy .btn-row {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .hero-copy {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hero-copy .btn-row .btn {
+    gap: 8px;
+    padding-inline: 12px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+}
+@media (min-width: 1366px) {
+  .hero-grid {
     grid-template-columns: minmax(0, 4.6fr) minmax(0, 7.4fr);
+    gap: clamp(30px, 4vw, 64px);
+  }
+  .hero-copy h1 {
+    font-size: clamp(60px, 5.4vw, 92px);
   }
 }
 @media (min-width: 1280px) {
@@ -745,9 +788,19 @@ h2 em {
 /* Tablet portrait and small landscape: the stage stays under the copy, so the whole hero is one centred
    composition instead of a narrow left column over a centred stage. */
 @media (min-width: 641px) and (max-width: 1179px) {
+  .hero {
+    padding-top: clamp(104px, 11vw, 124px);
+  }
   .hero-copy {
+    gap: 20px;
     justify-items: center;
     text-align: center;
+  }
+  .hero-copy h1 {
+    font-size: clamp(44px, 5.6vw, 64px);
+  }
+  .hero-stage {
+    margin-top: 0;
   }
   .hero-copy .lead {
     max-width: 52ch;
@@ -1602,7 +1655,7 @@ html.js .live-frame:not([data-ready])::after {
   background: var(--mint);
   transform: scale(1.6);
 }
-@media (max-width: 860px) {
+@media (max-width: 1000px) {
   .story {
     grid-template-columns: 1fr;
   }
@@ -2938,7 +2991,7 @@ details[open] .chev {
   gap: 8px 28px;
   justify-content: space-between;
   align-items: center;
-  padding-block: 18px 24px;
+  padding-block: 18px max(24px, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--line);
   color: var(--faint);
   font-size: 14px;
