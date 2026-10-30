@@ -881,6 +881,7 @@
   "uiNoWriteGrant": "Dein Home-Assistant-Nutzer darf diese Küche ansehen, aber nicht ändern. Ein Administrator kann den Zugriff in den Mealie-Atelier-Optionen freigeben.",
   "uiNoWriteGrantWeb": "Du bist mit Lesezugriff angemeldet. Ein Administrator kann deinem Konto die Schreibrolle geben.",
   "errNotConfigured": "Mealie Atelier ist noch nicht eingerichtet.",
+  "errMemberHasTasks": "Diese Person hat noch Aufgaben. Entferne zuerst ihre Aufgaben.",
   "errInvalidRequest": "Die Anfrage war ungültig. Prüfe deine Eingabe und versuche es erneut.",
   "errMealieAuth": "Mealie hat das API-Token abgelehnt. Erstelle in Mealie ein neues Token und authentifiziere die Integration neu.",
   "errMealieAuthWeb": "Mealie hat das API-Token abgelehnt. Prüfe MEALIE_API_TOKEN in der Serverkonfiguration der Web-App.",

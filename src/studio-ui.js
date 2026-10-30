@@ -93,6 +93,15 @@ Object.assign(MealieAtelierCard.prototype, {
       if (!silent) this._render();
     }
   },
+  /**
+   * The Bridge reports a person who still has tasks as a bare `invalid_request` with an English
+   * message. That one message is mapped to its translated text; every other error keeps `_errorText`.
+   */
+  _studioErrorText(error) {
+    if (error?.code === "invalid_request" && /still has cooking tasks/i.test(error.message || ""))
+      return this.t("errMemberHasTasks");
+    return this._errorText(error);
+  },
   async _studioWrite(action, payload) {
     // The personal journal needs no write grant; only a read-only kitchen blocks it.
     const allowed = action === "journal_set" ? this._canJournal : this._permissions.can_write;
@@ -114,7 +123,7 @@ Object.assign(MealieAtelierCard.prototype, {
       return true;
     } catch (error) {
       this._studioError = error?.code
-        ? this._errorText(error)
+        ? this._studioErrorText(error)
         : error?.message || this.t("studioSaveFailed");
       await this._studioRefresh();
       await this._recoverPermissions(error);
@@ -654,7 +663,7 @@ Object.assign(MealieAtelierCard.prototype, {
          ? `<p class="studio-step-badge">${this.t("familyStep", { step: sharedStep + 1, total: stepTotal || "?", date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next" ${stepTotal && sharedStep >= stepTotal - 1 ? "disabled" : ""}>${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
      <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${esc(Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000)))} ${this.t("studioMinutesShort")}</b>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
      ${!kid && this._permissions.can_write ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
-     <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small></div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
+     <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-task-remove" data-id="${esc(t.id)}" aria-label="${esc(this.t("studioRemove"))}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
      ${!kid && this._permissions.can_manage && people.length ? `<form class="studio-form" data-form="studio-task"><label>${this.t("familyTask")}<input name="text" maxlength="300" required placeholder="${this.t("familyTaskPlaceholder")}"></label><label>${this.t("familyAssign")}<select name="memberId">${people.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label><label class="studio-inline"><input type="checkbox" name="adultApproved"><span>${this.t("familyApproval")}</span></label><button class="btn" type="submit">${this.t("familyAssignTask")}</button></form>` : ""}
      <p class="studio-muted">${this.t("familySafety")}</p>`
          : `<p class="studio-muted">${this.t("familyStartHint")}</p><button class="btn primary" data-action="nav" data-value="recipes">${this.t("familyBrowse")}</button>`
@@ -1230,6 +1239,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-timer-remove") {
       if (session)
         await this._studioWrite("session_timer", {
+          session_id: session.id,
+          id: el.dataset.id,
+          remove: true,
+        });
+      return;
+    }
+    if (action === "studio-task-remove") {
+      if (session)
+        await this._studioWrite("session_task", {
           session_id: session.id,
           id: el.dataset.id,
           remove: true,

@@ -885,6 +885,7 @@
   "uiNoWriteGrant": "Your Home Assistant user may view this kitchen but not change it. An administrator can grant access in the Mealie Atelier options.",
   "uiNoWriteGrantWeb": "You are signed in with read access. An administrator can give your account the writer role.",
   "errNotConfigured": "Mealie Atelier is not set up yet.",
+  "errMemberHasTasks": "This person still has tasks. Remove their tasks first.",
   "errInvalidRequest": "That request was not valid. Check your input and try again.",
   "errMealieAuth": "Mealie refused the API token. Create a new token in Mealie and re-authenticate the integration.",
   "errMealieAuthWeb": "Mealie refused the API token. Check MEALIE_API_TOKEN in the web app server configuration.",

@@ -13,6 +13,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Shopping: a free-text item typed with a leading 1 keeps it.
 - Light theme: form and editor errors use the readable error color. The plan dialog's sort field spans the form and its rows are spaced evenly.
 - Recipe editor: the English heading reads "Recipe name & description".
+- Shared cooking: helper tasks can be removed, and the refusal to remove a person who still has tasks is shown as translated text.
 
 ## [0.11.0] - 2026-10-30
 
