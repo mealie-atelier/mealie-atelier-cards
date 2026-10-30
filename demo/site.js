@@ -277,3 +277,12 @@ if (liveFrame && liveCard) {
   };
   poll();
 }
+
+// Fullscreen for the live demo: Fullscreen API where available, a viewport overlay on iPhone.
+const liveFullscreen = liveFrame?.querySelector(".live-fs");
+if (liveFrame && liveCard && liveFullscreen) {
+  // Loaded on its own so this script does not wait for a second file before the page reveals.
+  import("./live-fullscreen.js").then(({ setupLiveFullscreen }) =>
+    setupLiveFullscreen({ frame: liveFrame, button: liveFullscreen, card: liveCard }),
+  );
+}

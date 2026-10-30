@@ -47,6 +47,7 @@ const styles = join(demoRoot, "live-demo.css");
 const siteScript = join(demoRoot, "site.js");
 const showcase = JSON.parse(await readFile(join(demoRoot, "showcase/manifest.json"), "utf8"));
 const searchModule = join(demoRoot, "recipe-search.js");
+const fullscreenModule = join(demoRoot, "live-fullscreen.js");
 const bundle = join(cardsRoot, "dist/mealie-atelier-cards.js");
 const localeIds = ["de", "en"];
 const deploymentBase = resolveDeploymentBase(process.argv.slice(2));
@@ -754,6 +755,7 @@ await cp(join(demoRoot, "showcase"), join(siteRoot, "showcase"), { recursive: tr
 await removeStaleFiles(join(demoRoot, "photos"), join(siteRoot, "photos"));
 await removeStaleFiles(join(demoRoot, "showcase"), join(siteRoot, "showcase"));
 await copyFile(searchModule, join(siteRoot, "assets/recipe-search.js"));
+await copyFile(fullscreenModule, join(siteRoot, "assets/live-fullscreen.js"));
 await copyFile(bundle, join(siteRoot, "assets/mealie-atelier-cards.js"));
 await copyFile(
   join(cardsRoot, "demo/site/week-dial-mark.svg"),
@@ -770,6 +772,7 @@ await removeUnlisted(
       "live-demo.css",
       "site.js",
       "recipe-search.js",
+      "live-fullscreen.js",
       "mealie-atelier-cards.js",
       "mealie-atelier-mark.svg",
       ...brandAssets,

@@ -100,6 +100,8 @@ const symbols = {
   sync: `<path d="M20 11a8 8 0 0 0-14.3-4.3L4 9M4 4v5h5M4 13a8 8 0 0 0 14.3 4.3L20 15M20 20v-5h-5"/>`,
   menu: `<path d="M4 7h16M4 12h16M4 17h16"/>`,
   close: `<path d="M6 6l12 12M18 6 6 18"/>`,
+  expand: `<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>`,
+  shrink: `<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>`,
   offline: `<path d="M2 8.5a15 15 0 0 1 4.2-2.6M9.5 5.1A15 15 0 0 1 22 8.5M5 12a10 10 0 0 1 3-1.9M13.4 10.2A10 10 0 0 1 19 12M8.5 15.5a5 5 0 0 1 7 0M12 19.5h.01M3 3l18 18"/>`,
 };
 

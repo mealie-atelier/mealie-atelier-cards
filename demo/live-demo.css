@@ -1262,18 +1262,100 @@ h2 em {
   background: #151d18;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
 }
+.live-dots {
+  display: flex;
+  gap: 7px;
+}
 .live-bar i {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: #3a463e;
 }
-.live-bar span {
+.live-status {
   margin-left: 12px;
   color: var(--mint);
   font: 600 12px/1 var(--sans);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.live-fs {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line2);
+  background: transparent;
+  color: var(--mint);
+  font: 600 12px/1 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.live-fs:hover {
+  background: rgba(157, 203, 178, 0.12);
+  border-color: var(--mint-deep);
+}
+.live-fs .i {
+  width: 16px;
+  height: 16px;
+}
+/* Fullscreen: the frame fills the screen (Fullscreen API) or the dynamic viewport (iPhone overlay)
+   and the card takes what the bar leaves, so its container queries pick the layout by width. */
+.live-frame[data-fullscreen] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #0a0f0c;
+  color-scheme: dark;
+}
+.live-frame[data-fullscreen="overlay"] {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: contain;
+}
+.live-frame[data-fullscreen] .live-bar {
+  flex: none;
+  min-height: 56px;
+  border-radius: 0;
+  padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+  padding-top: env(safe-area-inset-top);
+  box-sizing: content-box;
+}
+.live-frame[data-fullscreen] .live-fs {
+  min-height: 40px;
+  padding-inline: 16px;
+  background: rgba(157, 203, 178, 0.12);
+  border-color: var(--mint-deep);
+  color: var(--mint2);
+}
+.live-frame[data-fullscreen] mealie-atelier-card {
+  flex: 1 1 0;
+  min-height: 0;
+  border-radius: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+}
+html.live-fs-lock,
+html.live-fs-lock body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 .live-frame mealie-atelier-card {
   display: block;
@@ -1324,6 +1406,10 @@ html.js .live-frame:not([data-ready])::after {
   }
   .live-bar {
     border-radius: 20px 20px 0 0;
+    padding-inline: 12px;
+  }
+  .live-status {
+    margin-left: 8px;
   }
   .live-frame mealie-atelier-card {
     border-radius: 0 0 20px 20px;
