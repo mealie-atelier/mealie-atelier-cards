@@ -614,12 +614,6 @@
   margin-block-end: var(--bw-pad);
 }
 
-/* The shared close strip would stay behind as an empty header band once the dialog scrolls; here the
-   close button floats on its own and the content scrolls past it. */
-.atelier .modal.modal.sync-modal > .modal-close::before {
-  display: none;
-}
-
 /* Phone: the account card is compact (label and value on one row, disconnect as a text link) so the
    rule actions below it start within the first screen. */
 @container atelier-card (max-width: 460px) {

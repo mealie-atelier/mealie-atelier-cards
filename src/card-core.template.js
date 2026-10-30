@@ -1239,7 +1239,7 @@ class MealieAtelierCard extends HTMLElement {
           .replace('class="modal-backdrop"', 'class="modal-backdrop modal-stable"')
           .replace(
             'class="modal ',
-            `class="modal modal-stable${this.shadowRoot.querySelector(".modal")?.classList.contains("bar-on") ? " bar-on" : ""} `,
+            `class="modal modal-stable${this._carriesBarOn() ? " bar-on" : ""} `,
           );
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
@@ -1275,7 +1275,6 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
-    this._watchModalBar();
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -1288,6 +1287,8 @@ class MealieAtelierCard extends HTMLElement {
           el.scrollLeft = snap.left;
         }
       }
+    // After the scroll position is back: the strip is judged on the real geometry, never on the old state.
+    this._watchModalBar();
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
@@ -1358,6 +1359,20 @@ class MealieAtelierCard extends HTMLElement {
    * The sticky header strip of a dialog switches on in one step, when the dialog heading has scrolled under it:
    * the strip becomes opaque with its border and names the dialog by the heading's own text. No scroll-linked alpha.
    */
+  _carriesBarOn() {
+    const modal = this.shadowRoot.querySelector(".modal");
+    return Boolean(modal?.classList.contains("bar-on") && modal.scrollTop > 0);
+  }
+  /** Bottom edge of el inside the scrolled content of root, from offsets (unaffected by transforms). */
+  _layoutBottom(el, root) {
+    let top = 0;
+    for (let n = el; n && n !== root; n = n.offsetParent) {
+      if (typeof n.offsetTop !== "number") return null;
+      top += n.offsetTop;
+      if (!n.offsetParent) return null;
+    }
+    return typeof el.offsetHeight === "number" ? top + el.offsetHeight : null;
+  }
   _watchModalBar() {
     this._modalBarObserver?.disconnect();
     this._modalBarObserver = null;
@@ -1369,17 +1384,30 @@ class MealieAtelierCard extends HTMLElement {
     if (typeof IntersectionObserver === "undefined") return;
     // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
     const edge = 20 + (strip.offsetHeight || 48);
+    // One judge for every trigger: the layout position of the heading (offsets, unaffected by the dialog's
+    // entrance transform, whole pixels, so one pixel of rounding slack). The observer is only a trigger when the
+    // layout cannot be read; then its entry decides.
+    const settle = (entry) => {
+      const bottom = this._layoutBottom(heading, modal);
+      const under =
+        bottom !== null
+          ? bottom - (modal.scrollTop || 0) < edge - 1
+          : Boolean(
+              entry &&
+                !entry.isIntersecting &&
+                entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge,
+            );
+      if (bottom !== null || entry) modal.classList.toggle("bar-on", under);
+    };
     this._modalBarObserver = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[entries.length - 1];
-        const under =
-          !entry.isIntersecting &&
-          entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge;
-        modal.classList.toggle("bar-on", under);
-      },
+      (entries) => settle(entries[entries.length - 1]),
       { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
     );
     this._modalBarObserver.observe(heading);
+    // Decide now (the observer reports asynchronously), and again when the entrance animation is over, so a
+    // dialog or step that starts at scroll 0 never keeps a stale strip.
+    settle();
+    modal.addEventListener?.("animationend", () => settle());
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */
   _opensTouchKeyboard(el) {

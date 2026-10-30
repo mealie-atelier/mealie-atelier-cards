@@ -51,12 +51,12 @@ test("More options is a text disclosure and its panel has no frame of its own", 
   assert.match(rule(".atelier .bw-more"), /border-block-start:\s*1px solid/);
 });
 
-test("the scrolling sync panel has bottom padding, the close strip is gone and the phone wizard fills the dialog", () => {
+test("the scrolling sync panel has bottom padding, the close strip stays with its title and the phone wizard fills the dialog", () => {
   assert.match(
     rule(".atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard)"),
     /padding-block-end:\s*var\(--bw-pad\)/,
   );
-  assert.match(rule(".atelier .modal.modal.sync-modal > .modal-close::before"), /display:\s*none/);
+  assert.doesNotMatch(css, /sync-modal > \.modal-close::before/);
   assert.match(css, /\.sync-modal:has\(> \.bw-wizard\)\s*\{[^}]*display:\s*flex/);
   assert.match(css, /\.bw-wizard \.bw-panel > \.bw-nav,[^{]*\{[^}]*margin-block-start:\s*auto/);
 });

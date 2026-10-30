@@ -92,6 +92,9 @@ function watchedModal({ strip = {}, headingText = " Gericht einplanen " } = {}) 
     classList: {
       toggle: (name, on) => (on ? classes.add(name) : classes.delete(name)),
     },
+    addEventListener: (type, fn) => {
+      if (type === "animationend") modal.animationEnd = fn;
+    },
     querySelector: (sel) =>
       sel === ":scope > .modal-bar-title" ? stripEl : sel === "h2" ? heading : null,
   };
@@ -137,4 +140,34 @@ test("a new render replaces the heading observer", () => {
   card._watchModalBar();
   assert.equal(observers[0].disconnected, true);
   assert.equal(observers.length, 2);
+});
+
+test("the strip is decided synchronously from the layout, so a stale on state is cleared at scroll 0", () => {
+  const { card, classes, heading, stripEl } = watchedModal();
+  const modalEl = card.shadowRoot.querySelector(".modal");
+  modalEl.scrollTop = 0;
+  // Offsets are untransformed layout values: heading spans 36..65 inside the dialog, the strip edge is at 68.
+  heading.offsetParent = modalEl;
+  heading.offsetTop = 36;
+  heading.offsetHeight = 29;
+  stripEl.offsetHeight = 44;
+  classes.add("bar-on");
+  card._watchModalBar();
+  assert.equal(classes.has("bar-on"), false);
+  // Scrolled by 20: the heading bottom is at 45, under the strip edge of 64.
+  modalEl.scrollTop = 20;
+  card._watchModalBar();
+  assert.equal(classes.has("bar-on"), true);
+  // Back at the top, the entrance animation ending re-evaluates.
+  modalEl.scrollTop = 0;
+  modalEl.animationEnd();
+  assert.equal(classes.has("bar-on"), false);
+});
+
+test("the strip and its title are never split: no dialog hides the strip behind the title", () => {
+  const wizard = readFileSync(
+    new URL("../src/design-system/bring-wizard.css", import.meta.url),
+    "utf8",
+  );
+  assert.doesNotMatch(wizard, /sync-modal > \.modal-close::before \{\s*display: none/);
 });
