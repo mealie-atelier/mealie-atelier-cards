@@ -4,7 +4,7 @@ Part of [Mealie Atelier Cards](../README.md). Contents: [Docker](#docker-quick-s
 
 Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **without Home Assistant**. This standalone web app shares the same visual components as the Mealie Atelier cards, but uses a local, password-protected Node proxy to your own Mealie API.
 
-![Mealie Atelier standalone UI (demo data)](assets/showcase-desktop.png)
+![Mealie Atelier standalone UI (demo data)](assets/showcase-desktop.webp)
 
 ## Docker quick start
 

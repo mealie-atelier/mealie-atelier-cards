@@ -19796,24 +19796,28 @@ Object.assign(MealieAtelierCard.prototype, {
   },
   /**
    * Send the shared cooking step. Quick clicks are sent one after another and only the newest
-   * step that is still waiting goes out, so an older answer never moves the dialog back.
+   * step that is still waiting goes out, so an older answer never moves the dialog back. A failed
+   * write drops what is waiting and shows the step the shared session really has.
    */
   _studioSyncStep(sessionId, step) {
     this._cookStepWanted = { sessionId, step };
     if (!this._cookStepSync)
       this._cookStepSync = (async () => {
+        let failed = false;
         try {
           while (this._cookStepWanted) {
             const wanted = this._cookStepWanted;
             this._cookStepWanted = null;
-            await this._studioWrite("session_step", {
+            failed = !(await this._studioWrite("session_step", {
               session_id: wanted.sessionId,
               step: wanted.step,
-            });
+            }));
+            if (failed) this._cookStepWanted = null;
           }
         } finally {
           this._cookStepSync = null;
         }
+        if (failed) await this._studioRefresh();
       })();
     return this._cookStepSync;
   },

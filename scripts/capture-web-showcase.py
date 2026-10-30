@@ -1,4 +1,4 @@
-"""Recapture web/assets/showcase-desktop.png from the standalone web app run against the test rig.
+"""Recapture web/assets/showcase-desktop.webp from the standalone web app run against the test rig.
 
 Usage: uv run --with playwright --with pillow python scripts/capture-web-showcase.py <url> <user> <password>
 
@@ -17,7 +17,7 @@ from PIL import Image
 from playwright.sync_api import sync_playwright
 
 url, user, password = sys.argv[1:4]
-OUT = Path(__file__).resolve().parent.parent / "web" / "assets" / "showcase-desktop.png"
+OUT = Path(__file__).resolve().parent.parent / "web" / "assets" / "showcase-desktop.webp"
 TMP = OUT.with_suffix(".tmp.png")
 
 HEIGHT = 0
@@ -51,6 +51,6 @@ with sync_playwright() as play:
         page.screenshot(path=str(TMP), full_page=True, clip={"x": 0, "y": 0, "width": 1480, "height": height})
     finally:
         browser.close()
-Image.open(TMP).convert("RGB").resize((1480, HEIGHT), Image.LANCZOS).save(OUT, optimize=True)
+Image.open(TMP).convert("RGB").resize((1480, HEIGHT), Image.LANCZOS).save(OUT, "WEBP", quality=85, method=6)
 TMP.unlink()
 print("ok", OUT)

@@ -134,3 +134,30 @@ test("quick back and next in a shared session keep the newest step", async () =>
   assert.equal(server.step, 2, "the shared session ends on the newest step");
   assert.equal(sent.at(-1), 2);
 });
+
+test("a failed shared step write shows the step the session really has", async () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  const steps = [{ text: "a" }, { text: "b" }, { text: "c" }];
+  const state = () => ({
+    revision: 1,
+    family: { members: [], session: { id: "s1", slug: "gnocchi", step: 1 } },
+    journal: {},
+  });
+  card._detail = { slug: "gnocchi", name: "Gnocchi", recipeInstructions: steps };
+  card._modal = "cook";
+  card._cookIndex = 1;
+  card._studio = state();
+  card._render = () => {};
+  card.shadowRoot.activeElement = null;
+  card._ws = (type) => {
+    if (type === "studio_update")
+      return Promise.reject(Object.assign(new Error("offline"), { code: "offline" }));
+    if (type === "studio_state") return Promise.resolve(state());
+    return Promise.resolve({});
+  };
+  const button = { dataset: { action: "cook-next" }, disabled: false, closest: () => button };
+  await card._handleClick({ target: button, preventDefault() {} });
+  assert.equal(card._cookStepSync, null, "the sync guard is released");
+  assert.equal(card._cookIndex, 1, "the dialog falls back to the session step");
+});
