@@ -981,7 +981,7 @@ ha-card {
   margin-top: 15px;
 }
 .atelier .form-error {
-  color: #f6b6a4;
+  color: var(--at-danger);
   margin-bottom: 10px;
   font-size: 12px;
 }

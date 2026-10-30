@@ -4,6 +4,16 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Cooking mode: Enter in the timer fields starts the timer, and Enter in a prompt dialog (such as "Alternative Zutat") confirms it instead of cancelling.
+- Cooking mode: a shared timer is shown as a timer card with a running or finished label and a remove button.
+- Shared cooking: the family view stops at the recipe's last step and shows "Schritt x von y".
+- Recipe search without a match says so (naming the search) instead of reading like an empty library, and the German empty text is "Keine Rezepte gefunden."
+- Shopping: a free-text item typed with a leading 1 keeps it.
+- Light theme: form and editor errors use the readable error color. The plan dialog's sort field spans the form and its rows are spaced evenly.
+- Recipe editor: the English heading reads "Recipe name & description".
+
 ## [0.11.0] - 2026-10-30
 
 ### Added

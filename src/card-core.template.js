@@ -1392,6 +1392,16 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature D: recipe picker keyboard
     if (this._pickerKeydown(event)) return;
     // END feature D
+    // Enter in the timer fields starts the timer, like pressing the start button.
+    if (
+      event.key === "Enter" &&
+      !event.isComposing &&
+      target?.matches?.("[data-timer-minutes],[data-timer-label]")
+    ) {
+      event.preventDefault();
+      this.shadowRoot.querySelector('[data-action="timer-start"]')?.click();
+      return;
+    }
     // A nested Atelier dialog closes itself on Esc; the card dialog underneath must stay open.
     if (
       event.key === "Escape" &&

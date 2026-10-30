@@ -58,7 +58,7 @@ export const viewMethods = {
       })
       .join(
         "",
-      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this.t(this._libraryEmpty() ? "uiEmptyLibrary" : "noRecipes"))}</div>` : ""}`;
+      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
     const page = this._data.recipes || {};
@@ -127,7 +127,11 @@ export const viewMethods = {
   /** Item text without the quantity Mealie already folds into `display`; a unitless quantity of 1 shows no "1 " prefix. */
   _shoppingLabel(item) {
     const text = String(item.display || item.note || item.food?.name || this.t("itemFallback"));
-    return Number(item.quantity) === 1 && !item.unit ? text.replace(/^1(?:[.,]0+)?\s+/, "") : text;
+    // Only the "1 " Mealie folds into `display` is dropped; typed note text keeps its number.
+    const folded = item.display && item.display !== item.note;
+    return folded && Number(item.quantity) === 1 && !item.unit
+      ? text.replace(/^1(?:[.,]0+)?\s+/, "")
+      : text;
   },
   /** Rows that exist only on this device (waiting add or unsent save) cannot be edited yet. */
   _shoppingRowBusy(item) {
