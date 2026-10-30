@@ -95,14 +95,14 @@ function everyday(ctx) {
         "Tick it off in the shop, the list at home is current.",
       ),
       text: t(
-        "Hake ab, was im Wagen liegt. Kein Netz zwischen den Regalen? Atelier merkt sich jeden Haken auf dem Gerät und schickt ihn in der richtigen Reihenfolge nach, genau einmal. Mit Home Assistant geht die Liste per Einkaufs-Sync auf Wunsch weiter an Bring.",
-        "Tick off what is in the cart. No signal between the shelves? Atelier keeps every tick on the device and sends it in the right order later, exactly once. With Home Assistant, the shopping sync can pass the list on to Bring.",
+        "Hake ab, was im Wagen liegt. Kein Netz zwischen den Regalen? Atelier merkt sich jeden Haken auf dem Gerät und schickt ihn in der richtigen Reihenfolge nach, genau einmal. Auf Wunsch geht die Liste per Einkaufs-Sync weiter an Bring!, mit Home Assistant oder direkt aus der Web-App.",
+        "Tick off what is in the cart. No signal between the shelves? Atelier keeps every tick on the device and sends it in the right order later, exactly once. If you like, the shopping sync passes the list on to Bring!, through Home Assistant or straight from the web app.",
       ),
       list: [
         t("Offline abhaken, später sauber abgeglichen", "Tick off offline, cleanly synced later"),
         t(
-          "Einkaufs-Sync zu Bring und anderen To-do-Listen",
-          "Shopping sync to Bring and other to-do lists",
+          "Einkaufs-Sync zu Bring!, auch ohne Home Assistant",
+          "Shopping sync to Bring!, also without Home Assistant",
         ),
         t(
           "Vorschau, bevor der erste Stapel gesendet wird",
@@ -215,8 +215,8 @@ function features(ctx) {
     "cart",
     t("Einkaufsliste mit Sync", "Shopping list with sync"),
     t(
-      "Offline abhaken, später sauber abgeglichen. Mit Home Assistant auf Wunsch weiter an Bring und andere To-do-Listen.",
-      "Tick off offline, synced cleanly later. With Home Assistant, on to Bring and other to-do lists if you like.",
+      "Offline abhaken, später sauber abgeglichen. Auf Wunsch weiter an Bring!, mit oder ohne Home Assistant.",
+      "Tick off offline, synced cleanly later. On to Bring! if you like, with or without Home Assistant.",
     ),
     t("Einkaufsliste", "Shopping list"),
     { wide: "feature-shopping", phone: "app-phone-shopping" },

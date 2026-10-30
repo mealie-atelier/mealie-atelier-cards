@@ -1046,6 +1046,27 @@ test("hero captures: tablet and phone exist in both locales with every listed wi
   }
 });
 
+test("web app section: the Bring! block with real captures, and no text that ties Bring! to Home Assistant", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const section = html.slice(
+      html.indexOf(locale === "de" ? 'id="ohne-home-assistant"' : 'id="without-home-assistant"'),
+    );
+    assert.match(
+      section,
+      locale === "de" ? /Bring! ohne Home Assistant\./ : /Bring! without Home Assistant\./,
+    );
+    for (const name of ["app-bring-connected", "app-bring-phone"]) {
+      assert.match(section, new RegExp(`showcase/${locale}/${name}-\\d+\\.webp`), name);
+    }
+    assert.doesNotMatch(
+      html,
+      /Mit Home Assistant geht die Liste per Einkaufs-Sync|With Home Assistant, the shopping sync can pass|With Home Assistant, on to Bring|Mit Home Assistant auf Wunsch weiter an Bring/,
+    );
+    assert.doesNotMatch(html, /(?:zu|to|an|on to) Bring (?:und|and|\.)|Bring-Liste|Bring list/);
+  }
+});
+
 test("compare: rest position, labels as toggles and a phone-sized capture pair in both locales", () => {
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);

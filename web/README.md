@@ -143,15 +143,34 @@ The tests wait for defined states, never for fixed times. The card replaces its 
 
 ## Smart Shopping Sync to Bring!
 
-The web app can copy items of a Mealie shopping list to a Bring! list, without Home Assistant. It follows the same rules as the Bridge sync in Home Assistant: a preview before anything is sent, a confirmed first batch, exactly-once delivery, duplicate skipping, an optional move mode and triggers after an add in the app or by watching the list. The rules are set up in the app: open the shopping view and choose **Einkaufs-Sync** (Shopping sync). A rule pairs one Mealie list with one Bring! list; destinations are the lists of the connected Bring! account.
+The web app copies items of a Mealie shopping list to a Bring! list, **without Home Assistant**. It follows the same rules as the Bridge sync in Home Assistant: a preview before anything is sent, a confirmed first batch, exactly-once delivery, duplicate skipping, an optional move mode and triggers after an add in the app or by watching the list. A rule pairs one Mealie list with one Bring! list.
 
-**Connect the account.** Sign in as an administrator, open the shopping view and choose **Mit Bring! verbinden** (Connect to Bring!). One dialog guides you through five steps: sign in, pick the Bring! list (your usual list is preselected), pick the Mealie list, see a preview of the real items and release the first delivery. Duplicates are skipped and the sync runs after adding by default; move mode, merging and the delay sit under **Mehr Optionen** (More options). The password is sent to the server over your connection (use HTTPS), is used for one login and is dropped. The server keeps only the session tokens and the account's e-mail address in `ATELIER_DATA_DIR/bring-account.json` (file mode 600) and renews the session on its own. Everyone sees the address masked (for example `f•••@example.com`); only administrators receive it in full, so that signing in again needs just the password. In the sync dialog **Verbindung trennen** (Disconnect) asks for confirmation, deletes the tokens and stops the sync; the rules stay saved. If Bring! refuses the stored tokens, the dialog offers one sign-in again that keeps all rules and asks for the password only. A Bring! outage during sign-in keeps the typed password in the browser's memory (never stored) so one click retries; closing the dialog drops it. If someone deletes the Bring! list a rule sends to, the rule card says so and **Andere Liste wählen** (Choose another list) swaps the list without recreating the rule. To try the flow without a real account, run `node web/test/support/fake-bring-server.mjs 5110` and start the app with the printed `BRING_API_BASE` and `BRING_API_KEY`.
+![The connected Bring! account in the shopping sync dialog (fictional account)](assets/bring-account.webp)
+
+### Set it up
+
+1. Sign in to the web app as an administrator and open the shopping view.
+2. Choose **Mit Bring! verbinden** (Connect to Bring!).
+3. Follow the five steps: sign in with your Bring! e-mail address and password, pick the Bring! list (your usual list is preselected), pick the Mealie list, check the preview of the real items and release the first delivery.
+
+Duplicates are skipped and the sync runs after adding by default. Move mode, merging and the delay sit under **Mehr Optionen** (More options). Without a rule nothing is sent; with `ATELIER_READ_ONLY=true` the dialog cannot connect at all.
+
+### Your account and your password
+
+- The password travels to the server over your connection (use HTTPS), is used for one login and is dropped. It is never written to disk.
+- The server keeps only the session tokens and the account's e-mail address in `ATELIER_DATA_DIR/bring-account.json` (file mode 600) and renews the session on its own.
+- Everyone sees the address masked (for example `f•••@example.com`). Only administrators receive it in full, so that signing in again needs just the password.
+- **Verbindung trennen** (Disconnect) asks for confirmation, deletes the tokens and stops the sync. The rules stay saved.
+- If Bring! refuses the stored tokens, the dialog offers one sign-in again that keeps all rules and asks for the password only. A Bring! outage during sign-in keeps the typed password in the browser's memory (never stored), so one click retries; closing the dialog drops it.
+- If someone deletes the Bring! list a rule sends to, the rule card says so and **Andere Liste wählen** (Choose another list) swaps the list without recreating the rule.
+
+**Try it without a real account.** Run `node web/test/support/fake-bring-server.mjs 5110` and start the app with the printed `BRING_API_BASE` and `BRING_API_KEY`. Sign in with the printed fictional account. The screenshots in this repository were taken this way, with `scripts/capture-bring-showcase.py`.
 
 **Headless setup.** Set `BRING_EMAIL` and `BRING_PASSWORD` in `.env` to connect at start without the dialog. The password is read once from the environment, kept in memory for renewing the session and never written to the data directory. Disconnecting in the dialog lasts until the next restart while these variables are set; remove them for good.
 
 **Who may do what.** Reading the sync state is open to every signed-in user. Running, pausing and retrying needs the write role. Connecting or disconnecting the account, changing rules and confirming the first batch need an administrator. `ATELIER_READ_ONLY=true` blocks connecting, rules and runs.
 
-**Privacy:** Shopping items are sent to Bring! only after an administrator connected an account, and only for the Mealie lists that a rule you confirmed names. Without a connected account the app sends no shopping data to anyone. The Bring! API is unofficial; its terms and privacy rules apply. The rule outbox lives in `ATELIER_DATA_DIR/shopping-sync.json`. `BRING_API_BASE` and `BRING_API_KEY` exist for tests and are not needed.
+**Privacy.** Shopping items are sent to Bring! only after an administrator connected an account, and only for the Mealie lists that a rule you confirmed names. Without a connected account the app sends no shopping data to anyone. The Bring! API is unofficial; its terms and privacy rules apply. The rule outbox lives in `ATELIER_DATA_DIR/shopping-sync.json`. `BRING_API_BASE` and `BRING_API_KEY` exist for tests and are not needed.
 
 ## Printing recipes and plans
 

@@ -163,13 +163,13 @@ The cooking actions only run when you press them. Nothing triggers automatically
 - **Recipe editor:** structured ingredients with food and unit lookup, a review step with scaled preview, cover and step photo upload, and a version history with restore. Every write is backed up first.
 - **Print Studio:** A4 layouts for recipes, shopping lists, the week plan and a whole cookbook, in Editorial, Compact or Ink saver style.
 - **Nutrition Lab:** match ingredients against USDA data, confirm grams and store per-serving values in Mealie. AI name suggestions are optional and off by default.
-- **Smart Shopping Sync:** rule-based sync from a Mealie list to a Bring! list, with a preview before the first batch. In Home Assistant it targets a To-do list through the Bridge; the [standalone web app](web/README.md#smart-shopping-sync-to-bring) connects a Bring! account directly, without Home Assistant.
+- **Smart Shopping Sync:** rule-based sync from a Mealie list to a Bring! list, with a preview before the first batch. Bring! sync works without Home Assistant: the [standalone web app](web/README.md#smart-shopping-sync-to-bring) connects a Bring! account directly. In Home Assistant it targets a To-do list through the Bridge.
 - **Offline shopping:** ticks, new items, edits, deletions and "clear ticked" made without a connection are kept on the device and replayed in order, exactly once, when the connection returns.
 - **Accessibility:** keyboard navigation and focus management in every dialog, screen reader labels and reduced motion support.
 
 ## Standalone web app and demo
 
-The cards also run without Home Assistant. The [standalone web app](web/README.md) is a small Node server with accounts and roles that keeps the Mealie token on the server and installs as a PWA. The [live demo](https://mealie.alles-automatisch.de) runs the same cards with ten fictional recipes entirely in your browser; nothing is sent anywhere.
+The cards also run without Home Assistant. The [standalone web app](web/README.md) is a small Node server with accounts and roles that keeps the Mealie token on the server and installs as a PWA. It also sends your Mealie shopping list to Bring! without Home Assistant: an administrator connects the account in the [shopping sync dialog](web/README.md#smart-shopping-sync-to-bring) and the password is used for one login only. The [live demo](https://mealie.alles-automatisch.de) runs the same cards with ten fictional recipes entirely in your browser; nothing is sent anywhere.
 
 Build the demo locally with `npm run build:demo` and serve `demo/public-site/`.
 
