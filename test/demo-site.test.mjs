@@ -1101,3 +1101,29 @@ test("English recipe metric labels all start with a capital", () => {
   );
   assert.deepEqual(labels, ["Prep", "Cooking", "Servings", "Cuisine"]);
 });
+
+test("the root redirect stub is canonicalised to the German page and stays out of the hreflang set", () => {
+  const deployed = read(join(builds.deployed, "index.html"));
+  assert.ok(deployed.includes(`<link rel="canonical" href="${baseUrl}de/">`));
+  assert.ok(!deployed.includes("hreflang"), "stub must not declare a one-sided hreflang set");
+  const local = read(join(builds.local, "index.html"));
+  assert.ok(!local.includes("hreflang") && !local.includes('rel="canonical"'));
+});
+
+test("German structured data carries German keywords and English data keeps English ones", () => {
+  const keywordsOf = (html) =>
+    [...html.matchAll(/"keywords":"([^"]*)"/g)].map((m) => m[1]).join(", ");
+  const english = /vegetarian|one-pan|quick|family-friendly|make-ahead|freezer-friendly|dairy-free/;
+  for (const out of Object.values(builds)) {
+    const dePages = [
+      join(out, "de", "index.html"),
+      ...listFiles(join(out, "de", "rezepte"), ".html"),
+    ];
+    for (const page of dePages) {
+      const keywords = keywordsOf(read(page));
+      assert.ok(keywords, page);
+      assert.ok(!english.test(keywords), `${page}: ${keywords}`);
+    }
+    assert.match(keywordsOf(read(join(out, "en", "index.html"))), /family-friendly/);
+  }
+});

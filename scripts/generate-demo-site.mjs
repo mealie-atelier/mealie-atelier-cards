@@ -307,6 +307,23 @@ function localizedData(locale) {
   };
 }
 
+const tagLabels = {
+  vegetarian: { de: "vegetarisch", en: "vegetarian" },
+  vegan: { de: "vegan", en: "vegan" },
+  quick: { de: "schnell", en: "quick" },
+  "one-pan": { de: "eine Pfanne", en: "one-pan" },
+  "family-friendly": { de: "familienfreundlich", en: "family-friendly" },
+  "make-ahead": { de: "vorbereiten", en: "make-ahead" },
+  "freezer-friendly": { de: "einfrierbar", en: "freezer-friendly" },
+  "dairy-free": { de: "milchfrei", en: "dairy-free" },
+};
+
+function tagLabel(tag, locale) {
+  const label = tagLabels[tag]?.[locale];
+  assert(label, `tag "${tag}" needs a ${locale} label`);
+  return label;
+}
+
 function recipeStructuredData(recipe, locale, url, prefix) {
   return {
     "@type": "Recipe",
@@ -318,7 +335,7 @@ function recipeStructuredData(recipe, locale, url, prefix) {
     author: { "@type": "Organization", name: "Mealie Atelier Test Kitchen" },
     recipeCategory: recipe.category[locale],
     recipeCuisine: recipe.cuisine[locale],
-    keywords: recipe.tags.join(", "),
+    keywords: recipe.tags.map((tag) => tagLabel(tag, locale)).join(", "),
     recipeYield: `${recipe.servings} ${copy[locale].servings}`,
     prepTime: isoDuration(recipe.prepMinutes),
     cookTime: isoDuration(recipe.cookMinutes),
@@ -592,7 +609,7 @@ function localizedRecipePage(locale, slug) {
 // The bare domain is the URL people share most. Crawlers that ignore meta refresh (Twitter/X and most
 // others) read the share card from here, so it carries the full og and twitter set of the German home.
 function rootIndex() {
-  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}">${iconLinks("assets/")}<meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(copy.de.title)}"><meta property="og:description" content="${escapeHtml(copy.de.description)}">${ogImageMeta("de", null, "")}${deploymentBase ? `<meta property="og:url" content="${escapeHtml(deploymentBase)}">` : ""}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(copy.de.title)}"><meta name="twitter:description" content="${escapeHtml(copy.de.description)}"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}">${iconLinks("assets/")}<meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(copy.de.title)}"><meta property="og:description" content="${escapeHtml(copy.de.description)}">${ogImageMeta("de", null, "")}${deploymentBase ? `<meta property="og:url" content="${escapeHtml(deploymentBase)}">` : ""}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(copy.de.title)}"><meta name="twitter:description" content="${escapeHtml(copy.de.description)}"><title>${copy.de.title}</title>${deploymentBase ? `<link rel="canonical" href="${escapeHtml(`${deploymentBase}de/`)}">` : ""}<meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
 }
 
 // Metric labels read as a set, so every label starts with a capital in both languages.
