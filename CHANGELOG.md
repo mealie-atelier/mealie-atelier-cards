@@ -7,7 +7,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Added
 
 - Web app: Smart Shopping Sync to Bring! without Home Assistant. It implements the Bridge sync contract (preview, confirmed first batch, exactly-once delivery, duplicate skip, after-add and watch triggers, move mode, pause, resume, retry and resolve) against Bring! lists, and the existing sync dialog of the cards configures it.
-- Web app: an administrator connects the Bring! account in the sync dialog (**Bring!-Konto**). The password is used for one login; only the session tokens are stored in the data directory with file mode 600. `BRING_EMAIL` and `BRING_PASSWORD` stay available for headless setups and are never persisted.
+- Web app: an administrator connects the Bring! account in the sync dialog (**Bring!-Konto**). The password is used for one login; only the session tokens and the account's e-mail address (shown masked, in full to administrators so that signing in again needs only the password) are stored in the data directory with file mode 600. `BRING_EMAIL` and `BRING_PASSWORD` stay available for headless setups and are never persisted.
 
 ### Changed
 

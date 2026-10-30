@@ -836,6 +836,8 @@ async function bridge(req) {
             bring: {
               state: bringClient.state,
               account: bringClient.account,
+              // Signing in again needs only the password when the administrator sees the address.
+              email: permissions.can_admin ? bringClient.accountEmail : "",
               default_list: bringClient.defaultList,
             },
           },

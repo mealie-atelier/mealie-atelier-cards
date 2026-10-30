@@ -104,6 +104,11 @@ export class BringClient {
     return this.session?.account || maskEmail(this.email);
   }
 
+  /** The full e-mail address of the connected account (only the server and its administrators see it). */
+  get accountEmail() {
+    return this.session?.email || this.email || "";
+  }
+
   /** The list Bring! uses by default for this account (`bring:<uuid>`), or an empty text. */
   get defaultList() {
     return this.session?.defaultList ? `bring:${this.session.defaultList}` : "";
@@ -147,7 +152,7 @@ export class BringClient {
     await probe.login();
     this.email = "";
     this.password = "";
-    this.restore({ ...probe.session, account: maskEmail(email) });
+    this.restore({ ...probe.session, account: maskEmail(email), email: String(email).trim() });
     await this.publish();
   }
 

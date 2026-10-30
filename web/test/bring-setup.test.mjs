@@ -134,9 +134,27 @@ test("an administrator connects Bring!, only tokens are stored with mode 600", a
     const saved = JSON.parse(file.text).session;
     assert.equal(typeof saved.accessToken, "string");
     assert.equal(typeof saved.refreshToken, "string");
-    for (const secret of [FAKE_PASSWORD, FAKE_EMAIL])
-      for (const each of await dataFiles(app.dataDir))
-        assert.equal(each.text.includes(secret), false, `${each.name} must not hold ${secret}`);
+    for (const each of await dataFiles(app.dataDir))
+      assert.equal(
+        each.text.includes(FAKE_PASSWORD),
+        false,
+        `${each.name} must not hold the password`,
+      );
+    // The address is kept (mode 600 file only) so that signing in again needs just the password.
+    assert.equal(saved.email, FAKE_EMAIL);
+    for (const each of await dataFiles(app.dataDir))
+      if (each.name !== "bring-account.json")
+        assert.equal(
+          each.text.includes(FAKE_EMAIL),
+          false,
+          `${each.name} must not hold the e-mail`,
+        );
+    assert.equal(after.bring.email, FAKE_EMAIL, "an administrator gets the full address");
+    for (const user of [AS.wim, AS.rea]) {
+      const status = (await app.call("mealie_atelier/status", {}, user)).entries[0];
+      assert.equal(status.bring.email, "", "only administrators see the full address");
+      assert.equal(JSON.stringify(status).includes(FAKE_EMAIL), false);
+    }
   } finally {
     await app.stop();
     remote.server.close();

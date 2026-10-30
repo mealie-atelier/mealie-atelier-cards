@@ -360,7 +360,7 @@ test("shopping sync keys from the contract exist in English and German with real
     "syncResend",
     "syncDelete",
     "syncDeleteConfirm",
-    "syncLastRun",
+    "syncLastRunValue",
     "syncOutcomeSent",
     "syncOutcomePartial",
     "syncOutcomeFailed",

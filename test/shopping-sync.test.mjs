@@ -195,7 +195,7 @@ test("status panel shows route, mode text, state line and pending count", async 
   assert.match(html, /Weekly groceries → Bring<\/p>/);
   assert.match(
     html,
-    /Move: Items are checked off in Mealie after the destination has confirmed them/,
+    /Move <small[^>]*>Items are checked off in Mealie after the destination has confirmed them/,
   );
   assert.match(html, /Paused/);
   assert.match(html, /2 waiting/);
@@ -459,7 +459,7 @@ test("a partial run result is announced as partial, a queued run as queued", asy
   await click(env.card, { action: "sync-run", value: "r1" });
   assert.match(
     markup(env.cards),
-    /Partly sent, some items need attention\. Sent: 3, skipped: 1, failed: 1, still waiting: 2\./,
+    /Partly sent, some items need attention\. 3 sent, 1 skipped, 1 failed, 2 still waiting\./,
   );
   assert.doesNotMatch(markup(env.cards), /\bDone\b/);
   env.card._ws = async () => ({ queued: true });
@@ -693,7 +693,9 @@ test("web app: the wizard walks sign-in, lists, preview and the confirmed first 
   const preview = env.calls.find((c) => c.name === "sync_preview");
   assert.equal(preview.message.rule.destination_entity_id, "bring:b");
   assert.equal(preview.message.rule.duplicate_policy, "skip_exact");
-  assert.match(markup(env.cards), /1 to send, 1 skipped/);
+  assert.match(markup(env.cards), /This item goes to your Bring! list &quot;Einkauf&quot;\./);
+  assert.match(markup(env.cards), /1 item is skipped\./);
+  assert.doesNotMatch(markup(env.cards), /0 skipped|0 failed|Sent: 0/);
   await click(env.card, { action: "sync-bw-next" });
   assert.equal(w.step, 5);
   assert.doesNotMatch(env.names().join(), /sync_rule_save/, "nothing is saved before the release");
@@ -701,13 +703,20 @@ test("web app: the wizard walks sign-in, lists, preview and the confirmed first 
   const run = env.calls.find((c) => c.name === "sync_run");
   assert.equal(run.message.confirm_first_batch, true);
   assert.match(markup(env.cards), /All set/);
+  assert.match(markup(env.cards), /Done\. 1 item is now on &quot;Einkauf&quot;\./);
+  assert.doesNotMatch(markup(env.cards), /bw-stepline/, "the heading is the only All set");
+  assert.doesNotMatch(
+    markup(env.cards),
+    /class="sync-result"/,
+    "a clean delivery shows no counters",
+  );
 });
 
 test("web app: a wrong password and a Bring! outage show their way out in the dialog", async () => {
-  for (const [code, text] of [
-    ["bring_auth", /reset the password in the Bring! app/],
-    ["bring_rate_limit", /Wait a few minutes/],
-    ["bring_network", /Check your internet connection/],
+  for (const [code, text, credentials] of [
+    ["bring_auth", /reset the password in the Bring! app/, true],
+    ["bring_rate_limit", /Wait a few minutes/, false],
+    ["bring_network", /Check your internet connection/, false],
   ]) {
     const env = bringCard({
       handlers: { bring_connect: () => Promise.reject(Object.assign(new Error("x"), { code })) },
@@ -718,10 +727,54 @@ test("web app: a wrong password and a Bring! outage show their way out in the di
     typeInto(env.card, "password", "wrong-password");
     await submit(env.card);
     assert.equal(env.card._bwData().step, 1);
-    assert.match(markup(env.cards), text);
-    assert.equal(env.card._syncData().bring.password, "");
-    assert.doesNotMatch(markup(env.cards), /wrong-password/);
+    const html = markup(env.cards);
+    assert.match(html, text);
+    // The kept password stays in its masked field and never shows up in any text.
+    assert.equal(html.includes("wrong-password"), !credentials, code);
+    assert.doesNotMatch(html.replace(/<input[^>]*type="password"[^>]*>/g, ""), /wrong-password/);
+    // Only a refused e-mail or password marks the fields; an outage is just the banner.
+    assert.equal(/aria-invalid="true"/.test(html), credentials, code);
+    assert.match(html, /id="bw-login-error"/);
+    assert.equal((html.match(/aria-describedby="bw-login-error"/g) || []).length, 2);
+    assert.equal(env.card._syncData().bring.password, credentials ? "" : "wrong-password");
+    assert.equal(/data-action="sync-bw-login-retry"/.test(html), !credentials, code);
   }
+});
+
+test("web app: a Bring! outage keeps the password in memory so one click retries", async () => {
+  const handlers = {
+    bring_connect: () => Promise.reject(Object.assign(new Error("x"), { code: "bring_network" })),
+    status: () => CONNECTED_STATUS(),
+  };
+  const env = bringCard({ handlers });
+  env.card._render();
+  await click(env.card, { action: "sync-bw-open" });
+  typeInto(env.card, "email", "cook@example.test");
+  typeInto(env.card, "password", "fixture-password");
+  await submit(env.card);
+  handlers.bring_connect = () => ({ state: "connected" });
+  await click(env.card, { action: "sync-bw-login-retry" });
+  const calls = env.calls.filter((c) => c.name === "bring_connect");
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].message.password, "fixture-password", "no typing for the retry");
+  assert.equal(env.card._bwData().step, 2);
+  assert.equal(env.card._syncData().bring.password, "", "dropped after the sign-in");
+});
+
+test("web app: closing the dialog drops a password kept for a retry", async () => {
+  const env = bringCard({
+    handlers: {
+      bring_connect: () => Promise.reject(Object.assign(new Error("x"), { code: "bring_network" })),
+    },
+  });
+  env.card._render();
+  await click(env.card, { action: "sync-bw-open" });
+  typeInto(env.card, "email", "cook@example.test");
+  typeInto(env.card, "password", "fixture-password");
+  await submit(env.card);
+  assert.equal(env.card._syncData().bring.password, "fixture-password");
+  await click(env.card, { action: "close-modal" });
+  assert.equal(env.card._syncData().bring.password, "");
 });
 
 test("web app: a double submit sends the sign-in only once", async () => {
@@ -762,7 +815,10 @@ test("web app: a Bring! list that is gone tells how to choose another", async ()
     destination: { ...RULE.destination, available: false, reason: "missing" },
   });
   await openStatus(env, [rule]);
-  assert.match(markup(env.cards), /no longer exists\. Choose another Bring! list[^]*with Edit/);
+  const html = markup(env.cards);
+  assert.match(html, /The Bring! list &quot;Bring&quot; no longer exists\./);
+  assert.doesNotMatch(html, /unreachable|cannot be reached/);
+  assert.match(html, /data-action="sync-bw-pick-list" data-value="r1"/);
 });
 
 test("web app: an unreachable Bring! asks to wait instead of choosing another list", async () => {
@@ -817,6 +873,186 @@ test("web app: the connected state shows the masked account and disconnecting as
   await click(env.card, { action: "sync-bring-disconnect" });
   assert.ok(env.names().includes("bring_disconnect"));
   assert.equal(env.card._modal, null);
+});
+
+test("web app: the disconnect question is neutral and only its action is dangerous", async () => {
+  const env = bringCard({ state: "connected" });
+  await openStatus(env, [withRule()]);
+  await click(env.card, { action: "sync-bring-disconnect-ask" });
+  const html = markup(env.cards);
+  const confirm = html.match(
+    /<div class="notice bw-confirm"[^]*?data-action="sync-bring-disconnect"[^>]*>/,
+  )?.[0];
+  assert.ok(confirm, "the question is a plain notice, not an error notice");
+  assert.doesNotMatch(confirm, /notice error/);
+  assert.ok(
+    confirm.indexOf("sync-bring-disconnect-cancel") <
+      confirm.indexOf('data-action="sync-bring-disconnect"'),
+    "Cancel on the left, the destructive action on the right",
+  );
+  assert.match(html, /<button class="btn danger" data-action="sync-bring-disconnect"/);
+});
+
+test("web app: the account card does not say Connected after a failed run", async () => {
+  const pill = (html) => html.match(/<span class="bw-pill">.*?<\/span>/s)?.[0] || "";
+  const gone = bringCard({ state: "connected" });
+  await openStatus(gone, [
+    withRule({
+      destination: { ...RULE.destination, available: false, reason: "missing" },
+      last_run: { at: new Date().toISOString(), outcome: "destination_unavailable" },
+    }),
+  ]);
+  let html = markup(gone.cards);
+  assert.match(pill(html), /List missing/);
+  assert.doesNotMatch(pill(html), /Connected/);
+  assert.match(html, /bw-account is-warn/);
+  assert.match(html, /<dt>Last run<\/dt><dd>[^]*?Destination list missing, just now/);
+  assert.match(html, /<dt>Last delivery<\/dt><dd>None yet<\/dd>/, "a failed run is no delivery");
+  const failed = bringCard({ state: "connected" });
+  await openStatus(failed, [
+    withRule({ last_run: { at: new Date().toISOString(), outcome: "failed" } }),
+  ]);
+  assert.match(pill(markup(failed.cards)), /Needs a look/);
+  const fine = bringCard({ state: "connected" });
+  await openStatus(fine, [withRule()]);
+  html = markup(fine.cards);
+  assert.match(pill(html), /Connected/);
+  assert.match(html, /<dt>Last delivery<\/dt><dd>2 minutes ago<\/dd>/);
+});
+
+test("web app: signing in again needs only the password, the address is prefilled", async () => {
+  const handlers = {
+    bring_connect: () => ({ state: "connected" }),
+    status: () => CONNECTED_STATUS(),
+  };
+  const env = bringCard({
+    state: "reauth",
+    handlers,
+    admin: true,
+  });
+  env.card._status.entries[0].bring.email = "cook@example.test";
+  await openStatus(env, [withRule()]);
+  const html = markup(env.cards);
+  assert.match(html, /name="username"[^>]*value="cook@example\.test"/);
+  assert.doesNotMatch(html, /name="username"[^>]*data-autofocus/);
+  assert.match(html, /name="password"[^>]*data-autofocus/, "the password gets the focus");
+  typeInto(env.card, "password", "fixture-password");
+  await submit(env.card);
+  const call = env.calls.find((c) => c.name === "bring_connect");
+  assert.equal(call.message.email, "cook@example.test");
+  assert.equal(call.message.password, "fixture-password");
+});
+
+test("web app: a first sign-in has no prefilled address and focuses the e-mail field", async () => {
+  const env = bringCard();
+  env.card._render();
+  await click(env.card, { action: "sync-bw-open" });
+  const html = markup(env.cards);
+  assert.match(html, /name="username"[^>]*value=""[^>]*data-autofocus/);
+  assert.doesNotMatch(html, /name="password"[^>]*data-autofocus/);
+});
+
+test("web app: the rule card is a key/value block with a primary Send now and a danger delete", async () => {
+  const env = bringCard({ state: "connected" });
+  const rule = withRule({ destination: { ...RULE.destination, name: "Einkauf" } });
+  await openStatus(env, [rule]);
+  const html = markup(env.cards);
+  const card = html.match(/<section class="editor-card sync-rule".*?<\/section>/s)?.[0] || "";
+  assert.match(card, /<dl class="bw-facts sync-facts">/);
+  assert.doesNotMatch(card, /<p class="sync-route">Bring!<\/p>/, "no lone platform line");
+  assert.doesNotMatch(card, /sync-state|sync-mode|sync-count/);
+  assert.match(card, /<button class="btn tiny primary" data-action="sync-run"/);
+  assert.match(card, /<button class="btn tiny danger" data-action="sync-delete"/);
+  assert.doesNotMatch(card, /<button class="btn tiny " data-action="sync-run"/);
+});
+
+test("web app: a deleted Bring! list offers to pick another one and keeps the rule", async () => {
+  const lists = {
+    entities: [
+      { entity_id: "bring:a", name: "Party", platform: "bring", available: true },
+      { entity_id: "bring:b", name: "Wochenmarkt", platform: "bring", available: true },
+    ],
+  };
+  const env = bringCard({
+    state: "connected",
+    handlers: { sync_destinations: () => lists },
+  });
+  env.card._status.entries[0].bring.default_list = "bring:b";
+  const rule = withRule({
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
+  await openStatus(env, [rule]);
+  env.setState({ supported: true, rules: [rule], audit: [] });
+  await click(env.card, { action: "sync-bw-pick-list", value: "r1" });
+  assert.equal(env.card._modal, "sync-wizard");
+  const w = env.card._bwData();
+  assert.equal(w.step, 2, "the wizard opens at the list step");
+  assert.equal(w.fixRule.id, "r1");
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.equal(w.bringList, "bring:b");
+  let html = markup(env.cards);
+  assert.match(html, /Choose another Bring! list/);
+  assert.match(html, /data-action="sync-bw-save-list"/);
+  assert.doesNotMatch(html, /bw-stepline/, "a one step change has no step list");
+  await click(env.card, { action: "sync-bw-save-list" });
+  const save = env.calls.find((c) => c.name === "sync_rule_save");
+  assert.equal(save.message.rule_id, "r1", "the existing rule is changed, not a new one made");
+  assert.equal(save.message.expected_revision, 2);
+  assert.equal(save.message.rule.destination_entity_id, "bring:b");
+  assert.equal(save.message.rule.source_list_id, "l1");
+  assert.equal(save.message.rule.mode, "copy");
+  assert.equal(save.message.reset_records, true);
+  assert.equal(env.card._modal, "sync");
+});
+
+test("web app: a deleted list can only be replaced by an administrator who may write", async () => {
+  const env = bringCard({ state: "connected", readOnly: true });
+  const rule = withRule({
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
+  await openStatus(env, [rule]);
+  assert.doesNotMatch(markup(env.cards), /sync-bw-pick-list/);
+  await click(env.card, { action: "sync-bw-pick-list", value: "r1" });
+  assert.notEqual(env.card._modal, "sync-wizard");
+});
+
+test("web app: wizard copy quotes list names, hides zero counters and hints at tidy duplicates", async () => {
+  const env = bringCard({
+    handlers: {
+      bring_connect: () => ({ state: "connected" }),
+      status: () => CONNECTED_STATUS(),
+      sync_destinations: () => ({
+        entities: [{ entity_id: "bring:b", name: "Einkauf", platform: "bring", available: true }],
+      }),
+    },
+  });
+  env.card._render();
+  await click(env.card, { action: "sync-bw-open" });
+  typeInto(env.card, "email", "cook@example.test");
+  typeInto(env.card, "password", "fixture-password");
+  await submit(env.card);
+  await click(env.card, { action: "sync-bw-next" });
+  let html = markup(env.cards);
+  assert.match(html, /Bring! keeps the list tidy/);
+  assert.match(
+    html,
+    /<button type="button" class="bw-more-toggle"/,
+    "a disclosure, not a pill button",
+  );
+  await click(env.card, { action: "sync-bw-more" });
+  html = markup(env.cards);
+  assert.match(html, /id="bw-more-panel"/);
+  await click(env.card, { action: "sync-bw-next" });
+  html = markup(env.cards);
+  assert.match(
+    html,
+    /This item goes to your Bring! list &quot;Einkauf&quot;\. Nothing is sent yet\./,
+  );
+  assert.doesNotMatch(html, /\b0 (skipped|failed|to send)/);
+  env.card._hass.language = "de";
+  env.card._render();
+  html = markup(env.cards);
+  assert.match(html, /Dieser Eintrag geht an deine Bring!-Liste „Einkauf“\./);
 });
 
 test("Home Assistant never shows the Bring! connection", async () => {
@@ -928,10 +1164,24 @@ test("run result has no repeated word, shows a success icon and says just now", 
   await openStatus(env, [withRule()]);
   await click(env.card, { action: "sync-run", value: "r1" });
   const html = markup(env.cards);
-  assert.match(html, /Sent: 1, skipped: 0, failed: 0, still waiting: 0\./);
-  assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
+  // A calm success is read out to screen readers only; the rule card shows the last run.
+  assert.match(html, /<p class="sync-sr">1 sent\.<\/p>/);
+  assert.doesNotMatch(html, /class="sync-result"/);
   assert.equal(env.card._syncRelative(new Date().toISOString()), "just now");
   assert.match(html, /Nothing waiting/);
+});
+
+test("a run that failed or leaves items waiting keeps a visible result line with an icon", async () => {
+  const env = syncCard({
+    handlers: {
+      sync_run: async () => ({ rule_id: "r1", outcome: "sent", sent: 1, pending_left: 2 }),
+    },
+  });
+  await openStatus(env, [withRule()]);
+  await click(env.card, { action: "sync-run", value: "r1" });
+  const html = markup(env.cards);
+  assert.match(html, /<p class="sync-result"><svg[^>]*><path d="m5 12 5 5L20 7"/);
+  assert.match(html, /<\/svg> 1 sent, 2 still waiting\.<\/p>/);
 });
 
 test("review has one title, a distinct group heading and a back arrow that points back", async () => {
@@ -971,12 +1221,12 @@ test("rule card keeps the state line in plain flow (no stranded separator) and n
   const env = syncCard();
   await openStatus(env, [withRule()]);
   const html = markup(env.cards);
-  const state = html.match(/<p class="sync-state">.*?<\/p>/s)?.[0] || "";
-  assert.ok(state, "state line renders");
-  assert.doesNotMatch(state, /·/);
-  // The count is its own sentence-case line, so it never runs on after the state text.
-  assert.doesNotMatch(state, /sync-count/);
-  assert.match(html, /<\/p>\s*<p class="sync-count sync-muted">Nothing waiting<\/p>/);
+  const facts = html.match(/<dl class="bw-facts sync-facts">.*?<\/dl>/s)?.[0] || "";
+  assert.ok(facts, "the rule is a key/value block like the account card");
+  const rows = [...facts.matchAll(/<dt>(.*?)<\/dt><dd>(.*?)<\/dd>/gs)].map((m) => m[1]);
+  assert.deepEqual(rows, ["Mode", "Status", "Waiting", "Last run"]);
+  assert.doesNotMatch(facts, /·/);
+  assert.match(facts, /<dt>Waiting<\/dt><dd>Nothing waiting<\/dd>/);
   assert.equal((html.match(/Weekly groceries → Bring/g) || []).length, 1);
 });
 
@@ -989,11 +1239,11 @@ test("run result labels every number, in both languages", async () => {
   await openStatus(env, [withRule()]);
   assert.match(
     env.card._syncResultText({ outcome: "failed", sent: 0, failed: 1 }),
-    /^Not sent\. Sent: 0, skipped: 0, failed: 1, still waiting: 0\.$/,
+    /^Not sent\. 1 failed\.$/,
   );
   env.card._hass.language = "de";
   const de = env.card._syncResultText({ outcome: "failed", sent: 0, failed: 1 });
-  assert.equal(de, "Nicht gesendet. Gesendet: 0, übersprungen: 0, fehlgeschlagen: 1, offen: 0.");
+  assert.equal(de, "Nicht gesendet. 1 fehlgeschlagen.");
 });
 
 test("the built-in Shopping list is shown by its localised name without a repeated pair", async () => {
@@ -1104,14 +1354,13 @@ test("a built-in list named in the server language is shown by the UI language, 
 
 test("a plain success does not repeat the word Sent", () => {
   const card = syncCard().card;
-  assert.equal(
-    card._syncResultText({ outcome: "sent", sent: 3 }),
-    "Sent: 3, skipped: 0, failed: 0, still waiting: 0.",
-  );
+  assert.equal(card._syncResultText({ outcome: "sent", sent: 3 }), "3 sent.");
   card._hass.language = "de";
+  assert.equal(card._syncResultText({ outcome: "sent", sent: 3 }), "3 gesendet.");
   assert.equal(
-    card._syncResultText({ outcome: "sent", sent: 3 }),
-    "Gesendet: 3, übersprungen: 0, fehlgeschlagen: 0, offen: 0.",
+    card._syncResultText({ outcome: "nothing_to_send" }),
+    "Nichts zu senden.",
+    "no zero counters",
   );
 });
 

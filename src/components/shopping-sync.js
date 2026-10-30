@@ -1,4 +1,8 @@
 /** Smart Shopping Sync: status panel, setup wizard and review list for the Mealie Atelier Bridge. */
+// Bring! answered, but not with a verdict on the credentials: trying again later may work as is.
+const BRING_TRANSIENT_CODES = ["bring_network", "bring_rate_limit"];
+// The e-mail address or the password is what Bring! (or the form) objects to.
+const BRING_CREDENTIAL_CODES = ["bring_auth", "bring_credentials"];
 // Normalised names Home Assistant gives its built-in todo list, by server language.
 const SHOPPING_LIST_NAMES = ["shoppinglist", "einkaufsliste"];
 export const shoppingSyncMethods = {
@@ -19,7 +23,16 @@ export const shoppingSyncMethods = {
         review: null,
         setup: null,
         wizard: null,
-        bring: { email: "", password: "", reveal: false, busy: false, error: "", confirm: false },
+        resultQuiet: false,
+        bring: {
+          email: "",
+          password: "",
+          reveal: false,
+          busy: false,
+          error: "",
+          errorKind: "",
+          confirm: false,
+        },
       };
     return this._sync;
   },
@@ -38,6 +51,8 @@ export const shoppingSyncMethods = {
       bringSetup: !native && entry.features?.bring_setup === true,
       bringState: String(entry.bring?.state || ""),
       bringAccount: String(entry.bring?.account || ""),
+      // Only administrators receive the full address; it saves typing it again after a lapse.
+      bringEmail: String(entry.bring?.email || ""),
       bringDefault: String(entry.bring?.default_list || ""),
       readOnly: entry.read_only === true,
       write: entry.read_only !== true && (grants.can_write ?? entry.can_write) === true,
@@ -148,20 +163,40 @@ export const shoppingSyncMethods = {
   },
   _syncResultText(result) {
     if (result?.queued) return this.t("syncRunQueued");
-    const counts = this.t("syncRunCounts", {
-      sent: result?.sent ?? 0,
-      skipped: (result?.skipped_duplicates ?? 0) + (result?.merged ?? 0),
-      failed: (result?.failed ?? 0) + (result?.needs_reconciliation ?? 0),
-      left: result?.pending_left ?? 0,
+    // Only counters that say something are shown: a zero would just add noise.
+    const parts = [
+      ["syncRunSent", result?.sent ?? 0],
+      ["syncRunSkipped", (result?.skipped_duplicates ?? 0) + (result?.merged ?? 0)],
+      ["syncRunFailed", (result?.failed ?? 0) + (result?.needs_reconciliation ?? 0)],
+      ["syncRunLeft", result?.pending_left ?? 0],
+    ]
+      .filter(([, count]) => count > 0)
+      .map(([key, count]) => this.t(key, { count }));
+    const counts = parts.length ? `${parts.join(", ")}.` : "";
+    const plain = result?.outcome === "sent" && !(result?.needs_reconciliation > 0);
+    // A plain success already says "sent" in the counts, so the outcome label would only repeat it.
+    if (plain && counts) return counts;
+    const label = this._syncOutcomeText(result?.outcome, {
+      needs_reconciliation: result?.needs_reconciliation,
     });
-    // A plain success already says "Sent" in the counts, so the outcome label would only repeat it.
-    if (result?.outcome === "sent" && !(result?.needs_reconciliation > 0)) return counts;
-    return this.t("syncRunResult", {
-      result: this._syncOutcomeText(result?.outcome, {
-        needs_reconciliation: result?.needs_reconciliation,
-      }),
-      counts,
-    });
+    return counts ? this.t("syncRunResult", { result: label, counts }) : `${label}.`;
+  },
+  // A run that went well needs no permanent line; failures and waiting items do.
+  _syncResultNotable(result) {
+    if (result?.queued) return true;
+    const good = ["sent", "nothing_to_send", "reconciled"].includes(result?.outcome);
+    return (
+      !good ||
+      (result?.failed ?? 0) > 0 ||
+      (result?.needs_reconciliation ?? 0) > 0 ||
+      (result?.pending_left ?? 0) > 0
+    );
+  },
+  _syncShowResult(result) {
+    const sync = this._syncData();
+    sync.result = this._syncResultText(result);
+    sync.resultIcon = this._syncResultIcon(result);
+    sync.resultQuiet = !this._syncResultNotable(result);
   },
 
   async _syncLoad({ quiet = false } = {}) {
@@ -253,7 +288,7 @@ export const shoppingSyncMethods = {
     return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
   },
   _syncLead(title, text) {
-    return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp">${icon("cart", 26)}</div></div>`;
+    return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp" aria-hidden="true">${icon("cart", 26)}</div></div>`;
   },
   _syncInfoHtml() {
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}<section class="editor-card"><p class="sync-explain" role="status">${icon("leaf", 16)} ${esc(this.t("syncStandaloneExplain"))}</p></section>${this._syncBringHtml(this._syncCaps())}</div>`;
@@ -279,23 +314,27 @@ export const shoppingSyncMethods = {
     const sync = this._syncData();
     const bring = sync.bring;
     if (bring.busy || !this._bwCanConnect()) return;
-    if (!bring.email.trim() || !bring.password) {
+    const caps = this._syncCaps();
+    const email = (bring.email || (caps.bringState === "reauth" ? caps.bringEmail : "")).trim();
+    if (!email || !bring.password) {
       bring.error = this.t("errBringCredentials");
+      bring.errorKind = "credentials";
       this._render();
       this._focusAfterRender(() =>
         this.shadowRoot?.querySelector?.(
-          `[data-input="sync-bring-${bring.email.trim() ? "password" : "email"}"]`,
+          `[data-input="sync-bring-${email ? "password" : "email"}"]`,
         ),
       );
       return;
     }
     bring.busy = true;
     bring.error = "";
+    bring.errorKind = "";
     this._render();
     const wizard = this._modal === "sync-wizard" ? sync.wizard : null;
     let signedIn = false;
     try {
-      await this._ws("bring_connect", { email: bring.email.trim(), password: bring.password });
+      await this._ws("bring_connect", { email, password: bring.password });
       signedIn = true;
       this._status = await this._ws("status");
       bring.email = "";
@@ -306,11 +345,21 @@ export const shoppingSyncMethods = {
       if (!wizard) this._modal = "sync";
     } catch (err) {
       bring.error = this._errorText(err);
+      bring.errorKind =
+        BRING_TRANSIENT_CODES.includes(err?.code) || this._isNetworkFailure(err)
+          ? "transient"
+          : BRING_CREDENTIAL_CODES.includes(err?.code)
+            ? "credentials"
+            : "other";
       this._syncRefetchStatus(err);
     }
-    // The password never outlives the request, whatever the outcome.
-    bring.password = "";
-    bring.reveal = false;
+    // The password stays in memory only while Bring! itself is unreachable or busy, so a retry
+    // needs no typing. It is never stored, and it is dropped on success, on a wrong password and
+    // when the dialog closes.
+    if (bring.errorKind !== "transient") {
+      bring.password = "";
+      bring.reveal = false;
+    }
     bring.busy = false;
     if (wizard && signedIn && sync.wizard === wizard) {
       this._bwGo(2);
@@ -320,7 +369,11 @@ export const shoppingSyncMethods = {
     this._render();
     if (!signedIn) {
       this._focusAfterRender(() =>
-        this.shadowRoot?.querySelector?.('[data-input="sync-bring-password"]'),
+        this.shadowRoot?.querySelector?.(
+          bring.errorKind === "transient"
+            ? '[data-action="sync-bw-login-retry"]'
+            : '[data-input="sync-bring-password"]',
+        ),
       );
     }
     if (this._modal === "sync" && this._syncCaps().supported) await this._syncLoad();
@@ -342,6 +395,7 @@ export const shoppingSyncMethods = {
       this._flash(this.t("bwDisconnected"));
     } catch (err) {
       bring.error = this._errorText(err);
+      bring.errorKind = "other";
       this._syncRefetchStatus(err);
     }
     bring.confirm = false;
@@ -355,8 +409,11 @@ export const shoppingSyncMethods = {
     if (sync.view === "review") return this._syncReviewHtml();
     const rules = this._syncRules();
     const audit = asArray(sync.state?.audit).slice(0, 20);
+    // A calm success is only announced to screen readers; the rule card shows the last run.
     const live = sync.result
-      ? `<p class="sync-result">${sync.resultIcon || icon("check", 15)} ${esc(sync.result)}</p>`
+      ? sync.resultQuiet
+        ? `<p class="sync-sr">${esc(sync.result)}</p>`
+        : `<p class="sync-result">${sync.resultIcon || icon("check", 15)} ${esc(sync.result)}</p>`
       : "";
     const body = rules.length
       ? rules.map((rule) => this._syncRuleHtml(rule, caps)).join("")
@@ -388,7 +445,9 @@ export const shoppingSyncMethods = {
   // Route line "source → destination (platform)". When the rule is already named after the route
   // only the platform that the title does not show is kept.
   _syncRouteHtml(rule, destination, destName) {
+    // The web app only ever sends to Bring!, so naming the platform on every card adds nothing.
     const platform =
+      !this._syncCaps().bringSetup &&
       destination.platform &&
       this._syncDestinationLabel(destName, destination.platform) !== destName
         ? this._syncPlatformLabel(destination.platform)
@@ -432,12 +491,17 @@ export const shoppingSyncMethods = {
             : "",
       last?.outcome === "source_unavailable" ? this.t("syncErrorSourceUnavailable") : "",
     ].filter(Boolean);
+    // A deleted list is fixed right in the notice: the wizard opens at the list step, rule kept.
+    const pickList =
+      bringGone && caps.admin && this._bwCanConnect()
+        ? `<button type="button" class="btn tiny" data-action="sync-bw-pick-list" data-value="${id}">${icon("edit", 14)} ${esc(this.t("bwPickList"))}</button>`
+        : "";
     const actions = [
       !rule.activated && caps.admin
         ? `<button class="btn tiny primary" data-action="sync-setup-open" data-value="${id}">${icon("arrow", 14)} ${esc(this.t("syncFirstBatch"))}</button>`
         : "",
       rule.activated
-        ? write("sync-run", `${icon("refresh", 14)} ${esc(this.t("syncRunNow"))}`)
+        ? write("sync-run", `${icon("refresh", 14)} ${esc(this.t("syncRunNow"))}`, "primary")
         : "",
       rule.activated
         ? write(
@@ -455,21 +519,42 @@ export const shoppingSyncMethods = {
         ? `<button class="btn tiny" data-action="sync-setup-open" data-value="${id}">${icon("edit", 14)} ${esc(this.t("edit"))}</button>`
         : "",
       caps.admin
-        ? `<button class="btn tiny" data-action="sync-delete" data-value="${id}">${esc(this.t("syncDelete"))}</button>`
+        ? `<button class="btn tiny danger" data-action="sync-delete" data-value="${id}">${esc(this.t("syncDelete"))}</button>`
         : "",
     ].join("");
     const confirm =
       sync.confirmDelete === rule.id
-        ? `<div class="notice error" role="alert"><span>${esc(this.t("syncDeleteConfirm"))}</span><div class="form-actions"><button class="btn tiny" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button><button class="btn tiny" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button></div></div>`
+        ? `<div class="notice bw-confirm" role="alert"><span>${esc(this.t("syncDeleteConfirm"))}</span><div class="form-actions bw-nav"><button class="btn tiny ghost" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button><button class="btn tiny danger" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button></div></div>`
         : "";
     return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
       <h3 id="sync-rule-${id}">${esc(this._syncRuleTitle(rule, destination, destName))}</h3>
 ${this._syncRouteHtml(rule, destination, destName)}
-      <p class="sync-mode">${esc(this.t(`syncMode${mode}`))}: ${esc(this.t(`syncMode${mode}Hint`))}</p>
-      <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong></p>
-      <p class="sync-count sync-muted">${esc(this._syncWaiting(rule) ? this.tp("syncPending", this._syncWaiting(rule)) : this.t("syncPendingNone"))}</p>
-      <p class="sync-last">${last ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRun", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}` : esc(this.t("syncNeverRun"))}</p>
-      ${problems.map((p) => `<p class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span></p>`).join("")}
+      <dl class="bw-facts sync-facts">${[
+        [
+          this.t("bwFactMode"),
+          `${esc(this.t(`syncMode${mode}`))} <small class="sync-muted">${esc(this.t(`syncMode${mode}Hint`))}</small>`,
+        ],
+        [this.t("syncFactStatus"), `${stateIcon} ${esc(this.t(`syncState${state}`))}`],
+        [
+          this.t("bwFactPending"),
+          esc(
+            this._syncWaiting(rule)
+              ? this.tp("syncPending", this._syncWaiting(rule))
+              : this.t("syncPendingNone"),
+          ),
+        ],
+        [
+          this.t("syncFactLastRun"),
+          last
+            ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRunValue", { time: this._syncRelative(last.at), result: bringGone && last.outcome === "destination_unavailable" ? this.t("bwOutcomeListGone") : this._syncOutcomeText(last.outcome, counts) }))}`
+            : esc(this.t("syncNeverRun")),
+        ],
+      ]
+        .map(
+          ([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${value}</dd></div>`,
+        )
+        .join("")}</dl>
+      ${problems.map((p, index) => `<p class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span>${index === 0 ? pickList : ""}</p>`).join("")}
       ${counts.needs_reconciliation > 0 ? `<p class="notice" role="status">${icon("clock", 16)} <span>${esc(this.tp("syncReconcileHint", counts.needs_reconciliation))}</span></p>` : ""}
       ${issues > 0 ? `<p class="sync-issues">${icon("bolt", 15)} ${esc(this.t("syncBadgeIssues", { count: issues }))}</p>` : ""}
       ${confirm}
@@ -792,8 +877,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     try {
       result = await this._ws(type, payload);
       if (show) {
-        sync.result = this._syncResultText(result);
-        sync.resultIcon = this._syncResultIcon(result);
+        this._syncShowResult(result);
       } else sync.result = "";
     } catch (err) {
       sync.error = this._errorText(err);
@@ -937,8 +1021,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     if (kind === "send" && rule?.id) {
       try {
         const result = await this._ws("sync_run", { rule_id: rule.id, confirm_first_batch: true });
-        sync.result = this._syncResultText(result);
-        sync.resultIcon = this._syncResultIcon(result);
+        this._syncShowResult(result);
       } catch (err) {
         sync.error = this._errorText(err);
         this._syncRefetchStatus(err);

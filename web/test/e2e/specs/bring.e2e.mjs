@@ -362,11 +362,14 @@ test("an expired session asks for one new sign-in that keeps the rules and pendi
       /lehnt die E-Mail-Adresse oder das Passwort ab/,
     );
     await signIn(page, FAKE_PASSWORD);
-    await page.locator(".bw-account .bw-pill", { hasText: "Verbunden" }).waitFor();
+    await page.locator(".bw-account .bw-form").waitFor({ state: "detached" });
+    // The failed run before the new sign-in still counts, so the pill asks for a look, not for a sign-in.
+    assert.doesNotMatch(await page.locator(".bw-account .bw-pill").innerText(), /Anmeldung nötig/);
     // Both rules are still there, and the item that waited goes out exactly once.
     assert.equal(await page.locator(".sync-rule").count(), 2);
     await rule(page, lists.main).locator('[data-action="sync-run"]').click();
     await eventually(() => open("Einkauf").includes("Pfeffer"), { label: "Pfeffer in Bring!" });
+    await page.locator(".bw-account .bw-pill", { hasText: "Verbunden" }).waitFor();
     assert.equal(sends("Einkauf", "Pfeffer"), 1);
     for (const name of ["Mehl", "Milch", "Butter", "Eier", "Honig", "Senf"])
       assert.equal(sends("Einkauf", name), 1);
@@ -381,10 +384,13 @@ test("disconnecting stops the sync, keeps the rules and leaves no secret behind"
     const page = await openShopping(context);
     await openSync(page);
     if (dataDir) {
-      // While connected only the session tokens are stored, never the password.
+      // While connected the session tokens and the account address are stored, never the password.
       const stored = readFileSync(join(dataDir, "bring-account.json"), "utf8");
       assert.ok(!stored.includes(FAKE_PASSWORD));
-      assert.ok(!stored.includes(EMAIL));
+      assert.ok(
+        stored.includes(EMAIL),
+        "the address is kept so signing in again needs the password only",
+      );
     }
     await sel(page, "sync-bring-disconnect-ask").click();
     assert.match(await page.locator(".bw-account").innerText(), /Verbindung wirklich trennen/);
