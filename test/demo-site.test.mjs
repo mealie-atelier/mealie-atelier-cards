@@ -885,7 +885,7 @@ test("hero: the devices keep a readable width, the stage fades only through its 
   // Two columns only from 1180px: below that the devices would shrink under the readable sizes.
   assert.match(
     heroCss,
-    /@media \(min-width: 1180px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.hero-grid \{[^}]*clamp\(440px, 36vw, 520px\)/,
+    /@media \(min-width: 1180px\) and \(max-width: 1365px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.hero-grid \{[^}]*clamp\(440px, 36vw, 520px\)/,
   );
   assert.match(heroCss, /@media \(min-width: 1366px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
   assert.match(
@@ -1842,4 +1842,19 @@ test("every page extends under the iOS Safari bar and the header absorbs the saf
   assert.doesNotMatch(opaque, /backdrop-filter/);
   const chrome = readFileSync("demo/site/chrome.mjs", "utf8");
   assert.match(chrome, /<header class="top" id="top"><div class="progress"/);
+});
+
+test("tablet landscape layouts: story steps sit side by side, showcases are centred, compact hero stops at 1365px, header is one surface", () => {
+  const css = readFileSync("demo/live-demo.css", "utf8");
+  assert.match(
+    css,
+    /@media \(min-width: 641px\) and \(max-width: 1000px\) \{\s*\.step \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(220px, 300px\)/,
+  );
+  assert.match(css, /\.step \.inline \{\s*grid-column: 2;/);
+  assert.match(css, /\.ha-hero \.copy \{[^}]*text-align: center/);
+  assert.doesNotMatch(css, /@media \(min-width: 1180px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.hero-grid/);
+  assert.match(
+    css,
+    /@media \(max-width: 1120px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.top \{\s*background: #0c120f;/,
+  );
 });

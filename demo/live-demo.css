@@ -388,6 +388,10 @@ h2 em {
   display: none;
 }
 @media (max-width: 1120px) {
+  /* One opaque surface with the safe-area strip at every scroll position, so no seam shows under the bar. */
+  .top {
+    background: #0c120f;
+  }
   .nav,
   .top-cta {
     display: none;
@@ -729,7 +733,7 @@ h2 em {
 }
 /* Two columns from 1180px: there the tablet is 538px wide and the phone 205px, the smallest sizes at
    which the app text stays readable. Below that the stage runs full width under the copy. */
-@media (min-width: 1180px) {
+@media (min-width: 1180px) and (max-width: 1365px) {
   .hero-grid {
     /* A fixed copy column wide enough for a two line headline and one button row; the stage takes the
        rest and reaches 30px into the gutter, so the tablet keeps its readable width at 1180px. */
@@ -1678,6 +1682,26 @@ html.js .live-frame:not([data-ready])::after {
     margin-inline: auto;
   }
 }
+/* Wider than a phone: text and phone sit side by side in every step instead of a left column over a
+   centred phone. */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .step {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+    column-gap: clamp(28px, 4vw, 48px);
+    align-items: center;
+  }
+  .step > :not(.inline) {
+    grid-column: 1;
+  }
+  .step .inline {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    margin-top: 0;
+  }
+  .step .inline > .phone {
+    width: 100%;
+  }
+}
 
 /* features */
 .bento {
@@ -2155,6 +2179,36 @@ html.js .live-frame:not([data-ready])::after {
   .c-install,
   .c-rights {
     grid-column: 1 / -1;
+  }
+}
+/* Stacked showcases share the hero's centred composition. */
+@media (min-width: 641px) and (max-width: 1000px) {
+  .ha-hero .copy {
+    justify-items: center;
+    text-align: center;
+  }
+  .ha-hero .checks {
+    justify-items: start;
+    text-align: left;
+    margin-inline: auto;
+  }
+  .ha-visual {
+    width: min(100%, 720px);
+    margin-inline: auto;
+  }
+}
+@media (min-width: 641px) and (max-width: 980px) {
+  .solo-grid .sec-head {
+    justify-items: center;
+    text-align: center;
+    margin-inline: auto;
+  }
+  .solo-grid .term {
+    text-align: left;
+  }
+  .solo-visual {
+    width: min(100%, 720px);
+    margin-inline: auto;
   }
 }
 @media (max-width: 620px) {
