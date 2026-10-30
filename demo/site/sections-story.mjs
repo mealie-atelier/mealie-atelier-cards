@@ -96,7 +96,7 @@ function everyday(ctx) {
       ),
       text: t(
         "Hake ab, was im Wagen liegt. Kein Netz zwischen den Regalen? Atelier merkt sich jeden Haken auf dem Gerät und schickt ihn in der richtigen Reihenfolge nach, genau einmal. Mit Home Assistant geht die Liste per Einkaufs-Sync auf Wunsch weiter an Bring.",
-        "Tick off what is in the trolley. No signal between the shelves? Atelier keeps every tick on the device and sends it in the right order later, exactly once. With Home Assistant, the shopping sync can pass the list on to Bring.",
+        "Tick off what is in the cart. No signal between the shelves? Atelier keeps every tick on the device and sends it in the right order later, exactly once. With Home Assistant, the shopping sync can pass the list on to Bring.",
       ),
       list: [
         t("Offline abhaken, später sauber abgeglichen", "Tick off offline, cleanly synced later"),
@@ -159,7 +159,7 @@ function everyday(ctx) {
       title: t("Dein eigenes Kochbuch.", "Your own cookbook."),
       text: t(
         "Wähle Lieblingsrezepte. Atelier gestaltet Cover, Inhaltsverzeichnis und A4-Rezeptseiten, als PDF fürs Familienarchiv oder gedruckt als Geschenk.",
-        "Pick your favourite recipes. Atelier designs the cover, contents and A4 recipe pages, as a PDF for the family archive or printed as a gift.",
+        "Pick your favorite recipes. Atelier designs the cover, contents and A4 recipe pages, as a PDF for the family archive or printed as a gift.",
       ),
       list: [
         t(
@@ -198,7 +198,7 @@ function features(ctx) {
     const picture = `<picture><source media="(max-width: 620px)" srcset="${phoneSource.srcset}" sizes="270px" width="${phoneSource.entry.width}" height="${phoneSource.entry.height}">${shot(ctx, names.wide, alt, "(max-width: 1000px) 94vw, 580px")}</picture>`;
     return `<article class="tile wide img rv${delay}"><span class="ico">${icon(iconName)}</span><h3>${title}</h3><p>${text}</p>${browser(label, picture)}</article>`;
   };
-  return `<section class="sec" id="${id.features}" aria-labelledby="features-title"><div class="wrap"><div class="sec-head"><p class="kicker rv">${t("Alles in einer Karte", "All in one card")}</p><h2 id="features-title" class="rv d1">${t("Alles, was deine Küche <em>braucht</em>.", "Everything your kitchen <em>needs</em>.")}</h2><p class="lead rv d2">${t("Zehn Ansichten, ein Gefühl. Jede ist für einen Moment im Küchenalltag gebaut.", "Ten views, one feel. Each one is built for a moment in your kitchen day.")}</p></div><div class="bento">${imageTile(
+  return `<section class="sec" id="${id.features}" aria-labelledby="features-title"><div class="wrap"><div class="sec-head"><p class="kicker rv">${t("Alles in einer Karte", "All in one card")}</p><h2 id="features-title" class="rv d1">${t("Alles, was deine Küche <em>braucht</em>.", "Everything your kitchen <em>needs</em>.")}</h2><p class="lead rv d2">${t("Ein Gefühl, gebaut für die Momente deines Küchenalltags.", "One feel, built for the moments of your kitchen day.")}</p></div><div class="bento">${imageTile(
     "cal",
     t("Wochenplan", "Meal plan"),
     t(

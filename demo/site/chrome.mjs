@@ -189,7 +189,7 @@ export function renderSiteFooter(ctx) {
     remote(links.setup, t("Mit Home Assistant einrichten", "Set up with Home Assistant")),
     remote(links.setupWeb, t("Web-App einrichten", "Set up the web app")),
     remote(links.troubleshooting, t("Fehlerbehebung", "Troubleshooting")),
-  ])}${column("Open Source", [
+  ])}${column(t("Open Source", "Open source"), [
     remote(links.cards, "Cards", "github"),
     remote(links.bridge, "Bridge", "github"),
     remote(links.discussions, t("Fragen und Ideen", "Questions and ideas")),

@@ -1438,3 +1438,20 @@ test("ham and mushroom pizza does not halve already halved mushrooms again", () 
   assert.ok(!/Champignons halbieren/.test(text));
   assert.ok(!/halve the mushrooms/.test(text));
 });
+
+test("landing copy keeps counts honest, English footer heading in sentence case and one spelling variant", () => {
+  const de = readFileSync(join(builds.local, "de/index.html"), "utf8");
+  const en = readFileSync(join(builds.local, "en/index.html"), "utf8");
+  for (const html of [de, en]) {
+    assert.doesNotMatch(html, /Zehn Ansichten|Ten views/);
+    assert.doesNotMatch(html, /(Rollen|roles) pro Person|roles per person/);
+  }
+  assert.match(en, /<h2>Open source<\/h2>/);
+  assert.doesNotMatch(en, /<h2>Open Source<\/h2>/);
+  assert.match(de, /<h2>Open Source<\/h2>/);
+  for (const page of [en, readFileSync(join(builds.local, "en/credits/index.html"), "utf8")]) {
+    assert.doesNotMatch(page, /favourite|trolley|chilli|colour|licence|catalogue/i);
+  }
+  const catalogJson = readFileSync("demo/data/recipes.json", "utf8");
+  assert.doesNotMatch(catalogJson, /chilli|favourite/i);
+});
