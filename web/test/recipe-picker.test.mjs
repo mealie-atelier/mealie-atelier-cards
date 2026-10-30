@@ -104,7 +104,7 @@ await test("recipes defaults to name order and rejects invalid filters", async (
   });
 });
 
-await test("favorites_only without favourites answers an empty page after one Mealie call", async () => {
+await test("favorites_only without favorites answers an empty page after one Mealie call", async () => {
   await withApp([{ recipeId: "r1", isFavorite: false }], async ({ call, seen, all }) => {
     const body = await (await call({ favorites_only: true })).json();
     assert.deepEqual(body.items, []);
@@ -114,7 +114,7 @@ await test("favorites_only without favourites answers an empty page after one Me
   });
 });
 
-await test("favorites_only builds an id filter from favourite recipes", async () => {
+await test("favorites_only builds an id filter from favorite recipes", async () => {
   await withApp(
     [
       { recipeId: "r1", isFavorite: true },

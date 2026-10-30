@@ -2,10 +2,10 @@
 
 ## Supported versions
 
-The project is currently a developer preview. Security fixes are evaluated against the latest published release after canonical package repositories and supported versions are confirmed.
+Security fixes are made for the latest published release. Please update before you report a problem.
 
 ## Reporting a vulnerability
 
-Do not report vulnerabilities in public issues, screenshots, logs, or discussions. Use GitHub's private vulnerability reporting / Security Advisory flow for the canonical repository when it is enabled. If private reporting is unavailable, do not include exploit details or secrets in a public post; first contact the maintainer through the private security contact configured in that repository.
+Do not report vulnerabilities in public issues, screenshots, logs or discussions. Private reporting is enabled: use [Report a vulnerability](https://github.com/mealie-atelier/mealie-atelier-cards/security/advisories/new) on this repository's Security tab.
 
-Include the affected package and version, impact, and a minimal reproduction that does not expose a real Mealie token, household recipe, or host. Avoid testing against another person's installation. The maintainer should acknowledge the report, coordinate a fix, and publish advisories after a fix is available.
+Include the affected package and version, impact, and a minimal reproduction that does not expose a real Mealie token, household recipe or host. Avoid testing against another person's installation. The maintainer acknowledges the report, coordinates a fix and publishes an advisory after a fix is available.

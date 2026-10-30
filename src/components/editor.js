@@ -5,12 +5,25 @@ const COLOR_NAMES = {
   "#d3adcd": "editorColorLilac",
   "#d6c07d": "editorColorHoney",
 };
+const SETUP_KEY = "mealie-atelier:editor-setup";
+const ENTITY_FIELDS = {
+  cooking_scene: { domain: "scene", example: "scene.kitchen_cooking" },
+  cooking_media_player: { domain: "media_player", example: "media_player.kitchen" },
+  cooking_tts_engine: { domain: "tts", example: "tts.piper" },
+};
+function shallowEqual(a, b) {
+  const ka = Object.keys(a || {});
+  const kb = Object.keys(b || {});
+  return ka.length === kb.length && ka.every((key) => Object.hasOwn(b, key) && a[key] === b[key]);
+}
 // Home Assistant visual card editor; the first-run path stays short and skippable.
 class MealieAtelierEditor extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._config = { ...DEFAULTS };
+    // The config as it lives in the dashboard YAML: only what the user (or the stub) set.
+    this._raw = {};
     this._entries = [];
     this._nativeEntries = [];
     this._entriesState = "loading";
@@ -22,18 +35,56 @@ class MealieAtelierEditor extends HTMLElement {
   }
   setConfig(config) {
     // A focused card type without mode starts in its own view, as the card does.
+    // Home Assistant echoes every emitted config back; rebuilding then would close the
+    // advanced section and drop keyboard focus, so the echo is ignored.
+    if (this._rendered && shallowEqual(config, this._raw)) return;
+    this._raw = { ...config };
     const tag = String(config?.type || "").replace(/^custom:/, "");
     const mode = customElements.get(tag)?.getStubConfig?.().mode;
     this._config = { ...DEFAULTS, ...(mode ? { mode } : {}), ...config };
-    if (this._config._setup_complete === true) this._wizardMode = false;
+    if (this._config._setup_complete === true || this._setupDone()) this._wizardMode = false;
     this._render();
+  }
+  _setupDone() {
+    try {
+      return localStorage.getItem(SETUP_KEY) === "1";
+    } catch {
+      return false;
+    }
+  }
+  _markSetup(done) {
+    try {
+      if (done) localStorage.setItem(SETUP_KEY, "1");
+      else localStorage.removeItem(SETUP_KEY);
+    } catch {
+      /* storage unavailable: the wizard simply shows again next time */
+    }
+  }
+  // Applies a change to the rendered config and to the YAML-bound config.
+  _patch(changes) {
+    this._config = { ...this._config, ...changes };
+    const raw = { ...this._raw };
+    for (const [key, value] of Object.entries(changes)) {
+      const isDefault =
+        Object.hasOwn(DEFAULTS, key) &&
+        String(DEFAULTS[key]) === String(value) &&
+        !["mode", "type", "title", "entry_id"].includes(key);
+      if (isDefault) delete raw[key];
+      else raw[key] = value;
+    }
+    this._raw = raw;
+  }
+  _emittedConfig() {
+    const { type, _setup_complete, ...rest } = this._raw;
+    return type ? { type, ...rest } : rest;
   }
   set hass(hass) {
     if (this._hass === hass) return;
     const priorLanguage = this._hass?.language;
+    const priorDark = this._hass?.themes?.darkMode;
     this._hass = hass;
     if (this._requested) {
-      if (priorLanguage !== hass?.language) this._render();
+      if (priorLanguage !== hass?.language || priorDark !== hass?.themes?.darkMode) this._render();
       return;
     }
     this._requested = true;
@@ -44,7 +95,7 @@ class MealieAtelierEditor extends HTMLElement {
         this._entries = asArray(result?.entries);
         this._entriesState = "ready";
         if (this._entries.length === 1 && !this._config.entry_id) {
-          this._config = { ...this._config, entry_id: this._entries[0].entry_id };
+          this._patch({ entry_id: this._entries[0].entry_id });
           this._emitConfig();
         }
         this._detectNativeEntries();
@@ -69,6 +120,15 @@ class MealieAtelierEditor extends HTMLElement {
   }
   _locale() {
     return resolveLanguage("auto", this._hass?.language, navigator.language);
+  }
+  /** Resolves the configured theme like the card does ("auto" follows Home Assistant, then the system). */
+  _resolvedTheme(theme) {
+    if (theme === "light" || theme === "dark") return theme;
+    const darkMode = this._hass?.themes?.darkMode;
+    if (typeof darkMode === "boolean") return darkMode ? "dark" : "light";
+    const query =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    return query?.matches ? "light" : "dark";
   }
   _tr(key) {
     return translateLabel(this._locale(), key);
@@ -109,9 +169,10 @@ class MealieAtelierEditor extends HTMLElement {
     return `<select id="atelier-${key}" data-key="${key}">${all.map(([value, label, disabled]) => `<option value="${esc(value)}" ${String(c[key]) === String(value) ? "selected" : ""} ${disabled ? "disabled" : ""}>${esc(label)}</option>`).join("")}</select>`;
   }
   _emitConfig() {
+    this._raw = this._emittedConfig();
     this.dispatchEvent(
       new CustomEvent("config-changed", {
-        detail: { config: { ...this._config } },
+        detail: { config: { ...this._raw } },
         bubbles: true,
         composed: true,
       }),
@@ -122,12 +183,11 @@ class MealieAtelierEditor extends HTMLElement {
     if (!key) return;
     let value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
     if (key === "columns") value = Number(value) || 3;
-    this._config = { ...this._config, [key]: value };
+    if (typeof DEFAULTS[key] === "number" && value !== "") value = Number(value);
+    this._patch({ [key]: value });
     this._emitConfig();
-    if (key === "mode" || key === "provider") {
-      this._render();
-      this.shadowRoot.querySelector(`#atelier-${key}`)?.focus({ preventScroll: true });
-    }
+    if (ENTITY_FIELDS[key]) this._syncEntityWarning(key);
+    else if (key === "mode" || key === "provider" || key === "theme") this._render();
   }
   _handleClick(event) {
     const action = event.target.closest?.("[data-editor-action]")?.dataset.editorAction;
@@ -148,28 +208,27 @@ class MealieAtelierEditor extends HTMLElement {
     if (action === "preset") {
       const preset = event.target.closest("[data-preset]")?.dataset.preset;
       if (!preset) return;
-      this._config = {
-        ...this._config,
-        ...(preset === "light"
-          ? { theme: "light", accent: "#e5ad92", density: "comfortable", motion: "balanced" }
-          : { theme: "dark", accent: "#9dcbb2", density: "comfortable", motion: "balanced" }),
-      };
+      this._patch({
+        ...(preset === "auto"
+          ? { theme: "auto", density: "comfortable", motion: "balanced" }
+          : preset === "light"
+            ? { theme: "light", accent: "#e5ad92", density: "comfortable", motion: "balanced" }
+            : { theme: "dark", accent: "#9dcbb2", density: "comfortable", motion: "balanced" }),
+      });
       this._emitConfig();
       this._render();
       return;
     }
     if (action === "finish" || action === "skip") {
-      this._config = { ...this._config, _setup_complete: true };
+      this._markSetup(true);
       this._wizardMode = false;
-      this._emitConfig();
       this._render();
       return;
     }
     if (action === "restart") {
       this._step = 0;
-      this._config = { ...this._config, _setup_complete: false };
+      this._markSetup(false);
       this._wizardMode = true;
-      this._emitConfig();
       this._render();
       return;
     }
@@ -183,7 +242,7 @@ class MealieAtelierEditor extends HTMLElement {
           this._entries = asArray(result?.entries);
           this._entriesState = "ready";
           if (this._entries.length === 1 && !this._config.entry_id) {
-            this._config = { ...this._config, entry_id: this._entries[0].entry_id };
+            this._patch({ entry_id: this._entries[0].entry_id });
             this._emitConfig();
           }
           this._detectNativeEntries();
@@ -256,16 +315,23 @@ class MealieAtelierEditor extends HTMLElement {
       )}</div><div class="setup-live-preview"><div class="setup-preview-art" aria-hidden="true"><span></span><i></i><b></b></div><div><small>${tr("editorYOURATELIEROPENSTO")}</small><strong>${esc(activeTitle)}</strong><span>${esc(startLabels[c.mode] || startLabels.dashboard)}</span></div></div>`;
     if (this._step === 2)
       panel = `<div class="setup-kicker">${tr("editorSTEP3THEFEEL")}</div><h2 class="setup-step-title" tabindex="-1">${tr("editorMakeItFeelLikeYourKitchen")}</h2><p class="setup-description">${tr("editorChooseALookNowYouCanFineTuneEveryDetailLater")}</p><div class="setup-presets" role="group" aria-label="${tr("editorChooseAnAppearance")}">
+      <button class="setup-preset ${c.theme === "auto" ? "selected" : ""}" type="button" data-editor-action="preset" data-preset="auto" aria-pressed="${c.theme === "auto"}"><span class="preset-art preset-auto"><i></i><b></b><em></em></span><strong>${tr("editorAutomatic")}</strong><small>${tr("editorFollowsHomeAssistantLightOrDark")}</small></button>
       <button class="setup-preset ${c.theme === "dark" ? "selected" : ""}" type="button" data-editor-action="preset" data-preset="dark" aria-pressed="${c.theme === "dark"}"><span class="preset-art preset-dark"><i></i><b></b><em></em></span><strong>${tr("editorEveningStudio")}</strong><small>${tr("editorDeepGreenWarmLightEditorial")}</small></button>
       <button class="setup-preset ${c.theme === "light" ? "selected" : ""}" type="button" data-editor-action="preset" data-preset="light" aria-pressed="${c.theme === "light"}"><span class="preset-art preset-light"><i></i><b></b><em></em></span><strong>${tr("editorDaylightKitchen")}</strong><small>${tr("editorFreshSurfacesOpenAndBright")}</small></button>
       </div><p class="setup-reassure">${tr("editorYourRecipesAndMealieDataAreNeverChangedByTheseChoices")}</p>`;
-    return `<div class="editor setup-editor"><header class="setup-header"><div><div class="setup-brand">MEALIE ATELIER <span>STUDIO</span></div><h1>${tr("editorAKitchenThatFeelsLikeYours")}</h1><p>${tr("editorThreeSmallChoicesYourKitchenReady")}</p></div><button class="setup-skip" type="button" data-editor-action="skip">${tr("editorSetUpLater")}</button></header>${progress}<section class="setup-panel" aria-live="polite">${panel}<nav class="setup-actions" aria-label="${tr("editorSetupNavigation")}">${this._step > 0 ? `<button class="editor-secondary" type="button" data-editor-action="step-back">${tr("editorBack")}</button>` : "<span></span>"}${this._step < 2 ? `<button class="editor-primary" type="button" data-editor-action="step-next">${tr("editorContinue")} <span aria-hidden="true">→</span></button>` : `<button class="editor-primary" type="button" data-editor-action="finish">${tr("editorCreateMyKitchen")} <span aria-hidden="true">→</span></button>`}</nav></section><p class="setup-footer">${tr("editorACalmStartTheAdvancedSettingsAreHereWheneverYouNeedThem")}</p></div>`;
+    return `<div class="editor setup-editor"><header class="setup-header"><div><div class="setup-brand">MEALIE ATELIER <span>STUDIO</span></div><h1>${tr("editorAKitchenThatFeelsLikeYours")}</h1><p>${tr("editorThreeSmallChoicesYourKitchenReady")}</p></div><button class="setup-skip" type="button" data-editor-action="skip">${tr("editorSetUpLater")}</button></header>${progress}<section class="setup-panel" aria-live="polite">${panel}<nav class="setup-actions" aria-label="${tr("editorSetupNavigation")}">${this._step > 0 ? `<button class="editor-secondary" type="button" data-editor-action="step-back">${tr("editorBack")}</button>` : "<span></span>"}${this._step < 2 ? `<button class="editor-primary" type="button" data-editor-action="step-next">${tr("editorContinue")} <span aria-hidden="true">→</span></button>` : `<button class="editor-primary" type="button" data-editor-action="finish">${tr("editorCreateMyKitchen")} <span aria-hidden="true">→</span></button>`}</nav></section><p class="setup-footer">${tr("editorACalmStartTheAdvancedSettingsAreHereWheneverYouNeedThem")} ${tr("editorTheSetupWizardIsRememberedPerBrowser")}</p></div>`;
   }
   _settingsMarkup() {
     const c = this._config,
       tr = (key) => this._tr(key),
+      percent = new Intl.NumberFormat(this._locale(), { style: "percent" }),
       choose = (key, options) => this._choose(key, options);
-    return `<div class="editor"><div class="settings-top"><div><div class="title">Mealie Atelier <span class="title-accent">Studio</span></div><p class="hint">${tr("editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard")}</p></div><button class="editor-secondary" type="button" data-editor-action="restart">${tr("editorRunSetupWizard")}</button></div><div class="setup-success"><span aria-hidden="true">✓</span><div><strong>${tr("editorYourKitchenIsReady")}</strong><small>${esc(this._tr(c.mode))} · ${tr(c.theme === "light" ? "editorDaylightKitchen" : "editorEveningStudio")}</small></div></div>
+    // The light theme paints the default accent herb green, so the dot and its name must say herb green too.
+    const lightTheme = this._resolvedTheme(c.theme) === "light";
+    // An invalid accent falls back to the default in the card, so the dot does the same.
+    const accent = /^#[0-9a-fA-F]{6}$/.test(c.accent || "") ? c.accent : DEFAULTS.accent;
+    const accentHerb = lightTheme && accent.toLowerCase() === DEFAULTS.accent;
+    return `<div class="editor"><div class="settings-top"><div><div class="title">Mealie Atelier <span class="title-accent">Studio</span></div><p class="hint">${tr("editorConfigureYourCardVisuallySettingsAreSavedWithYourHomeAssistantDashboard")}</p><p class="hint" id="atelier-setup-browser-hint">${tr("editorTheSetupWizardIsRememberedPerBrowser")}</p></div><button class="editor-secondary" type="button" data-editor-action="restart">${tr("editorRunSetupWizard")}</button></div><div class="setup-success"><span aria-hidden="true">✓</span><div><strong>${tr("editorYourKitchenIsReady")}</strong><small>${esc(this._tr(c.mode))} · ${tr(c.theme === "auto" ? "editorAutomatic" : c.theme === "light" ? "editorDaylightKitchen" : "editorEveningStudio")}</small></div></div>
     <div class="section-head"><span>01</span><div><strong>${tr("editorBasics")}</strong><p>${tr("editorChooseContentAndTheConnectedMealieInstance")}</p></div></div>
     <div class="group"><label for="atelier-mode">${tr("editorMode")}</label>${choose(
       "mode",
@@ -292,6 +358,7 @@ class MealieAtelierEditor extends HTMLElement {
     <div class="section-head"><span>02</span><div><strong>${tr("editorLookFeel")}</strong><p>${tr("editorTypographyMotionAndTheVisualRhythmOfYourCards")}</p></div></div><div class="group"><label for="atelier-theme">${tr("editorTheme")}</label>${choose(
       "theme",
       [
+        ["auto", tr("editorAutomatic")],
         ["dark", tr("editorDark")],
         ["light", tr("editorLight")],
       ],
@@ -318,9 +385,14 @@ class MealieAtelierEditor extends HTMLElement {
         [3, "3"],
         [4, "4"],
       ],
-    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(c.accent)}"></span>${choose(
+    )}</div><div class="group"><label for="atelier-accent">${tr("editorAccent")}</label><div class="accent-pick"><span class="accent-dot" aria-hidden="true" style="background:${esc(accentHerb ? "#3e6b48" : accent)}"></span>${choose(
       "accent",
-      COLORS.map((value) => [value, tr(COLOR_NAMES[value])]),
+      COLORS.map((value) => [
+        value,
+        value === DEFAULTS.accent && lightTheme
+          ? tr("accentHerbLightDefault")
+          : tr(COLOR_NAMES[value]),
+      ]),
     )}</div></div>
     <div class="group"><label for="atelier-radius">${tr("editorCornerStyle")}</label>${choose(
       "radius",
@@ -341,27 +413,60 @@ class MealieAtelierEditor extends HTMLElement {
     <details class="editor-advanced"><summary>${tr("editorOptionalPrintAndKitchenSettings")}</summary><div class="section-head"><span>03</span><div><strong>${tr("editorPrintStudio")}</strong><p>${tr("editorPremiumA4LayoutsForRecipesAndLists")}</p></div></div><div class="group"><label for="atelier-print_style">${tr("editorPrintTemplate")}</label>${choose(
       "print_style",
       [
-        ["editorial", "Editorial"],
+        ["editorial", tr("uiPrintEditorial")],
         ["compact", tr("editorCompact")],
         ["minimal", tr("editorInkSaver")],
       ],
     )}</div>
     <label class="line"><input type="checkbox" data-key="print_image" ${c.print_image === true ? "checked" : ""}> ${tr("editorPrintRecipePhotosWhenAvailable")}</label><label class="line"><input type="checkbox" data-key="print_checkboxes" ${c.print_checkboxes !== false ? "checked" : ""}> ${tr("editorPrintCheckboxes")}</label><label class="line"><input type="checkbox" data-key="print_completed" ${c.print_completed === true ? "checked" : ""}> ${tr("editorPrintCompletedItems")}</label><label class="line"><input type="checkbox" data-key="print_nutrition" ${c.print_nutrition === true ? "checked" : ""}> ${tr("editorPrintStoredNutritionValues")}</label><label class="line"><input type="checkbox" data-key="print_notes" ${c.print_notes !== false ? "checked" : ""}> ${tr("editorPrintHandwritingSpace")}</label>
     <div class="section-head"><span>04</span><div><strong>${tr("editorKitchenTablet")}</strong><p>${tr("editorOptionalHomeAssistantActionsNothingTriggersAutomatically")}</p></div></div><label class="line"><input type="checkbox" data-key="kiosk_mode" ${c.kiosk_mode === true ? "checked" : ""}> ${tr("editorUseEnlargedTabletLayout")}</label>
-    <div class="group"><label for="atelier-cooking_scene">${tr("editorOptionalKitchenSceneHA")}</label><input id="atelier-cooking_scene" data-key="cooking_scene" value="${esc(c.cooking_scene || "")}" placeholder="scene.kueche_kochen"><p class="hint">${tr("editorOnlyTriggeredWhenYouTapTheCookingCockpitButton")}</p></div><div class="group"><label for="atelier-cooking_media_player">${tr("editorOptionalMediaPlayerHA")}</label><input id="atelier-cooking_media_player" data-key="cooking_media_player" value="${esc(c.cooking_media_player || "")}" placeholder="media_player.kueche"></div>
+    <div class="group"><label for="atelier-cooking_scene">${tr("editorOptionalKitchenSceneHA")}</label><input id="atelier-cooking_scene" data-key="cooking_scene" value="${esc(c.cooking_scene || "")}" placeholder="scene.kitchen_cooking" list="atelier-list-cooking_scene" autocomplete="off">${this._entityDatalist("cooking_scene")}${this._entityWarning("cooking_scene")}<p class="hint">${tr("editorOnlyTriggeredWhenYouTapTheCookingCockpitButton")}</p></div><div class="group"><label for="atelier-cooking_media_player">${tr("editorOptionalMediaPlayerHA")}</label><input id="atelier-cooking_media_player" data-key="cooking_media_player" value="${esc(c.cooking_media_player || "")}" placeholder="media_player.kitchen" list="atelier-list-cooking_media_player" autocomplete="off">${this._entityDatalist("cooking_media_player")}${this._entityWarning("cooking_media_player")}</div>
     <div class="group"><label for="atelier-cooking_volume">${tr("editorCookingVolume")}</label>${choose(
       "cooking_volume",
-      [
-        [0.1, "10 %"],
-        [0.18, "18 %"],
-        [0.3, "30 %"],
-        [0.5, "50 %"],
-      ],
-    )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper"><p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div></details>
+      [...[0.1, 0.18, 0.3, 0.5].map((v) => [v, percent.format(v)])],
+    )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper" list="atelier-list-cooking_tts_engine" autocomplete="off">${this._entityDatalist("cooking_tts_engine")}${this._entityWarning("cooking_tts_engine")}<p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div></details>
     <p class="hint editor-footer">${tr("editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio")}</p></div>`;
+  }
+  _entityDatalist(key) {
+    const { domain } = ENTITY_FIELDS[key];
+    const ids = Object.keys(this._hass?.states || {})
+      .filter((id) => id.startsWith(`${domain}.`))
+      .sort();
+    return `<datalist id="atelier-list-${key}">${ids.map((id) => `<option value="${esc(id)}"></option>`).join("")}</datalist>`;
+  }
+  // A wrong domain silently hides the cooking button, so say so next to the field.
+  _entityWarning(key) {
+    const value = String(this._config[key] || "");
+    const { domain, example } = ENTITY_FIELDS[key];
+    // Same pattern and untrimmed value as the card gate, so a warning appears exactly when the button stays hidden.
+    if (!value || new RegExp(`^${domain}\\.[a-z0-9_]+$`, "i").test(value)) return "";
+    return `<p class="hint" role="alert" id="atelier-${key}-warning">${esc(translateLabel(this._locale(), "editorEntityDomainWarning", { domain, example }))}</p>`;
+  }
+  // Update only the warning in place: a full render on blur would swap the DOM under the
+  // user's next click or Tab.
+  _syncEntityWarning(key) {
+    const root = this.shadowRoot;
+    const html = this._entityWarning(key);
+    const existing = root.getElementById?.(`atelier-${key}-warning`);
+    if (existing) {
+      if (html) existing.outerHTML = html;
+      else existing.remove();
+    } else if (html) {
+      root.getElementById?.(`atelier-list-${key}`)?.insertAdjacentHTML("afterend", html);
+    }
   }
   _render() {
     if (!this.isConnected) return;
-    this.shadowRoot.innerHTML = `<style>${EDITOR_STYLE}</style>${this._wizardMode ? this._wizardMarkup() : this._settingsMarkup()}`;
+    const root = this.shadowRoot;
+    // The whole tree is replaced, so remember the open section and the focused control.
+    const advancedOpen = root.querySelector?.(".editor-advanced")?.open === true;
+    const focusId = root.activeElement?.id || "";
+    root.innerHTML = `<style>${EDITOR_STYLE}</style>${this._wizardMode ? this._wizardMarkup() : this._settingsMarkup()}`;
+    this._rendered = true;
+    if (advancedOpen) {
+      const details = root.querySelector(".editor-advanced");
+      if (details) details.open = true;
+    }
+    if (focusId) root.getElementById?.(focusId)?.focus?.({ preventScroll: true });
   }
 }

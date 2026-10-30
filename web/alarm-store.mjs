@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { validateSubscription, subscriptionId } from "./web-push.mjs";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const err = (status, message) => Object.assign(new Error(message), { status });
+const err = (status, message, atelierCode) =>
+  Object.assign(new Error(message), { status, ...(atelierCode ? { atelierCode } : {}) });
 const mayAccess = (alarm, access) =>
   !access || access.admin === true || (!!alarm.owner && alarm.owner === access.name);
 const initial = () => ({ alarms: [], subscriptions: [] });
@@ -61,25 +62,25 @@ export class AlarmStore {
   }
   async create({ id, label, deadline, locale = "de" }, owner = "") {
     if (!UUID.test(id || "") || typeof label !== "string" || !label.trim() || label.length > 100)
-      throw err(400, "Invalid timer");
-    if (!["de", "en"].includes(locale)) throw err(400, "Invalid timer locale");
+      throw err(400, "Invalid timer", "invalid_timer");
+    if (!["de", "en"].includes(locale)) throw err(400, "Invalid timer locale", "invalid_timer");
     const time = Number(deadline),
       now = this.clock();
     if (!Number.isSafeInteger(time) || time < now + 1000 || time > now + 24 * 3600e3)
-      throw err(400, "Timer must be 1 second to 24 hours in the future");
+      throw err(400, "Timer must be 1 second to 24 hours in the future", "invalid_timer");
     return this.atomic(async (d) => {
       const same = d.alarms.find((x) => x.id === id);
       if (same) {
         if (same.owner && owner && same.owner !== owner)
-          throw err(409, "Timer ID was already used");
+          throw err(409, "Timer ID was already used", "timer_exists");
         if (same.deadline !== time || same.label !== label.trim() || same.locale !== locale)
-          throw err(409, "Timer ID was already used");
+          throw err(409, "Timer ID was already used", "timer_exists");
         return same;
       }
       const active = d.alarms.filter((x) => ["scheduled", "retry", "sending"].includes(x.status));
-      if (active.length >= 300) throw err(429, "Too many stored timers");
+      if (active.length >= 300) throw err(429, "Too many stored timers", "too_many_timers");
       if (owner && active.filter((x) => x.owner === owner).length >= 20)
-        throw err(429, "Too many active timers for this account");
+        throw err(429, "Too many active timers for this account", "too_many_timers");
       const record = {
         id,
         label: label.trim(),
@@ -99,16 +100,14 @@ export class AlarmStore {
     });
   }
   async cancel(id, access) {
-    if (!UUID.test(id || "")) throw err(400, "Invalid timer ID");
+    if (!UUID.test(id || "")) throw err(400, "Invalid timer ID", "invalid_timer");
     return this.atomic(async (d) => {
       const a = d.alarms.find((x) => x.id === id);
-      if (!a) throw err(404, "Timer not found");
+      if (!a) throw err(404, "Timer not found", "timer_not_found");
       if (!mayAccess(a, access))
-        throw Object.assign(err(403, "Only the owner or an admin can cancel this timer"), {
-          code: "unauthorized",
-        });
-      if (a.status === "sent" || a.status === "sending")
-        throw err(409, "Timer has already been dispatched");
+        throw err(403, "Only the owner or an admin can cancel this timer", "timer_not_permitted");
+      // A timer that already fired or is being sent has nothing left to cancel: success, like the Bridge.
+      if (a.status === "sent" || a.status === "sending") return a;
       a.status = "cancelled";
       a.updatedAt = this.clock();
       return a;

@@ -680,3 +680,41 @@ test("legacy ingredient commands stay available as aliases", async () => {
     assert.equal(catalog.body[0].id, "food-2");
   });
 });
+
+test("nutrition errors carry specific codes so the card can show its own message", async () => {
+  await withApp({}, async ({ app, state }) => {
+    state.recipe.nutrition = { calories: "100" };
+    const protectedValues = await app.api("nutrition_save", {
+      slug: "gnocchi",
+      entries: [],
+      expected_hash: "x",
+    });
+    assert.equal(protectedValues.status, 400);
+    assert.equal(protectedValues.body.code, "existing_values_protected");
+    const changed = await app.api("nutrition_calculate", {
+      slug: "gnocchi",
+      entries: [],
+      expected_hash: "stale",
+    });
+    assert.equal(changed.status, 400);
+    assert.equal(changed.body.code, "recipe_changed");
+  });
+});
+
+test("nutrition calculate gives a missing serving count its own code", async () => {
+  await withApp({}, async ({ app, state }) => {
+    state.recipe.recipeServings = 0;
+    const preview = await app.api("nutrition_prepare", { slug: "gnocchi" });
+    const res = await app.api("nutrition_calculate", {
+      slug: "gnocchi",
+      entries: (state.recipe.recipeIngredient || []).map((_, index) => ({
+        index,
+        grams: 10,
+        fdc_id: 1,
+      })),
+      expected_hash: preview.body.hash,
+    });
+    assert.equal(res.status, 400);
+    assert.equal(res.body.code, "recipe_servings_invalid");
+  });
+});

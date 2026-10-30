@@ -30,7 +30,7 @@ import { aiSubstitute, aiAudit, resolveLocale } from "./studio-ai.mjs";
 import { resolveAiConfig } from "./ai-client.mjs";
 import { OfflineLedger } from "./offline-ledger.mjs";
 import { AlarmStore } from "./alarm-store.mjs";
-import { createDelivery } from "./alarm-delivery.mjs";
+import { createDelivery, validateNotificationEnv } from "./alarm-delivery.mjs";
 import {
   MIN_PASSWORD_LENGTH,
   commandLevel,
@@ -50,6 +50,10 @@ import {
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
+if (!Number.isInteger(PORT) || PORT < 0 || PORT > 65535) {
+  console.error("PORT must be a whole number between 0 and 65535 (0 picks a free port).");
+  process.exit(1);
+}
 const HOST = process.env.HOST || "0.0.0.0";
 const MEALIE_URL = (process.env.MEALIE_URL || "").replace(/\/$/, "");
 const MEALIE_API_TOKEN = process.env.MEALIE_API_TOKEN || "";
@@ -77,12 +81,23 @@ const VALID_ID = /^[a-zA-Z0-9_-]{1,150}$/;
 const VALID_DAY = /^\d{4}-\d{2}-\d{2}$/;
 const DATA_DIR = resolve(process.env.ATELIER_DATA_DIR || join(ROOT, "data"));
 const MEAL_TYPES = new Set(["breakfast", "lunch", "dinner", "side", "dessert", "drink", "snack"]);
-const notificationDelivery = createDelivery();
+let notificationDelivery;
+try {
+  validateNotificationEnv();
+  notificationDelivery = createDelivery();
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const alarmStore = new AlarmStore({ dir: DATA_DIR, deliver: notificationDelivery.deliver });
 const offlineLedger = new OfflineLedger({
   dir: DATA_DIR,
   readOnly: READ_ONLY,
   readItem: (id) => mealie("GET", `/api/households/shopping/items/${identifier(id)}`),
+  readItems: async (listId) =>
+    unwrap(
+      await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
+    ).filter((x) => String(x?.shoppingListId) === String(listId)),
   mutate: (action, payload) => mutate(action, payload),
 });
 
@@ -102,8 +117,9 @@ if (PASSWORD && USERS.some((u) => u.name === USER)) {
   );
   process.exit(1);
 }
-const parsed = new URL(MEALIE_URL);
+const parsed = URL.canParse(MEALIE_URL) ? new URL(MEALIE_URL) : null;
 if (
+  !parsed ||
   !["http:", "https:"].includes(parsed.protocol) ||
   parsed.username ||
   parsed.password ||
@@ -119,7 +135,13 @@ const SECURITY_HEADERS = securityHeaders(
   inlineScriptHashes(readFileSync(join(ROOT, "public", "index.html"), "utf8")),
 );
 const authThrottle = createAuthThrottle();
-const TRUSTED_PROXIES = parseTrustedProxies(process.env.ATELIER_TRUSTED_PROXIES);
+let TRUSTED_PROXIES = [];
+try {
+  TRUSTED_PROXIES = parseTrustedProxies(process.env.ATELIER_TRUSTED_PROXIES);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const throttleClient = (req) =>
   clientAddress(req.socket.remoteAddress, req.headers["x-forwarded-for"], TRUSTED_PROXIES);
 
@@ -165,10 +187,40 @@ function reply(res, status, body, contentType = "application/json; charset=utf-8
   });
   res.end(contentType.startsWith("application/json") ? JSON.stringify(body) : body);
 }
-function bad(text = "Invalid request") {
+const AUTH_PAGE_TEXT = {
+  de: {
+    signIn: [
+      "Anmeldung erforderlich",
+      "Melde dich bei Mealie Atelier an, um fortzufahren. Lade die Seite neu, um die Anmeldung erneut zu starten.",
+    ],
+    locked: (m) => [
+      "Zu viele fehlgeschlagene Anmeldungen",
+      `Aus Sicherheitsgründen ist die Anmeldung gesperrt. Versuche es in ${m} ${m === 1 ? "Minute" : "Minuten"} erneut.`,
+    ],
+  },
+  en: {
+    signIn: [
+      "Sign-in required",
+      "Sign in to Mealie Atelier to continue. Reload the page to start the sign-in again.",
+    ],
+    locked: (m) => [
+      "Too many failed sign-ins",
+      `Sign-in is locked for security reasons. Try again in ${m} ${m === 1 ? "minute" : "minutes"}.`,
+    ],
+  },
+};
+/** Small self-contained page for browser navigations that hit the sign-in gate. */
+function authPage(req, kind, minutes = 1) {
+  const text = AUTH_PAGE_TEXT[resolveLocale(req.headers["accept-language"])] || AUTH_PAGE_TEXT.en;
+  const [title, body] = kind === "locked" ? text.locked(minutes) : text.signIn;
+  const lang = text === AUTH_PAGE_TEXT.de ? "de" : "en";
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222}h1{font-size:1.4rem}</style></head><body><h1>${title}</h1><p>${body}</p></body></html>`;
+}
+const wantsHtml = (req) => String(req.headers.accept || "").includes("text/html");
+function bad(text = "Invalid request", code = "invalid_request") {
   const error = new Error(text);
   error.status = 400;
-  error.code = "invalid_request";
+  error.code = code;
   return error;
 }
 /** Error for a failed permission check, shaped like the contract 0.3 codes. */
@@ -221,17 +273,70 @@ async function mealie(method, path, body, query) {
       redirect: "manual",
       signal: controller.signal,
     });
+    if (response.status === 401) {
+      // Never pass Mealie's 401 through: it would look like the app's own sign-in prompt.
+      throw Object.assign(new Error("Mealie rejected the API token. Check MEALIE_API_TOKEN."), {
+        status: 502,
+        atelierCode: "mealie_auth",
+      });
+    }
+    const mime = response.headers.get("content-type") || "";
+    if (response.status === 403) {
+      throw Object.assign(new Error("Mealie HTTP 403"), {
+        status: 403,
+        atelierCode: "mealie_forbidden",
+      });
+    }
+    // A real Mealie answers errors as JSON (FastAPI); a 404 that is not JSON, or HTML on success,
+    // means another server answers at MEALIE_URL.
+    if (
+      (response.status === 404 && !mime.includes("json")) ||
+      (response.status < 300 && mime.includes("html"))
+    )
+      throw Object.assign(
+        new Error("The address does not answer like a Mealie server. Check MEALIE_URL."),
+        {
+          status: 502,
+          atelierCode: "mealie_not_mealie",
+        },
+      );
     if (response.status >= 300) {
       throw Object.assign(new Error(`Mealie HTTP ${response.status}`), {
         status: response.status >= 500 ? 502 : response.status,
+        // A JSON 404 is Mealie's own "missing" or another API server at MEALIE_URL.
+        ...(response.status === 404 ? { atelierCode: "mealie_not_found" } : {}),
       });
     }
     if (response.status === 204) return null;
-    const mime = response.headers.get("content-type") || "";
     return mime.includes("json") ? await response.json() : await response.text();
   } finally {
     clearTimeout(timeout);
   }
+}
+/** Checks that MEALIE_URL answers like Mealie and accepts the token. */
+async function mealieReachable() {
+  // Bounded so a hanging Mealie never delays the status call (and with it card start).
+  const limit = new Promise((resolve) => setTimeout(() => resolve(false), 2000).unref());
+  const probe = mealie("GET", "/api/users/self").then(
+    (who) => !!who && typeof who === "object",
+    () => false,
+  );
+  return Promise.race([probe, limit]);
+}
+const HEALTH_OK_MS = 60000;
+const HEALTH_FAIL_MS = 10000;
+let healthCache = { until: 0, ok: false, pending: null };
+/** Server-side token check for /healthz: cached (60 s when healthy, 10 s when not) and shared by concurrent probes. */
+async function mealieHealthy() {
+  const now = Date.now();
+  if (now < healthCache.until) return healthCache.ok;
+  if (healthCache.pending) return healthCache.pending;
+  const pending = mealieReachable().then((ok) => {
+    healthCache = { until: Date.now() + (ok ? HEALTH_OK_MS : HEALTH_FAIL_MS), ok, pending: null };
+    return ok;
+  });
+  healthCache.pending = pending;
+  return pending;
 }
 // BEGIN feature B: binary and multipart Mealie calls, editing service
 async function mealieRaw(method, path, { body } = {}) {
@@ -284,7 +389,8 @@ async function saveIngredientBackup(slug, recipe) {
   return file;
 }
 async function editStructuredIngredients(message) {
-  if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+  if (READ_ONLY)
+    throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
   if (process.env.ATELIER_STRUCTURED_EDITS !== "true")
     throw Object.assign(
       new Error("Enable ATELIER_STRUCTURED_EDITS only on a backed-up, tested Mealie 3.x instance"),
@@ -367,9 +473,36 @@ async function addRecipeToShoppingList(listId, recipeId) {
   }
 }
 
+/** A note may be cleared (empty string) but never exceeds 250 characters. */
+function shoppingNote(v) {
+  if (typeof v !== "string" || v.length > 250) throw bad("Invalid note");
+  return v.trim();
+}
+/** A 404 on an item that an edit targets: the item was deleted meanwhile. */
+function itemGone(error) {
+  if (error.status === 404)
+    throw Object.assign(new Error("This item no longer exists in Mealie"), {
+      status: 404,
+      atelierCode: "shopping_item_not_found",
+    });
+  throw error;
+}
+/** Deleting an item that is already gone counts as done, so a replay or double tap stays harmless. */
+async function deleteShoppingItem(id) {
+  try {
+    await mealie("DELETE", `/api/households/shopping/items/${id}`);
+  } catch (error) {
+    if (error.status !== 404) throw error;
+  }
+  return { deleted: true };
+}
+
 async function mutate(action, payload, req) {
   if (READ_ONLY)
-    throw Object.assign(new Error("Mealie Atelier is in read-only mode"), { status: 403 });
+    throw Object.assign(new Error("Mealie Atelier is in read-only mode"), {
+      status: 403,
+      atelierCode: "read_only",
+    });
   if (!payload || typeof payload !== "object" || Array.isArray(payload))
     throw bad("Invalid payload");
   switch (action) {
@@ -382,6 +515,64 @@ async function mutate(action, payload, req) {
         checked: payload.checked,
       });
     }
+    case "shopping_delete":
+      return deleteShoppingItem(identifier(payload.item_id));
+    case "shopping_update": {
+      const id = identifier(payload.item_id);
+      const changes = {};
+      if ("name" in payload && "note" in payload) throw bad("Rename and note cannot be combined");
+      if ("name" in payload) changes.name = text(payload.name);
+      if ("note" in payload) changes.note = shoppingNote(payload.note);
+      if ("quantity" in payload) {
+        if (
+          typeof payload.quantity !== "number" ||
+          !Number.isFinite(payload.quantity) ||
+          payload.quantity < 0 ||
+          payload.quantity > 100000
+        )
+          throw bad("Invalid quantity");
+        changes.quantity = payload.quantity;
+      }
+      if (!Object.keys(changes).length) throw bad("Nothing to update");
+      const current = await mealie("GET", `/api/households/shopping/items/${id}`).catch(itemGone);
+      const { name, ...rest } = changes;
+      // Mealie rebuilds `display` (quantity, unit, name, note) only when it is empty, so the old
+      // one is never sent back. A rename turns the item into a free text item, as the Bridge does:
+      // a new custom display would be lost by the next edit, which sends an empty one.
+      const next = { ...current, ...rest, display: "" };
+      if (name !== undefined)
+        Object.assign(next, { note: name, food: null, foodId: null, isFood: false });
+      if (!next.food && !String(next.note || "").trim())
+        throw bad("An item without a food needs a name");
+      return mealie("PUT", `/api/households/shopping/items/${id}`, next).catch(itemGone);
+    }
+    case "shopping_clear_checked": {
+      const listId = typeof payload.list_id === "string" ? payload.list_id : "";
+      identifier(listId);
+      let expected = null;
+      if ("expected_ids" in payload) {
+        if (
+          !Array.isArray(payload.expected_ids) ||
+          !payload.expected_ids.length ||
+          payload.expected_ids.length > 1000
+        )
+          throw bad("expected_ids must be a list of 1 to 1000 item IDs");
+        expected = new Set(payload.expected_ids.map((x) => identifier(x)));
+      }
+      const all = unwrap(
+        await mealie("GET", "/api/households/shopping/items", undefined, { perPage: -1 }),
+      );
+      const ids = all
+        .filter(
+          (x) =>
+            x?.checked === true &&
+            String(x.shoppingListId) === listId &&
+            (!expected || expected.has(String(x.id))),
+        )
+        .map((x) => x.id);
+      for (const id of ids) await deleteShoppingItem(identifier(String(id)));
+      return { deleted: ids.length };
+    }
     case "shopping_list_create":
       return mealie("POST", "/api/households/shopping/lists", { name: text(payload.name, 100) });
     case "shopping_from_recipe":
@@ -390,7 +581,7 @@ async function mutate(action, payload, req) {
       return mealie("POST", "/api/households/shopping/items", {
         shoppingListId: identifier(payload.list_id),
         note: text(payload.note),
-        quantity: 1,
+        quantity: 0,
         checked: false,
       });
     case "mealplan_add": {
@@ -521,14 +712,17 @@ async function bridge(req) {
           {
             entry_id: "companion",
             name: "Standalone Mealie",
-            connected: true,
+            connected: await mealieReachable(),
             read_only: READ_ONLY,
+            ai_enabled: !!AI_KEY,
+            ai_provider: AI_KEY?.provider || "none",
             permissions,
             features: {
               shopping_sync: false,
               offline_queue: true,
               structured_ingredients: structured,
               uploads: true,
+              ai: !!AI_KEY,
               recipe_filters: true,
               // One journal for the whole household, so changing it needs write access.
               shared_journal: true,
@@ -572,7 +766,8 @@ async function bridge(req) {
     case "mealie_atelier/alarms":
       return alarmStore.list(alarmAccess(req));
     case "mealie_atelier/alarm_create": {
-      if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+      if (READ_ONLY)
+        throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
       const mode = process.env.ATELIER_ALARM_CHANNEL || "both";
       const subscribed = (await alarmStore.list()).pushSubscribers > 0;
       const canNotify =
@@ -583,16 +778,18 @@ async function bridge(req) {
           new Error(
             "No background notification destination. Configure Home Assistant notify or subscribe to Web Push first.",
           ),
-          { status: 409 },
+          { status: 409, atelierCode: "no_notification_destination" },
         );
       return alarmStore.create(msg.timer || {}, req.atelierUser?.name);
     }
     case "mealie_atelier/alarm_cancel": {
-      if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+      if (READ_ONLY)
+        throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
       return alarmStore.cancel(msg.timer_id, alarmAccess(req));
     }
     case "mealie_atelier/push_register": {
-      if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+      if (READ_ONLY)
+        throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
       if (!notificationDelivery.vapid)
         throw Object.assign(new Error("Web Push is not configured"), { status: 503 });
       return alarmStore.register(msg.subscription);
@@ -619,7 +816,8 @@ async function bridge(req) {
     case "mealie_atelier/studio_state":
       return loadStudio();
     case "mealie_atelier/studio_update": {
-      if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+      if (READ_ONLY)
+        throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
       if (msg.action === "session_timer" && !msg.payload?.remove) {
         const mode = process.env.ATELIER_ALARM_CHANNEL || "both";
         const subscribed = (await alarmStore.list()).pushSubscribers > 0;
@@ -688,14 +886,18 @@ async function bridge(req) {
       return calculateNutrition(USDA_KEY, recipe, msg.entries, msg.expected_hash);
     }
     case "mealie_atelier/nutrition_save": {
-      if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+      if (READ_ONLY)
+        throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
       const recipe = await mealie("GET", `/api/recipes/${identifier(msg.slug)}`);
       if (
         recipe.nutrition &&
         Object.values(recipe.nutrition).some((x) => x !== null && x !== "" && x !== undefined) &&
         msg.overwrite_existing !== true
       )
-        throw bad("Existing nutrition values are protected. Explicitly confirm replacement");
+        throw bad(
+          "Existing nutrition values are protected. Explicitly confirm replacement",
+          "existing_values_protected",
+        );
       const report = await calculateNutrition(USDA_KEY, recipe, msg.entries, msg.expected_hash);
       const payload = {
         nutrition: mealieNutrition(report),
@@ -864,7 +1066,8 @@ async function recipeAsset(req, res, id, filename) {
   }
 }
 async function uploadRecipeImage(req, slug) {
-  if (READ_ONLY) throw Object.assign(new Error("Read-only mode"), { status: 403 });
+  if (READ_ONLY)
+    throw Object.assign(new Error("Read-only mode"), { status: 403, atelierCode: "read_only" });
   const recipe = await mealie("GET", `/api/recipes/${identifier(slug)}`);
   const expected = req.headers["x-atelier-image-revision"];
   if (typeof expected !== "string" || expected !== String(recipe.image ?? ""))
@@ -889,7 +1092,7 @@ async function uploadRecipeImage(req, slug) {
       { headers: { Authorization: `Bearer ${MEALIE_API_TOKEN}` }, redirect: "manual" },
     );
     if (!previous.ok)
-      throw Object.assign(new Error("Cannot back up existing photo. Upload cancelled."), {
+      throw Object.assign(new Error("Cannot back up existing photo. Upload canceled."), {
         status: 409,
       });
     const original = Buffer.from(await previous.arrayBuffer());
@@ -948,19 +1151,42 @@ const FILES = {
 };
 const server = createServer(async (req, res) => {
   warnUntrustedProxy(req);
+  // Unauthenticated liveness probe for the container health check. It carries no credentials, is
+  // outside the sign-in throttle and reveals nothing beyond healthy or not.
+  if ((req.method === "GET" || req.method === "HEAD") && req.url.split("?")[0] === "/healthz") {
+    const ok = await mealieHealthy();
+    reply(res, ok ? 200 : 503, { ok });
+    return;
+  }
   // A throttled address is refused before its credentials are checked, so the lockout cannot be
   // used as a password oracle.
   const retryMs = authThrottle.retryAfterMs(throttleClient(req));
   if (retryMs > 0) {
-    reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, {
-      "Retry-After": String(Math.ceil(retryMs / 1000)),
-    });
+    const headers = { "Retry-After": String(Math.ceil(retryMs / 1000)) };
+    if (wantsHtml(req))
+      reply(
+        res,
+        429,
+        authPage(req, "locked", Math.ceil(retryMs / 60000)),
+        "text/html; charset=utf-8",
+        headers,
+      );
+    else
+      reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, headers);
     return;
   }
   if (!(await isAuthorized(req))) {
-    reply(res, 401, { error: "Sign in to Mealie Atelier" }, "application/json; charset=utf-8", {
-      "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"',
-    });
+    const headers = { "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"' };
+    if (wantsHtml(req))
+      reply(res, 401, authPage(req, "signIn"), "text/html; charset=utf-8", headers);
+    else
+      reply(
+        res,
+        401,
+        { error: "Sign in to Mealie Atelier" },
+        "application/json; charset=utf-8",
+        headers,
+      );
     return;
   }
   const pathname = new URL(req.url || "/", "http://localhost").pathname;

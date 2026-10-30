@@ -1,4 +1,6 @@
 /** Smart Shopping Sync: status panel, setup wizard and review list for the Mealie Atelier Bridge. */
+// Normalised names Home Assistant gives its built-in todo list, by server language.
+const SHOPPING_LIST_NAMES = ["shoppinglist", "einkaufsliste"];
 export const shoppingSyncMethods = {
   // Sync state lives on one object so closing the modals can drop it in a single place.
   _syncData() {
@@ -30,7 +32,8 @@ export const shoppingSyncMethods = {
     return {
       supported: !native && entry.features?.shopping_sync === true,
       standalone: !native && entry.features?.shopping_sync === false,
-      write: (grants.can_write ?? entry.can_write) === true,
+      readOnly: entry.read_only === true,
+      write: entry.read_only !== true && (grants.can_write ?? entry.can_write) === true,
       admin: (grants.can_admin ?? entry.can_manage) === true,
     };
   },
@@ -66,6 +69,7 @@ export const shoppingSyncMethods = {
     const at = Date.parse(iso);
     if (!Number.isFinite(at)) return "";
     const seconds = Math.round((at - Date.now()) / 1000);
+    if (Math.abs(seconds) < 5) return this.t("syncJustNow");
     const format = new Intl.RelativeTimeFormat(this._locale, { numeric: "auto" });
     for (const [unit, size] of [
       ["day", 86400],
@@ -74,6 +78,35 @@ export const shoppingSyncMethods = {
     ])
       if (Math.abs(seconds) >= size) return format.format(Math.round(seconds / size), unit);
     return format.format(seconds, "second");
+  },
+  // Friendly platform name for an integration domain id (never the raw snake_case id).
+  _syncPlatformLabel(platform) {
+    const id = String(platform || "").trim();
+    if (!id) return "";
+    const known = { bring: "Bring!", shopping_list: this.t("syncPlatformShoppingList") };
+    if (known[id]) return known[id];
+    const words = id.replace(/_/g, " ");
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  },
+  // Home Assistant names its built-in list in the server language ("Shopping list", "Einkaufsliste"), so show it by the UI language.
+  _syncDestinationName(name, platform) {
+    const plain = String(name || "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]/gu, "");
+    return String(platform) === "shopping_list" && SHOPPING_LIST_NAMES.includes(plain)
+      ? this._syncPlatformLabel(platform)
+      : String(name || "");
+  },
+  // Destination name plus platform, dropping the platform when it only repeats the name.
+  _syncDestinationLabel(rawName, platform) {
+    const name = this._syncDestinationName(rawName, platform);
+    const label = this._syncPlatformLabel(platform);
+    const plain = (v) =>
+      String(v)
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]/gu, "");
+    if (!label || plain(label) === plain(name)) return String(name || "");
+    return this.t("syncDestinationOption", { name, platform: label });
   },
   // Partial, failed and unclear results must never read as a success.
   _syncOutcomeText(outcome, counts = {}) {
@@ -94,16 +127,27 @@ export const shoppingSyncMethods = {
     const good = ["sent", "nothing_to_send", "reconciled"].includes(outcome);
     return good && !(counts.needs_reconciliation > 0) ? icon("check", 15) : icon("bolt", 15);
   },
+  _syncResultIcon(result) {
+    if (result?.queued) return icon("clock", 15);
+    return this._syncOutcomeIcon(result?.outcome, {
+      needs_reconciliation: result?.needs_reconciliation,
+    });
+  },
   _syncResultText(result) {
     if (result?.queued) return this.t("syncRunQueued");
-    return this.t("syncRunResult", {
-      result: this._syncOutcomeText(result?.outcome, {
-        needs_reconciliation: result?.needs_reconciliation,
-      }),
+    const counts = this.t("syncRunCounts", {
       sent: result?.sent ?? 0,
       skipped: (result?.skipped_duplicates ?? 0) + (result?.merged ?? 0),
       failed: (result?.failed ?? 0) + (result?.needs_reconciliation ?? 0),
       left: result?.pending_left ?? 0,
+    });
+    // A plain success already says "Sent" in the counts, so the outcome label would only repeat it.
+    if (result?.outcome === "sent" && !(result?.needs_reconciliation > 0)) return counts;
+    return this.t("syncRunResult", {
+      result: this._syncOutcomeText(result?.outcome, {
+        needs_reconciliation: result?.needs_reconciliation,
+      }),
+      counts,
     });
   },
 
@@ -185,7 +229,7 @@ export const shoppingSyncMethods = {
       size = "large";
       content = this._syncSetupHtml();
     } else content = this._syncSyncHtml();
-    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
+    return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title">${closing}${content}</div></div>`;
   },
   _syncLead(title, text) {
     return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp">${icon("cart", 26)}</div></div>`;
@@ -201,7 +245,7 @@ export const shoppingSyncMethods = {
     const rules = this._syncRules();
     const audit = asArray(sync.state?.audit).slice(0, 20);
     const live = sync.result
-      ? `<p class="sync-result">${icon("clock", 15)} ${esc(sync.result)}</p>`
+      ? `<p class="sync-result">${sync.resultIcon || icon("check", 15)} ${esc(sync.result)}</p>`
       : "";
     const body = rules.length
       ? rules.map((rule) => this._syncRuleHtml(rule, caps)).join("")
@@ -209,17 +253,47 @@ export const shoppingSyncMethods = {
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
       <div class="sync-live" role="status" aria-live="polite">${live}</div>
-      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t("syncNeedsWrite"))}</p>` : ""}
+      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncNeedsWrite"))}</p>` : ""}
       ${body}
       ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="sync-setup-open" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this.tp("syncAuditEntry", a.count ?? 0, { time: this._syncRelative(a.at), result: this._syncOutcomeText(a.outcome) }))}</li>`).join("")}</ul></section>` : ""}</div>`;
+  },
+  // A rule named after the built-in list in either language ("Shopping list" or "Einkaufsliste")
+  // is titled with the route in the current UI language.
+  _syncRuleTitle(rule, destination, destName) {
+    const prefix = `${rule.source_list_name} → `;
+    const name = String(rule.name || "");
+    const plain = (v) =>
+      String(v)
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]/gu, "");
+    const builtIn =
+      String(destination.platform) === "shopping_list" &&
+      name.startsWith(prefix) &&
+      SHOPPING_LIST_NAMES.includes(plain(name.slice(prefix.length)));
+    return builtIn || name === `${prefix}${destination.name}` ? `${prefix}${destName}` : rule.name;
+  },
+  // Route line "source → destination (platform)". When the rule is already named after the route
+  // only the platform that the title does not show is kept.
+  _syncRouteHtml(rule, destination, destName) {
+    const platform =
+      destination.platform &&
+      this._syncDestinationLabel(destName, destination.platform) !== destName
+        ? this._syncPlatformLabel(destination.platform)
+        : "";
+    const route = `${rule.source_list_name} → ${destName}`;
+    if (this._syncRuleTitle(rule, destination, destName) === route)
+      return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
+    return `<p class="sync-route">${esc(route)}${platform ? ` (${esc(platform)})` : ""}</p>`;
   },
   _syncRuleHtml(rule, caps) {
     const sync = this._syncData();
     const counts = rule.counts || {};
     const issues = this._syncIssues(rule);
     const destination = rule.destination || {};
-    const destName = destination.name || rule.destination_entity_id;
+    const destName =
+      this._syncDestinationName(destination.name, destination.platform) ||
+      rule.destination_entity_id;
     const mode = rule.mode === "move" ? "Move" : "Copy";
     const state = !rule.activated ? "NotActivated" : rule.paused ? "Paused" : "Active";
     const stateIcon = state === "Active" ? icon("check", 15) : icon("clock", 15);
@@ -266,10 +340,11 @@ export const shoppingSyncMethods = {
         ? `<div class="notice error" role="alert"><span>${esc(this.t("syncDeleteConfirm"))}</span><div class="form-actions"><button class="btn tiny" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button><button class="btn tiny" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button></div></div>`
         : "";
     return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
-      <h3 id="sync-rule-${id}">${esc(rule.name)}</h3>
-      <p class="sync-route">${esc(rule.source_list_name)} → ${esc(destName)}${destination.platform ? ` (${esc(destination.platform)})` : ""}</p>
+      <h3 id="sync-rule-${id}">${esc(this._syncRuleTitle(rule, destination, destName))}</h3>
+${this._syncRouteHtml(rule, destination, destName)}
       <p class="sync-mode">${esc(this.t(`syncMode${mode}`))}: ${esc(this.t(`syncMode${mode}Hint`))}</p>
-      <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong> <span class="sync-count sync-muted">${esc(this.tp("syncPending", this._syncWaiting(rule)))}</span></p>
+      <p class="sync-state">${stateIcon} <strong>${esc(this.t(`syncState${state}`))}</strong></p>
+      <p class="sync-count sync-muted">${esc(this._syncWaiting(rule) ? this.tp("syncPending", this._syncWaiting(rule)) : this.t("syncPendingNone"))}</p>
       <p class="sync-last">${last ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRun", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}` : esc(this.t("syncNeverRun"))}</p>
       ${problems.map((p) => `<p class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span></p>`).join("")}
       ${counts.needs_reconciliation > 0 ? `<p class="notice" role="status">${icon("clock", 16)} <span>${esc(this.tp("syncReconcileHint", counts.needs_reconciliation))}</span></p>` : ""}
@@ -291,15 +366,15 @@ export const shoppingSyncMethods = {
       return `<section class="editor-card"><h3>${esc(title)}</h3><ul class="sync-list">${rows.map((r) => this._syncRecordHtml(r, review.ruleId, caps)).join("")}</ul></section>`;
     };
     const parts = [
-      group(this.t("syncReviewTitle"), problem),
+      group(this.t("syncReviewProblems"), problem),
       group(this.t("syncOutboxTitle"), waiting),
     ].join("");
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncReviewTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
-      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t("syncNeedsWrite"))}</p>` : ""}
+      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncNeedsWrite"))}</p>` : ""}
       <div class="sync-live" role="status" aria-live="polite" aria-busy="${review.loading ? "true" : "false"}">${review.loading ? esc(this.t("loading")) : ""}</div>
       ${parts || (review.loading ? "" : `<section class="editor-card"><div class="notice">${icon("check", 16)} ${esc(this.t("syncReviewEmpty"))}</div></section>`)}
-      <div class="form-actions"><button class="btn" data-action="sync-review-close">${icon("chevron", 14)} ${esc(this.t("syncReviewClose"))}</button></div></div>`;
+      <div class="form-actions"><button class="btn sync-back" data-action="sync-review-close">${icon("chevron", 14)} ${esc(this.t("syncReviewClose"))}</button></div></div>`;
   },
   _syncRecordHtml(record, ruleId, caps) {
     const resolvable = [
@@ -324,7 +399,12 @@ export const shoppingSyncMethods = {
     const destination = draft.destinations.find((e) => e.entity_id === draft.destination_entity_id);
     const name = String(draft.name || "").trim();
     return {
-      name: (name || `${source?.name || ""} → ${destination?.name || ""}`).slice(0, 60),
+      name: (
+        name ||
+        (destination
+          ? `${source?.name || ""} → ${this._syncDestinationName(destination.name, destination.platform)}`
+          : source?.name || "")
+      ).slice(0, 60),
       source_list_id: draft.source_list_id,
       destination_entity_id: draft.destination_entity_id,
       mode: draft.mode,
@@ -354,7 +434,14 @@ export const shoppingSyncMethods = {
       rule_id: rule?.id || "",
       expected_revision: rule?.revision,
       activated: rule?.activated === true,
-      name: rule?.name || "",
+      name: rule
+        ? this._syncRuleTitle(
+            rule,
+            rule.destination || {},
+            this._syncDestinationName(rule.destination?.name, rule.destination?.platform) ||
+              rule.destination_entity_id,
+          )
+        : "",
       source_list_id: rule?.source_list_id || String(free[0]?.id || ""),
       destination_entity_id: rule?.destination_entity_id || "",
       mode: rule?.mode || "copy",
@@ -422,7 +509,7 @@ export const shoppingSyncMethods = {
     const destinationOptions = d.destinations
       .map(
         (e) =>
-          `<option value="${esc(e.entity_id)}" ${e.entity_id === d.destination_entity_id ? "selected" : ""}>${esc(this.t("syncDestinationOption", { name: e.name, platform: e.platform }))}</option>`,
+          `<option value="${esc(e.entity_id)}" ${e.entity_id === d.destination_entity_id ? "selected" : ""}>${esc(this._syncDestinationLabel(e.name, e.platform))}</option>`,
       )
       .join("");
     const previewMarkup = d.previewBusy
@@ -434,16 +521,18 @@ export const shoppingSyncMethods = {
               : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
           }`
         : "";
-    const confirmLabel = this.tp("syncConfirmSend", sendCount, {
-      source: sourceName,
-      destination: destination?.name || "",
-    });
+    const confirmLabel = destination
+      ? this.tp("syncConfirmSend", sendCount, {
+          source: sourceName,
+          destination: this._syncDestinationName(destination.name, destination.platform),
+        })
+      : this.t("syncConfirmSendNeutral");
     return `<div class="modal-content sync-panel atelier-editor">${this._syncLead(this.t(d.rule_id ? "syncEditRule" : "syncSetup"))}
       ${d.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(d.error)}</span></div>` : ""}
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("syncSource").toUpperCase())}</div>
         ${
           d.free.length
-            ? `<label class="field"><span>${esc(this.t("syncSource"))}</span><select data-input="sync-source" data-autofocus>${sourceOptions}</select></label>`
+            ? `<label class="field"><span class="sync-sr">${esc(this.t("syncSource"))}</span><select data-input="sync-source" data-autofocus>${sourceOptions}</select></label>`
             : `<p class="notice" role="status">${icon("cart", 16)} ${esc(this.t(lists.length ? "errSyncSourceTaken" : "addListFirst"))}</p>`
         }
         <label class="field"><span>${esc(this.t("syncRuleName"))}</span><input data-input="sync-name" maxlength="60" value="${esc(d.name)}" placeholder="${esc(this._syncDraftRequest(d).name)}"></label></section>
@@ -451,19 +540,19 @@ export const shoppingSyncMethods = {
         ${
           d.destinationsLoaded && !d.destinations.length
             ? `<p class="notice" role="status">${icon("leaf", 16)} ${esc(this.t("syncNoDestinations"))}</p>`
-            : `<label class="field"><span>${esc(this.t("syncDestination"))}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${destinationOptions}</select></label>`
+            : `<label class="field"><span class="sync-sr">${esc(this.t("syncDestination"))}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${destinationOptions}</select></label>`
         }
-        <p class="sync-capability" role="status" aria-live="polite">${destination ? `${icon(destination.supports?.description ? "check" : "clock", 15)} ${esc(this.t("syncSupportsNotes", { answer: this.t(destination.supports?.description ? "syncYes" : "syncNo") }))}` : ""}</p></section>
+        <p class="sync-capability" role="status" aria-live="polite">${destination ? `${icon(destination.supports?.description ? "check" : "close", 15)} ${esc(this.t("syncSupportsNotes", { answer: this.t(destination.supports?.description ? "syncYes" : "syncNo") }))}` : ""}</p></section>
       <section class="editor-card"><div class="eyebrow">03 / ${esc(this.t("syncStepMode").toUpperCase())}</div>
-        <fieldset class="sync-fieldset"><legend>${esc(this.t("syncStepMode"))}</legend>${radio("mode", "mode", "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${radio("mode", "mode", "move", this.t("syncModeMove"), this.t("syncModeMoveHint"))}</fieldset></section>
+        <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepMode"))}</legend>${radio("mode", "mode", "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${radio("mode", "mode", "move", this.t("syncModeMove"), this.t("syncModeMoveHint"))}</fieldset></section>
       <section class="editor-card"><div class="eyebrow">04 / ${esc(this.t("syncStepWhen").toUpperCase())}</div>
-        <fieldset class="sync-fieldset"><legend>${esc(this.t("syncStepWhen"))}</legend>
+        <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepWhen"))}</legend>
         <label class="editor-check"><input type="checkbox" data-input="sync-after-add" ${d.after_atelier_add ? "checked" : ""}> ${esc(this.t("syncTriggerAfterAdd"))}</label>
         <label class="editor-check"><input type="checkbox" data-input="sync-watch" ${d.watch ? "checked" : ""}> ${esc(this.t("syncTriggerWatch"))}</label>
         <p class="editor-sub">${esc(this.tp("syncTriggerWatchHint", Number(d.poll_minutes) || 2, { interval: Number(d.poll_minutes) || 2 }))}</p></fieldset>
         <div class="editor-columns">${number("debounce_seconds", "debounce", "syncDebounce", "debounce")}${number("poll_minutes", "poll", "syncPollMinutes", "poll")}</div></section>
       <section class="editor-card"><div class="eyebrow">05 / ${esc(this.t("syncDuplicates").toUpperCase())}</div>
-        <fieldset class="sync-fieldset"><legend>${esc(this.t("syncDuplicates"))}</legend>${radio("duplicates", "duplicate_policy", "skip_exact", this.t("syncDuplicateSkipExact"))}${radio("duplicates", "duplicate_policy", "skip_exact_merge_same_unit", this.t("syncDuplicateMerge"))}${radio("duplicates", "duplicate_policy", "none", this.t("syncDuplicateNone"))}</fieldset></section>
+        <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncDuplicates"))}</legend>${radio("duplicates", "duplicate_policy", "skip_exact", this.t("syncDuplicateSkipExact"))}${radio("duplicates", "duplicate_policy", "skip_exact_merge_same_unit", this.t("syncDuplicateMerge"))}${radio("duplicates", "duplicate_policy", "none", this.t("syncDuplicateNone"))}</fieldset></section>
       <section class="editor-card"><div class="eyebrow">06 / ${esc(this.t("syncPreview").toUpperCase())}</div>
         <div class="form-actions"><button class="btn" data-action="sync-preview"${ready ? "" : " disabled"}>${icon("search", 14)} ${esc(this.t("syncPreviewRun"))}</button></div>
         <div class="sync-preview" role="status" aria-live="polite" aria-busy="${d.previewBusy ? "true" : "false"}">${previewMarkup}</div></section>
@@ -473,7 +562,7 @@ export const shoppingSyncMethods = {
           d.activated
             ? `<button class="btn primary" data-action="sync-save" data-value="changes"${blocked ? " disabled" : ""}>${icon("check", 14)} ${esc(this.t("syncSaveChanges"))}</button>`
             : `<button class="btn primary" data-action="sync-save" data-value="send"${blocked || !d.preview ? " disabled" : ""}>${icon("arrow", 14)} ${esc(confirmLabel)}</button><button class="btn" data-action="sync-save" data-value="only"${blocked ? " disabled" : ""}>${esc(this.t("syncSaveOnly"))}</button>`
-        }<button class="btn plain" data-action="sync-setup-cancel">${esc(this.t("syncCancel"))}</button></div></section></div>`;
+        }<button class="btn ghost" data-action="sync-setup-cancel">${esc(this.t("syncCancel"))}</button></div></section></div>`;
   },
 
   // Returns true when the click belonged to the sync workflow.
@@ -567,8 +656,10 @@ export const shoppingSyncMethods = {
     let result = null;
     try {
       result = await this._ws(type, payload);
-      if (show) sync.result = this._syncResultText(result);
-      else sync.result = "";
+      if (show) {
+        sync.result = this._syncResultText(result);
+        sync.resultIcon = this._syncResultIcon(result);
+      } else sync.result = "";
     } catch (err) {
       sync.error = this._errorText(err);
       sync.result = "";
@@ -712,6 +803,7 @@ export const shoppingSyncMethods = {
       try {
         const result = await this._ws("sync_run", { rule_id: rule.id, confirm_first_batch: true });
         sync.result = this._syncResultText(result);
+        sync.resultIcon = this._syncResultIcon(result);
       } catch (err) {
         sync.error = this._errorText(err);
         this._syncRefetchStatus(err);

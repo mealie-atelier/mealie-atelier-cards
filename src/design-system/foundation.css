@@ -165,7 +165,7 @@ ha-card {
   }
 }
 .atelier .nav button.active {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   background: color-mix(in srgb, var(--at-accent) 13%, transparent);
 }
 .atelier .nav button.active:before {
@@ -191,7 +191,7 @@ ha-card {
   border: 1px solid var(--at-line);
   border-radius: 9px;
   margin-bottom: 10px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .main {
   min-width: 0;
@@ -253,7 +253,7 @@ ha-card {
 .atelier h1 em {
   font-weight: 550;
   font-style: normal;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier h2 {
   font-size: 21px;
@@ -271,7 +271,7 @@ ha-card {
   font-size: 10px;
   letter-spacing: 2.2px;
   font-weight: 850;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .heading {
   display: flex;
@@ -332,7 +332,7 @@ ha-card {
   border: 0;
   padding: 4px 0;
   min-height: 0;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .hero {
   border-radius: var(--at-radius);
@@ -362,7 +362,11 @@ ha-card {
   gap: 11px;
 }
 .atelier .hero .eyebrow {
-  color: #b2d9c0;
+  color: #cdebd8;
+  text-transform: uppercase;
+  text-shadow:
+    0 1px 3px rgba(20, 32, 26, 0.7),
+    0 1px 14px rgba(20, 32, 26, 0.6);
 }
 .atelier .hero h2 {
   font-size: clamp(22px, 2.7vw, 35px);
@@ -456,7 +460,7 @@ ha-card {
   width: 42px;
   border-radius: 14px;
   background: color-mix(in srgb, var(--at-accent) 14%, transparent);
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -594,7 +598,7 @@ ha-card {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   font-weight: 850;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   display: block;
   margin-bottom: 7px;
 }
@@ -619,7 +623,7 @@ ha-card {
 .atelier .pill {
   font-size: 10px;
   font-weight: 760;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   background: color-mix(in srgb, var(--at-accent) 13%, transparent);
   padding: 7px 11px;
   border-radius: 99px;
@@ -669,7 +673,7 @@ ha-card {
   font-size: 14px;
 }
 .atelier .day.today .day-head b {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .day-meal {
   display: block;
@@ -688,7 +692,7 @@ ha-card {
 .atelier .day-meal small {
   display: block;
   font-size: 9px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   margin-bottom: 4px;
 }
 .atelier .day-empty {
@@ -730,7 +734,7 @@ ha-card {
 }
 .atelier .shopping-row.checked .shopping-name {
   text-decoration: line-through;
-  opacity: 0.55;
+  color: var(--at-sub);
 }
 .atelier .shopping-name {
   font-size: 13px;
@@ -917,7 +921,7 @@ ha-card {
   place-items: center;
   border-radius: 9px;
   background: var(--at-panel2);
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 750;
   flex-shrink: 0;
 }
@@ -931,7 +935,7 @@ ha-card {
 .atelier .cook-stage .step-count {
   font-size: 11px;
   letter-spacing: 2px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .cook-stage h2 {
   font-size: clamp(24px, 3.5vw, 37px);
@@ -1039,7 +1043,7 @@ ha-card {
   border-bottom: 0;
 }
 .atelier .today-meal .meal-badge {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   background: var(--at-panel2);
   padding: 9px;
   border-radius: 11px;
@@ -1072,7 +1076,7 @@ ha-card {
 .atelier .mini-shopping:last-child {
   border: 0;
 }
-.atelier .mini-shopping button {
+.atelier .mini-shopping button:not(.check-ui) {
   border: 0;
   background: none;
   color: var(--at-ink);
@@ -1080,8 +1084,8 @@ ha-card {
   padding: 5px 0;
   flex: 1;
 }
-.atelier .mini-shopping button:hover {
-  color: var(--ds-brand);
+.atelier .mini-shopping button:not(.check-ui):hover {
+  color: var(--ds-brand-text);
 }
 .atelier .editing-hint {
   font-size: 11px;
@@ -1314,7 +1318,7 @@ ha-card {
   background: var(--at-panel2);
   display: grid;
   place-items: center;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   flex-shrink: 0;
 }
 .atelier .editor-form {
@@ -1400,7 +1404,7 @@ ha-card {
 .atelier .editor-step .step-count {
   font-size: 14px;
   font-weight: 800;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   padding-top: 13px;
   text-align: center;
 }
@@ -1437,7 +1441,7 @@ ha-card {
   border-radius: 13px;
   padding: 13px;
   background: var(--at-panel2);
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 700;
   text-align: center;
 }

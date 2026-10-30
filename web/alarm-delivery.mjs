@@ -1,7 +1,12 @@
 import { sendWebPush, vapidPublicPrivate } from "./web-push.mjs";
 export function getHomeAssistantConfig(env = process.env) {
   if (!env.ATELIER_HA_URL || !env.ATELIER_HA_TOKEN || !env.ATELIER_HA_NOTIFY_SERVICE) return null;
-  const url = new URL(env.ATELIER_HA_URL);
+  let url;
+  try {
+    url = new URL(env.ATELIER_HA_URL);
+  } catch {
+    throw Error("ATELIER_HA_URL must be an http(s) URL without credentials or query.");
+  }
   if (
     !["https:", "http:"].includes(url.protocol) ||
     url.username ||
@@ -9,7 +14,7 @@ export function getHomeAssistantConfig(env = process.env) {
     url.search ||
     url.hash
   )
-    throw Error("Invalid HA URL");
+    throw Error("ATELIER_HA_URL must be an http(s) URL without credentials or query.");
   if (!/^notify\.[a-z0-9_]+$/i.test(env.ATELIER_HA_NOTIFY_SERVICE))
     throw Error("Invalid HA notify service");
   return {
@@ -17,6 +22,26 @@ export function getHomeAssistantConfig(env = process.env) {
     token: env.ATELIER_HA_TOKEN,
     service: env.ATELIER_HA_NOTIFY_SERVICE,
   };
+}
+/** Rejects half-set or malformed notification settings with one clear line each. */
+export function validateNotificationEnv(env = process.env) {
+  const set = (names) => names.filter((n) => env[n]);
+  const vapid = ["ATELIER_VAPID_PUBLIC_KEY", "ATELIER_VAPID_PRIVATE_KEY", "ATELIER_VAPID_SUBJECT"];
+  const ha = ["ATELIER_HA_URL", "ATELIER_HA_TOKEN", "ATELIER_HA_NOTIFY_SERVICE"];
+  for (const [label, names] of [
+    ["VAPID", vapid],
+    ["Home Assistant", ha],
+  ]) {
+    const given = set(names);
+    if (given.length && given.length < names.length)
+      throw Error(
+        `${label} notifications need all of ${names.join(", ")}; missing ${names.filter((n) => !env[n]).join(", ")}.`,
+      );
+  }
+  if (env.ATELIER_VAPID_SUBJECT && !/^(mailto:|https:\/\/)/.test(env.ATELIER_VAPID_SUBJECT))
+    throw Error("ATELIER_VAPID_SUBJECT must start with mailto: or https://.");
+  if (env.ATELIER_ALARM_CHANNEL && !["ha", "push", "both"].includes(env.ATELIER_ALARM_CHANNEL))
+    throw Error("ATELIER_ALARM_CHANNEL must be one of ha, push or both.");
 }
 export async function sendHomeAssistantAlarm(timer, config, { fetchImpl = fetch } = {}) {
   if (!config) return { accepted: false, status: "not_configured" };

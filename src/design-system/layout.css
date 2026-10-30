@@ -54,6 +54,11 @@
   gap: 4px;
 }
 .atelier-credit a {
+  display: inline-block;
+  padding-block: 14px;
+  margin-block: -14px;
+  padding-inline: 8px;
+  margin-inline: -8px;
   color: inherit;
   text-decoration-color: color-mix(in srgb, var(--ds-brand) 60%, transparent);
   text-underline-offset: 3px;
@@ -63,11 +68,11 @@
 }
 .atelier-credit a:hover,
 .atelier-credit a:focus-visible {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier-credit-heart {
   display: inline-block;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   transform-origin: center;
 }
 .atelier-credit:hover .atelier-credit-heart,
@@ -88,6 +93,10 @@
 .atelier .sidebar-footer .atelier-credit {
   display: flex;
   flex-wrap: wrap;
+}
+.atelier .sidebar-footer .atelier-credit a {
+  /* The version line follows the link, so the padding stays in flow: no overlap with the 44px hit area. */
+  margin-block: 0;
 }
 .atelier .sidebar-footer .atelier-version {
   display: block;
@@ -438,7 +447,7 @@
 }
 
 .atelier .ds-page-header h1 em {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 400;
   font-style: italic;
 }
@@ -451,8 +460,8 @@
   .atelier .week-grid {
     grid-template-columns: repeat(7, minmax(210px, min(46cqi, 310px)));
     gap: var(--ds-space-3);
-    /* Swiped one day at a time, so each day keeps its own height instead of the tallest one. */
-    align-items: start;
+    /* Equal-height days: the empty space stays inside each day card instead of a blank band below short days. */
+    align-items: stretch;
   }
   .atelier .week-grid > .day {
     min-height: 205px;
@@ -470,8 +479,29 @@
 
 /* Semantic shopping toolbar, shared across themes and card widths. */
 .atelier .shopping-toolbar {
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
+  justify-content: end;
   margin-block: 0 var(--ds-space-4);
+}
+/* Per-item edit and delete controls stay at the row end; the name keeps the remaining width. */
+.atelier .shopping-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--ds-space-1);
+  margin-inline-start: auto;
+}
+.atelier .shopping-action {
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--ds-radius-pill);
+  color: var(--ds-muted);
+}
+.atelier .shopping-action:hover,
+.atelier .shopping-action:focus-visible {
+  background: color-mix(in srgb, var(--ds-brand) 12%, transparent);
+  color: var(--ds-text);
 }
 .atelier .shopping-form {
   align-items: stretch;
@@ -487,4 +517,46 @@
   .atelier .shopping-form > button {
     flex: 1 1 100%;
   }
+}
+
+.atelier .heading > h2 {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.atelier .heading > .btn.icon-only {
+  flex: none;
+}
+.atelier .recipe-labels {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--at-ink);
+}
+.atelier .recipe-labels span {
+  color: var(--ds-brand-text);
+  font-weight: 750;
+}
+.atelier .recipe-notes {
+  margin-top: 22px;
+}
+.atelier .recipe-note p {
+  margin: 4px 0 10px;
+  white-space: pre-line;
+}
+/* Keep the plan dialog anchored at the top so closing the picker list does not re-centre it. */
+.atelier .modal.plan-anchored {
+  align-self: flex-start;
+}
+
+.atelier .shopping-group-title {
+  margin-top: var(--ds-space-3);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--at-sub);
+}
+.atelier .mini-shopping-name {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
 }

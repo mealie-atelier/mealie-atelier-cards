@@ -8,11 +8,28 @@ const _atOriginalOpenRecipe = MealieAtelierCard.prototype._openRecipe;
 const _atOriginalTick = MealieAtelierCard.prototype._tickTimers;
 const _atOriginalConnected = MealieAtelierCard.prototype.connectedCallback;
 const _atOriginalDisconnected = MealieAtelierCard.prototype.disconnectedCallback;
+// Date-only values are read as local calendar days (never UTC) so no timezone shifts them by one day.
+const atParseDay = (d) => {
+  const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d));
+  return day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(d);
+};
+// The year appears only when it is not the current one; spaces are non-breaking so a date never wraps.
 const atDate = (d, locale = "en-US") => {
-  const x = new Date(d);
-  return Number.isNaN(x.getTime())
-    ? ""
-    : x.toLocaleDateString(locale, { day: "2-digit", month: "short" });
+  const x = atParseDay(d);
+  if (Number.isNaN(x.getTime())) return "";
+  const options = { day: "numeric", month: "short" };
+  if (x.getFullYear() !== new Date().getFullYear()) options.year = "numeric";
+  return x.toLocaleDateString(locale, options).replace(/ /g, "\u00a0");
+};
+// "expired" when the day has passed, "soon" within the next three days, otherwise "".
+const atExpiry = (d) => {
+  const x = atParseDay(d);
+  if (!d || Number.isNaN(x.getTime())) return "";
+  const today = new Date();
+  const days = Math.round(
+    (x - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000,
+  );
+  return days < 0 ? "expired" : days < 4 ? "soon" : "";
 };
 const atQty = (n, locale = "en-US") =>
   n == null ? "?" : Number(n).toLocaleString(locale, { maximumFractionDigits: 1 });
@@ -204,6 +221,8 @@ Object.assign(MealieAtelierCard.prototype, {
     kind = "confirm",
     confirmLabel = "",
     initialValue = "",
+    secondaryLabel = "",
+    focusCancel = false,
   } = {}) {
     return new Promise((resolve) => {
       const dlg = document.createElement("dialog");
@@ -215,7 +234,7 @@ Object.assign(MealieAtelierCard.prototype, {
         kind === "prompt"
           ? `<label class="at-prompt-label">${esc(this.t("studioDialogPromptLabel"))}<input type="text" class="at-prompt-input" maxlength="160" value="${esc(initialValue)}" placeholder="${esc(this.t("studioDialogPromptPlaceholder"))}" required></label>`
           : "";
-      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(this.t("studioCancel"))}</button>`}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
+      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(this.t("studioCancel"))}</button>`}${secondaryLabel && kind !== "info" ? `<button class="btn" type="submit" value="secondary">${esc(secondaryLabel)}</button>` : ""}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
       const previous = this.shadowRoot.activeElement;
       const surface = this.shadowRoot.querySelector(".atelier");
       if (surface) {
@@ -225,6 +244,7 @@ Object.assign(MealieAtelierCard.prototype, {
           "--at-sub",
           "--at-accent",
           "--at-accent-ink",
+          "--ds-brand-text",
           "--at-line",
           "--at-surface",
           "--at-panel",
@@ -240,7 +260,11 @@ Object.assign(MealieAtelierCard.prototype, {
         () => {
           const result = dlg.returnValue === "confirm";
           const value =
-            kind === "prompt" && result ? dlg.querySelector("input")?.value.trim() || "" : result;
+            kind === "prompt" && result
+              ? dlg.querySelector("input")?.value.trim() || ""
+              : dlg.returnValue === "secondary"
+                ? "secondary"
+                : result;
           dlg.remove();
           if (previous?.isConnected) previous.focus?.({ preventScroll: true });
           resolve(value);
@@ -250,6 +274,8 @@ Object.assign(MealieAtelierCard.prototype, {
       try {
         dlg.showModal();
         if (input) dlg.querySelector("input")?.focus();
+        else if (focusCancel && kind !== "info")
+          dlg.querySelector('button[value="cancel"]')?.focus();
         else dlg.querySelector(".btn.primary")?.focus();
       } catch {
         dlg.remove();
@@ -263,14 +289,14 @@ Object.assign(MealieAtelierCard.prototype, {
     const display = records
       .map(
         (r) =>
-          `<div class="studio-diagnostic-row"><span>${esc(r.name)}</span><span class="studio-diagnostic-status ${r.ok ? "ok" : "fail"}">${r.ok ? this.t("studioDiagnosticsReachable") : this.t("studioDiagnosticsCheck")}</span><small>${esc(r.detail || "")}</small></div>`,
+          `<div class="studio-diagnostic-row"><span>${esc(r.name)}</span><span class="studio-diagnostic-status ${r.ok ? "ok" : "fail"}">${r.ok ? this.t("studioDiagnosticsReachable") : this.t("studioDiagnosticsCheck")}</span>${r.detail ? `<small>${esc(r.detail)}</small>` : ""}</div>`,
       )
       .join("");
     return `<section class="studio-panel studio-diagnostics" aria-labelledby="atelier-system-title">
-      ${AtelierUI.sectionHeading({ id: "atelier-system-title", kicker: this.t("studioDiagnosticsKicker"), title: this.t("studioDiagnosticsTitle"), description: this.t("studioDiagnosticsDescription") })}
+      ${AtelierUI.sectionHeading({ id: "atelier-system-title", kicker: this.t("studioDiagnosticsKicker"), title: this.t(records.length && records.every((r) => r.ok) ? "studioDiagnosticsPassed" : "studioDiagnosticsTitle"), description: this.t("studioDiagnosticsDescription") })}
       <div class="studio-actions"><button class="btn primary" data-action="studio-check-health" ${this._diagnosticsBusy ? "disabled" : ""}>${icon("refresh", 14)} ${this._diagnosticsBusy ? this.t("studioDiagnosticsRunning") : this.t("studioDiagnosticsCheck")}</button><button class="btn" data-action="studio-export">${icon("book", 14)} ${this.t("studioDiagnosticsExport")}</button></div>
       <div class="studio-diagnostic-grid" role="status" aria-live="polite">${display || `<p class="studio-muted">${esc(this.t("studioDiagnosticsEmpty"))}</p>`}</div>
-      <p class="studio-muted">Status: ${p.can_manage ? this.t("studioDiagnosticsAdmin") : p.can_write ? this.t("studioDiagnosticsEdit") : this.t("studioDiagnosticsReadOnly")} · ${this.t("version")} ${esc(this._status?.version || "—")} · ${this.t("studioDiagnosticsBackup")}</p>
+      <p class="studio-muted studio-diagnostic-footer">Status: ${p.can_manage ? this.t("studioDiagnosticsAdmin") : p.can_write ? this.t("studioDiagnosticsEdit") : this.t("studioDiagnosticsReadOnly")} · ${this.t("version")} ${esc(this._status?.version || "—")} · ${this.t("studioDiagnosticsBackup")}</p>
     </section>`;
   },
   async _studioDiagnostics() {
@@ -297,7 +323,7 @@ Object.assign(MealieAtelierCard.prototype, {
         results.push({
           name,
           ok: valid,
-          detail: valid ? this.t("studioDiagnosticsReachable") : this.t("studioDiagnosticsNoData"),
+          detail: valid ? "" : this.t("studioDiagnosticsNoData"),
         });
       } catch (error) {
         results.push({
@@ -330,7 +356,7 @@ Object.assign(MealieAtelierCard.prototype, {
       const address = URL.createObjectURL(data);
       const link = document.createElement("a");
       link.href = address;
-      link.download = `mealie-atelier-profil-${dateYmd(new Date())}.json`;
+      link.download = `mealie-atelier-profile-${dateYmd(new Date())}.json`;
       link.style.display = "none";
       document.body.appendChild(link);
       link.click();
@@ -451,15 +477,28 @@ Object.assign(MealieAtelierCard.prototype, {
           : `${AtelierUI.surfaceStart()}<div class="studio-discover-result-head"><div><span class="eyebrow">${this.t("studioDiscoverResult")}</span><h2>${this.t("studioDiscoverResultTitle")}</h2></div><button class="btn tiny" data-action="studio-discover-edit">${icon("edit", 14)} ${this.t("studioDiscoverEdit")}</button></div>
       ${
         hero
-          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}<span class="studio-discover-photo-label">${hero.timeLabel || this.t("studioDiscoverTimeOpen")} <i>·</i> ${hero.people} ${hero.people === 1 ? this.t("studioDiscoverPerson") : this.t("studioDiscoverPeoplePlural")}</span></div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.t("studioDiscoverRecipeBase", { servings: hero.servings }) : this.t("studioDiscoverForPeople", { people: hero.people })}</span></div><p>${esc(
+          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${recipeImage(hero.recipe)}</div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.tp("studioDiscoverRecipeBase", hero.servings, { servings: hero.servings }) : this.tp("studioDiscoverForPeople", hero.people, { people: hero.people })}</span></div><p>${esc(
               hero.reasons
+                // The meta row already states the recipe base and the time, so the reason
+                // line skips the base and words the time budget without the minutes. The
+                // "servings not set" reason is dropped too: the meta row then shows the
+                // people count and the two lines would contradict each other.
+                .filter(
+                  (r) =>
+                    r.key !== "studioReasonServingsBase" && r.key !== "studioReasonServingsOpen",
+                )
+                .map((r) =>
+                  r.key === "studioReasonWithinBudget" || r.key === "studioReasonOverBudget"
+                    ? { key: `${r.key}Hero` }
+                    : r,
+                )
                 .slice(0, 3)
                 .map((r) =>
                   r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values),
                 )
                 .join(" · ") || this.t("studioDiscoverGoodIdea"),
             )}</p><div class="studio-discover-hero-actions"><button class="btn primary" data-action="open-recipe" data-value="${esc(hero.slug)}">${this.t("studioDiscoverOpenRecipe")} ${icon("arrow", 15)}</button>${selected.length > 1 ? `<button class="btn" data-action="studio-discover-next-idea">${this.t("studioDiscoverAnother")} ${icon("refresh", 14)}</button>` : ""}</div></div></article>
-      ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.tp("studioDiscoverMoreIdeas", alternatives.length)}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.t("servings")}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
+      ${alternatives.length ? `<div class="studio-discover-alternatives"><div class="studio-discover-alt-heading"><span class="eyebrow">${this.t("studioDiscoverAlsoGood")}</span><small>${this.tp("studioDiscoverMoreIdeas", alternatives.length)}</small></div><div class="studio-discover-alt-grid">${alternatives.map((x) => `<button class="studio-discover-alt" data-action="studio-discover-pick" data-value="${esc(x.slug)}"><span class="studio-discover-alt-photo">${recipeImage(x.recipe)}</span><span class="studio-discover-alt-copy"><strong>${esc(x.name)}</strong><small>${esc(x.timeLabel || this.t("studioDiscoverTimeOpen"))}${x.servings ? ` · ${x.servings} ${this.tp("uiServing", Number(x.servings))}` : ""}</small></span>${icon("chevron", 15)}</button>`).join("")}</div></div>` : ""}</article>`
           : `<div class="studio-discover-empty"><span>✦</span><h3>${this.t("studioDiscoverEmptyTitle")}</h3><p>${this.t("studioDiscoverEmpty")}</p><button class="btn" data-action="studio-discover-edit">${this.t("studioDiscoverAdjust")}</button><button class="btn" data-action="studio-analyze" ${this._catalogLoading ? "disabled" : ""}>${icon("refresh", 14)} ${this.t("studioDiscoverReload")}</button></div>`
       }</section>`
       }
@@ -473,7 +512,14 @@ Object.assign(MealieAtelierCard.prototype, {
   },
   _studioPantry() {
     const p = this._studio.pantry || [],
-      needs = this._grocery || [];
+      needs = this._grocery || [],
+      stored = p.find((x) => x.id === this._pantryEdit),
+      // Values typed during an edit survive a re-render (a poll, a language change).
+      editing =
+        stored && this._pantryDraft?.id === stored.id
+          ? { ...stored, ...this._pantryDraft }
+          : stored,
+      field = (value) => (value == null ? "" : ` value="${esc(value)}"`);
     return this._studioShell(
       this.t("studioPantryTitle"),
       this.t("studioPantryLead"),
@@ -482,12 +528,23 @@ Object.assign(MealieAtelierCard.prototype, {
       ${
         !this._permissions.can_write
           ? ""
-          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required></label></div>
-      <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit"><option value="g">${this.t("studioGrams")}</option><option value="ml">${this.t("studioMilliliters")}</option><option value="stück">${this.t("studioPieces")}</option></select></label><label>${this.t("studioBestBefore")}<input type="date" name="expires"></label></div>
-      <label class="studio-inline"><input type="checkbox" name="staple"><span>${this.t("studioStaple")}</span></label>
-      <button class="btn primary" type="submit">${icon("plus", 15)} ${this.t("studioAdd")}</button></form>`
+          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"${field(editing?.name)}></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required${field(editing?.amount)}></label></div>
+      <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit">${[
+        ["g", "studioGrams"],
+        ["ml", "studioMilliliters"],
+        ["stück", "studioPieces"],
+      ]
+        .map(
+          ([unit, key]) =>
+            `<option value="${unit}"${editing?.unit === unit ? " selected" : ""}>${this.t(key)}</option>`,
+        )
+        .join(
+          "",
+        )}</select></label><label>${this.t("studioBestBefore")}<input type="date" name="expires"${field(editing?.expires)}></label></div>
+      <label class="studio-inline"><input type="checkbox" name="staple"${editing?.staple ? " checked" : ""}><span>${this.t("studioStaple")}</span></label>
+      <div class="studio-actions"><button class="btn primary" type="submit">${editing ? icon("check", 15) + " " + this.t("save") : icon("plus", 15) + " " + this.t("studioAdd")}</button>${editing ? `<button class="btn" type="button" data-action="studio-pantry-edit-cancel">${this.t("studioCancel")}</button>` : ""}</div></form>`
       }
-      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(this._studioUnit(x.unit))} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
+      <div class="studio-pantry-list">${p.map((x) => `<div class="studio-pantry-row"><div><strong>${esc(x.name)}</strong><small>${esc(atQty(x.amount, this._locale))} ${esc(this._studioUnit(x.unit))} ${x.staple ? "· " + this.t("studioStapleLabel") : ""} ${x.expires ? "· " + this.t("studioUntil", { date: atDate(x.expires, this._locale) }) : ""}${atExpiry(x.expires) ? ` · <b class="studio-expiry studio-expiry--${atExpiry(x.expires)}">${this.t(atExpiry(x.expires) === "expired" ? "studioExpired" : "studioExpiresSoon")}</b>` : ""}</small></div>${this._permissions.can_write ? `<div><button class="btn tiny" data-action="studio-pantry-edit" data-id="${esc(x.id)}">${this.t("edit")}</button><button class="icon-btn" data-action="studio-pantry-delete" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button></div>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("studioPantryEmpty")}</p>`}</div></section>
       ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioGroceryKicker")}</span><h2>${this.t("studioGroceryTitle")}</h2><p>${this.t("studioGroceryDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-grocery-build">${icon("refresh", 14)} ${this.t("studioGroceryCalculate")}</button>${needs.length && this._permissions.can_write ? `<button class="btn" data-action="studio-grocery-send">${icon("cart", 14)} ${this.t("studioGrocerySend")}</button>` : ""}</div>
       ${
@@ -543,12 +600,12 @@ Object.assign(MealieAtelierCard.prototype, {
           .slice(0, 120)
           .map(
             (r) =>
-              `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}>${recipeImage(r, "studio-book-photo")}<span>${esc(r.name)}</span></label>`,
+              `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}>${recipeImage(r, "studio-book-photo") || '<span class="studio-book-photo studio-book-photo--empty" aria-hidden="true"></span>'}<span>${esc(r.name)}</span></label>`,
           )
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
       }</div></section>
-      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2>${this.tp("cookbookSelected", selected.size)}</h2></div>
+      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2 data-book-selected-count>${this.tp("cookbookSelected", selected.size)}</h2></div>
       <form class="studio-form" data-form="studio-book"><label>${this.t("cookbookTitleLabel")}<input name="title" maxlength="100" value="${this.t("cookbookTitleDefault")}" required></label><label>${this.t("cookbookSubtitleLabel")}<input name="subtitle" maxlength="160" value="${this.t("cookbookSubtitleDefault")}"></label>
       <label class="studio-inline"><input type="checkbox" name="photos"> ${this.t("cookbookPhotos")}</label>
       <button class="btn primary" type="submit" ${!selected.size ? "disabled" : ""}>${icon("print", 15)} ${this.t("cookbookPrint")}</button></form>
@@ -708,9 +765,9 @@ Object.assign(MealieAtelierCard.prototype, {
             .join("")}</section></div></article>`,
       )
       .join("");
-    const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
-      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
-      </style></head><body><nav class="toolbar"><button onclick="window.print()">${this.t("printSavePdf")}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
+    const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
+      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media screen and (max-width:840px){.page,.chapter{width:auto;min-height:0;margin:12px;padding:24px 18px}.cover{min-height:70vh}.cover h1{font-size:40px;max-width:none;overflow-wrap:anywhere}.toc h2,.chapter h2{font-size:28px;margin:12px 0 20px}.cols{grid-template-columns:1fr;gap:18px}.toolbar button{padding:10px 16px}}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
+      </style></head><body><nav class="toolbar"><button type="button" onclick="window.print()">${esc(this.t("printSavePdf"))}</button> <button type="button" onclick="window.close()">${esc(this.t("close"))}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
@@ -733,7 +790,7 @@ MealieAtelierCard.prototype._refresh = async function () {
         id: x.id,
         label: x.label,
         deadline: x.deadline,
-        done: false,
+        done: previous.get(String(x.id))?.done ?? false,
         serverArmed: true,
       })),
     ];
@@ -742,7 +799,7 @@ MealieAtelierCard.prototype._refresh = async function () {
 };
 MealieAtelierCard.prototype._body = function () {
   if (this._providerActive === "home_assistant" && this._view !== "recipes")
-    return `<section class="ds-surface"><span class="eyebrow">HOME ASSISTANT MEALIE</span><h2>${this.t("providerTitle")}</h2><p>${this.t("providerDescription")}</p><button class="btn primary" type="button" data-action="nav" data-value="recipes">${this.t("providerBrowse")}</button></section>`;
+    return `<section class="ds-surface"><span class="eyebrow">${this.t("providerEyebrow")}</span><h2>${this.t("providerTitle")}</h2><p>${this.t("providerDescription")}</p><button class="btn primary" type="button" data-action="nav" data-value="recipes">${this.t("providerBrowse")}</button></section>`;
   if (!this._studio) this._studio = atInitially();
   if (this._view === "discover") return this._studioDiscover();
   if (this._view === "pantry") return this._studioPantry();
@@ -763,17 +820,51 @@ MealieAtelierCard.prototype._openRecipe = async function (slug) {
     this._catalogDetail = this._detail;
   }
 };
+// AI availability as the Bridge or the web server reports it. An older Bridge says nothing, so the
+// optional AI helpers stay available there and the server answers with its own "not configured" error.
+MealieAtelierCard.prototype._aiInfo = function () {
+  const entry = this._statusEntry || {};
+  const flag = [entry.ai_enabled, entry.features?.ai, this._status?.ai_enabled].find(
+    (v) => typeof v === "boolean",
+  );
+  const named = [entry.ai_provider, this._status?.ai_provider].find((v) => typeof v === "string");
+  const provider = { openai: "OpenAI", anthropic: "Anthropic" }[named];
+  const enabled = named === "none" ? false : (flag ?? true);
+  return { enabled, provider: enabled ? provider || "" : "" };
+};
+// Bridges before 0.11 reject unknown websocket keys, so the card language is sent only when the
+// status entry shows a Bridge that reports AI state (and therefore accepts `language`).
+MealieAtelierCard.prototype._aiLanguageField = function () {
+  const entry = this._statusEntry || {};
+  const reports =
+    typeof entry.ai_enabled === "boolean" ||
+    typeof entry.ai_provider === "string" ||
+    typeof entry.features?.ai === "boolean" ||
+    typeof this._status?.ai_enabled === "boolean" ||
+    typeof this._status?.ai_provider === "string";
+  return reports && this._language ? { language: this._language } : {};
+};
+// A coded server error uses its translated text; an uncoded "not configured" message uses the AI key hint.
+MealieAtelierCard.prototype._aiErrorText = function (error) {
+  const translated = this._errorText(error);
+  if (translated !== error?.message) return translated;
+  return /not configured/i.test(error?.message || "")
+    ? this.t("studioAiNotConfigured")
+    : error?.message || "";
+};
 MealieAtelierCard.prototype._modalHtml = function () {
   let html = _atOriginalModal.call(this);
   if (this._modal === "cook" && this._detail) {
     const session = this._studio?.family?.session;
     const connected = session?.slug === this._detail.slug;
     const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
-    html = html.replace('<div class="cook-utility">', '<div class="cook-utility">' + voice);
+    html = html.replace(/<section class="cook-utility"[^>]*>/, (open) => open + voice);
     if (connected && session.timers.length) {
+      html = html.replace(/<div class="cook-timers-empty">.*?<\/div>/s, "");
       html = html.replace(
-        '<div class="cook-timers">',
-        `<div class="cook-timers">${session.timers.map((x) => `<div class="cook-timer"><span>${esc(x.name)} · ${this.t("studioSharedTimer")}</span><strong data-shared-timer="${esc(x.id)}">${Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000))} ${this.t("studioMinutesShort")}</strong></div>`).join("")}`,
+        /<div class="cook-timers"[^>]*>/,
+        (open) =>
+          `${open}${session.timers.map((x) => `<div class="cook-timer"><span>${esc(x.name)} · ${this.t("studioSharedTimer")}</span><strong data-shared-timer="${esc(x.id)}">${Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000))} ${this.t("studioMinutesShort")}</strong></div>`).join("")}`,
       );
     }
   }
@@ -790,7 +881,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
               .slice(0, 3)
               .join(" · ")
           : this.t("studioRecipeAuditNone")
-      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}</b> – ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
+      }</span><button class="btn tiny" data-action="studio-recipe-audit">${this.t("studioRecipeAuditAll")}</button>${!this._aiInfo().enabled ? "" : this._providerActive === "home_assistant" ? "" : `<button class="btn tiny" data-action="studio-ai-audit">${icon("spark", 13)} ${this.t("studioAICheck")}</button>`}</div>${this._aiAudit ? `<div class="studio-audit-details"><strong>${this.t("studioAiSuggestionTitle")}</strong>${this._aiAudit.issues.map((x) => `<p><b>${esc(x.issue)}:</b> ${esc(x.suggestion)}</p>`).join("")}<small>${esc(this._aiAudit.disclaimer)}</small></div>` : ""}<div class="detail-cols">`,
     );
   }
   return html;
@@ -960,24 +1051,35 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           title: this.t("studioDeletePantryTitle"),
           body: this.t("studioDeletePantryBody"),
           confirmLabel: this.t("studioRemove"),
+          focusCancel: true,
         })
-      )
-        await this._studioWrite("pantry_delete", { id: el.dataset.id });
+      ) {
+        const removed = el.dataset.id;
+        if (await this._studioWrite("pantry_delete", { id: removed })) {
+          // Deleting the row under edit must not leave a stale edit target that a later submit would reuse.
+          if (this._pantryEdit === removed) {
+            this._pantryEdit = null;
+            this._pantryDraft = null;
+            this._render();
+          }
+        }
+      }
       return;
     }
     if (action === "studio-pantry-edit") {
       const v = this._studio.pantry.find((x) => x.id === el.dataset.id);
       if (!v) return;
+      this._pantryEdit = v.id;
+      this._pantryDraft = null;
+      this._render();
       const form = this.shadowRoot.querySelector('[data-form="studio-pantry"]');
-      if (form) {
-        form.elements.name.value = v.name;
-        form.elements.amount.value = v.amount;
-        form.elements.unit.value = v.unit;
-        form.elements.expires.value = v.expires || "";
-        form.elements.staple.checked = v.staple === true;
-        form.dataset.rowId = v.id;
-        this._revealPantryForm(form);
-      }
+      if (form) this._revealPantryForm(form);
+      return;
+    }
+    if (action === "studio-pantry-edit-cancel") {
+      this._pantryEdit = null;
+      this._pantryDraft = null;
+      this._render();
       return;
     }
     if (action === "studio-member-remove") {
@@ -986,6 +1088,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           title: this.t("familyRemoveConfirmTitle"),
           body: this.t("familyRemoveConfirmBody"),
           confirmLabel: this.t("familyRemoveMember"),
+          focusCancel: true,
         })
       )
         await this._studioWrite("family_member", { id: el.dataset.id, remove: true });
@@ -1006,6 +1109,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           title: this.t("familyEndConfirmTitle"),
           body: this.t("familyEndConfirmBody"),
           confirmLabel: this.t("familyEnd"),
+          focusCancel: true,
         }))
       )
         await this._studioWrite("session_end", { session_id: session.id });
@@ -1176,11 +1280,14 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       let output = found
         .map((x) => `${x.from}: ${this.t(x.to)} (${this.t(x.warning)})`)
         .join(" · ");
-      if (!output) {
+      if (!output && !this._aiInfo().enabled) {
+        output = this.t("studioSubstituteError", { error: this.t("studioAiNotConfigured") });
+      } else if (!output) {
         try {
           const answer = await this._ws("studio_substitute", {
             ingredient: raw.slice(0, 160),
             recipe: this._detail.name.slice(0, 200),
+            ...this._aiLanguageField(),
           });
           output =
             answer.alternatives.map((x) => `${x.name}: ${x.adjustment}`).join(" · ") +
@@ -1188,7 +1295,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             answer.warning;
         } catch (error) {
           output = this.t("studioSubstituteError", {
-            error: error?.code === "ai_error" ? this.t("errAiError") : error?.message || "",
+            error: this._aiErrorText(error),
           });
         }
       }
@@ -1198,23 +1305,33 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     }
     if (action === "studio-ai-audit") {
       if (!this._detail) return;
+      const ai = this._aiInfo();
+      if (!ai.enabled) {
+        this._flash(this.t("studioAiUnavailable", { error: this.t("studioAiNotConfigured") }));
+        return;
+      }
       if (
         !(await this._atelierDialog({
           title: this.t("studioAiAuditTitle"),
-          body: this.t("studioAiAuditBody"),
+          body: ai.provider
+            ? this.t("studioAiAuditBodyProvider", { provider: ai.provider })
+            : this.t("studioAiAuditBody"),
           confirmLabel: this.t("studioAiConsent"),
         }))
       )
         return;
       this._flash(this.t("studioAiStarting"));
       try {
-        const result = await this._ws("studio_ai_audit", { slug: this._detail.slug });
+        const result = await this._ws("studio_ai_audit", {
+          slug: this._detail.slug,
+          ...this._aiLanguageField(),
+        });
         this._aiAudit = result;
         this._render();
       } catch (error) {
         this._flash(
           this.t("studioAiUnavailable", {
-            error: error?.code === "ai_error" ? this.t("errAiError") : error?.message || "",
+            error: this._aiErrorText(error),
           }),
         );
       }
@@ -1242,16 +1359,19 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     const active = this._studio?.family?.session;
     const existed = active?.slug === slug;
     // Starting a different recipe must never destroy shared tasks/timers silently.
-    const replace = Boolean(
-      active &&
-        !existed &&
-        this._permissions.can_write &&
-        (await this._atelierDialog({
-          title: this.t("studioSessionReplaceTitle"),
-          body: this.t("studioSessionReplaceBody", { name: active.name }),
-          confirmLabel: this.t("studioSessionReplaceConfirm"),
-        })),
-    );
+    // Cancel (or Escape) starts nothing; "secondary" cooks the new recipe on this device only.
+    let choice = true;
+    if (active && !existed && this._permissions.can_write) {
+      choice = await this._atelierDialog({
+        title: this.t("studioSessionReplaceTitle"),
+        body: this.t("studioSessionReplaceBody", { name: active.name }),
+        confirmLabel: this.t("studioSessionReplaceConfirm"),
+        secondaryLabel: this.t("studioSessionReplaceLocal"),
+        focusCancel: true,
+      });
+      if (!choice) return;
+    }
+    const replace = Boolean(active && !existed && choice === true);
     // The dialog awaited above, so the original event no longer targets the button.
     await _atOriginalClick.call(this, { target: el });
     if (this._permissions.can_write && !existed && (!active || replace))
@@ -1305,15 +1425,23 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
           .filter(Boolean)
           .slice(0, 30),
       });
-    if (type === "studio-pantry")
+    if (type === "studio-pantry") {
+      // A row that vanished meanwhile (deleted on another device) is saved as a new item, not under its dead id.
+      const editId = (this._studio.pantry || []).some((x) => x.id === this._pantryEdit)
+        ? this._pantryEdit
+        : null;
+      this._pantryEdit = null;
       ok = await this._studioWrite("pantry_put", {
-        id: form.dataset.rowId || undefined,
+        id: editId || undefined,
         name: values.name,
         amount: Number(values.amount),
         unit: values.unit,
         expires: values.expires || "",
         staple: values.staple === "on",
       });
+      if (!ok) this._pantryEdit = editId;
+      else this._pantryDraft = null;
+    }
     if (type === "studio-member")
       ok = await this._studioWrite("family_member", {
         name: values.name,
@@ -1372,12 +1500,25 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
 };
 const _atOriginalInput = MealieAtelierCard.prototype._handleInput;
 MealieAtelierCard.prototype._handleInput = function (event) {
+  const pantryForm = this._pantryEdit && event.target?.closest?.('[data-form="studio-pantry"]');
+  if (pantryForm?.elements) {
+    const field = (name) => pantryForm.elements[name];
+    this._pantryDraft = {
+      id: this._pantryEdit,
+      name: field("name")?.value ?? "",
+      amount: field("amount")?.value ?? "",
+      unit: field("unit")?.value,
+      expires: field("expires")?.value ?? "",
+      staple: !!field("staple")?.checked,
+    };
+  }
   if (event.target?.hasAttribute("data-book")) {
     if (!this._bookSelected) this._bookSelected = new Set();
     if (event.target.checked) this._bookSelected.add(event.target.dataset.book);
     else this._bookSelected.delete(event.target.dataset.book);
     const count = this.shadowRoot.querySelector("[data-book-selected-count]");
-    if (this._view === "cookbook" && count) count.textContent = String(this._bookSelected.size);
+    if (this._view === "cookbook" && count)
+      count.textContent = this.tp("cookbookSelected", this._bookSelected.size);
     const submit = this.shadowRoot.querySelector('[data-form="studio-book"] button[type="submit"]');
     if (submit) submit.disabled = !this._bookSelected.size;
     return;

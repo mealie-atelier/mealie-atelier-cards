@@ -8,7 +8,7 @@ const INSTALL_COPY = {
     later: "Später",
     close: "Schließen",
     ios: [
-      "Öffne diese Seite in Safari. Andere iPhone-Browser bieten diese Installation meist nicht an.",
+      "Öffne diese Seite in Safari oder ab iOS 16.4 in einem beliebigen Browser.",
       "Tippe auf Teilen und wähle „Zum Home-Bildschirm“ aus. Falls nötig: „Mehr“ öffnen.",
       "Lass „Als Web-App öffnen“ aktiviert und tippe auf „Hinzufügen“.",
     ],
@@ -28,13 +28,13 @@ const INSTALL_COPY = {
   en: {
     label: "Install app",
     title: "Your kitchen studio, always close.",
-    intro: "Add Mealie Atelier to your home screen and open it like an app.",
+    intro: "Add Mealie Atelier to your Home Screen and open it like an app.",
     note: "Installing does not change your Mealie account or private server address.",
     action: "Install now",
     later: "Later",
     close: "Close",
     ios: [
-      "Open this page in Safari. Other iPhone browsers usually cannot add web apps to the Home Screen.",
+      "Open this page in Safari, or in any browser on iOS 16.4 or later.",
       "Tap Share, then choose “Add to Home Screen”. Open “More” if needed.",
       "Keep “Open as Web App” enabled and tap “Add”.",
     ],
@@ -101,6 +101,7 @@ export function initPwaInstall({
     title: dialog.querySelector("[data-install-title]"),
     intro: dialog.querySelector("[data-install-intro]"),
     note: dialog.querySelector("[data-install-note]"),
+    later: dialog.querySelector("[data-install-later]"),
   };
   const context = getInstallContext(navigatorRef, windowRef);
   let language = navigatorRef.language || documentRef.documentElement.lang || "de";
@@ -117,7 +118,11 @@ export function initPwaInstall({
     for (const [key, node] of Object.entries(copyNodes)) {
       if (node) node.textContent = copy[key];
     }
-    for (const button of closeButtons) button.setAttribute("aria-label", copy.close);
+    for (const button of closeButtons) {
+      // The visible "Later" text is the accessible name of the secondary button (WCAG 2.5.3).
+      if (button.hasAttribute("data-install-later")) continue;
+      button.setAttribute("aria-label", copy.close);
+    }
     stepsList?.replaceChildren(
       ...copy.steps.map((step) => {
         const item = documentRef.createElement("li");

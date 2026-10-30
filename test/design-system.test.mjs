@@ -79,20 +79,20 @@ test("dark and neutral stone-light palettes share central tokens and theme trans
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*--at-panel:\s*#fffdfa/s);
   assert.match(
     tokens,
-    /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*var\(--at-accent-ink, #fffdfa\)/s,
+    /\.atelier\.light\s*\{[^}]*--ds-brand-foreground:\s*var\(--at-brand-ink, var\(--at-accent-ink, #fffdfa\)\)/s,
   );
   assert.match(
     tokens,
-    /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8a7a2, #806877\)/s,
+    /\.atelier\.light\s*\{[^}]*--ds-photo-fallback:\s*linear-gradient\(145deg, #b8b9a6, #66786a\)/s,
   );
   assert.match(file("src/design-system/editorial.css"), /background:\s*var\(--ds-photo-fallback/);
   assert.match(
     template,
-    /configuredAccent\.toLowerCase\(\) === DEFAULTS\.accent[\s\S]*?\? "#75465d"/,
+    /configuredAccent\.toLowerCase\(\) === DEFAULTS\.accent[\s\S]*?\? "#3e6b48"/,
   );
   assert.match(
     file("src/design-system/polish.css"),
-    /\.atelier\.light \.hero:after[\s\S]*rgb\(42 31 39 \/ 94%\)/,
+    /\.atelier\.light \.hero:after[\s\S]*rgb\(20 32 26 \/ 94%\)/,
   );
   assert.match(tokens, /\.atelier\.light\s*\{[^}]*color-scheme:\s*light/s);
   assert.match(motion, /\.view-stage\.is-theme-entering/);
@@ -336,7 +336,7 @@ test("text on accent fills follows the accent: white on dark accents, dark ink o
     card._render();
     return cards.document.markup.match(/--at-accent-ink:(#[0-9a-f]{6})/)?.[1];
   };
-  assert.equal(ink("#75465d"), "#fffdfa");
+  assert.equal(ink("#3e6b48"), "#fffdfa");
   assert.equal(ink("#1f3a8a"), "#fffdfa");
   assert.equal(ink("#9dcbb2"), "#12221b");
   assert.equal(ink("#f2c94c"), "#12221b");
@@ -357,4 +357,37 @@ test("the sidebar identity shows the Week Dial mark, not the old leaf tile", () 
   const mark = compiled.match(/const WEEK_DIAL_MARK =\s*'([^']+)'/)?.[1] ?? "";
   for (const fill of ["#F2E9D8", "#B8532E", "#DCCDB0", "#3E6B48"])
     assert.ok(mark.includes(fill), fill);
+});
+
+test("in the light theme the ink on brand fills is chosen against the darkened brand, not the raw accent", () => {
+  const ink = (accent) => {
+    const cards = loadCards();
+    const card = makeCard(cards);
+    card._local = { ...card._local, accent, theme: "light" };
+    card._render();
+    return cards.document.markup.match(/--at-brand-ink:(#[0-9a-f]{6})/)?.[1];
+  };
+  // A mid tone whose raw accent takes dark ink but whose darkened light-theme brand needs light ink.
+  const raw = (accent) => {
+    const cards = loadCards();
+    const card = makeCard(cards);
+    card._local = { ...card._local, accent, theme: "light" };
+    card._render();
+    return cards.document.markup.match(/--at-accent-ink:(#[0-9a-f]{6})/)?.[1];
+  };
+  assert.equal(ink("#3e6b48"), "#fffdfa");
+  assert.equal(ink("#f2c94c"), "#12221b");
+  const probe = "#808080";
+  assert.equal(raw(probe), "#12221b");
+  assert.equal(ink(probe), "#fffdfa");
+});
+
+test("architecture doc groups the Bridge WebSocket surface and does not list a stale seven-command set", () => {
+  const architecture = file("docs/ARCHITECTURE.md");
+  assert.ok(!architecture.includes("{recipes,recipe,mealplan,shopping,metadata,mutate,status}"));
+  for (const group of ["upload_*", "nutrition_*", "studio_*", "sync_*", "offline_replay"]) {
+    assert.ok(architecture.includes(group), `${group} is documented`);
+  }
+  assert.ok(!/^\s*\|\s{20,}\/api\//m.test(architecture), "diagram keeps its inner | column");
+  assert.ok(!file("docs/FAQ.md").includes("Open an Issue"));
 });

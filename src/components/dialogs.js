@@ -67,9 +67,37 @@ export const dialogMethods = {
         discoverTarget && servingBase ? `${discoverTarget} ${servingWord}` : baseYield || "—";
       const scaleNote =
         discoverTarget && servingBase && discoverTarget !== servingBase
-          ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", { target: discoverTarget, base: servingBase })}</p>`
+          ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", {
+              target: discoverTarget,
+              base: servingBase,
+              targetUnit: this.tp("uiServing", discoverTarget),
+              baseUnit: this.tp("uiServing", servingBase),
+            })}</p>`
           : "";
       const img = recipeImage(recipe);
+      const labelName = (x) => String(x?.name ?? x ?? "").trim();
+      const categoryNames = asArray(recipe.recipeCategory).map(labelName).filter(Boolean),
+        tagNames = asArray(recipe.tags).map(labelName).filter(Boolean);
+      const recipeEyebrow = categoryNames[0] || this.t("featured");
+      const labelLine = (key, names) =>
+        names.length
+          ? `<p class="recipe-labels"><span>${esc(this.t(key))}</span> ${esc(names.join(", "))}</p>`
+          : "";
+      const sourceUrl = /^https?:\/\//i.test(String(recipe.orgURL || ""))
+        ? String(recipe.orgURL)
+        : "";
+      const sourceLine = sourceUrl
+        ? `<p class="recipe-labels"><span>${esc(this.t("uiRecipeSource"))}</span> <a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(sourceUrl)}</a></p>`
+        : "";
+      const noteBlocks = asArray(recipe.notes)
+        .map((note) => ({
+          title: String(note?.title || "").trim(),
+          text: String(note?.text || "").trim(),
+        }))
+        .filter((note) => note.text || note.title);
+      const notesHtml = noteBlocks.length
+        ? `<section class="recipe-notes"><h3>${esc(this.t("uiRecipeNotes"))}</h3>${noteBlocks.map((note) => `<div class="recipe-note">${note.title ? `<strong>${esc(note.title)}</strong>` : ""}<p>${linkify(note.text)}</p></div>`).join("")}</section>`
+        : "";
       const stepRows = steps
         .map((step, i) => {
           const section = typeof step === "object" && step ? String(step.title || "") : "";
@@ -87,29 +115,39 @@ export const dialogMethods = {
                 `<img class="step-photo" src="${esc(src)}" alt="${this.t("uiRecipeStepImageAlt", { step: i + 1 })}" loading="lazy" decoding="async">`,
             )
             .join("");
-          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<button class="step ${this._checkedSteps.has(i) ? "active" : ""}" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}"><span class="step-number">${String(i + 1).padStart(2, "0")}</span><span class="step-copy">${summary ? `<strong class="step-summary">${esc(summary)}</strong>` : ""}<span class="step-text">${esc(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></button></div>`;
+          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${linkify(summary)}</strong>` : ""}<span class="step-text">${linkify(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
         })
         .join("");
       size = "large";
-      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(this.t("featured"))}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${esc(recipe.description)}</p>
+      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${linkify(recipe.description || "")}</p>
         <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
         <div class="toolbar recipe-actions"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn" data-action="nutrition-open">${icon("leaf", 16)} ${esc(this.t("nutrition"))}</button>`}<button class="btn" data-action="journal-open">${icon("book", 16)} ${esc(this.t("journal"))}</button><button class="btn" data-action="print-recipe">${icon("print", 16)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button><button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button>` : ""}${this._permissions.can_manage ? `<button class="btn" data-action="edit-form">${icon("edit", 16)} ${esc(this.t("edit"))}</button>` : ""}</div>
         ${this._journal[recipe.slug]?.note ? `<div class="journal-hint"><span>${esc(this.t("journalNote"))}</span><strong>${esc(this._journal[recipe.slug].note)}</strong></div>` : ""}
         ${
           recipe.nutrition && Object.values(recipe.nutrition).some(Boolean)
             ? `<div class="nutri-current"><span>${esc(this.t("nutrition"))} · Mealie</span>${[
-                ["calories", "kcal"],
-                ["proteinContent", this.t("uiProtein")],
-                ["carbohydrateContent", this.t("uiCarbs")],
-                ["fatContent", this.t("uiFat")],
+                ["calories", ""],
+                ["proteinContent", this.t("uiProtein"), " g"],
+                ["carbohydrateContent", this.t("uiCarbs"), " g"],
+                ["fatContent", this.t("uiFat"), " g"],
+                ["fiberContent", this.t("printDocFiber"), " g"],
+                ["sugarContent", this.t("printDocSugar"), " g"],
+                ["sodiumContent", this.t("uiSodium"), " mg"],
               ]
                 .filter(([k]) => recipe.nutrition[k])
-                .map(([k, label]) => `<strong>${esc(label)} ${esc(recipe.nutrition[k])}</strong>`)
+                .map(([k, label, suffix = ""]) => {
+                  const value = String(recipe.nutrition[k]).trim();
+                  if (k === "calories")
+                    return `<strong>${esc(/^[\d.,]+$/.test(value) ? `${value} kcal` : value)}</strong>`;
+                  const unit = suffix && /^[\d.,]+$/.test(value) ? suffix : "";
+                  return `<strong>${esc(label)} ${esc(value + unit)}</strong>`;
+                })
                 .join("")}</div>`
             : ""
         }
-        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase) : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
-        <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div></div>`;
+        ${labelLine("uiRecipeCategories", categoryNames)}${labelLine("uiRecipeTags", tagNames)}${sourceLine}
+        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase) : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
+        <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div>${notesHtml}</div>`;
     }
     if (this._modal === "cook" && this._detail) {
       const steps = asArray(this._detail.recipeInstructions),
@@ -133,7 +171,7 @@ export const dialogMethods = {
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
-        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2>${esc(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${esc(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="async"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
+        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2>${linkify(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${linkify(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="async"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">
           <header class="cook-timer-header"><span class="cook-timer-mark" aria-hidden="true">${icon("clock", 16)}</span><div><span class="cook-timer-kicker">${this.t("uiATELIERKITCHENTIMER")}</span><strong>${this.t("uiKeepEverythingInRhythm")}</strong></div><span class="cook-timer-count">${this._timers.filter((timer) => !timer.done).length} ${this.t("uiactive")}</span></header>
           <div class="cook-timers" aria-live="off">${
@@ -153,9 +191,9 @@ export const dialogMethods = {
                     const context = timer.stepIndex ? `${this.t("uiStep")} ${timer.stepIndex}` : "";
                     const timeLabel = `${timer.label} · ${this.t("uitimeRemaining")}`;
                     const durationLabel = duration
-                      ? `${Math.round(duration / 60000)} ${this.t("uiminutes")}`
+                      ? `${Math.round(duration / 60000)} ${this.tp("uiMinute", Math.round(duration / 60000))}`
                       : this.t("uiActiveTimer");
-                    return `<article class="cook-timer-card ${timer.done ? "is-done" : ""} ${progress === null ? "is-progress-unknown" : ""}" data-cook-timer="${esc(timer.id)}"><span class="cook-timer-dial" data-timer-ring style="--timer-progress:${progress === null ? 0 : progress.toFixed(2)}%"><span><time role="timer" data-timer-remaining="${esc(timer.id)}" aria-label="${esc(timeLabel)}">${remainingText}</time></span></span><span class="cook-timer-copy"><span class="cook-timer-status">${timer.done ? this.t("uiREADY") : this.t("uiRUNNING")}</span><strong>${esc(timer.label)}</strong><small>${durationLabel}${context ? ` · ${esc(context)}` : ""}</small></span><button class="icon-btn" data-action="timer-remove" data-value="${esc(timer.id)}" aria-label="${esc(this.t("timerRemove"))}">${icon("close", 16)}</button></article>`;
+                    return `<article class="cook-timer-card ${timer.done ? "is-done" : ""} ${progress === null ? "is-progress-unknown" : ""}" data-cook-timer="${esc(timer.id)}"><span class="cook-timer-dial" data-timer-ring style="--timer-progress:${progress === null ? 0 : progress.toFixed(2)}%"><span><time role="timer" data-timer-remaining="${esc(timer.id)}" aria-label="${esc(timeLabel)}">${remainingText}</time></span></span><span class="cook-timer-copy"><span class="cook-timer-status">${timer.done ? this.t("uiREADY") : this.t("uiRUNNING")}</span><strong title="${esc(timer.label)}">${esc(timer.label)}</strong><small>${durationLabel}${context ? ` · ${esc(context)}` : ""}</small></span><button class="icon-btn" data-action="timer-remove" data-value="${esc(timer.id)}" aria-label="${esc(this.t("timerRemove"))}">${icon("close", 16)}</button></article>`;
                   })
                   .join("")
               : `<div class="cook-timers-empty"><span aria-hidden="true">${icon("spark", 15)}</span><span>${this.t("uiNoTimerRunningYetSetOneToKeepEverythingInRhythm")}</span></div>`
@@ -163,21 +201,33 @@ export const dialogMethods = {
           <div class="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}"></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div></div>
         </section>
         ${this._journal[this._detail.slug]?.note ? `<div class="cook-note">${icon("book", 14)} ${esc(this._journal[this._detail.slug].note)}</div>` : ""}
-        <div class="cook-actions"><button class="btn" data-action="cook-back" ${idx <= 0 ? "disabled" : ""}>${icon("chevron", 15)} ${esc(this.t("back"))}</button><button class="btn primary" data-action="${idx >= n - 1 ? "cook-finish" : "cook-next"}">${esc(this.t(idx >= n - 1 ? "done" : "next"))} ${icon("arrow", 15)}</button></div>
-        <p class="cook-footnote">${this.t("uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe")}</p></div>
+        <p class="cook-footnote">${this.t("uiOneStepAtATimeYouCanAlwaysReturnToTheFullRecipe")}</p>
+        <div class="cook-actions"><button class="btn" data-action="cook-back" ${idx <= 0 ? "disabled" : ""}>${icon("chevron", 15)} ${esc(this.t("back"))}</button><button class="btn" data-action="cook-to-recipe">${esc(this.t("uiBackToRecipe"))}</button><button class="btn primary" data-action="${idx >= n - 1 ? "cook-finish" : "cook-next"}">${esc(this.t(idx >= n - 1 ? "done" : "next"))} ${icon("arrow", 15)}</button></div></div>
         </div></div>`;
     }
     if (this._modal === "plan") {
+      size = "plan-anchored";
       const d = this._planDay || dateYmd(new Date());
       const all = asArray(this._data.mealplan).filter((m) => m.date === d);
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogWeeklyMenu")}</div><h2>${esc(this.t("planNow"))}</h2><p>${this.t("uiPlanMealsQuicklyWithoutClutter")}</p></div><div class="editor-stamp">${icon("calendar", 26)}</div></div>
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogYourMenu")}</div><form class="editor-form" data-form="plan">
           <div class="editor-columns"><label class="field"><span>${esc(this.t("day"))}</span><input type="date" name="date" value="${esc(d)}" required></label>
-          <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type"><option value="dinner">${esc(this.t("dinner"))}</option><option value="lunch">${esc(this.t("lunch"))}</option><option value="breakfast">${esc(this.t("breakfast"))}</option></select></label></div>
+          <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type">${["dinner", ...this._mealTypes().filter((x) => x !== "dinner")].map((x) => `<option value="${x}">${esc(this._mealTypeLabel(x))}</option>`).join("")}</select></label></div>
           ${this._pickerMarkup()}
           <div class="form-actions"><button class="btn primary" type="submit" data-picker="submit" ${!this._picker?.selected ? "disabled" : ""}>${icon("plus", 14)} ${esc(this.t("addToPlan"))}</button></div>
         </form></section>
-        ${all.length ? `<section class="editor-card"><div class="eyebrow">02 / ${this.t("dialogPlanned")}</div><h3>${esc(this.t("nextMeal"))}</h3>${all.map((e) => `<div class="shopping-row"><div class="shopping-name">${esc(mealName(e))}</div><button class="btn tiny" data-action="remove-meal" data-value="${esc(e.id)}" ${String(e.id).startsWith("pending-") ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(String(e.id).startsWith("pending-") ? this.t("uiSaving") : this.t("close"))}">${icon("close", 14)}</button></div>`).join("")}</section>` : ""}</div>`;
+        ${
+          all.length
+            ? `<section class="editor-card"><div class="eyebrow">02 / ${this.t("dialogPlanned")}</div>${this._sortMeals(
+                all,
+              )
+                .map(
+                  (e) =>
+                    `<div class="shopping-row"><div class="shopping-name"><small>${esc(this._mealTypeLabel(e.entryType))}</small> ${esc(mealName(e))}</div><button class="btn tiny" data-action="remove-meal" data-value="${esc(e.id)}" ${String(e.id).startsWith("pending-") ? 'disabled aria-disabled="true"' : ""} aria-label="${esc(String(e.id).startsWith("pending-") ? this.t("uiSaving") : this.t("removeMeal", { name: mealName(e) || this._mealTypeLabel(e.entryType), mealType: this._mealTypeLabel(e.entryType) }))}">${icon("close", 14)}</button></div>`,
+                )
+                .join("")}</section>`
+            : ""
+        }</div>`;
     }
     if (this._modal === "create")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div><div class="editor-stamp">${icon("plus", 27)}</div></div>
@@ -214,6 +264,28 @@ export const dialogMethods = {
     if (this._modal === "create-list")
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("listName"))}</div><form class="editor-form" data-form="create-list"><label class="field"><span>${esc(this.t("listName"))} *</span><input name="name" maxlength="100" required data-autofocus placeholder="${this.t("uieGWeeklyGroceries")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("createList"))}</button></div></form></section></div>`;
+    if (this._modal === "shopping-edit") {
+      const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
+        (x) => String(x.id) === String(this._shoppingEditId),
+      );
+      const from = item ? this._shoppingEditFields(item) : null;
+      content = from
+        ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t("shoppingEditTip"))}</p></div><div class="editor-stamp">${icon("edit", 27)}</div></div>
+      <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("itemFallback"))}</div><form class="editor-form" data-form="shopping-edit"><label class="field"><span>${esc(this.t("shoppingItemName"))} *</span><input name="name" maxlength="250" required data-autofocus value="${esc(from.name)}"></label>
+      <label class="field"><span>${esc(this.t("shoppingItemQuantity"))}</span><input name="quantity" type="number" inputmode="decimal" min="0" max="100000" step="any" value="${esc(from.quantity || "")}"></label>
+      ${from.freeText ? "" : `<label class="field"><span>${esc(this.t("shoppingItemNote"))}</span><input name="note" maxlength="250" value="${esc(from.note)}"></label>`}
+      <div class="form-actions"><button type="button" class="btn" data-action="close-modal">${esc(this.t("shoppingCancel"))}</button><button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></form></section></div>`
+        : `<div class="modal-content"><p class="notice">${esc(this.t("shoppingItemGone"))}</p><div class="form-actions"><button type="button" class="btn primary" data-action="close-modal">${esc(this.t("close"))}</button></div></div>`;
+    }
+    if (this._modal === "shopping-clear") {
+      const count = this._shoppingClearable(
+        this._offlineItems(asArray(this._data.shopping?.items)).filter(
+          (x) => String(x.shoppingListId) === String(this._activeList),
+        ),
+      );
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingClearTitle"))}</h2><p>${esc(this.tp("shoppingClearConfirm", count))}</p></div><div class="editor-stamp">${icon("trash", 27)}</div></div>
+      <section class="editor-card"><div class="form-actions"><button type="button" class="btn" data-action="close-modal" data-autofocus>${esc(this.t("shoppingCancel"))}</button><button type="button" class="btn primary" data-action="shopping-clear-confirm" ${count ? "" : "disabled"}>${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button></div></section></div>`;
+    }
     if (this._modal === "recipe-to-list" && this._detail) {
       const lists = asArray(this._data.shopping?.lists);
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
@@ -249,7 +321,7 @@ export const dialogMethods = {
             ? ["", ""]
             : asArray(this._data.mealplan).map(mealName);
       size = "large";
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / PRINT STUDIO</div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">${esc(this.t("printStudioEyebrow"))}</div>
       <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
       <div class="print-setup"><div><div class="eyebrow">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
@@ -291,10 +363,19 @@ export const dialogMethods = {
     }
     if (this._modal === "settings") {
       const d = this._design;
-      const theme = d.theme === "light" ? "light" : "dark";
-      content = `<div class="modal-content"><div class="eyebrow">ATELIER DESIGN SYSTEM</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
-        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
-        <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map((color) => `<button class="swatch ${d.accent === color ? "chosen" : ""}" style="background:${color}" data-action="design" data-field="accent" data-value="${color}" title="${esc(this.t(COLOR_NAMES[color]))}" aria-label="${esc(`${this.t("accent")}: ${this.t(COLOR_NAMES[color])}`)}" aria-pressed="${d.accent === color ? "true" : "false"}"></button>`).join("")}</div></div>
+      const theme = this._resolvedTheme(d.theme);
+      content = `<div class="modal-content"><div class="eyebrow">${esc(this.t("designSystemEyebrow"))}</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
+        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map(
+          (value) => {
+            // The light theme paints the default accent herb green, so that swatch must look and read herb green.
+            const herb = theme === "light" && value === DEFAULTS.accent;
+            const color = herb ? "#3e6b48" : value;
+            const name = herb ? this.t("accentHerbLightDefault") : this.t(COLOR_NAMES[value]);
+            const chosen = String(d.accent).toLowerCase() === value;
+            return `<button class="swatch ${chosen ? "chosen" : ""}" style="background:${color}" data-action="design" data-field="accent" data-value="${value}" title="${esc(name)}" aria-label="${esc(`${this.t("accent")}: ${name}`)}" aria-pressed="${chosen ? "true" : "false"}"></button>`;
+          },
+        ).join("")}</div></div>
         <div class="settings-group"><h3>${esc(this.t("density"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="density" data-value="compact" aria-pressed="${d.density === "compact" ? "true" : "false"}">${esc(this.t("compact"))}</button><button class="range-option" data-action="design" data-field="density" data-value="comfortable" aria-pressed="${d.density === "comfortable" ? "true" : "false"}">${esc(this.t("comfortable"))}</button></div></div>
         <div class="settings-group"><label class="field"><span>${esc(this.t("columns"))}</span><select data-input="columns"><option value="2" ${Number(d.columns) === 2 ? "selected" : ""}>2</option><option value="3" ${Number(d.columns) === 3 ? "selected" : ""}>3</option><option value="4" ${Number(d.columns) === 4 ? "selected" : ""}>4</option></select></label></div>
         <div class="settings-group"><label class="field"><span>${esc(this.t("language"))}</span><select data-input="language" aria-label="${esc(this.t("language"))}"><option value="auto" ${(d.language || "auto") === "auto" ? "selected" : ""}>${esc(this.t("languageAuto"))}</option>${Object.keys(
@@ -351,6 +432,8 @@ export const dialogMethods = {
       import: this.t("import"),
       edit: this.t("edit"),
       "create-list": this.t("createList"),
+      "shopping-edit": this.t("shoppingEditTitle"),
+      "shopping-clear": this.t("shoppingClearTitle"),
       "recipe-to-list": this.t("shoppingFromRecipe"),
       print: this.t("uiPrintStudioSettings"),
       settings: this.t("settings"),

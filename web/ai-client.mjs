@@ -65,7 +65,11 @@ export async function callAiJson({
   timeoutMs = 25000,
 }) {
   const cfg = normalizeAi(ai);
-  if (!cfg) throw Object.assign(new Error("AI is not configured"), { status: 400 });
+  if (!cfg)
+    throw Object.assign(new Error("AI is not configured"), {
+      status: 400,
+      atelierCode: "ai_not_configured",
+    });
   const anthropic = cfg.provider === "anthropic";
   const request = anthropic
     ? {

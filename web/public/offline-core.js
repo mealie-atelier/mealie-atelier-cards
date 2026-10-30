@@ -79,6 +79,23 @@
     }
   }
   const isTemporary = (item) => String(item?.id || "").startsWith("local-");
+  /** Applies a queued edit and rebuilds `display` the way Mealie does, so the label follows it. */
+  function applyUpdate(item, payload) {
+    if ("quantity" in payload) item.quantity = payload.quantity;
+    if ("note" in payload) item.note = payload.note;
+    // A rename turns the item into a free text item: its name is its note and the food link is gone.
+    if ("name" in payload) Object.assign(item, { note: payload.name, food: null, isFood: false });
+    const quantity = Number(item.quantity);
+    const unit = String(item.unit?.name || item.unit?.abbreviation || "").trim();
+    item.display = [
+      quantity > 0 ? String(quantity) : "",
+      unit,
+      String((item.food ? item.food.name : item.note) || "").trim(),
+      item.food ? String(item.note || "").trim() : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
   function withPending(base, ops) {
     const shopping =
       base && typeof base === "object" ? structuredClone(base) : { lists: [], items: [] };
@@ -89,6 +106,21 @@
       if (op.action === "shopping_toggle") {
         const item = shopping.items.find((x) => String(x.id) === String(op.payload.item_id));
         if (item) item.checked = op.payload.checked;
+      } else if (op.action === "shopping_delete") {
+        shopping.items = shopping.items.filter((x) => String(x.id) !== String(op.payload.item_id));
+      } else if (op.action === "shopping_update") {
+        const item = shopping.items.find((x) => String(x.id) === String(op.payload.item_id));
+        if (item) applyUpdate(item, op.payload);
+      } else if (op.action === "shopping_clear_checked") {
+        shopping.items = shopping.items.filter(
+          (x) =>
+            !(
+              x.checked === true &&
+              String(x.shoppingListId) === String(op.payload.list_id) &&
+              (!Array.isArray(op.payload.expected_ids) ||
+                op.payload.expected_ids.map(String).includes(String(x.id)))
+            ),
+        );
       } else if (
         op.action === "shopping_add" &&
         !shopping.items.some((x) => String(x.id) === "local-" + op.id)
@@ -147,11 +179,12 @@
           // The account may no longer write: drop the queued edit instead of retrying forever.
           await deleteOp(current.id);
           dropped++;
-        } else if (e.status === 409 || e.status === 403) {
-          await updateOp(current.id, { state: "conflict", reason: e.message });
+        } else if (e.status === 409 || e.status === 403 || e.code === "shopping_item_not_found") {
+          // The code is kept so the conflict list can show it in the language of the user.
+          await updateOp(current.id, { state: "conflict", reason: e.message, code: e.code });
           conflicts++;
         } else {
-          await updateOp(current.id, { state: "pending", reason: e.message });
+          await updateOp(current.id, { state: "pending", reason: e.message, code: e.code });
           break;
         }
       }

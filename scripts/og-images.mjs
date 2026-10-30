@@ -55,17 +55,17 @@ body { font-family: "Bricolage", "Helvetica Neue", Arial, sans-serif; position: 
 // the same rhythm.
 export function landingHtml(job) {
   return `<!doctype html><html lang="${job.locale}"><meta charset="utf-8"><style>${baseCss(job.font)}
-body { background: #0c120f; }
+body { background: #14201a; }
 .glow { position: absolute; inset: 0; background:
-  radial-gradient(620px 520px at 82% 30%, rgba(143,201,166,.20), transparent 70%),
-  radial-gradient(520px 420px at 4% 108%, rgba(184,83,46,.22), transparent 70%); }
+  radial-gradient(620px 520px at 82% 30%, rgba(157,203,178,.20), transparent 70%),
+  radial-gradient(520px 420px at 4% 108%, rgba(157,203,178,.16), transparent 70%); }
 .copy { position: absolute; left: 64px; top: 56px; width: 390px; height: 518px; display: flex; flex-direction: column; justify-content: space-between; }
 .mid { margin-block: auto; padding-block: 8px; }
 h1 { font-size: 52px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; color: #f7f1e4; text-wrap: balance; }
-h1 em { font-style: normal; color: #8fc9a6; }
+h1 em { font-style: normal; color: #9dcbb2; }
 .sub { margin-top: 18px; font-size: 24px; line-height: 1.35; color: #b7c4ba; font-weight: 400; text-wrap: balance; }
 .chips { display: flex; flex-wrap: wrap; gap: 10px; }
-.chips span { font-size: 17px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1.5px solid rgba(143,201,166,.38); color: #cfe6d8; background: rgba(143,201,166,.08); }
+.chips span { font-size: 17px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1.5px solid rgba(157,203,178,.38); color: #cfe6d8; background: rgba(157,203,178,.08); }
 .shot { position: absolute; overflow: hidden; border-radius: 28px; border: 2px solid rgba(255,255,255,.16);
   box-shadow: 0 30px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.4); }
 .shot img { display: block; width: 100%; height: auto; }
@@ -95,16 +95,16 @@ export function recipeHtml(job) {
   const length = job.title.length;
   const size = length > 34 ? 50 : length > 24 ? 56 : 64;
   return `<!doctype html><html lang="${job.locale}"><meta charset="utf-8"><style>${baseCss(job.font)}
-body { background: #101914; }
+body { background: #14201a; }
 .photo { position: absolute; left: 500px; top: 0; right: 0; bottom: 0; background: url("${job.photo}") center / cover no-repeat; }
-.edge { position: absolute; left: 500px; top: 0; bottom: 0; width: 6px; background: #e0784c; }
-.glow { position: absolute; left: 0; top: 0; width: 500px; bottom: 0; background: radial-gradient(420px 360px at 0% 108%, rgba(184,83,46,.20), transparent 70%); }
+.edge { position: absolute; left: 500px; top: 0; bottom: 0; width: 6px; background: #9dcbb2; }
+.glow { position: absolute; left: 0; top: 0; width: 500px; bottom: 0; background: radial-gradient(420px 360px at 0% 108%, rgba(157,203,178,.14), transparent 70%); }
 .panel { position: absolute; left: 56px; top: 52px; width: 412px; bottom: 52px; display: flex; flex-direction: column; justify-content: space-between; }
 .lockup { gap: 16px; }
 .lockup b { font-size: 31px; color: #fffaf0; }
-.kicker { display: inline-flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #f8dcc3;
-  padding: 9px 20px 9px 16px; border-radius: 999px; background: rgba(224,120,76,.12); border: 1.5px solid rgba(224,120,76,.45); }
-.kicker i { width: 12px; height: 12px; border-radius: 50%; background: #e0784c; display: block; }
+.kicker { display: inline-flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #cfe6d8;
+  padding: 9px 20px 9px 16px; border-radius: 999px; background: rgba(157,203,178,.12); border: 1.5px solid rgba(157,203,178,.45); }
+.kicker i { width: 12px; height: 12px; border-radius: 50%; background: #9dcbb2; display: block; }
 h1 { margin-top: 22px; font-size: ${size}px; line-height: 1.06; font-weight: 700; letter-spacing: -0.025em; color: #fffaf0; text-wrap: balance; }
 .foot { font-size: 21px; font-weight: 500; letter-spacing: .02em; color: #b3c2b8; }
 </style><body><div class="glow"></div><div class="photo"></div><div class="edge"></div>

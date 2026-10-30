@@ -4,7 +4,11 @@ Full guides are on [alles-automatisch.de](https://alles-automatisch.de/lernen/me
 
 ## How do I install the cards?
 
-The cards are submitted to the default catalog that both the Home Assistant Marketplace (Home Assistant 2026.11 and newer) and HACS read. Once they are listed, search for **Mealie Atelier Cards** and install them. Until then, add `https://github.com/mealie-atelier/mealie-atelier-cards` as a custom repository of type Dashboard in HACS and install from there. On dashboards managed in the UI the Lovelace resource is registered for you; a YAML-mode dashboard needs the module resource `/local/community/mealie-atelier-cards/mealie-atelier-cards.js`. Then use **Edit dashboard → Add card** and search for **Mealie Atelier**.
+The cards are submitted to the default catalog that both the Home Assistant Marketplace (Home Assistant 2026.11 and newer) and HACS read. Once they are listed, search for **Mealie Atelier Cards** and install them. Until then, use **Add from link** in the Marketplace (paste `https://github.com/mealie-atelier/mealie-atelier-cards`; it needs a one-time **Connect GitHub** login with a free GitHub account), or in classic HACS add the repository as a custom repository of type Dashboard. On dashboards managed in the UI the Lovelace resource is registered for you. For a manual install on a UI-managed dashboard, add the resource under **Settings → Dashboards → Resources** (Advanced mode); only YAML-mode dashboards need the `lovelace: resources:` block with `/local/community/mealie-atelier-cards/mealie-atelier-cards.js`. Then use **Edit dashboard → Add card**, switch to the **By card** tab and search for **Mealie Atelier**.
+
+## How do I uninstall the cards?
+
+Remove the cards from your dashboards first (leftover cards show "Configuration error"), delete the Bridge entry if you use it (this also deletes its backups and outbox), uninstall the cards in the Marketplace or HACS or remove the resource and the `www/community/mealie-atelier-cards` folder, then restart Home Assistant.
 
 ## Do I need the Bridge integration?
 
@@ -12,13 +16,13 @@ No, but it unlocks more. The cards can read recipes through Home Assistant's bui
 
 ## Does it work without Home Assistant?
 
-Yes. The standalone Web app in `web/` runs on its own, for example in Docker, and works as an installable PWA. See the [Web app guide](../web/README.md).
+Yes. The standalone web app in `web/` runs on its own, for example in Docker, and works as an installable PWA. See the [web app guide](../web/README.md).
 
 ## Does the demo access my Mealie or Home Assistant?
 
 No. The [demo](https://mealie.alles-automatisch.de) uses fictional recipes in the browser. Changes stay in your current browser and are never sent anywhere.
 
-## Does shopping list sync to Bring work?
+## Does shopping list sync to Bring! work?
 
 The cards include the interface for Smart Shopping Sync rules, which needs the Bridge and Home Assistant. The standalone app cannot sync. The safety rules are in the [Smart Shopping Sync specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).
 
@@ -32,4 +36,4 @@ No. Mealie has no endpoint to delete a recipe asset. Removing a step photo detac
 
 ## Where do I ask for help or suggest an improvement?
 
-Use [GitHub Discussions](https://github.com/orgs/mealie-atelier/discussions) for setup questions and ideas. Open an Issue for a reproducible bug. Never post API tokens, private recipe data or sensitive logs publicly; use the private process in [SECURITY.md](../.github/SECURITY.md) for security reports.
+Use [GitHub Discussions](https://github.com/orgs/mealie-atelier/discussions) for setup questions and ideas. Open an issue for a reproducible bug. Never post API tokens, private recipe data or sensitive logs publicly; use the private process in [SECURITY.md](../.github/SECURITY.md) for security reports.

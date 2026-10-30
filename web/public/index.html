@@ -4,13 +4,28 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#101613" />
+    <script>
+      // First paint follows the saved theme choice or the system scheme, so a light system never flashes dark.
+      (() => {
+        try {
+          const saved = JSON.parse(localStorage.getItem("mealie-atelier:design") || "{}")?.theme;
+          const light =
+            saved === "light" ||
+            (saved !== "dark" && window.matchMedia("(prefers-color-scheme: light)").matches);
+          if (!light) return;
+          document.documentElement.dataset.theme = "light";
+          document.documentElement.style.colorScheme = "light";
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f4f1eb");
+        } catch {}
+      })();
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Atelier" />
     <meta
       name="description"
-      content="Mealie Atelier: beautiful recipes, meal planning and shopping, privately hosted."
+      content="Mealie Atelier: Rezepte, Wochenplanung und Einkauf, privat gehostet."
     />
     <link rel="stylesheet" href="/shell.css?v=0.10.0" />
     <link rel="stylesheet" href="/pwa-install.css?v=0.10.0" />
@@ -70,7 +85,7 @@
       <mealie-atelier-card></mealie-atelier-card>
       <footer class="foot">
         <span class="foot-copy" id="foot-copy"
-          >MEALIE ATELIER · PRIVATE KITCHEN STUDIO · POWERED BY MEALIE</span
+          >MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT MEALIE</span
         >
         <button class="pwa-install-trigger" id="pwa-install-trigger" type="button" hidden>
           <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
@@ -109,7 +124,9 @@
           <button class="pwa-install-primary" type="button" data-install-action hidden>
             Jetzt installieren
           </button>
-          <button class="pwa-install-secondary" type="button" data-install-close>Später</button>
+          <button class="pwa-install-secondary" type="button" data-install-close data-install-later>
+            Später
+          </button>
         </div>
       </div>
     </dialog>
@@ -117,9 +134,8 @@
       import { initPwaInstall } from "/pwa-install.js";
       const pwaInstall = initPwaInstall();
       await import("/mealie-atelier-cards.js?v=0.10.0");
-      const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi } = await import(
-        "/offline-client.js"
-      );
+      const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi, OFFLINE_ACTIONS } =
+        await import("/offline-client.js");
       const registrationPromise =
         "serviceWorker" in navigator
           ? navigator.serviceWorker.register("/sw.js").catch(() => null)
@@ -130,13 +146,13 @@
       const card = document.querySelector("mealie-atelier-card");
       card.setConfig({
         mode: "dashboard",
-        theme: "dark",
+        theme: "auto",
         accent: "#9dcbb2",
         columns: 3,
         language: "auto",
       });
       const syncShellTheme = (theme) => {
-        const normalizedTheme = theme === "light" ? "light" : "dark";
+        const normalizedTheme = card._resolvedTheme(theme);
         document.documentElement.dataset.theme = normalizedTheme;
         document.documentElement.style.colorScheme = normalizedTheme;
         document
@@ -144,6 +160,12 @@
           ?.setAttribute("content", normalizedTheme === "light" ? "#f4f1eb" : "#101613");
       };
       syncShellTheme(card._design.theme);
+      // Theme "auto" follows the system colour scheme live, including the browser chrome colour.
+      window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+        if (card._design.theme !== "auto") return;
+        syncShellTheme("auto");
+        card._render();
+      });
       const syncShellLanguage = (language) => {
         const isGerman = language === "de";
         document.documentElement.lang = language;
@@ -172,6 +194,10 @@
       document.documentElement.dataset.motion = card._design.motion || "expressive";
       card.addEventListener("mealie-atelier-theme-change", (event) => {
         syncShellTheme(event.detail?.theme);
+      });
+      // Automatic theme follows the system colour scheme live while the app is open.
+      window.matchMedia?.("(prefers-color-scheme: light)")?.addEventListener?.("change", () => {
+        if (card._design.theme === "auto") syncShellTheme("auto");
       });
       card.addEventListener("mealie-atelier-motion-change", (event) => {
         const motion = event.detail?.motion;
@@ -204,7 +230,7 @@
             return offline.getShopping(() => originalBridge(message));
           if (
             message.type === "mealie_atelier/mutate" &&
-            ["shopping_toggle", "shopping_add"].includes(message.action) &&
+            OFFLINE_ACTIONS.includes(message.action) &&
             offline.enabled
           )
             return offline.enqueue(message.action, message.payload);

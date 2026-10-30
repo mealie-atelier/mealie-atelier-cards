@@ -3,3 +3,4 @@ dist/
 demo/public-site/
 web/public/mealie-atelier-cards.js
 node_modules/
+.github/CODE_OF_CONDUCT.md

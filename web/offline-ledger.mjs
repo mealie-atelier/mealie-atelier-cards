@@ -8,7 +8,16 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const ID = /^[a-zA-Z0-9_-]{1,150}$/;
 const err = (status, message, atelierCode) =>
   Object.assign(new Error(message), { status, ...(atelierCode ? { atelierCode } : {}) });
+export const OFFLINE_ACTIONS = [
+  "shopping_toggle",
+  "shopping_add",
+  "shopping_delete",
+  "shopping_update",
+  "shopping_clear_checked",
+];
 const MAX_AGE = 30 * 86400e3;
+const validAmount = (value) =>
+  typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100000;
 export function validateOperation(operation) {
   if (
     !operation ||
@@ -17,8 +26,7 @@ export function validateOperation(operation) {
     !UUID.test(operation.id)
   )
     throw err(400, "Invalid offline operation ID");
-  if (!["shopping_toggle", "shopping_add"].includes(operation.action))
-    throw err(400, "Unsupported offline operation");
+  if (!OFFLINE_ACTIONS.includes(operation.action)) throw err(400, "Unsupported offline operation");
   const p = operation.payload;
   if (!p || typeof p !== "object" || Array.isArray(p)) throw err(400, "Invalid operation payload");
   if (operation.action === "shopping_toggle") {
@@ -28,6 +36,32 @@ export function validateOperation(operation) {
       typeof p.expected_checked !== "boolean"
     )
       throw err(400, "Toggle needs item ID, desired and original state");
+  } else if (operation.action === "shopping_delete") {
+    if (!ID.test(p.item_id || "")) throw err(400, "Delete needs an item ID");
+  } else if (operation.action === "shopping_update") {
+    const fields = ["note", "name", "quantity"].filter((key) => key in p);
+    if (
+      !ID.test(p.item_id || "") ||
+      !fields.length ||
+      ("note" in p && (typeof p.note !== "string" || p.note.length > 250)) ||
+      ("name" in p && (typeof p.name !== "string" || !p.name.trim() || p.name.length > 250)) ||
+      ("name" in p && "note" in p) ||
+      ["name", "note"].some(
+        (key) => `expected_${key}` in p && typeof p[`expected_${key}`] !== "string",
+      ) ||
+      ("expected_quantity" in p && !validAmount(p.expected_quantity)) ||
+      ("quantity" in p && !validAmount(p.quantity))
+    )
+      throw err(400, "Update needs an item ID and valid changes");
+  } else if (operation.action === "shopping_clear_checked") {
+    if (
+      !ID.test(p.list_id || "") ||
+      !Array.isArray(p.expected_ids) ||
+      !p.expected_ids.length ||
+      p.expected_ids.length > 1000 ||
+      !p.expected_ids.every((id) => ID.test(id || ""))
+    )
+      throw err(400, "Clearing ticked items needs a list ID and the IDs of the items the user saw");
   } else if (
     !ID.test(p.list_id || "") ||
     typeof p.note !== "string" ||
@@ -37,11 +71,80 @@ export function validateOperation(operation) {
     throw err(400, "Add needs an existing list and note");
   return { id: operation.id, action: operation.action, payload: structuredClone(p) };
 }
+/** The label Mealie shows once it rebuilds the display: quantity, unit, name and note. */
+const rebuilt = (item, withOne) => {
+  const quantity = Number(item.quantity);
+  const unit = String(item.unit?.name || item.unit?.abbreviation || "").trim();
+  return [
+    quantity > 0 && (withOne || quantity !== 1 || unit) ? String(quantity) : "",
+    unit,
+    String((item.food ? item.food.name : item.note) || "").trim(),
+    item.food ? String(item.note || "").trim() : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+};
+/** The text of an item without quantity and unit: food name plus note, or the note alone. */
+const bareLabel = (item) =>
+  [item.food ? item.food.name : "", item.note]
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+/**
+ * Drops the leading quantity and unit of the item from a label the user saw. Only an item with a
+ * quantity above zero shows an amount: a number in a free text item with quantity 0 ("2 Milch"
+ * stored as the note) is part of the name and stays. The quantity the user saw, when known, decides
+ * which leading number is an amount.
+ */
+const withoutAmount = (text, item, shown) => {
+  const quantity = typeof shown === "number" ? shown : item.quantity;
+  if (typeof quantity !== "number" || !(quantity > 0)) return text;
+  const found = /^\s*(\d+(?:[.,]\d+)?)\s+/.exec(text);
+  if (!found) return text;
+  // When the quantity the user saw is known, only that number is an amount.
+  if (typeof shown === "number" && Number(found[1].replace(",", ".")) !== shown) return text;
+  const stripped = text.slice(found[0].length);
+  for (const unit of [item.unit?.name, item.unit?.abbreviation]) {
+    const prefix = String(unit || "").trim();
+    if (prefix && stripped.toLowerCase().startsWith(`${prefix.toLowerCase()} `))
+      return stripped.slice(prefix.length).trim();
+  }
+  return stripped.trim();
+};
+/**
+ * The value of an item as the user saw it. The cards derive the label of an edited item themselves,
+ * so a name matches when it equals the display text, the rebuilt label, or the name and note without
+ * quantity and unit. A name or note changed by another device never matches, only a quantity edit.
+ */
+const seen = (key, item, wanted, shown) => {
+  if (key !== "name") return item[key];
+  const bare = bareLabel(item);
+  const given = String(wanted || "").trim();
+  if (same("name", withoutAmount(given, item, shown), bare)) return given;
+  const candidates = [
+    item.display || bare,
+    item.display,
+    bare,
+    rebuilt(item, true),
+    rebuilt(item, false),
+  ].map((value) => String(value || "").trim());
+  return candidates.find((value) => same("name", value, wanted)) ?? candidates[0];
+};
+function same(key, current, wanted) {
+  return key === "quantity"
+    ? (current || 0) === (wanted || 0)
+    : String(current || "").trim() === String(wanted || "").trim();
+}
+const applied = (key, item, wanted) =>
+  key === "name"
+    ? !item.food && !item.isFood && same("note", item.note, wanted)
+    : same(key, item[key], wanted);
 export class OfflineLedger {
-  constructor({ dir, readItem, mutate, readOnly = false }) {
+  constructor({ dir, readItem, readItems, mutate, readOnly = false }) {
     this.file = join(dir, "offline-ledger.json");
     this.dir = dir;
     this.readItem = readItem;
+    this.readItems = readItems;
     this.mutate = mutate;
     this.readOnly = readOnly;
     this.lock = Promise.resolve();
@@ -118,7 +221,60 @@ export class OfflineLedger {
         });
         throw err(409, record.message, "offline_conflict");
       }
-    } else if (record.state === "uncertain" || record.state === "sending") {
+    } else if (op.action === "shopping_update") {
+      let current;
+      try {
+        current = await this.readItem(op.payload.item_id);
+      } catch (e) {
+        // Not sticky: a replay must report the same code again.
+        await set("checking");
+        if (e.status === 404)
+          throw err(404, "This item no longer exists in Mealie", "shopping_item_not_found");
+        throw e;
+      }
+      const changes = ["name", "note", "quantity"].filter((key) => key in op.payload);
+      if (changes.every((key) => applied(key, current, op.payload[key]))) {
+        const result = { ok: true, alreadyApplied: true, item: current };
+        await set("completed", { result });
+        return result;
+      }
+      // The values the user saw are optional: without one, that edit wins.
+      if (
+        changes.some(
+          (key) =>
+            `expected_${key}` in op.payload &&
+            !same(
+              key,
+              seen(key, current, op.payload[`expected_${key}`], op.payload.expected_quantity),
+              op.payload[`expected_${key}`],
+            ),
+        )
+      ) {
+        await set("conflict", {
+          message: "This item was changed on another device. Review both values.",
+        });
+        throw err(409, record.message, "offline_conflict");
+      }
+    } else if (op.action === "shopping_clear_checked") {
+      const items = await this.readItems(op.payload.list_id).catch(async (e) => {
+        await set("checking");
+        throw e;
+      });
+      const ticked = new Set(items.filter((x) => x?.checked === true).map((x) => String(x.id)));
+      const existing = new Set(items.map((x) => String(x.id)));
+      const expected = new Set(op.payload.expected_ids.filter((id) => existing.has(id)));
+      // A ticked item the user saw that is gone meanwhile is fine. Any other difference means
+      // another device ticked or unticked something the user never saw.
+      if (ticked.size !== expected.size || [...ticked].some((id) => !expected.has(id))) {
+        await set("conflict", {
+          message: "The ticked items changed on another device. Review the list.",
+        });
+        throw err(409, record.message, "offline_conflict");
+      }
+    } else if (
+      op.action === "shopping_add" &&
+      (record.state === "uncertain" || record.state === "sending")
+    ) {
       throw err(
         409,
         "Earlier add may have reached Mealie. Check the list to avoid a duplicate.",
@@ -133,7 +289,8 @@ export class OfflineLedger {
       await set("completed", { result: response });
       return response;
     } catch (e) {
-      await set(op.action === "shopping_toggle" ? "checking" : "uncertain", {
+      // Only an add is unsafe to repeat; every other action ends in the same state when replayed.
+      await set(op.action === "shopping_add" ? "uncertain" : "checking", {
         message: String(e.message || e).slice(0, 200),
       });
       throw e;

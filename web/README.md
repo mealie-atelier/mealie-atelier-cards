@@ -1,8 +1,8 @@
 # Mealie Atelier Web · private standalone recipe dashboard
 
-Part of [Mealie Atelier Cards](../README.md). Contents: [Docker](#docker-quick-start) · [Node](#node-quick-start) · [Configuration](#configuration) · [Accounts](#per-person-accounts) · [Security](#security) · [Third-party hosts](#third-party-hosts) · [Tests](#tests) · [Notes](#notes)
+Part of [Mealie Atelier Cards](../README.md). Contents: [Docker](#docker-quick-start) · [Node](#node-quick-start) · [Configuration](#configuration) · [Accounts](#per-person-accounts) · [Security](#security) · [Third-party hosts](#third-party-hosts) · [Tests](#tests) · [Notes](#notes) · [Printing](#printing-recipes-and-plans) · [Nutrition Lab](#nutrition-lab) · [Kitchen state](#kitchen-state-and-persistence) · [Support](#support) · [License](#license)
 
-Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **without Home Assistant**. This standalone companion shares the same visual components as the HACS cards, but uses a local, password-protected Node proxy to your own Mealie API.
+Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **without Home Assistant**. This standalone web app shares the same visual components as the Mealie Atelier cards, but uses a local, password-protected Node proxy to your own Mealie API.
 
 ![Mealie Atelier standalone UI (demo data)](assets/showcase-desktop.png)
 
@@ -14,7 +14,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Open `http://127.0.0.1:3008` on the Docker host. Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (`/api/health`, authenticated with your configured credentials), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
+Open `http://127.0.0.1:3008` on the Docker host (the startup log says `0.0.0.0:3000`, which is the address inside the container). Compose pins `PORT=3000` inside the container and publishes it on `127.0.0.1:${ATELIER_HOST_PORT:-3008}`, so a `PORT` line in `.env` cannot break the mapping. The image runs as the non-root `node` user, has a health check (the unauthenticated `/healthz`, which verifies the Mealie token on the server, caches the result for 60 seconds and answers only 200 or 503 without details), restarts unless stopped and is limited to 256 MB RAM, 1 CPU and 128 processes.
 
 Optional **read-only** kiosk mode: add `ATELIER_READ_ONLY=true` to `.env` and restart. The server will reject all mutation commands, not just hide buttons.
 
@@ -22,7 +22,7 @@ The structured recipe editor (linked foods and units, quantities, servings previ
 
 Deprecated, kept as aliases for 0.10.x: the commands `ingredient_preview`, `ingredient_save`, `ingredient_catalog` and the route `/api/recipe-image/*`. Use the structured editor commands instead. `ATELIER_EXPERIMENTAL_INGREDIENTS` no longer has an effect; plain-text ingredient replacement was removed.
 
-The included `compose.yaml` binds the application to `127.0.0.1` on the host and should not be published on public interfaces. To use from a different device, put a HTTPS reverse proxy with modern authentication in front, or use a trusted private network (e.g. Tailscale). **Do not expose the container directly to the Internet. Basic auth over HTTP is insecure on untrusted networks.**
+The included `compose.yaml` binds the application to `127.0.0.1` on the host and should not be published on public interfaces. To use from a different device, put an HTTPS reverse proxy with modern authentication in front, or use a trusted private network (e.g. Tailscale). **Do not expose the container directly to the Internet. Basic auth over HTTP is insecure on untrusted networks.**
 
 Behind a reverse proxy every request arrives from the proxy address, so the sign-in throttle would treat all users as one client and a single attacker could lock everybody out. Set `ATELIER_TRUSTED_PROXIES` to the proxy address(es), e.g. `ATELIER_TRUSTED_PROXIES=172.18.0.0/16,::1`. Only when the socket peer is in that list the server reads `X-Forwarded-For`, walks it from the right and uses the first address that is not itself a trusted proxy. From any other peer the header is ignored, so it cannot be spoofed. Make sure your proxy overwrites or appends to `X-Forwarded-For` rather than passing a client-supplied value through unchecked.
 
@@ -53,7 +53,7 @@ All settings are environment variables (see `.env.example`).
 | `ATELIER_TRUSTED_PROXIES`                                                        | none      | no       | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`. |
 | `ATELIER_READ_ONLY`                                                              | `false`   | no       | `1`, `true` or `yes` rejects all writes on the server.                                                                                                           |
 | `ATELIER_DATA_DIR`                                                               | `./data`  | no       | Persistent state directory. Compose and the image use `/app/data`.                                                                                               |
-| `ATELIER_STRUCTURED_EDITS`                                                       | `false`   | no       | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x.                                                                                |
+| `ATELIER_STRUCTURED_EDITS`                                                       | `false`   | no       | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x (tested with v3.29).                                                            |
 | `USDA_FDC_API_KEY`                                                               | empty     | no       | Enables USDA matching in the Nutrition Lab.                                                                                                                      |
 | `OPENAI_API_KEY`                                                                 | empty     | no       | Enables opt-in AI suggestions, substitutes and recipe checks with OpenAI.                                                                                        |
 | `ANTHROPIC_API_KEY`                                                              | empty     | no       | The same AI helpers with Anthropic Claude.                                                                                                                       |
@@ -88,13 +88,13 @@ ATELIER_USERS='anna:admin:scrypt$16384$8$1$...$...;ben:reader:scrypt$16384$8$1$.
 - A refused write answers HTTP 403 with `code` `write_not_permitted` (reader) or `unauthorized` (writer on an admin action); the card hides the matching controls. A shopping edit queued offline by an account that lost its write role is dropped on the next sync, with a visible notice.
 - Successful sign-ins are cached in memory for 10 minutes so each request does not run scrypt; failures are never cached and every one counts for the sign-in throttle described below.
 
-Generate the Web Push keys with `npm run vapid` and paste the three printed lines into `.env`. Keep the private key stable, secret and backed up.
+Generate the Web Push keys with `npm run vapid` on any machine with Node 22 or later, from a checkout of this repository (the Docker image does not contain the `scripts/` folder, so the command does not work inside the container), and paste the three `ATELIER_VAPID_` lines into `.env` (the subject must start with `mailto:` or `https://`, otherwise the server refuses to start; replace the example address). Keep the private key stable, secret and backed up.
 
 ## Security
 
-- Every response carries a Content-Security-Policy (same-origin only; the single inline module script of `index.html` is allowed by hash, no remote hosts), a Permissions-Policy, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
+- Every response carries a Content-Security-Policy (same-origin only; the inline module script and the print button handler of `index.html` are allowed by hash, styles allow `'unsafe-inline'`, no remote hosts), a Permissions-Policy, `Referrer-Policy: no-referrer` and `Cross-Origin-Opener-Policy: same-origin`.
 - Per-person passwords are stored only as scrypt hashes (`ATELIER_USERS`), verified in constant time. Unknown user names cost the same scrypt run as known ones.
-- Failed Basic auth attempts are counted per client address in memory. The first 5 failures cost nothing; from the 6th failure on the address is locked out with HTTP 429 and `Retry-After`, for 1 second at first and doubling with every further failure up to 60 seconds; a correct sign-in clears the counter and a restart resets all counters. The server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty. IPv6 clients are counted by their /64 prefix. Behind a reverse proxy the server only sees the proxy address, so set `ATELIER_TRUSTED_PROXIES` (see below).
+- Failed Basic auth attempts are counted per client address in memory. The first 5 failures cost nothing; from the 6th failure on the address is locked out with HTTP 429 and `Retry-After`, for 1 second at first and doubling with every further failure up to 60 seconds; a correct sign-in clears the counter and a restart resets all counters. The server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty. IPv6 clients are counted by their /64 prefix. Behind a reverse proxy the server only sees the proxy address, so set `ATELIER_TRUSTED_PROXIES` (see above).
 - The AI disclaimer and the language of AI answers follow the request language (`Accept-Language`), German or English.
 - The service worker cache name is derived from the `version` in `package.json`, so each release invalidates the old offline shell.
 
@@ -116,8 +116,8 @@ The opt-in live read-only smoke check in `test/live-readonly-smoke.mjs` requires
 
 - No npm packages; just Node 22 built-in server and fetch.
 - User credentials and Mealie tokens remain on the server. Never bake `.env` into your Docker image or expose it in Git.
-- Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos.
-- This is not a HACS-installable integration. The bridge and cards are separate optional HA packages.
+- Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos. The opt-in offline mode is the exception: it stores your shopping lists and permissions in the browser's IndexedDB on that device.
+- This is not an installable Home Assistant integration. The Bridge and the cards are separate optional HA packages.
 - Currently supports one Mealie token/household per web server; all logins use its Mealie permissions, narrowed by their `ATELIER_USERS` role.
 
 ## Printing recipes and plans
@@ -128,7 +128,7 @@ Recipe detail, shopping lists and the planner open the same **Print Studio** as 
 
 Put `USDA_FDC_API_KEY=...` in your private `.env` to enable USDA food matching and per-serving nutrition calculations. To **optionally** use AI to suggest USDA English search terms, provide your own `OPENAI_API_KEY=...` or `ANTHROPIC_API_KEY=...` (with both set, `ATELIER_AI_PROVIDER=openai|anthropic` picks one). Both keys remain on the web backend. **Only an explicit click** sends ingredient text to the AI provider; nutritional values are not taken from the language model.
 
-Opening the Nutrition Lab fetches recipe data, then lets you confirm each USDA match and actual gram weight. Save to Mealie requires a fresh recipe hash, server-side recalculation, and explicit replacement consent for any existing nutrition. `ATELIER_READ_ONLY=true` rejects writes on the server. Recipes and nutrient values differ in Mealie releases: please test with a backed-up test instance first. The browser-only Cooking Cockpit timers/journal are not multi-device-synced.
+Opening the Nutrition Lab fetches recipe data, then lets you confirm each USDA match and actual gram weight. Save to Mealie requires a fresh recipe hash, server-side recalculation, and explicit replacement consent for any existing nutrition. `ATELIER_READ_ONLY=true` rejects writes on the server. Recipes and nutrient values differ in Mealie releases: please test with a backed-up test instance first. The browser-only cooking mode timers/journal are not multi-device-synced.
 
 **Privacy:** USDA lookup sends your ingredient search query to USDA; AI name suggestions send ingredient text to the AI provider (OpenAI or Anthropic) on demand. The app does not store AI input in an application database; the provider's privacy rules still apply. Do not post public API keys in issues or screenshots.
 
@@ -138,7 +138,7 @@ Opening the Nutrition Lab fetches recipe data, then lets you confirm each USDA m
 
 Per-person accounts (`ATELIER_USERS`) control who may write, but the kitchen state itself is shared by the household; for per-user journals use Home Assistant with individual accounts. The child helper view is not an authorization barrier. Off-device timer notifications need Web Push or Home Assistant to be configured (see Configuration) and are not guaranteed. AI quality checks and ingredient substitutes are opt-in and require your private `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`.
 
-Run the automated tests with `npm test`. They cover private-state persistence, server restart, stale-revision rejection, read-only, protected Mealie proxy endpoints and ingredient checks using fake services. USDA and AI provider live calls remain unverified.
+The tests described under Tests also cover private-state persistence, server restart, stale-revision rejection, read-only, protected Mealie proxy endpoints and ingredient checks using fake services. USDA and AI provider live calls remain unverified.
 
 ## Support
 

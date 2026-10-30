@@ -298,7 +298,7 @@ test("every page shares the designed footer in its own language without photo cr
     );
     assert.match(
       html,
-      /<meta name="theme-color" content="#f8f3e9" media="\(prefers-color-scheme: light\)"/,
+      /<meta name="theme-color" content="#f2e9d8" media="\(prefers-color-scheme: light\)"/,
       page,
     );
   }
@@ -1036,4 +1036,37 @@ test("every photo master matches its manifest size and the skillet eggs master i
   // The source photo is 3456x4320 and the dish fills about 2100 px of it, so a 2100 px master is
   // a 1:1 crop. A smaller manifest or a stretched one would mean upscaled pixels.
   assert.equal(manifest.photos["pfannen-eier-mit-tomaten-und-basilikum"].width, 2100);
+});
+
+test("the product page light scheme and share images follow the Herb palette without a purple cast", () => {
+  const css = readFileSync("demo/live-demo.css", "utf8");
+  const start = css.indexOf("@media (prefers-color-scheme: light)");
+  assert.ok(start > 0, "light scheme exists");
+  const light = css.slice(start);
+  const token = (name) => light.match(new RegExp(`--${name}: (#[0-9a-f]{6})`))?.[1];
+  assert.equal(token("bg"), "#f2e9d8", "Oat page surface");
+  assert.equal(token("ink"), "#14201a", "Night ink");
+  assert.equal(token("mint"), "#3e6b48", "Herb accent");
+  const sources = [
+    ["demo/live-demo.css", light],
+    ["scripts/og-images.mjs", readFileSync("scripts/og-images.mjs", "utf8")],
+    ["scripts/generate-demo-site.mjs", readFileSync("scripts/generate-demo-site.mjs", "utf8")],
+    ["demo/preview.html", readFileSync("demo/preview.html", "utf8")],
+  ];
+  for (const [name, text] of sources) {
+    for (const m of text.matchAll(/#([0-9a-f]{6})\b|rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)/gi)) {
+      const [r, g, b] = m[1]
+        ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16))
+        : [+m[2], +m[3], +m[4]];
+      assert.ok(
+        !(r > g && b > g),
+        `${name}: ${m[0]} leans plum or magenta (red and blue above green)`,
+      );
+    }
+  }
+  assert.doesNotMatch(
+    readFileSync("scripts/og-images.mjs", "utf8"),
+    /#e0784c|184,\s*83,\s*46/,
+    "paprika is reserved for today",
+  );
 });

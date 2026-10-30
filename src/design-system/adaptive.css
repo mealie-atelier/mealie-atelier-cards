@@ -18,7 +18,7 @@
     padding: 12px;
   }
   .atelier .week-grid {
-    grid-template-columns: repeat(7, minmax(93px, 1fr));
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
   }
   .atelier .recipe-grid {
     grid-template-columns: repeat(min(var(--at-cols), 3), minmax(0, 1fr));
@@ -728,7 +728,7 @@
   }
   .atelier .view-stage[data-view="mealplan"] .heading .toolbar .btn {
     flex: 0 0 auto;
-    min-height: 42px;
+    min-height: 44px;
     white-space: nowrap;
   }
   .atelier .week-swipe-hint {
@@ -742,7 +742,7 @@
   }
   .atelier .week-swipe-hint:before {
     content: "↔";
-    color: var(--ds-brand);
+    color: var(--ds-brand-text);
     font-size: 21px;
     line-height: 1;
   }
@@ -785,6 +785,9 @@
     min-width: 0;
     min-height: 48px;
     justify-content: center;
+  }
+  .atelier .cook-actions .btn.primary {
+    grid-column: 1 / -1;
   }
   .atelier .cook-utility {
     order: 4;
@@ -861,7 +864,7 @@
   height: 42px;
   border: 1px solid color-mix(in srgb, var(--at-accent) 44%, transparent);
   border-radius: 50%;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 20px;
   background: color-mix(in srgb, var(--at-panel) 70%, transparent);
 }

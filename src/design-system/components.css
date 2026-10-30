@@ -120,6 +120,16 @@
   white-space: normal;
   text-align: center;
 }
+.atelier .notice > .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.atelier .notice > span {
+  flex: 1 1 0;
+  min-width: 0;
+}
 .atelier .btn.tiny {
   min-height: 38px;
 }
@@ -315,7 +325,7 @@
   border: 1px solid color-mix(in srgb, var(--ds-brand) 26%, var(--ds-border));
   border-radius: var(--ds-radius-md);
   background: color-mix(in srgb, var(--ds-brand) 12%, var(--ds-surface));
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .cook-timer-header > div {
   display: grid;
@@ -323,7 +333,7 @@
   min-width: 0;
 }
 .atelier .cook-timer-kicker {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -351,6 +361,20 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: var(--ds-space-2);
   min-width: 0;
+}
+.atelier .cook-timer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  min-width: 0;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-surface) 92%, var(--ds-brand) 8%);
+}
+.atelier .cook-timer strong {
+  font-variant-numeric: tabular-nums;
 }
 .atelier .cook-timer-card {
   display: grid;
@@ -419,7 +443,7 @@
   animation: at-timer-live var(--ds-motion-loading) ease-in-out infinite;
 }
 .atelier .cook-timer-card.is-done .cook-timer-status {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .cook-timer-card.is-done .cook-timer-status::before {
   animation: none;
@@ -465,7 +489,7 @@
   inline-size: 30px;
   block-size: 30px;
   border-radius: 50%;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   background: color-mix(in srgb, var(--ds-brand) 11%, var(--ds-surface));
 }
 .atelier .cook-timer-compose {
@@ -629,6 +653,6 @@
 .atelier .provider-note:before {
   content: "↳";
   margin-inline-end: 8px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 800;
 }

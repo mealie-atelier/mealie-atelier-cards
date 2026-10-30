@@ -12,13 +12,20 @@ const MODES = [
   "cookbook",
   "manage",
 ];
+// Error codes whose advice differs by route: the web app server is configured through its environment.
+const HOST_SPECIFIC_ERRORS = [
+  "mealie_auth",
+  "usda_key_missing",
+  "mealie_not_mealie",
+  "mealie_not_found",
+];
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 // Result cap of the official Home Assistant provider; hitting it means the list may be cut off.
 const NATIVE_RESULT_LIMIT = 500;
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",
-  theme: "dark",
+  theme: "auto",
   accent: "#9dcbb2",
   density: "comfortable",
   columns: 3,
@@ -64,6 +71,8 @@ const ICONS = {
   external:
     '<path d="M13 5h6v6M19 5l-9 9"/><path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
   edit: '<path d="M12 20h9M4 16l12-12 4 4-12 12H4v-4Z"/>',
+  trash:
+    '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3"/>',
   bolt: '<path d="m13 2-9 12h7l-1 8 10-12h-7l0-8Z"/>',
   volume: '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>',
@@ -83,9 +92,11 @@ const esc = (value) =>
   );
 const colorOk = (v) => /^#[0-9a-fA-F]{6}$/.test(v || "");
 // Text on accent fills: whichever of the two inks has the higher WCAG contrast against the accent.
-const accentInk = (hex) => {
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+const accentInk = (hex, mix = 0) => {
+  // `mix` darkens the fill towards the light theme's brand shade (color-mix(accent 88%, #14201a)).
+  const [r, g, b] = [1, 3, 5].map((i, k) => {
+    const base = parseInt(hex.slice(i, i + 2), 16);
+    const c = (base * (1 - mix) + [0x14, 0x20, 0x1a][k] * mix) / 255;
     return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -167,6 +178,18 @@ function ingredientName(row) {
       .trim()
   );
 }
+/** Escapes text and turns plain http(s) URLs into safe external links (matched on the raw text). */
+function linkify(text) {
+  const raw = String(text ?? "");
+  let out = "",
+    last = 0;
+  for (const match of raw.matchAll(/https?:\/\/[^\s<>"']+/g)) {
+    const url = match[0].replace(/[.,;:!?)\]]+$/, "");
+    out += `${esc(raw.slice(last, match.index))}<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a>`;
+    last = match.index + url.length;
+  }
+  return out + esc(raw.slice(last));
+}
 function instructionText(row) {
   return typeof row === "string" ? row : row?.text || "";
 }
@@ -180,12 +203,6 @@ function dayString(locale, day, opts) {
 /** Dedicated print documents. No token/credentials or arbitrary HTML from Mealie is interpolated. */
 /* ATELIER_PRINT_DOCUMENT */
 
-/** Stub card title in the Home Assistant UI language (English fallback). */
-function stubTitle(hass, mode) {
-  const locale = resolveLanguage("auto", hass?.locale?.language || hass?.language, "");
-  return translateLabel(locale, `stubTitle.${mode}`);
-}
-
 class MealieAtelierCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement("mealie-atelier-card-editor");
@@ -193,8 +210,7 @@ class MealieAtelierCard extends HTMLElement {
   static getStubConfig() {
     return {
       mode: "dashboard",
-      title: "Mealie Atelier",
-      theme: "dark",
+      theme: "auto",
       accent: DEFAULTS.accent,
       columns: 3,
     };
@@ -293,6 +309,8 @@ class MealieAtelierCard extends HTMLElement {
       this._timers = JSON.parse(localStorage.getItem("mealie-atelier:timers") || "[]").filter(
         (x) => x?.deadline > Date.now() - 3600000,
       );
+      this._timerIds = new Set(this._timers.map((x) => String(x.id)));
+      this._timerWatchSince = Date.now() - 15000;
     } catch {
       this._timers = [];
     }
@@ -324,11 +342,27 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature H: offline queue reconnect
     this._offlineOnHass(value);
     // END feature H
+    const darkBefore = this._hass?.themes?.darkMode;
     this._hass = value;
     if (this.isConnected && !this._didLoad) {
       this._didLoad = true;
       this._refresh();
-    }
+    } else if (
+      this.isConnected &&
+      this._design.theme === "auto" &&
+      darkBefore !== value?.themes?.darkMode
+    )
+      this._render();
+  }
+  /** Resolves the configured theme ("auto" follows the Home Assistant light or dark mode). */
+  _resolvedTheme(theme) {
+    if (theme === "light" || theme === "dark") return theme;
+    const darkMode = this._hass?.themes?.darkMode;
+    if (typeof darkMode === "boolean") return darkMode ? "dark" : "light";
+    // Outside Home Assistant (standalone web app) follow the system colour scheme.
+    const query =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    return query?.matches ? "light" : "dark";
   }
   connectedCallback() {
     this.shadowRoot.addEventListener("click", this._boundClick);
@@ -344,6 +378,14 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
+    // Theme auto outside Home Assistant follows the system colour scheme live.
+    this._schemeQuery =
+      typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
+    this._boundScheme = () => {
+      if (this._design.theme === "auto" && this._resolvedTheme("auto") !== this._lastRenderedTheme)
+        this._render();
+    };
+    this._schemeQuery?.addEventListener?.("change", this._boundScheme);
     this._render();
     this._timerHandle = setInterval(() => this._tickTimers(), 1000);
     // BEGIN feature H: offline queue replay on connect
@@ -369,6 +411,7 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
     document.removeEventListener("visibilitychange", this._boundVisibility);
+    this._schemeQuery?.removeEventListener?.("change", this._boundScheme);
     this._wakeLock.set(false);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);
@@ -461,11 +504,66 @@ class MealieAtelierCard extends HTMLElement {
   _errorText(err) {
     const code = typeof err?.code === "string" ? err.code : "";
     if (/^[a-z][a-z0-9_]*$/.test(code)) {
-      const key = "err" + code.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase());
+      // The Mealie token and the USDA key live in the server environment of the web app, not in a settings screen.
+      const hostCode = this._isWebApp && HOST_SPECIFIC_ERRORS.includes(code) ? code + "_web" : code;
+      const key = "err" + hostCode.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase());
       const text = this.t(key);
       if (text && text !== key) return text;
     }
     return err?.message || this.t("error");
+  }
+  /**
+   * Nutrition lab errors. The Bridge and the web app raise most validation problems as a bare
+   * `invalid_request` with an English message and no code of their own. Known messages are mapped to
+   * their translated `err*` text (compatibility with hosts that predate dedicated codes). Any other
+   * message is shown as is only in English; other languages get the translated generic text, never
+   * English text inside a translated card.
+   */
+  _nutritionErrorText(err) {
+    if (err?.code === "invalid_request" && typeof err.message === "string" && err.message.trim()) {
+      const known = [
+        [/recipe changed since preview/i, "recipe_changed"],
+        [/valid serving count/i, "recipe_servings_invalid"],
+        [
+          /incomplete basic nutritional information|missing essential nutrition data/i,
+          "usda_food_incomplete",
+        ],
+        [/USDA (?:FoodData Central )?API key is not configured/i, "usda_key_missing"],
+        [/search query must contain|invalid food search query/i, "nutrition_query_invalid"],
+        [
+          /choose a USDA food|grams must be confirmed|confirm grams and a USDA match|match each recipe ingredient/i,
+          "nutrition_match_required",
+        ],
+      ].find(([pattern]) => pattern.test(err.message));
+      if (known) return this._errorText({ code: known[1] });
+      if (this._language === "en") return err.message;
+    }
+    return this._errorText(err);
+  }
+  /** An error text that always ends like a sentence, for templates that append more text. */
+  _errorSentence(err) {
+    const text = String(this._errorText(err)).trim();
+    return /[.!?]$/.test(text) ? text : `${text}.`;
+  }
+  /** True for a failed network request (fetch TypeError or a browser that is offline). */
+  _isNetworkFailure(err) {
+    return (
+      (typeof navigator !== "undefined" && navigator.onLine === false) ||
+      /failed to fetch|networkerror|load failed/i.test(String(err?.message || ""))
+    );
+  }
+  /** True when the current view has something worth printing (no empty PDF offered). */
+  _printable() {
+    if (this._view === "mealplan") return asArray(this._data.mealplan).length > 0;
+    if (this._view !== "shopping") return false;
+    const items = asArray(this._data.shopping?.items);
+    return this._activeList
+      ? items.some((i) => String(i.shoppingListId) === this._activeList)
+      : items.length > 0;
+  }
+  /** True when the bridge or built-in Mealie integration is missing altogether. */
+  get _setupMissing() {
+    return this._errorCode === "not_configured";
   }
   /** After a refused write the grant may have changed: re-read the status once and re-render. */
   async _recoverPermissions(err) {
@@ -603,11 +701,18 @@ class MealieAtelierCard extends HTMLElement {
     this._data.metadata = null;
     this._data.recipes = await this._nativeRecipes(this._query);
     this._error = "";
+    // The bridge failure that led here no longer applies: do not keep the setup state.
+    this._errorCode = "";
+    this._failedParts = new Set();
+    this._loadFailed = false;
   }
   async _refresh() {
     if (this._busy) return;
     this._busy = true;
     this._error = "";
+    this._errorCode = "";
+    this._loadFailed = false;
+    this._failedParts = new Set();
     this._render();
     try {
       if (this._config.provider === "home_assistant") {
@@ -625,18 +730,28 @@ class MealieAtelierCard extends HTMLElement {
         ];
         const result = await Promise.allSettled(calls);
         const keys = ["recipes", "mealplan", "shopping", "status"];
-        let failures = [];
+        const failures = [];
+        const failedErrors = [];
         result.forEach((r, i) => {
           if (r.status === "fulfilled") {
             if (keys[i] === "status") this._status = r.value;
             else this._data[keys[i]] = r.value;
           } else {
+            failedErrors.push(r.reason);
+            this._failedParts.add(keys[i]);
             failures.push(
-              r.reason?.code ? this._errorText(r.reason) : r.reason?.message || String(r.reason),
+              r.reason?.code
+                ? this._errorText(r.reason)
+                : this._isNetworkFailure(r.reason)
+                  ? this.t("offline")
+                  : r.reason?.message || String(r.reason),
             );
           }
         });
-        if (failures.length) this._error = failures[0];
+        if (failures.length) {
+          this._error = failures[0];
+          this._errorCode = failedErrors.find((e) => typeof e?.code === "string")?.code || "";
+        }
         if (
           this._config.provider === "auto" &&
           result[0].status === "rejected" &&
@@ -648,20 +763,33 @@ class MealieAtelierCard extends HTMLElement {
             this._nativeMealieEntryIds.length === 1
           ) {
             this._config = { ...this._config, mealie_entry_id: this._nativeMealieEntryIds[0] };
-            this._emitConfig();
+            // The card has no editor methods: announce the adopted entry from the card itself.
+            this.dispatchEvent(
+              new CustomEvent("config-changed", {
+                detail: { config: { ...this._config } },
+                bubbles: true,
+                composed: true,
+              }),
+            );
           }
         }
-        if (
-          failures.length &&
-          result.every((r) => r.status === "rejected") &&
-          this._providerActive !== "home_assistant"
-        )
-          throw new Error(failures[0]);
+        if (failures.length && this._providerActive !== "home_assistant") {
+          // Any failed call means the page may be incomplete: never present it as an empty library.
+          this._loadFailed = this._failedParts.has("recipes");
+          if (result.every((r) => r.status === "rejected")) throw failedErrors[0];
+        }
         if (!this._activeList)
           this._activeList = String(asArray(this._data.shopping?.lists)[0]?.id || "");
       }
     } catch (err) {
-      this._error = err?.code ? this._errorText(err) : err?.message || this.t("offline");
+      this._errorCode = typeof err?.code === "string" ? err.code : "";
+      this._loadFailed = true;
+      this._failedParts = new Set(["recipes", "mealplan", "shopping"]);
+      this._error = err?.code
+        ? this._errorText(err)
+        : this._isNetworkFailure(err)
+          ? this.t("offline")
+          : err?.message || this.t("offline");
     } finally {
       this._busy = false;
       this._render();
@@ -681,6 +809,8 @@ class MealieAtelierCard extends HTMLElement {
           search: this._query,
         });
       }
+      this._loadFailed = false;
+      this._failedParts?.delete("recipes");
       this._error = "";
     } catch (err) {
       this._error = this._errorText(err);
@@ -698,6 +828,7 @@ class MealieAtelierCard extends HTMLElement {
   async _loadShopping() {
     try {
       this._data.shopping = await this._ws("shopping");
+      this._failedParts?.delete("shopping");
       this._error = "";
     } catch (err) {
       this._error = this._errorText(err);
@@ -710,6 +841,7 @@ class MealieAtelierCard extends HTMLElement {
         start: dateYmd(this._weekStart),
         end: dateYmd(addDays(this._weekStart, 6)),
       });
+      this._failedParts?.delete("mealplan");
       this._error = "";
     } catch (err) {
       this._error = this._errorText(err);
@@ -732,8 +864,8 @@ class MealieAtelierCard extends HTMLElement {
   }
   _nav() {
     return `<aside class="sidebar">
-      <div class="identity"><div class="logo">${WEEK_DIAL_MARK}</div><div><strong>MEALIE<br>ATELIER</strong><span>KITCHEN STUDIO</span></div></div>
-      <div class="nav-label">MENU</div><nav class="nav" aria-label="${esc(this.t("navKitchenLabel"))}">
+      <div class="identity"><div class="logo">${WEEK_DIAL_MARK}</div><div><strong>MEALIE<br>ATELIER</strong><span>${esc(this.t("navStudioTagline"))}</span></div></div>
+      <div class="nav-label">${esc(this.t("navMenu"))}</div><nav class="nav" aria-label="${esc(this.t("navKitchenLabel"))}">
       ${MODES.filter((mode) =>
         this._providerActive === "home_assistant"
           ? mode === "recipes"
@@ -757,7 +889,7 @@ class MealieAtelierCard extends HTMLElement {
     rail.scrollLeft += a.left - r.left - (r.width - a.width) / 2;
   }
   _topbar() {
-    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${["shopping", "mealplan"].includes(this._view) ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
+    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
   }
   _intro(title, sub, eyebrow) {
     return AtelierUI.pageHeader({
@@ -791,24 +923,104 @@ class MealieAtelierCard extends HTMLElement {
       localStorage.setItem("mealie-atelier:journal", JSON.stringify(this._journal));
     } catch {}
   }
+  /** Reads the shared timer list, or null when nothing was stored yet or it is unreadable. */
+  _storedTimers() {
+    try {
+      const raw = localStorage.getItem("mealie-atelier:timers");
+      if (raw === null) return null;
+      const list = JSON.parse(raw);
+      return Array.isArray(list) ? list.filter((x) => x && x.id !== undefined) : null;
+    } catch {
+      return null;
+    }
+  }
+  /** Cards share one storage key: drop timers another card removed and pick up its alert marks. */
+  _syncTimersFromStorage() {
+    const stored = this._storedTimers();
+    if (!stored) return false;
+    const known = (this._timerIds ||= new Set());
+    const byId = new Map(stored.map((x) => [String(x.id), x]));
+    const before = this._timers.length;
+    this._timers = this._timers.filter((x) => !known.has(String(x.id)) || byId.has(String(x.id)));
+    for (const timer of this._timers) if (byId.get(String(timer.id))?.alerted) timer.alerted = true;
+    return this._timers.length !== before;
+  }
   _persistTimers() {
     try {
-      localStorage.setItem("mealie-atelier:timers", JSON.stringify(this._timers));
+      // Keep timers (local and server-armed) that another card wrote and this one never held.
+      const known = (this._timerIds ||= new Set());
+      this._syncTimersFromStorage();
+      const mine = new Set(this._timers.map((x) => String(x.id)));
+      const foreign = (this._storedTimers() || []).filter(
+        (x) =>
+          x.deadline > Date.now() - 3600000 && !mine.has(String(x.id)) && !known.has(String(x.id)),
+      );
+      for (const id of mine) known.add(id);
+      localStorage.setItem("mealie-atelier:timers", JSON.stringify([...foreign, ...this._timers]));
+    } catch {}
+  }
+  /** Creates and resumes the audio context; call it inside a user gesture so iOS Safari allows the beep. */
+  _prepareAudio() {
+    try {
+      const Ctx = globalThis.AudioContext || globalThis.webkitAudioContext;
+      if (!Ctx) return;
+      this._audio ||= new Ctx();
+      this._audio.resume?.();
+    } catch {}
+  }
+  /** True once per timer across all cards on the page (the first card to ask marks it in storage). */
+  _claimTimerAlert(timer) {
+    if (timer.alerted) return false;
+    timer.alerted = true;
+    const stored = this._storedTimers();
+    const entry = stored?.find((x) => String(x.id) === String(timer.id));
+    if (entry?.alerted) return false;
+    if (entry) {
+      entry.alerted = true;
+      try {
+        localStorage.setItem("mealie-atelier:timers", JSON.stringify(stored));
+      } catch {}
+    }
+    return true;
+  }
+  /** Toast, short beep and vibration for a timer that just finished, visible outside cooking mode. */
+  _alertTimerDone(timer) {
+    this._flash(this.t("uiTimerDone", { label: timer.label }), "error");
+    try {
+      globalThis.navigator?.vibrate?.([200, 100, 200]);
+    } catch {}
+    try {
+      this._prepareAudio();
+      const ctx = this._audio;
+      if (!ctx) return;
+      const osc = ctx.createOscillator(),
+        gain = ctx.createGain();
+      osc.frequency.value = 880;
+      gain.gain.value = 0.15;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.6);
     } catch {}
   }
   _tickTimers() {
     const now = Date.now();
-    let finished = false;
+    let finished = this._syncTimersFromStorage();
+    const alerts = [];
     for (const timer of this._timers) {
       if (!timer.done && timer.deadline <= now) {
         timer.done = true;
         finished = true;
+        // Alert for timers that ran out while this card was alive (even if a throttled tab ticked late),
+        // not for ones that expired while the page was closed.
+        if (timer.deadline >= (this._timerWatchSince ?? 0)) alerts.push(timer);
       }
     }
     if (finished) {
       this._persistTimers();
       this._render();
     }
+    for (const timer of alerts) if (this._claimTimerAlert(timer)) this._alertTimerDone(timer);
     for (const span of this.shadowRoot.querySelectorAll("[data-timer-remaining]")) {
       const timer = this._timers.find((x) => String(x.id) === span.dataset.timerRemaining);
       if (timer) {
@@ -857,11 +1069,11 @@ class MealieAtelierCard extends HTMLElement {
     // Hold the wake lock only while cook mode is open and the user keeps the toggle on.
     this._wakeLock.set(this._modal === "cook" && this._design.keep_awake !== false);
     const d = this._design,
-      theme = d.theme === "light" ? "light" : "dark";
+      theme = this._resolvedTheme(d.theme);
     const configuredAccent = colorOk(d.accent) ? d.accent : DEFAULTS.accent;
     const accent =
       theme === "light" && configuredAccent.toLowerCase() === DEFAULTS.accent
-        ? "#75465d"
+        ? "#3e6b48"
         : configuredAccent;
     const rounded = d.radius === "small" ? "12px" : d.radius === "square" ? "6px" : "23px";
     const viewChanged = this._lastRenderedView !== this._view;
@@ -900,6 +1112,8 @@ class MealieAtelierCard extends HTMLElement {
       ".command-list",
       ".modal",
     ];
+    // The grid can appear without a view change (skeleton to data, or the "today" button).
+    const gridBefore = Boolean(this.shadowRoot.querySelector(".week-grid"));
     const scrolls = viewChanged
       ? []
       : scrollClasses.map((selector) => {
@@ -918,11 +1132,11 @@ class MealieAtelierCard extends HTMLElement {
     const displayedModal = modalChanged
       ? modalMarkup
       : modalMarkup.replace('class="modal ', 'class="modal modal-stable ');
-    const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
+    const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
-      ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span><button class="btn tiny" data-action="refresh">${esc(this.t("retry"))}</button></div>` : ""}
+      ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
-      <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._body()}</div>
+      <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
@@ -956,10 +1170,22 @@ class MealieAtelierCard extends HTMLElement {
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
+    const revealNow = this._revealTodayNext;
+    this._revealTodayNext = false;
+    const gridAppeared =
+      !viewChanged && !gridBefore && Boolean(this.shadowRoot.querySelector(".week-grid"));
     if (viewChanged) {
       this._revealActiveNav();
+      this._revealToday();
       if (typeof requestAnimationFrame === "function")
-        requestAnimationFrame(() => this._revealActiveNav());
+        requestAnimationFrame(() => {
+          this._revealActiveNav();
+          this._revealToday();
+        });
+    } else if (revealNow || gridAppeared) {
+      this._revealToday();
+      if (typeof requestAnimationFrame === "function")
+        requestAnimationFrame(() => this._revealToday());
     }
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     const closeButton = () =>
@@ -1066,13 +1292,19 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature D: recipe picker keyboard
     if (this._pickerKeydown(event)) return;
     // END feature D
+    // A nested Atelier dialog closes itself on Esc; the card dialog underneath must stay open.
+    if (
+      event.key === "Escape" &&
+      this.shadowRoot?.querySelector?.("dialog.at-premium-dialog[open]")
+    )
+      return;
     if (event.key === "Escape" && this._modal) {
       event.preventDefault();
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
         this._commandSearchSeq++;
       }
-      this._modal = null;
+      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
       this._render();
       return;
     }
@@ -1170,7 +1402,7 @@ class MealieAtelierCard extends HTMLElement {
    * Run a write. `optimistic` applies the change to local state right away and returns a
    * function that restores the previous state; it runs when the write fails.
    */
-  async _mutate(action, payload, refresh = "all", optimistic = null) {
+  async _mutate(action, payload, refresh = "all", optimistic = null, options = {}) {
     this._toast = "";
     if (
       !this._permissions.can_write ||
@@ -1193,7 +1425,7 @@ class MealieAtelierCard extends HTMLElement {
         this._data.recipes = null;
         await this._refresh();
       }
-      this._modal = null;
+      if (!options.keepModal) this._modal = null;
       this._flash(action.startsWith("recipe") ? this.t("saved") : this.t("saved"));
       return true;
     } catch (err) {
@@ -1202,7 +1434,16 @@ class MealieAtelierCard extends HTMLElement {
       if (this._offlineHandleFailure(action, payload, err)) return true;
       // END feature H
       this._error = "";
-      this._flash(this.t("uiMutationFailed", { error: this._errorText(err) }), "error");
+      // An import has nothing to undo and does not "save"; a bad URL gets its own hint.
+      const failure =
+        action === "recipe_import"
+          ? this.t(err?.code === "invalid_request" ? "uiImportFailedUrl" : "uiImportFailed", {
+              error: this._errorSentence(err),
+            })
+          : this.t(rollback ? "uiMutationFailed" : "uiSaveFailed", {
+              error: this._errorSentence(err),
+            });
+      this._flash(failure, "error");
       await this._recoverPermissions(err);
       // Resync with the server: overlapping writes may have changed the collection meanwhile.
       try {
@@ -1225,6 +1466,59 @@ class MealieAtelierCard extends HTMLElement {
     return () => {
       const current = find();
       if (current) current.checked = before;
+    };
+  }
+  _optimisticDelete(item_id) {
+    const before = asArray(this._data.shopping?.items);
+    const index = before.findIndex((x) => String(x.id) === String(item_id));
+    const removed = index >= 0 ? before[index] : null;
+    if (!removed) return null;
+    this._data.shopping = {
+      ...this._data.shopping,
+      items: before.filter((x) => String(x.id) !== String(item_id)),
+    };
+    return () => {
+      const current = asArray(this._data.shopping?.items);
+      if (current.some((x) => String(x.id) === String(item_id))) return;
+      const next = [...current];
+      next.splice(Math.min(index, next.length), 0, removed);
+      this._data.shopping = { ...this._data.shopping, items: next };
+    };
+  }
+  _optimisticUpdate(item_id, changes) {
+    const item = asArray(this._data.shopping?.items).find((x) => String(x.id) === String(item_id));
+    if (!item) return null;
+    const before = Object.fromEntries(Object.keys(changes).map((key) => [key, item[key]]));
+    Object.assign(item, changes);
+    return () => {
+      const current = asArray(this._data.shopping?.items).find(
+        (x) => String(x.id) === String(item_id),
+      );
+      if (!current) return;
+      // Only fields still holding this edit are restored, so a newer edit is never undone.
+      for (const key of Object.keys(before))
+        if (current[key] === changes[key]) current[key] = before[key];
+    };
+  }
+  _optimisticClearChecked(list_id) {
+    const before = asArray(this._data.shopping?.items);
+    const removed = before
+      .map((item, index) => ({ item, index }))
+      .filter(
+        ({ item }) => item.checked === true && String(item.shoppingListId) === String(list_id),
+      );
+    if (!removed.length) return null;
+    const gone = new Set(removed.map(({ item }) => String(item.id)));
+    this._data.shopping = {
+      ...this._data.shopping,
+      items: before.filter((x) => !gone.has(String(x.id))),
+    };
+    return () => {
+      const next = [...asArray(this._data.shopping?.items)];
+      const present = new Set(next.map((x) => String(x.id)));
+      for (const { item, index } of removed)
+        if (!present.has(String(item.id))) next.splice(Math.min(index, next.length), 0, item);
+      this._data.shopping = { ...this._data.shopping, items: next };
     };
   }
   _optimisticAdd(key, row) {
@@ -1277,7 +1571,7 @@ class MealieAtelierCard extends HTMLElement {
       return;
     if (field === "accent" && !colorOk(value)) return;
     if (field === "columns") value = Math.max(2, Math.min(4, Number(value) || 3));
-    if (field === "theme" && !["light", "dark"].includes(value)) return;
+    if (field === "theme" && !["auto", "light", "dark"].includes(value)) return;
     if (field === "language" && value !== "auto" && !Object.hasOwn(LABELS, value)) return;
     if (field === "density" && !["compact", "comfortable"].includes(value)) return;
     if (field === "motion" && !["expressive", "balanced", "off"].includes(value)) return;
@@ -1438,8 +1732,24 @@ class MealieAtelierCard extends HTMLElement {
     }
     if (action === "timer-start") {
       const input = this.shadowRoot.querySelector("[data-timer-minutes]");
-      const minutes = Number(input?.value);
-      if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) return;
+      const rawMinutes = input?.value;
+      const minutes = Number(rawMinutes);
+      if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
+        const rawLabel = this.shadowRoot.querySelector("[data-timer-label]")?.value;
+        this._flash(this.t("uiTimerMinutesRange"), "error");
+        // The flash re-renders the card: mark and focus the new input and keep what was typed.
+        const fresh = this.shadowRoot.querySelector("[data-timer-minutes]");
+        if (fresh) {
+          if (rawMinutes !== undefined) fresh.value = rawMinutes;
+          fresh.setAttribute?.("aria-invalid", "true");
+          fresh.focus?.({ preventScroll: true });
+        }
+        const freshLabel = this.shadowRoot.querySelector("[data-timer-label]");
+        if (freshLabel && rawLabel !== undefined) freshLabel.value = rawLabel;
+        return;
+      }
+      // Create the audio context inside this click so iOS Safari lets the alert beep later.
+      this._prepareAudio();
       const now = Date.now(),
         label =
           this.shadowRoot.querySelector("[data-timer-label]")?.value.trim() ||
@@ -1456,18 +1766,39 @@ class MealieAtelierCard extends HTMLElement {
       };
       try {
         // Native HA cards use the HA-owned scheduler; standalone uses its companion handler.
+        let armError = null;
         if (this._hass?.callWS) {
-          await this._ws("alarm_create", {
-            timer: { id, label, deadline: timer.deadline, locale: this._language },
-          });
-          timer.serverArmed = true;
+          try {
+            await this._ws("alarm_create", {
+              timer: { id, label, deadline: timer.deadline, locale: this._language },
+            });
+            timer.serverArmed = true;
+          } catch (error) {
+            armError = error;
+          }
         }
+        // The timer always runs locally; background delivery is best effort.
         this._timers.push(timer);
         this._persistTimers();
         this._render();
-        this._flash(this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"));
+        if (armError) {
+          // A refusal without a known code (default web app, read-only) is raw English: show the local notice.
+          const translated = this._errorText(armError) !== armError?.message;
+          this._flash(
+            translated
+              ? this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) })
+              : this.t("uiLocalTimerEnabled"),
+          );
+        } else {
+          this._flash(
+            this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"),
+          );
+        }
       } catch (error) {
-        this._flash(this.t("uiBackgroundTimerError", { error: error.message || String(error) }));
+        this._flash(
+          this.t("uiBackgroundTimerError", { error: this._errorSentence(error) }),
+          "error",
+        );
       }
       return;
     }
@@ -1486,8 +1817,14 @@ class MealieAtelierCard extends HTMLElement {
         try {
           await this._ws("alarm_cancel", { timer_id: timer.id });
         } catch (error) {
-          this._flash(this.t("uiTimerStopError", { error: error.message || String(error) }));
-          return;
+          // Gone or already dispatched (or due within clock skew): nothing is left to cancel.
+          const settled =
+            ["timer_dispatched", "timer_not_found"].includes(error?.code) ||
+            timer.deadline <= Date.now() + 60000;
+          if (!settled) {
+            this._flash(this.t("uiTimerStopError", { error: this._errorSentence(error) }), "error");
+            return;
+          }
         }
       }
       this._timers = this._timers.filter((timer) => String(timer.id) !== v);
@@ -1511,7 +1848,7 @@ class MealieAtelierCard extends HTMLElement {
         n.choices = await this._ws("nutrition_search", { query });
       } catch (error) {
         n.choices = [];
-        n.notice = this._errorText(error);
+        n.notice = this._nutritionErrorText(error);
         await this._recoverPermissions(error);
       } finally {
         n.busy = false;
@@ -1591,7 +1928,7 @@ class MealieAtelierCard extends HTMLElement {
           n.notice = this.t("uiCalculatedReviewBeforeSaving");
         }
       } catch (error) {
-        n.notice = error?.message || this.t("error");
+        n.notice = this._nutritionErrorText(error);
       } finally {
         n.busy = false;
         this._render();
@@ -1613,12 +1950,17 @@ class MealieAtelierCard extends HTMLElement {
       this._renumberSteps();
       return;
     }
+    if (action === "cook-to-recipe") {
+      this._modal = this._detail ? "recipe" : null;
+      this._render();
+      return;
+    }
     if (action === "close-modal" || action === "backdrop") {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
         this._commandSearchSeq++;
       }
-      this._modal = null;
+      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
       this._render();
       return;
     }
@@ -1633,7 +1975,7 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "day-meal") {
       if (v) await this._openRecipe(v);
       else {
-        this._planDay = dateYmd(new Date());
+        this._planDay = el.dataset?.date || dateYmd(new Date());
         this._modal = "plan";
         this._render();
       }
@@ -1650,6 +1992,10 @@ class MealieAtelierCard extends HTMLElement {
         "create-list-form",
         "recipe-to-list-form",
         "shopping-toggle",
+        "shopping-edit-form",
+        "shopping-delete",
+        "shopping-clear-form",
+        "shopping-clear-confirm",
         "remove-meal",
       ].includes(action) &&
       !this._permissions.can_write
@@ -1721,6 +2067,8 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "step-check") {
+      // A link inside the step text opens its target and never toggles the step.
+      if (event.target?.closest?.("a[href]")) return;
       const n = Number(v);
       if (this._checkedSteps.has(n)) this._checkedSteps.delete(n);
       else this._checkedSteps.add(n);
@@ -1739,6 +2087,7 @@ class MealieAtelierCard extends HTMLElement {
         action === "week-today"
           ? monday(new Date())
           : addDays(this._weekStart, action === "week-next" ? 7 : -7);
+      this._revealTodayNext = action === "week-today";
       await this._loadMealplan();
       return;
     }
@@ -1751,10 +2100,60 @@ class MealieAtelierCard extends HTMLElement {
       );
       return;
     }
+    if (action === "shopping-edit-form") {
+      const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
+        (x) => String(x.id) === String(el.dataset.id),
+      );
+      if (!item) return;
+      this._shoppingEditId = String(item.id);
+      this._modal = "shopping-edit";
+      this._render();
+      return;
+    }
+    if (action === "shopping-delete") {
+      el.disabled = true;
+      const item_id = el.dataset.id;
+      await this._mutate("shopping_delete", { item_id }, "shopping", () =>
+        this._optimisticDelete(item_id),
+      );
+      return;
+    }
+    if (action === "shopping-clear-form") {
+      if (!this._activeList) return;
+      this._modal = "shopping-clear";
+      this._render();
+      return;
+    }
+    if (action === "shopping-clear-confirm") {
+      el.disabled = true;
+      const list_id = this._activeList;
+      // The ticked rows the user saw in the dialog: anything ticked meanwhile is left alone.
+      const expected_ids = this._offlineItems(asArray(this._data.shopping?.items))
+        .filter(
+          (x) =>
+            x.checked === true &&
+            String(x.shoppingListId) === String(list_id) &&
+            !this._shoppingRowBusy(x),
+        )
+        .map((x) => String(x.id));
+      if (list_id && expected_ids.length)
+        await this._mutate("shopping_clear_checked", { list_id, expected_ids }, "shopping", () =>
+          this._optimisticClearChecked(list_id),
+        );
+      return;
+    }
     if (action === "remove-meal") {
       el.disabled = true;
-      await this._mutate("mealplan_delete", { entry_id: v }, "mealplan", () =>
-        this._optimisticRemoveMeal(v),
+      // Keep the plan dialog open while other entries of that day remain.
+      const others = asArray(this._data.mealplan).filter(
+        (x) => x.date === this._planDay && String(x.id) !== String(v),
+      );
+      await this._mutate(
+        "mealplan_delete",
+        { entry_id: v },
+        "mealplan",
+        () => this._optimisticRemoveMeal(v),
+        { keepModal: this._modal === "plan" && others.length > 0 },
       );
       return;
     }
@@ -1792,7 +2191,7 @@ class MealieAtelierCard extends HTMLElement {
         .slice(0, 100)
         .trim();
       const active = Boolean(this._commandQuery);
-      this.shadowRoot.querySelector(".command-shortcuts")?.toggleAttribute("hidden", active);
+      this._commandFilterViews(this._commandQuery);
       this.shadowRoot.querySelector("[data-command-hint]")?.toggleAttribute("hidden", active);
       clearTimeout(this._commandSearchTimer);
       this._commandSearchSeq++;
@@ -1921,6 +2320,33 @@ class MealieAtelierCard extends HTMLElement {
       );
     }
   }
+  /** Filters the view and action shortcuts by label; hides the whole block when none match. */
+  _commandFilterViews(query) {
+    const needle = String(query || "")
+      .trim()
+      .toLowerCase();
+    const items = [
+      ...(this.shadowRoot?.querySelectorAll?.(".command-shortcuts .command-item") || []),
+    ];
+    let matches = 0;
+    for (const item of items) {
+      const hit =
+        !needle ||
+        String(item.textContent || "")
+          .toLowerCase()
+          .includes(needle);
+      item.toggleAttribute("hidden", !hit);
+      if (hit) matches++;
+    }
+    const root = this.shadowRoot;
+    // Hide only the heading and the list: the empty notice lives in the same block.
+    root
+      ?.querySelector?.(".command-shortcuts .command-section")
+      ?.toggleAttribute("hidden", !matches);
+    root?.querySelector?.(".command-shortcuts .command-list")?.toggleAttribute("hidden", !matches);
+    root?.querySelector?.(".command-empty")?.classList.toggle("visible", !matches);
+    return matches;
+  }
   _commandConversionMarkup(conversion) {
     const number = (value) =>
       new Intl.NumberFormat(this._language, { maximumFractionDigits: 3 }).format(value);
@@ -1940,13 +2366,13 @@ class MealieAtelierCard extends HTMLElement {
         (
           { recipe, match },
           index,
-        ) => `<button class="command-item command-recipe ${index === 0 ? "is-featured" : ""}" type="button" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)} öffnen">
+        ) => `<button class="command-item command-recipe ${index === 0 ? "is-featured" : ""}" type="button" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(this.t("uiOpenRecipe", { name: recipe.name }))}">
       <span class="command-recipe-image">${recipeImage(recipe)}</span><span class="command-recipe-copy"><strong>${esc(recipe.name)}</strong><span class="command-recipe-meta">${recipe.totalTime ? `${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language))}` : `${icon("book", 12)} ${esc(recipe.recipeCategory?.[0]?.name || this.t("featured"))}`}</span></span>
       <span class="command-match command-match-${match}">${esc(label[match] || label.match)}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`,
       )
       .join("");
-    const more = `<button class="command-item command-all-results" type="button" data-action="command-all-results">${icon("search", 16)}<span>${this.t("uiSeeAllResults", { count: this._commandTotal })}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`;
-    return `<div class="command-results-heading"><span>${this.t("uiMATCHINGRECIPES")}</span><span>${this._commandTotal} ${this.t("uiresults")}</span></div><div class="command-results-list" role="group" aria-label="${this.t("uiRecipeResults")}">${results}</div>${more}`;
+    const more = `<button class="command-item command-all-results" type="button" data-action="command-all-results">${icon("search", 16)}<span>${this._commandTotal === 1 ? this.t("uiSeeOneResult") : this.t("uiSeeAllResults", { count: this._commandTotal })}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`;
+    return `<div class="command-results-heading"><span>${this.t("uiMATCHINGRECIPES")}</span><span>${this._commandTotal} ${this.t(this._commandTotal === 1 ? "uiResultOne" : "uiresults")}</span></div><div class="command-results-list" role="group" aria-label="${this.t("uiRecipeResults")}">${results}</div>${more}`;
   }
   async _handleSubmit(event) {
     const form = event.target.closest?.("[data-form]");
@@ -1984,6 +2410,29 @@ class MealieAtelierCard extends HTMLElement {
             this._render();
           }
         }
+        break;
+      }
+      case "shopping-edit": {
+        const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
+          (x) => String(x.id) === String(this._shoppingEditId),
+        );
+        if (!item) {
+          this._modal = null;
+          this._render();
+          break;
+        }
+        const changes = this._shoppingEditChanges(item, values);
+        if (!changes) {
+          this._modal = null;
+          this._render();
+          break;
+        }
+        ok = await this._mutate(
+          "shopping_update",
+          { item_id: String(item.id), ...changes },
+          "shopping",
+          () => this._optimisticUpdate(item.id, this._shoppingEditLocal(item, changes)),
+        );
         break;
       }
       case "recipe-to-list":
@@ -2093,48 +2542,48 @@ MealieAtelierCard.prototype.disconnectedCallback = function () {
 /* END shopping sync routing */
 
 class AtelierTodayCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "today", title: stubTitle(hass, "today") };
+  static getStubConfig() {
+    return { mode: "today" };
   }
 }
 class AtelierRecipeCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "recipes", title: stubTitle(hass, "recipes") };
+  static getStubConfig() {
+    return { mode: "recipes" };
   }
 }
 class AtelierMealplanCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "mealplan", title: stubTitle(hass, "mealplan") };
+  static getStubConfig() {
+    return { mode: "mealplan" };
   }
 }
 class AtelierShoppingCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "shopping", title: stubTitle(hass, "shopping") };
+  static getStubConfig() {
+    return { mode: "shopping" };
   }
 }
 class AtelierDiscoverCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "discover", title: stubTitle(hass, "discover") };
+  static getStubConfig() {
+    return { mode: "discover" };
   }
 }
 class AtelierPantryCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "pantry", title: stubTitle(hass, "pantry") };
+  static getStubConfig() {
+    return { mode: "pantry" };
   }
 }
 class AtelierFamilyCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "family", title: stubTitle(hass, "family") };
+  static getStubConfig() {
+    return { mode: "family" };
   }
 }
 class AtelierCookbookCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "cookbook", title: stubTitle(hass, "cookbook") };
+  static getStubConfig() {
+    return { mode: "cookbook" };
   }
 }
 class AtelierManageCard extends MealieAtelierCard {
-  static getStubConfig(hass) {
-    return { mode: "manage", title: stubTitle(hass, "manage") };
+  static getStubConfig() {
+    return { mode: "manage" };
   }
 }
 
@@ -2145,14 +2594,14 @@ const CARD_TYPES = [
   [
     "mealie-atelier-card",
     MealieAtelierCard,
-    "Mealie Atelier · Complete Kitchen",
-    "Recipe library, weekly planner, shopping and management in one beautiful kitchen",
+    "Mealie Atelier · Complete kitchen",
+    "Recipes, meal plan, shopping and management in one card",
   ],
   [
     "mealie-atelier-today",
     AtelierTodayCard,
     "Mealie Atelier · Today",
-    "A beautiful today card: meals, shopping, and next action",
+    "Today's meals and open groceries on one screen",
   ],
   [
     "mealie-atelier-recipes",
@@ -2163,72 +2612,75 @@ const CARD_TYPES = [
   [
     "mealie-atelier-mealplan",
     AtelierMealplanCard,
-    "Mealie Atelier · Planner",
-    "Manage meals visually with a seven-day planner",
+    "Mealie Atelier · Meal plan",
+    "Weekly planner with a searchable recipe picker",
   ],
   [
     "mealie-atelier-shopping",
     AtelierShoppingCard,
     "Mealie Atelier · Shopping",
-    "An interactive Mealie shopping list",
+    "Shopping lists to tick off, add to and edit, also offline",
   ],
   [
     "mealie-atelier-discover",
     AtelierDiscoverCard,
     "Mealie Atelier · Discover",
-    "Personalized meal suggestions and previewable week optimization",
+    "Discover recipes and a proposed seven-day menu",
   ],
   [
     "mealie-atelier-pantry",
     AtelierPantryCard,
     "Mealie Atelier · Pantry",
-    "Pantry stock and smart grocery previews",
+    "Pantry and staples for grocery planning",
   ],
   [
     "mealie-atelier-family",
     AtelierFamilyCard,
     "Mealie Atelier · Family",
-    "Shared cooking sessions and helper tasks",
+    "Shared cooking sessions with helper tasks",
   ],
   [
     "mealie-atelier-cookbook",
     AtelierCookbookCard,
     "Mealie Atelier · Cookbook",
-    "A4 print-ready cookbook studio",
+    "A print-ready A4 cookbook",
   ],
   [
     "mealie-atelier-manage",
     AtelierManageCard,
     "Mealie Atelier · Manage",
-    "Create, import and edit recipe basics",
+    "Create, import and edit recipes with a structured editor",
   ],
 ];
 // German names for Home Assistant's card picker; the picker has no i18n hook of its own.
 const CARD_TYPES_DE = {
   "mealie-atelier-card": [
     "Mealie Atelier · Komplette Küche",
-    "Rezepte, Wochenplan, Einkauf und Verwaltung in einer Küche",
+    "Rezepte, Wochenplan, Einkauf und Verwaltung in einer Karte",
   ],
   "mealie-atelier-today": [
     "Mealie Atelier · Heute",
-    "Was heute auf dem Teller ist und was im Einkauf fehlt",
+    "Heutige Mahlzeiten und offene Einkäufe auf einem Bildschirm",
   ],
   "mealie-atelier-recipes": [
     "Mealie Atelier · Rezepte",
     "Rezeptgalerie mit Suche, Details und Kochmodus",
   ],
-  "mealie-atelier-mealplan": ["Mealie Atelier · Wochenplan", "Mahlzeiten für sieben Tage planen"],
+  "mealie-atelier-mealplan": [
+    "Mealie Atelier · Wochenplan",
+    "Wochenplan mit durchsuchbarer Rezeptauswahl",
+  ],
   "mealie-atelier-shopping": [
-    "Mealie Atelier · Einkauf",
-    "Einkaufslisten zum Abhaken, auch offline",
+    "Mealie Atelier · Einkaufsliste",
+    "Einkaufslisten zum Abhaken, Ergänzen und Bearbeiten, auch offline",
   ],
   "mealie-atelier-discover": [
     "Mealie Atelier · Kochinspo",
-    "Kochideen und ein Vorschlag für die Woche",
+    "Rezeptideen und ein vorgeschlagenes Wochenmenü",
   ],
   "mealie-atelier-pantry": [
     "Mealie Atelier · Vorräte",
-    "Vorrat erfassen und den Einkauf vorausplanen",
+    "Vorräte und Basiszutaten für die Einkaufsplanung",
   ],
   "mealie-atelier-family": [
     "Mealie Atelier · Gemeinsam kochen",
@@ -2237,25 +2689,25 @@ const CARD_TYPES_DE = {
   "mealie-atelier-cookbook": ["Mealie Atelier · Kochbuch", "Ein druckfertiges Kochbuch in A4"],
   "mealie-atelier-manage": [
     "Mealie Atelier · Verwalten",
-    "Rezepte anlegen, importieren und bearbeiten",
+    "Rezepte anlegen, importieren und mit einem strukturierten Editor bearbeiten",
   ],
 };
-const pickerGerman = /^de\b/i.test(
-  globalThis.document?.documentElement?.lang || globalThis.navigator?.language || "",
-);
+// Read per access so an in-session language switch is reflected the next time the picker opens.
+const pickerGerman = () =>
+  /^de\b/i.test(globalThis.document?.documentElement?.lang || globalThis.navigator?.language || "");
 customElements.define("mealie-atelier-card-editor", MealieAtelierEditor);
 for (const [tag, ctor, englishName, englishDescription] of CARD_TYPES) {
-  const [name, description] = (pickerGerman && CARD_TYPES_DE[tag]) || [
-    englishName,
-    englishDescription,
-  ];
   if (!customElements.get(tag)) customElements.define(tag, ctor);
   window.customCards = window.customCards || [];
   if (!window.customCards.some((c) => c.type === tag))
     window.customCards.push({
       type: tag,
-      name,
-      description,
+      get name() {
+        return (pickerGerman() && CARD_TYPES_DE[tag]?.[0]) || englishName;
+      },
+      get description() {
+        return (pickerGerman() && CARD_TYPES_DE[tag]?.[1]) || englishDescription;
+      },
       preview: false,
       documentationURL: "https://alles-automatisch.de/lernen/mealie-atelier",
     });

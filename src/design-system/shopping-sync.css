@@ -19,7 +19,6 @@
 .atelier .sync-panel p {
   margin: var(--ds-space-1) 0;
 }
-.atelier .sync-state,
 .atelier .sync-last,
 .atelier .sync-issues,
 .atelier .sync-result,
@@ -30,10 +29,14 @@
   gap: var(--ds-space-2);
 }
 .atelier .sync-state {
-  flex-wrap: wrap;
+  display: block;
+}
+.atelier .sync-state svg {
+  vertical-align: -0.2em;
+  margin-inline-end: var(--ds-space-1);
 }
 .atelier .sync-count {
-  white-space: nowrap;
+  display: block;
 }
 .atelier .sync-muted {
   color: var(--ds-muted);
@@ -101,15 +104,13 @@
 }
 .atelier .sync-radio-card:has(input:checked) {
   border-color: var(--ds-ring);
-  border-width: 2px;
+  box-shadow: 0 0 0 1px var(--ds-ring);
 }
 .atelier .sync-radio-card:has(input:focus-visible) {
   outline: 2px solid var(--ds-ring);
   outline-offset: 2px;
 }
 .atelier .sync-radio-card input {
-  inline-size: 24px;
-  block-size: 24px;
   margin: 0;
 }
 .atelier .sync-radio-card small {
@@ -119,4 +120,24 @@
 }
 .atelier .sync-field-error {
   font-weight: 650;
+}
+.atelier .sync-panel .editor-card + .editor-card {
+  margin-block-start: var(--ds-space-3);
+}
+.atelier .sync-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.atelier .sync-back > svg {
+  transform: rotate(180deg);
+}
+
+/* The sync dialogs have no photo hero behind the close button, so it follows the theme (colours: control-refinement.css) and is round like the other round controls. */
+.atelier .modal.sync-modal > .modal-close {
+  color: var(--at-ink);
+  border-radius: 50%;
 }

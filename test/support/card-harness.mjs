@@ -82,7 +82,12 @@ export function loadCards({
     Symbol,
     requestAnimationFrame: (fn) => setTimeout(fn, 0),
     matchMedia: () => ({ matches: false, addEventListener() {} }),
-    CustomEvent: class {},
+    CustomEvent: class {
+      constructor(type, init = {}) {
+        this.type = type;
+        this.detail = init.detail;
+      }
+    },
     ...globals,
   };
   context.globalThis = context;

@@ -598,7 +598,7 @@ input[type="checkbox"]:disabled {
 }
 .setup-presets {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 13px;
   margin-top: 5px;
 }
@@ -694,6 +694,9 @@ input[type="checkbox"]:disabled {
   box-shadow:
     0 11px 0 #87958a,
     0 23px 0 #d6ded8;
+}
+.preset-auto {
+  background: linear-gradient(90deg, #17231d 50%, #edf1eb 50%);
 }
 .setup-preset strong {
   padding: 2px 4px 0;

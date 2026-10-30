@@ -14,8 +14,8 @@ const NUTRIENTS = {
   saturated_fat: [1258],
 };
 const GRAMS = /^\s*(\d+(?:[.,]\d+)?)\s*(kg|g|gramm|grams?)\b/i;
-function invalid(message) {
-  return Object.assign(new Error(message), { status: 400 });
+function invalid(message, code) {
+  return Object.assign(new Error(message), { status: 400, ...(code ? { code } : {}) });
 }
 function hash(recipe) {
   return createHash("sha256")
@@ -108,12 +108,17 @@ async function fdcCall(key, route, body) {
       redirect: "manual",
       signal: controller.signal,
     });
-    if (res.status !== 200)
-      throw Object.assign(new Error(`USDA returned HTTP ${res.status}`), { status: 502 });
+    if (res.status !== 200) {
+      const rejected = [401, 403].includes(res.status);
+      throw Object.assign(
+        new Error(rejected ? "USDA rejected the API key" : `USDA returned HTTP ${res.status}`),
+        { status: 502, atelierCode: rejected ? "usda_key_rejected" : "usda_error" },
+      );
+    }
     return await res.json();
   } catch (error) {
     if (error.name === "AbortError")
-      throw Object.assign(new Error("USDA timed out"), { status: 502 });
+      throw Object.assign(new Error("USDA timed out"), { status: 502, atelierCode: "usda_error" });
     throw error;
   } finally {
     clearTimeout(timer);
@@ -144,7 +149,7 @@ export async function search(key, query) {
 }
 export async function calculate(key, recipe, entries, expectedHash) {
   if (!expectedHash || hash(recipe) !== expectedHash)
-    throw invalid("Recipe changed since nutrition preview. Start again");
+    throw invalid("Recipe changed since nutrition preview. Start again", "recipe_changed");
   const ingredients = recipe.recipeIngredient || [];
   if (
     !Array.isArray(entries) ||
@@ -155,7 +160,7 @@ export async function calculate(key, recipe, entries, expectedHash) {
     throw invalid("Match each recipe ingredient");
   const servings = Number(recipe.recipeServings);
   if (!Number.isFinite(servings) || servings <= 0 || servings > 100)
-    throw invalid("Recipe needs a valid serving count");
+    throw invalid("Recipe needs a valid serving count", "recipe_servings_invalid");
   const result = Object.fromEntries(Object.keys(NUTRIENTS).map((k) => [k, 0]));
   const coverage = Object.fromEntries(Object.keys(NUTRIENTS).map((k) => [k, 0]));
   const lines = [];
@@ -177,7 +182,7 @@ export async function calculate(key, recipe, entries, expectedHash) {
     if (food.fdcId !== id) throw invalid("Food ID mismatch");
     const n = nutrients(food);
     if (["calories", "protein", "fat", "carbohydrate"].some((k) => n[k] === null))
-      throw invalid(`USDA food ${id} is missing essential nutrition data`);
+      throw invalid(`USDA food ${id} is missing essential nutrition data`, "usda_food_incomplete");
     for (const [name, v] of Object.entries(n)) {
       if (v !== null) {
         result[name] += (v * w) / 100;

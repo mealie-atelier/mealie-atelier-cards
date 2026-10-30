@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { getInstallContext, getInstallCopy } from "../public/pwa-install.js";
+import { getInstallContext, getInstallCopy, initPwaInstall } from "../public/pwa-install.js";
 
 test("PWA install context recognizes iPhone, iPadOS and installed mode", () => {
   assert.equal(
@@ -73,7 +73,7 @@ test("every icon path in the manifest and index.html exists and is served by ser
     if (path === "/") continue;
     assert.ok(server.includes(`"${path}": [`), `server.mjs does not serve ${path}`);
   }
-  // The shell paints #101613 first (dark default), so theme and splash colour match it.
+  // The shell paints #101613 first (dark default), so theme and splash color match it.
   const css = await readFile(new URL("../public/shell.css", import.meta.url), "utf8");
   const dark = css.match(/--shell-page:\s*(#[0-9a-f]{6})/i)[1];
   assert.equal(dark.toLowerCase(), "#101613");
@@ -97,5 +97,93 @@ test("the notification badge is a monochrome 96 px PNG that is served and precac
   assert.equal(png.subarray(1, 4).toString(), "PNG");
   assert.equal(png.readUInt32BE(16), 96);
   assert.equal(png.readUInt32BE(20), 96);
-  assert.equal(png[25], 6, "RGBA colour type, so Android can use the alpha channel");
+  assert.equal(png[25], 6, "RGBA color type, so Android can use the alpha channel");
+});
+
+test("install dialog localizes the later button, avoids the outdated iOS claim and em dashes", async () => {
+  const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.match(html, /data-install-later/);
+  const install = await readFile(new URL("../public/pwa-install.js", import.meta.url), "utf8");
+  assert.match(install, /later: dialog\.querySelector\("\[data-install-later\]"\)/);
+  for (const language of ["de", "en"]) {
+    const copy = getInstallCopy(language, { isIOSBrowserWithoutPrompt: true });
+    assert.doesNotMatch(copy.steps[0], /meist nicht|usually cannot/);
+    assert.match(copy.steps[0], /16\.4/);
+  }
+  const manifest = await readFile(
+    new URL("../public/manifest.webmanifest", import.meta.url),
+    "utf8",
+  );
+  for (const text of [html, manifest]) assert.doesNotMatch(text, /[\u2013\u2014]|\\u2014/);
+  const parsed = JSON.parse(manifest);
+  assert.equal(parsed.theme_color, "#101613");
+  assert.equal(parsed.background_color, "#101613");
+  const icon = await readFile(new URL("../public/icon.svg", import.meta.url));
+  assert.ok(icon.length < 20000, "favicon stays small");
+  assert.doesNotMatch(html, /beautiful recipes/);
+  const css = await readFile(new URL("../public/pwa-install.css", import.meta.url), "utf8");
+  assert.match(css, /min-height: 44px/);
+});
+
+test("iOS install steps do not tell the user to tap Share twice", () => {
+  for (const language of ["de", "en"]) {
+    const [first, second] = getInstallCopy(language, { isIOSBrowserWithoutPrompt: true }).steps;
+    assert.doesNotMatch(first, /Teilen|Share/);
+    assert.match(second, /Teilen|Share/);
+  }
+});
+
+test("rendering the install dialog fills the localized later button", () => {
+  const node = () => ({
+    textContent: "",
+    hidden: false,
+    attrs: {},
+    setAttribute(key, value) {
+      this.attrs[key] = value;
+    },
+    hasAttribute(key) {
+      return Boolean(this.flags?.includes(key));
+    },
+    addEventListener() {},
+    replaceChildren() {},
+  });
+  const later = node();
+  later.flags = ["data-install-close", "data-install-later"];
+  const closeIcon = node();
+  closeIcon.flags = ["data-install-close"];
+  const trigger = { ...node(), querySelector: () => node() };
+  const dialog = {
+    ...node(),
+    showModal() {},
+    querySelector: (selector) => (selector === "[data-install-later]" ? later : node()),
+    querySelectorAll: (selector) => (selector === "[data-install-close]" ? [closeIcon, later] : []),
+  };
+  const documentRef = {
+    querySelector: (selector) => (selector === "#pwa-install-trigger" ? trigger : dialog),
+    createElement: node,
+    documentElement: { lang: "de" },
+  };
+  const windowRef = { addEventListener() {}, removeEventListener() {} };
+  const handle = initPwaInstall({
+    documentRef,
+    navigatorRef: { language: "en-US", userAgent: "" },
+    windowRef,
+  });
+  assert.equal(later.textContent, "Later");
+  handle.refresh("de");
+  assert.equal(later.textContent, "Später");
+  assert.equal(closeIcon.attrs["aria-label"], "Schließen");
+  assert.equal(later.attrs["aria-label"], undefined);
+});
+
+test("the shell follows the live system colour scheme, including the theme colour", async () => {
+  const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.match(html, /theme: "auto"/, "the shell starts in automatic theme mode");
+  assert.match(
+    html,
+    /matchMedia\("\(prefers-color-scheme: light\)"\)\.addEventListener\("change", \(\) => \{\s*if \(card\._design\.theme !== "auto"\) return;\s*syncShellTheme\("auto"\);\s*card\._render\(\);/,
+  );
+  // The first paint already follows the saved choice or the system scheme.
+  const head = html.slice(0, html.indexOf("</head>"));
+  assert.match(head, /<script>[\s\S]*prefers-color-scheme: light[\s\S]*"#f4f1eb"/);
 });

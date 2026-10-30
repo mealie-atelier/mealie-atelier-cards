@@ -4,6 +4,13 @@ const store = self.AtelierOfflineCore;
 const offlineError = (code) => Object.assign(new Error(code), { code });
 const syncChannel =
   typeof BroadcastChannel === "function" ? new BroadcastChannel("mealie-atelier-sync") : null;
+export const OFFLINE_ACTIONS = [
+  "shopping_toggle",
+  "shopping_add",
+  "shopping_delete",
+  "shopping_update",
+  "shopping_clear_checked",
+];
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class AtelierOfflineClient {
   constructor() {
@@ -93,10 +100,9 @@ export class AtelierOfflineClient {
   async enqueue(action, payload) {
     if (!this.enabled) throw offlineError("offlineNotEnabled");
     if (!this.snapshot) throw offlineError("offlineListNeedsRefresh");
-    if (!["shopping_toggle", "shopping_add"].includes(action))
-      throw offlineError("offlineRequiresConnection");
-    const id = crypto.randomUUID(),
-      data = { ...payload };
+    if (!OFFLINE_ACTIONS.includes(action)) throw offlineError("offlineRequiresConnection");
+    const id = crypto.randomUUID();
+    let data = { ...payload };
     if (action === "shopping_toggle") {
       const item = this.shopping.items.find((x) => String(x.id) === String(data.item_id));
       const original = this.snapshot.items.find((x) => String(x.id) === String(data.item_id));
@@ -118,6 +124,38 @@ export class AtelierOfflineClient {
         return { queued: false, reverted: true };
       }
       data.expected_checked = original.checked;
+    } else if (action === "shopping_delete" || action === "shopping_update") {
+      const item = this.shopping.items.find((x) => String(x.id) === String(data.item_id));
+      if (!item || store.isTemporary(item)) throw offlineError("offlineItemNotEditable");
+      if (action === "shopping_update") {
+        const keys = ["item_id", "note", "name", "quantity"];
+        for (const key of Object.keys(data)) if (!keys.includes(key)) delete data[key];
+        if (Object.keys(data).length < 2 || ("name" in data && "note" in data))
+          throw offlineError("offlineInvalidItem");
+        // What the user saw, so the replay can report an edit made on another device meanwhile.
+        if ("name" in data)
+          data.expected_name = String(item.display || item.note || item.food?.name || "");
+        if ("note" in data) data.expected_note = String(item.note || "");
+        if ("quantity" in data || "name" in data)
+          data.expected_quantity = Number(item.quantity) || 0;
+      }
+    } else if (action === "shopping_clear_checked") {
+      if (!this.snapshot.lists.some((l) => String(l.id) === String(data.list_id)))
+        throw offlineError("offlineInvalidItem");
+      // The ticked rows the user saw. Without them the clear would remove ticks made elsewhere.
+      const seenIds =
+        Array.isArray(data.expected_ids) && data.expected_ids.length
+          ? data.expected_ids.map(String)
+          : this.shopping.items
+              .filter(
+                (x) =>
+                  x.checked === true &&
+                  String(x.shoppingListId) === String(data.list_id) &&
+                  !store.isTemporary(x),
+              )
+              .map((x) => String(x.id));
+      if (!seenIds.length) throw offlineError("offlineInvalidItem");
+      data = { list_id: data.list_id, expected_ids: seenIds };
     } else {
       if (
         typeof data.note !== "string" ||
@@ -220,7 +258,15 @@ export class AtelierAlarmClient {
     return result;
   }
   async cancel(id) {
-    const result = await store.bridge("mealie_atelier/alarm_cancel", { timer_id: id });
+    let result;
+    try {
+      result = await store.bridge("mealie_atelier/alarm_cancel", { timer_id: id });
+    } catch (e) {
+      if (!["timer_dispatched", "timer_not_found"].includes(e?.code)) throw e;
+      // Already gone off or removed elsewhere: nothing is left to stop, so reload the list instead of failing.
+      await this.refresh().catch(() => {});
+      return null;
+    }
     this.alarms = this.alarms.map((x) => (x.id === id ? result : x));
     this.onChange();
     return result;
@@ -232,12 +278,26 @@ export class AtelierAlarmClient {
     return result;
   }
 }
+export function formatConflictCount(t, problems) {
+  if (!problems) return "";
+  return problems === 1 ? t("offlineConflictOne") : t("offlineConflictCount", { count: problems });
+}
+
+/** Resolves an offline or Bridge error to translated text: a direct key, then the err* key of its code. */
+export function localizeOfflineError(card, error) {
+  const translate = (key) => card?.t?.(key);
+  const code = typeof error?.code === "string" ? error.code : "";
+  const bridgeKey = /^[a-z][a-z0-9_]*$/.test(code)
+    ? "err" + code.replace(/(?:^|_)([a-z0-9])/g, (_, c) => c.toUpperCase())
+    : "";
+  for (const key of [error?.code, bridgeKey, error?.message])
+    if (key && translate(key) !== key) return translate(key);
+  return translate("offlineUnexpectedError") ?? "offlineUnexpectedError";
+}
+
 export function attachOfflineUi(card, offline, alarms) {
   const t = (key, values) => card?.t?.(key, values) ?? key;
-  const localizedError = (error) => {
-    const key = error?.code || error?.message;
-    return key && card?.t?.(key) !== key ? t(key) : t("offlineUnexpectedError");
-  };
+  const localizedError = (error) => localizeOfflineError(card, error);
   const panel = document.createElement("details");
   panel.className = "atelier-connectivity";
   panel.setAttribute("aria-label", t("offlinePanelLabel"));
@@ -278,7 +338,9 @@ export function attachOfflineUi(card, offline, alarms) {
       title.textContent =
         op.action === "shopping_toggle" ? t("offlineConflictToggle") : t("offlineConflictList");
       const desc = document.createElement("small");
-      desc.textContent = op.reason || t("offlineReviewCurrentList");
+      desc.textContent = op.code
+        ? localizedError({ code: op.code })
+        : op.reason || t("offlineReviewCurrentList");
       copy.append(title, desc);
       const discard = document.createElement("button");
       discard.type = "button";
@@ -323,7 +385,7 @@ export function attachOfflineUi(card, offline, alarms) {
   const update = () => {
     const offlineNow = !navigator.onLine,
       problems = offline.conflicts.length;
-    const conflicts = problems ? t("offlineConflictCount", { count: problems }) : "";
+    const conflicts = formatConflictCount(t, problems);
     const syncing = offline.syncing ? t("offlineSyncing") : "";
     const status = t("offlineStatus", {
       connection: offlineNow ? "Offline" : "Online",
@@ -352,7 +414,7 @@ export function attachOfflineUi(card, offline, alarms) {
         ? t("offlinePushConfigured")
         : t("offlineNoAlarmChannel");
     $("a-alarm-status").textContent =
-      channel + (alarms.lastError ? " · " + t(alarms.lastError) : "");
+      channel + (alarms.lastError ? " · " + localizedError({ code: alarms.lastError }) : "");
     $("a-push-enable").hidden = !caps?.webPush;
     $("a-push-enable").textContent = alarms.subscription
       ? t("offlinePushReady")

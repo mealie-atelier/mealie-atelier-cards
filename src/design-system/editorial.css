@@ -307,25 +307,36 @@
   display: none;
 }
 .atelier .tile-image .placeholder {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 35px;
-  min-height: 130px;
-  position: relative;
+  padding: 36px 16px 14px;
+  min-width: 0;
+  overflow: hidden;
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  width: 100%;
-  height: 100%;
   font-family: var(--at-serif);
-  font-size: clamp(20px, 2vw, 30px);
+  font-size: clamp(14px, 4cqw, 18px);
   color: #f0e9d2;
   filter: none;
   font-style: italic;
   line-height: 1.13;
 }
+.atelier .tile-image .placeholder > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
 .atelier.light .tile-image .placeholder {
   color: #fffdfa;
-  text-shadow: 0 2px 14px rgba(45, 34, 42, 0.35);
+  text-shadow: 0 2px 14px rgba(20, 32, 26, 0.35);
 }
 .atelier .photo-index {
   position: absolute;
@@ -336,7 +347,10 @@
   font-size: 10px;
   letter-spacing: 1.7px;
   font-weight: 700;
-  text-shadow: 0 1px 8px #0009;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(20, 32, 26, 0.55);
+  text-shadow: 0 1px 4px #0009;
 }
 .atelier .tile-body {
   position: relative;
@@ -345,7 +359,7 @@
   flex-direction: column;
 }
 .atelier .tile-body small {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 9px;
   letter-spacing: 2.15px;
   font-weight: 730;
@@ -370,7 +384,7 @@
   position: absolute;
   right: 6px;
   bottom: 12px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   width: 27px;
   height: 27px;
   border: 1px solid var(--at-line);
@@ -601,7 +615,7 @@
   gap: 9px;
   font-size: 10px;
   letter-spacing: 2px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   text-transform: uppercase;
   font-weight: 760;
 }
@@ -1057,7 +1071,7 @@
   padding: 8px 0 1px;
   font: italic 19px/1.25 var(--at-serif);
   font-weight: 400;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .detail-cols .step {
   align-items: flex-start;
@@ -1147,7 +1161,7 @@
   font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-weight: 760;
 }
 .atelier .cook-stage .cook-step-detail {
@@ -1243,7 +1257,7 @@
 .atelier .nutri-header strong {
   font-family: var(--at-serif);
   font-size: 30px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   text-align: right;
   font-weight: 400;
 }
@@ -1298,7 +1312,7 @@
 .atelier .nutri-number {
   font-family: var(--at-serif);
   font-size: 19px;
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .nutri-row-head > strong {
   font-size: 13px;
@@ -1317,7 +1331,7 @@
 .atelier .nutri-state.matched {
   border-color: rgba(157, 203, 178, 0.45);
   background: rgba(157, 203, 178, 0.1);
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
 }
 .atelier .nutri-row-fields {
   display: grid;
@@ -1445,7 +1459,7 @@
   color: var(--at-ink);
 }
 .atelier .nutri-provenance a {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   margin-left: 8px;
 }
 .atelier .nutri-actions {
@@ -1471,7 +1485,7 @@
 }
 .atelier .nutri-current span,
 .atelier .journal-hint span {
-  color: var(--ds-brand);
+  color: var(--ds-brand-text);
   font-size: 11px;
   font-weight: 750;
 }
@@ -1528,4 +1542,49 @@
   .atelier .cook-utility {
     padding: 13px;
   }
+}
+
+/* The step number is the real toggle control (a link in the step text cannot sit inside a button).
+   Specific enough to beat the later global button rules (min-height, sans font, pill radius). */
+.atelier .detail-cols .step-number.step-toggle {
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  font-family: var(--at-serif);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ds-brand-text, var(--ds-brand));
+  cursor: pointer;
+  appearance: none;
+}
+/* The visible circle stays small; an invisible 44px box around it is the touch target. */
+.atelier .detail-cols .step-number.step-toggle {
+  position: relative;
+}
+.atelier .detail-cols .step-number.step-toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+.atelier .detail-cols .step-number.step-toggle:hover {
+  border-color: var(--at-accent);
+}
+.atelier .detail-cols .step-number.step-toggle:focus-visible {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 2px;
+}
+.atelier .detail-cols .step:has(.step-toggle:focus-visible) {
+  outline: 2px solid var(--at-accent);
+  outline-offset: 3px;
+}
+/* Links made from URLs in recipe text follow the brand instead of the browser default. */
+.atelier :is(.step-text, .step-summary, .description, .recipe-note p, .cook-stage) a {
+  color: var(--ds-brand-text, var(--ds-brand));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
 }
