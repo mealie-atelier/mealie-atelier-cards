@@ -12101,6 +12101,13 @@ function buildPrintDocument(
    <section class="document-heading">${heading}</section>${body}${kind === "recipe" && instructions.length > 18 ? "" : `<footer class="footer"><span>${esc(words.made)}</span><span>${esc(words.created)}</span></footer>`}</article></body></html>`;
 }
 
+/** Current width of a progress fill as a percentage of its track, also while it is transitioning. */
+function cookFillShare(fill) {
+  const track = fill.parentElement?.getBoundingClientRect?.().width;
+  const width = fill.getBoundingClientRect?.().width;
+  if (track > 0 && width >= 0) return `${((width / track) * 100).toFixed(2)}%`;
+  return fill.style?.width || "";
+}
 class MealieAtelierCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement("mealie-atelier-card-editor");
@@ -13041,6 +13048,10 @@ class MealieAtelierCard extends HTMLElement {
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
+    // The cooking progress bar is rebuilt with the card. Keep its previous width so the new
+    // bar can grow from there instead of appearing at the target width.
+    const oldFill = !modalChanged && card?.querySelector?.(".cook-fill");
+    const previousFill = oldFill ? cookFillShare(oldFill) : "";
     // WebKit loses its scroll anchor when the card subtree is swapped and jumps the page by
     // the card's height. Nothing above the card changes here, so any drift is undone.
     const topBefore = card ? this.getBoundingClientRect().top : null;
@@ -13056,6 +13067,7 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
+    this._keepCookingMotionContinuous(previousFill);
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -13266,6 +13278,28 @@ class MealieAtelierCard extends HTMLElement {
         nodes[0].focus();
       }
     }
+  }
+  /**
+   * A rebuilt cooking dialog must not restart motion that is meant to run on its own.
+   * The progress bar grows from its previous width, and the running-timer pulse keeps its phase.
+   */
+  _keepCookingMotionContinuous(previousFill) {
+    const fill = this.shadowRoot.querySelector(".cook-fill");
+    if (fill && previousFill && typeof fill.animate === "function") {
+      // A transition does not start on an element that was just inserted, so animate it.
+      const style = globalThis.getComputedStyle?.(fill);
+      const seconds = parseFloat(style?.transitionDuration) || 0;
+      if (seconds > 0 && fill.style.width && fill.style.width !== previousFill)
+        fill.animate([{ width: previousFill }, { width: fill.style.width }], {
+          duration: seconds * 1000,
+          easing: style.transitionTimingFunction || "ease",
+        });
+    }
+    if (typeof this.shadowRoot.querySelector(".cook-timer-status")?.getAnimations !== "function")
+      return;
+    for (const status of this.shadowRoot.querySelectorAll(".cook-timer-status"))
+      for (const animation of status.getAnimations({ subtree: true }))
+        if (animation.animationName === "at-timer-live") animation.startTime = 0;
   }
   /**
    * Open dialogs in the top layer (Popover API), above Home Assistant's sidebar and header.

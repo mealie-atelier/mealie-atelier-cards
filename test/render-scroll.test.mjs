@@ -1,4 +1,5 @@
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
 
@@ -54,4 +55,47 @@ test("re-rendering an open dialog does not replay the backdrop or heading enter 
   card._render();
   assert.match(cards.document.markup, /class="modal-backdrop modal-stable"/);
   assert.match(cards.document.markup, /class="modal modal-stable /);
+});
+
+test("the first open of a dialog still animates, also right after another dialog", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._detail = { slug: "g", name: "G", recipeInstructions: [{ text: "a" }, { text: "b" }] };
+  card._modal = "loading";
+  card._render();
+  card._modal = "cook";
+  card._render();
+  assert.match(cards.document.markup, /class="modal-backdrop"/);
+  assert.doesNotMatch(cards.document.markup, /modal-stable/);
+});
+
+test("the stable marker really switches off the backdrop and step heading animations", () => {
+  const css = readFileSync(new URL("../src/design-system/motion.css", import.meta.url), "utf8");
+  const block = css.match(/[^{}]*\.modal-stable[^{}]*\{[^}]*\}/g).join("\n");
+  for (const selector of [
+    ".atelier .modal.modal-stable",
+    ".atelier .modal-backdrop.modal-stable",
+    ".atelier .modal-stable .cook-stage h2",
+  ])
+    assert.ok(block.includes(selector), selector);
+  assert.match(block, /animation:\s*none\s*!important/);
+});
+
+test("stepping keeps the progress bar growing from its previous width", () => {
+  const cards = loadCards({
+    globals: {
+      getComputedStyle: () => ({ transitionDuration: "0.48s", transitionTimingFunction: "ease" }),
+    },
+  });
+  const card = makeCard(cards);
+  const animations = [];
+  const fill = {
+    style: { width: "50%" },
+    animate: (frames, options) => animations.push({ frames, options }),
+  };
+  card.shadowRoot.querySelector = (s) => (s === ".cook-fill" ? fill : null);
+  card._keepCookingMotionContinuous("25%");
+  assert.equal(animations.length, 1);
+  assert.equal(JSON.stringify(animations[0].frames), '[{"width":"25%"},{"width":"50%"}]');
+  assert.equal(animations[0].options.duration, 480);
 });
