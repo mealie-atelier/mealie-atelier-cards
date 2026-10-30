@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { E2E_DIR, ACCOUNTS } from "./lib/config.mjs";
 import { startApp, usersEnv, newDataDir } from "./lib/app.mjs";
 import { createToken, seed, waitForMealie } from "./seed.mjs";
-import { removeContainers } from "./lib/container.mjs";
+import { removeContainers, RUN_ID } from "./lib/container.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name) => args.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
@@ -74,6 +74,7 @@ if (!existsSync(chromium.executablePath())) {
 const work = mkdtempSync(join(tmpdir(), "atelier-e2e-"));
 let primary = null;
 let failed = false;
+let specChild = null;
 
 function runSpecs(route, baseUrl, token) {
   const suffix = route === "node" ? /\.(node\.)?e2e\.mjs$/ : /(?<!\.node)\.e2e\.mjs$/;
@@ -98,6 +99,7 @@ function runSpecs(route, baseUrl, token) {
         stdio: "inherit",
         env: {
           ...process.env,
+          E2E_RUN_ID: RUN_ID,
           E2E_ROUTE: route,
           E2E_WORK_DIR: work,
           E2E_BASE_URL: baseUrl,
@@ -107,6 +109,7 @@ function runSpecs(route, baseUrl, token) {
         },
       },
     );
+    specChild = child;
     child.on("exit", (code) => resolve(code ?? 1));
   });
 }
@@ -122,6 +125,13 @@ async function waitHealthy(url, tries = 90) {
 }
 
 const cleanup = async () => {
+  // Stop the spec process first so it cannot start another container while the sweep runs.
+  if (specChild && specChild.exitCode === null) {
+    const gone = new Promise((done) => specChild.once("exit", done));
+    specChild.kill("SIGTERM");
+    await Promise.race([gone, new Promise((done) => setTimeout(done, 8000))]);
+    if (specChild.exitCode === null) specChild.kill("SIGKILL");
+  }
   await primary?.stop().catch(() => {});
   removeContainers();
   compose("rm", "-sf", "mealie-atelier");

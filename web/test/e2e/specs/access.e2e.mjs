@@ -64,7 +64,7 @@ test("first run: a signed-in browser loads the dashboard with the seeded kitchen
   }
 });
 
-test("a wrong password is refused and a later correct sign-in clears the failure counter", async () => {
+test("a wrong password is refused with 401 and the correct one still signs in afterwards", async () => {
   const wrong = await fetch(`${baseUrl}/api/health`, {
     headers: { authorization: basicHeader({ name: "atelier", password: "not-the-password-0" }) },
   });

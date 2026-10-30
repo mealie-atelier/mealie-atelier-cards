@@ -166,7 +166,11 @@ for (const [label, env, pattern] of [
     { ATELIER_PASSWORD: "short" },
     /at least 12 characters/,
   ],
-  ["a PORT outside 0 to 65535", { PORT: "70000" }, /./],
+  [
+    "a PORT outside 0 to 65535",
+    { PORT: "70000" },
+    /PORT must be a whole number between 0 and 65535/,
+  ],
   [
     "half-set Home Assistant settings",
     { ATELIER_HA_URL: "http://127.0.0.1:1" },

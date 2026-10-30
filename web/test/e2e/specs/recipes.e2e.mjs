@@ -2,6 +2,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { createServer } from "node:http";
 import { baseUrl, ACCOUNTS, basicHeader } from "../lib/config.mjs";
 import { browserSuite } from "../lib/suite.mjs";
 import {
@@ -358,8 +359,18 @@ test("HTTP: step photos need the matching step id and a photo of another step ca
 });
 
 test("HTTP: restoring a cover backup brings the previous photo back", async () => {
-  const { slug } = await makeRecipe("Cover-Restore");
+  const { slug, id } = await makeRecipe("Cover-Restore");
   const first = solidPng(32);
+  // The photo as the app serves it: the bytes are what proves which upload is shown.
+  const photoHash = async () => {
+    const response = await fetch(`${baseUrl}/api/image/${id}`, {
+      headers: { authorization: basicHeader(ACCOUNTS.reader) },
+    });
+    assert.equal(response.status, 200);
+    return createHash("sha256")
+      .update(Buffer.from(await response.arrayBuffer()))
+      .digest("hex");
+  };
   const set = async (bytes) => {
     const current = await recipeBySlug(slug);
     const result = await command(baseUrl, ACCOUNTS.admin, "recipe_image_set", {
@@ -372,9 +383,12 @@ test("HTTP: restoring a cover backup brings the previous photo back", async () =
   };
   await set(first);
   const firstToken = (await recipeBySlug(slug)).image;
+  const firstHash = await photoHash();
   await set(solidPng(96));
   const secondToken = (await recipeBySlug(slug)).image;
+  const secondHash = await photoHash();
   assert.notEqual(firstToken, secondToken);
+  assert.notEqual(firstHash, secondHash, "the two uploads are different pictures");
   const list = (await command(baseUrl, ACCOUNTS.admin, "recipe_backups", { slug })).body.backups;
   const replaced = list.find((b) => b.kind === "image" && b.has_image);
   assert.ok(replaced, "replacing the cover stored the old photo");
@@ -386,9 +400,143 @@ test("HTTP: restoring a cover backup brings the previous photo back", async () =
   const after = await recipeBySlug(slug);
   assert.ok(after.image, "the recipe has a photo again");
   assert.notEqual(after.image, secondToken, "the newer photo was replaced by the backup");
+  assert.equal(await photoHash(), firstHash, "the restored picture is byte for byte the first one");
   const reader = await command(baseUrl, ACCOUNTS.reader, "recipe_restore", {
     slug,
     backup_id: replaced.backup_id,
   });
   assert.equal(reader.status, 403);
+});
+
+/** A tiny web page with schema.org recipe data, served on all interfaces so the Mealie container reaches it. */
+async function servePage(title) {
+  const recipe = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: title,
+    description: "Ein erfundenes Testrezept.",
+    recipeYield: "2 Portionen",
+    recipeIngredient: ["200 g Linsen", "1 Zwiebel"],
+    recipeInstructions: [
+      { "@type": "HowToStep", text: "Linsen kochen." },
+      { "@type": "HowToStep", text: "Zwiebel dazugeben." },
+    ],
+  };
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><script type="application/ld+json">${JSON.stringify(recipe)}</script></head><body><h1>${title}</h1></body></html>`;
+  const server = createServer((req, res) => {
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    res.end(html);
+  });
+  await new Promise((done) => server.listen(0, "0.0.0.0", done));
+  return {
+    url: `http://host.docker.internal:${server.address().port}/rezept`,
+    stop: () => {
+      server.closeAllConnections?.();
+      return new Promise((done) => server.close(done));
+    },
+  };
+}
+
+test("importing a recipe from a web address creates it in Mealie, for an administrator only", async () => {
+  const title = uniqueName("Import-Linsen");
+  const page = await servePage(title);
+  const context = await openContext(state.browser);
+  try {
+    const app = await openApp(context, baseUrl);
+    await gotoView(app, "Verwalten");
+    await sel(app, "import-form").click();
+    await settle(app);
+    const field = app.locator('.modal input[name="url"]');
+    await field.fill(page.url);
+    // A writer is refused before Mealie is asked, whatever the address.
+    const writer = await mutate(baseUrl, ACCOUNTS.writer, "recipe_import", { url: page.url });
+    assert.equal(writer.status, 403);
+    assert.equal(writer.body.code, "unauthorized");
+    await field.press("Enter");
+    const imported = await eventually(
+      async () => (await recipeList()).find((r) => r.name === title),
+      { label: "imported recipe", timeout: 30000 },
+    );
+    cleanup.push(imported.id);
+    const full = await recipeBySlug(imported.slug);
+    assert.deepEqual(
+      full.recipeIngredient.map((i) => i.note || i.display || i.originalText),
+      ["200 g Linsen", "1 Zwiebel"],
+    );
+    assert.equal(full.recipeInstructions.length, 2);
+    assert.equal(full.recipeInstructions[0].text, "Linsen kochen.");
+    assert.deepEqual(app.problems, []);
+  } finally {
+    await context.close();
+    await page.stop();
+  }
+});
+
+test("the deprecated cover upload route replaces a photo for an administrator and refuses everyone else", async () => {
+  const { slug, id } = await makeRecipe("Altes-Foto");
+  const png = solidPng(48);
+  const revision = String((await recipeBySlug(slug)).image ?? "");
+  const send = (who, headers = {}, body = png) =>
+    fetch(`${baseUrl}/api/recipe-image/${slug}`, {
+      method: "POST",
+      headers: {
+        authorization: basicHeader(ACCOUNTS[who]),
+        "x-atelier-request": "1",
+        "content-type": "image/png",
+        "x-atelier-image-revision": revision,
+        ...headers,
+      },
+      body,
+    });
+  assert.equal((await send("writer")).status, 403);
+  assert.equal((await send("reader")).status, 403);
+  assert.equal(
+    (await send("admin", { "x-atelier-request": "0" })).status,
+    403,
+    "needs the CSRF header",
+  );
+  assert.equal(
+    (await send("admin", { "x-atelier-image-revision": "stale" })).status,
+    409,
+    "a revision that is not current is refused",
+  );
+  assert.equal(
+    (await send("admin", {}, Buffer.from("not an image at all"))).status,
+    400,
+    "bytes must be a picture",
+  );
+  assert.ok(!(await recipeBySlug(slug)).image, "nothing was stored by the refusals");
+  const ok = await send("admin");
+  assert.equal(ok.status, 200, await ok.text());
+  assert.ok((await recipeBySlug(slug)).image, "Mealie has the photo");
+  const shown = await fetch(`${baseUrl}/api/image/${id}`, {
+    headers: { authorization: basicHeader(ACCOUNTS.reader) },
+  });
+  assert.equal(shown.status, 200);
+  assert.match(shown.headers.get("content-type"), /^image\//);
+});
+
+test("the recipe asset proxy serves a step photo with its image type", async () => {
+  const { slug, id } = await makeRecipe("Asset-Foto");
+  const step = (await recipeBySlug(slug)).recipeInstructions[0];
+  const bytes = solidPng(40);
+  const added = await command(baseUrl, ACCOUNTS.admin, "step_image_add", {
+    slug,
+    step_index: 0,
+    step_id: step.id,
+    upload_id: await uploadOver(slug, "step", bytes),
+  });
+  assert.equal(added.status, 200, JSON.stringify(added.body));
+  const url = `${baseUrl}/api/recipe-asset/${id}/${added.body.file_name}`;
+  const unsigned = await fetch(url);
+  assert.equal(unsigned.status, 401, "the proxy is behind the sign-in");
+  const served = await fetch(url, { headers: { authorization: basicHeader(ACCOUNTS.reader) } });
+  assert.equal(served.status, 200);
+  assert.equal(served.headers.get("content-type"), "image/png");
+  assert.match(served.headers.get("cache-control"), /private/);
+  assert.deepEqual(Buffer.from(await served.arrayBuffer()), bytes);
+  const missing = await fetch(`${baseUrl}/api/recipe-asset/${id}/not-there.png`, {
+    headers: { authorization: basicHeader(ACCOUNTS.reader) },
+  });
+  assert.equal(missing.status, 404);
 });

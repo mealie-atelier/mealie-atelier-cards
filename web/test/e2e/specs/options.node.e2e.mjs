@@ -2,6 +2,7 @@
 // effect an operator or user can observe. Provider calls go to a local mock, never to a real service.
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
+import { request as httpRequest } from "node:http";
 import { createECDH, randomBytes, randomUUID } from "node:crypto";
 import { startApp, usersEnv, newDataDir } from "../lib/app.mjs";
 import { startMocks } from "../lib/mocks.mjs";
@@ -116,7 +117,7 @@ test("ATELIER_USERNAME renames the shared sign-in and the default name stops wor
   assert.equal(old.status, 401);
 });
 
-test("the sign-in throttle answers 429 with Retry-After after repeated failures and a success clears it", async () => {
+test("the sign-in throttle answers 429 with Retry-After after repeated failures", async () => {
   const a = await app();
   const wrong = { name: shared.name, password: "wrong-password-value" };
   for (let i = 0; i < 5; i += 1) assert.equal((await command(a.url, wrong, "status")).status, 401);
@@ -125,10 +126,39 @@ test("the sign-in throttle answers 429 with Retry-After after repeated failures 
     200,
     "still free after five failures",
   );
-  for (let i = 0; i < 6; i += 1) await command(a.url, wrong, "status");
+});
+
+test("a successful sign-in clears the failure counter: five more failures are free again", async () => {
+  const a = await app();
+  const wrong = { name: shared.name, password: "wrong-password-value" };
+  for (let i = 0; i < 5; i += 1) assert.equal((await command(a.url, wrong, "status")).status, 401);
+  assert.equal((await command(a.url, shared, "status")).status, 200);
+  // Without the reset these would be failures six to ten and the app would answer 429.
+  for (let i = 0; i < 5; i += 1)
+    assert.equal((await command(a.url, wrong, "status")).status, 401, `fresh failure ${i + 1}`);
+  // The sixth failure after the reset starts the lockout.
+  assert.equal((await command(a.url, wrong, "status")).status, 401);
   const locked = await command(a.url, shared, "status");
   assert.equal(locked.status, 429);
-  assert.ok(Number(locked.headers.get("retry-after")) >= 1);
+  assert.equal(locked.headers.get("retry-after"), "1");
+});
+
+test("the lockout doubles from 1 second up to 60 seconds, and a locked client is refused even with the right password", async () => {
+  const a = await app();
+  const wrong = { name: shared.name, password: "wrong-password-value" };
+  for (let i = 0; i < 6; i += 1) await command(a.url, wrong, "status");
+  const seen = [];
+  for (const expected of [1, 2, 4, 8, 16, 32, 60]) {
+    const locked = await command(a.url, shared, "status");
+    assert.equal(locked.status, 429, "the correct password does not get through a lockout");
+    const wait = Number(locked.headers.get("retry-after"));
+    assert.equal(wait, expected, `lockout after ${seen.length + 6} failures`);
+    seen.push(wait);
+    if (expected === 60) break;
+    await new Promise((done) => setTimeout(done, expected * 1000 + 100));
+    assert.equal((await command(a.url, wrong, "status")).status, 401, "the next failure");
+  }
+  assert.deepEqual(seen, [1, 2, 4, 8, 16, 32, 60]);
 });
 
 test("ATELIER_TRUSTED_PROXIES makes the throttle count per forwarded client, otherwise the header is ignored", async () => {
@@ -286,6 +316,115 @@ test("a failing AI provider surfaces as an error, not a crash", async () => {
   } finally {
     mocks.behaviour.aiStatus = 200;
   }
+});
+
+test("AI answers carry the German or English disclaimer chosen by the request language", async () => {
+  const a = await app({ OPENAI_API_KEY: "sk-mock-openai-6" });
+  const audited = (await recipeList())[0];
+  const DE = {
+    substitute: "Unverbindliche KI-Ideen. Zutaten, Allergene und Garzeiten selbst prüfen.",
+    audit: "KI-Prüfung mit möglichen Fehlern. Alle Vorschläge vor manueller Übernahme prüfen.",
+  };
+  const EN = {
+    substitute: "Non-binding AI ideas. Check ingredients, allergens and cooking times yourself.",
+    audit: "AI review that may contain mistakes. Check every suggestion before applying it.",
+  };
+  const cases = [
+    ["de-DE,de;q=0.9,en;q=0.5", DE, "German"],
+    ["en-US,en;q=0.9", EN, "English"],
+    ["fr-FR,en;q=0.8", EN, "English"],
+    ["fr-FR,de;q=0.4,en;q=0.2", DE, "German"],
+    ["fr-FR", EN, "English"],
+  ];
+  for (const [header, expected, language] of cases) {
+    const headers = { "accept-language": header };
+    const mark = mocks.requests.length;
+    const sub = await command(
+      a.url,
+      shared,
+      "studio_substitute",
+      { ingredient: "Butter", recipe: "Pasta" },
+      headers,
+    );
+    assert.equal(sub.status, 200, JSON.stringify(sub.body));
+    assert.equal(sub.body.disclaimer, expected.substitute, `substitute ${header}`);
+    const audit = await command(a.url, shared, "studio_ai_audit", { slug: audited.slug }, headers);
+    assert.equal(audit.status, 200, JSON.stringify(audit.body));
+    assert.equal(audit.body.disclaimer, expected.audit, `audit ${header}`);
+    // The provider is asked to answer in the same language.
+    const prompts = mockedSince(mark)
+      .filter((r) => r.path.startsWith("/openai/"))
+      .map((r) => JSON.stringify(r.body));
+    assert.equal(prompts.length, 2);
+    for (const prompt of prompts)
+      assert.match(prompt, new RegExp(language), `${header} -> ${language}`);
+  }
+  // An explicit language in the request beats the header.
+  const explicit = await command(
+    a.url,
+    shared,
+    "studio_substitute",
+    { ingredient: "Butter", recipe: "Pasta", language: "en" },
+    { "accept-language": "de-DE" },
+  );
+  assert.equal(explicit.body.disclaimer, EN.substitute);
+  // No language hint at all means the German default of the shell. fetch always sends a header,
+  // so this request is made with the raw HTTP client.
+  const bare = await new Promise((resolve, reject) => {
+    const request = httpRequest(
+      `${a.url}/api/bridge`,
+      {
+        method: "POST",
+        headers: {
+          authorization: basicHeader(shared),
+          "content-type": "application/json",
+          "x-atelier-request": "1",
+        },
+      },
+      async (response) => {
+        let text = "";
+        for await (const part of response) text += part;
+        resolve(JSON.parse(text));
+      },
+    );
+    request.on("error", reject);
+    request.end(
+      JSON.stringify({
+        type: "mealie_atelier/studio_substitute",
+        ingredient: "Butter",
+        recipe: "Pasta",
+      }),
+    );
+  });
+  assert.equal(bare.disclaimer, DE.substitute);
+});
+
+test("a reader can register and remove a push subscription once Web Push is configured", async () => {
+  const key = createECDH("prime256v1");
+  key.generateKeys();
+  const a = await app({
+    ATELIER_USERS: await usersEnv(),
+    ATELIER_VAPID_PUBLIC_KEY: key.getPublicKey().toString("base64url"),
+    ATELIER_VAPID_PRIVATE_KEY: key.getPrivateKey().toString("base64url"),
+    ATELIER_VAPID_SUBJECT: "mailto:kitchen@example.com",
+    ATELIER_ALARM_CHANNEL: "push",
+  });
+  const sub = subscription();
+  const registered = await command(a.url, ACCOUNTS.reader, "push_register", { subscription: sub });
+  assert.equal(registered.status, 200, JSON.stringify(registered.body));
+  const mark = mocks.requests.length;
+  const created = await command(a.url, ACCOUNTS.reader, "alarm_create", {
+    timer: timer(2, "Reader Push"),
+  });
+  assert.equal(created.status, 200, JSON.stringify(created.body));
+  await eventually(() => mockedSince(mark).some((r) => r.path.startsWith("/push/")), {
+    timeout: 15000,
+    label: "push delivery to the reader's subscription",
+  });
+  const removed = await command(a.url, ACCOUNTS.reader, "push_unregister", {
+    subscription: sub,
+  });
+  assert.equal(removed.status, 200, JSON.stringify(removed.body));
 });
 
 test("alarm channel defaults: no destination means timers cannot be scheduled in the background", async () => {

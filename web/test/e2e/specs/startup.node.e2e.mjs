@@ -23,8 +23,16 @@ const cases = [
     /without credentials or query/,
   ],
   ["a non-http Mealie URL", { MEALIE_URL: "ftp://127.0.0.1" }, /http\(s\) server URL/],
-  ["a malformed ATELIER_USERS entry", { ATELIER_USERS: "bob:admin" }, /./],
-  ["an invalid role in ATELIER_USERS", { ATELIER_USERS: "bob:root:scrypt$16384$8$1$aa$bb" }, /./],
+  [
+    "a malformed ATELIER_USERS entry",
+    { ATELIER_USERS: "bob:admin" },
+    /ATELIER_USERS entry 1 must look like username:role:hash/,
+  ],
+  [
+    "an invalid role in ATELIER_USERS",
+    { ATELIER_USERS: "bob:root:scrypt$16384$8$1$aa$bb" },
+    /has an invalid role \(admin, writer, reader\)/,
+  ],
   ["an invalid alarm channel", { ATELIER_ALARM_CHANNEL: "sms" }, /one of ha, push or both/],
   [
     "half-set Home Assistant settings",
@@ -51,7 +59,11 @@ const cases = [
     { ATELIER_AI_PROVIDER: "anthropic" },
     /needs ANTHROPIC_API_KEY/,
   ],
-  ["a bad trusted proxy entry", { ATELIER_TRUSTED_PROXIES: "not-an-address" }, /./],
+  [
+    "a bad trusted proxy entry",
+    { ATELIER_TRUSTED_PROXIES: "not-an-address" },
+    /ATELIER_TRUSTED_PROXIES has an invalid entry: not-an-address/,
+  ],
 ];
 
 for (const [name, env, pattern] of cases)
@@ -69,6 +81,7 @@ test("startup refuses a username that is both shared and per-person", async () =
 });
 
 test("startup refuses a PORT outside 0 to 65535", async () => {
-  const { code } = await startRefused({ PORT: "70000" });
+  const { code, output } = await startRefused({ PORT: "70000" });
   assert.notEqual(code, 0);
+  assert.match(output, /PORT must be a whole number between 0 and 65535/);
 });

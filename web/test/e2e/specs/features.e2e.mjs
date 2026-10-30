@@ -271,6 +271,21 @@ test("the family view adds a person and the cookbook view selects every recipe a
       .waitFor();
     const selected = await page.locator(".view-stage").innerText();
     assert.match(selected, /[4-9] Rezepte ausgewählt|\d\d Rezepte ausgewählt/);
+    // Print the selected recipes as a cookbook: a new document with the title and the recipes.
+    const form2 = page.locator('form[data-form="studio-book"]');
+    await form2.locator('input[name="title"]').fill("Familienkochbuch Test");
+    const popup = page.waitForEvent("popup");
+    await form2.locator('button[type="submit"]').click();
+    const book = await popup;
+    await book.waitForLoadState();
+    await book.getByText("Zitronen-Nudeln").first().waitFor();
+    const bookText = await book.locator("body").innerText();
+    assert.match(bookText, /Familienkochbuch Test/);
+    for (const dish of ["Zitronen-Nudeln", "Pfannen-Eier mit Tomaten", "Haferflocken-Bowl"])
+      assert.match(bookText, new RegExp(dish), `the cookbook prints ${dish}`);
+    assert.match(bookText, /Spaghetti/, "the ingredients are part of the print");
+    await book.close();
+    await settle(page);
     await sel(page, "studio-book-clear").click();
     await page.getByText("0 Rezepte ausgewählt").waitFor();
   } finally {
@@ -299,7 +314,11 @@ test("a queued offline edit of an account that may no longer write is dropped wi
     }, listId);
     const notice = page.locator("#a-sync-error");
     await notice.waitFor({ state: "visible" });
-    assert.match(await notice.innerText(), /.{10,}/);
+    // The exact sentence for a refused write, not the generic "could not complete" text.
+    assert.equal(
+      (await notice.innerText()).trim(),
+      "Du darfst in dieser Küche keine Daten ändern.",
+    );
     await eventually(
       () => page.evaluate(async () => (await window.AtelierOfflineCore.allOps()).length === 0),
       { label: "dropped operation removed from the queue" },
@@ -308,6 +327,46 @@ test("a queued offline edit of an account that may no longer write is dropped wi
     assert.ok(!JSON.stringify(items).includes("Wird verworfen"), "nothing reached Mealie");
     await page.locator("#a-sync-enable").click();
     await page.locator("dialog.at-premium-dialog button[value=confirm]").click();
+  } finally {
+    await context.close();
+  }
+});
+
+test("the dashboard opens the command palette by button and by shortcut, finds views and refreshes", async () => {
+  const context = await openContext(state.browser);
+  try {
+    const page = await openApp(context, baseUrl);
+    await gotoView(page, "Übersicht");
+    // Button: opens the dialog; Escape closes it.
+    await sel(page, "command-open").click();
+    const search = page.locator('input[data-input="command-search"]');
+    await search.waitFor();
+    await page.keyboard.press("Escape");
+    await search.waitFor({ state: "detached" });
+    // Keyboard shortcut (Ctrl+K), then a query that finds a recipe by name.
+    await page.locator("body").click({ position: { x: 5, y: 5 } });
+    await page.keyboard.press("Control+k");
+    await search.waitFor();
+    const answered = page.waitForResponse(
+      (r) =>
+        r.url().endsWith("/api/bridge") && (r.request().postData() || "").includes("Haferflocken"),
+    );
+    await search.fill("Haferflocken");
+    await answered;
+    await page.locator(".command-live", { hasText: "Haferflocken-Bowl" }).waitFor();
+    await page.keyboard.press("Escape");
+    await search.waitFor({ state: "detached" });
+    // Opening it again lists the views; choosing one navigates there.
+    await sel(page, "command-open").click();
+    await page.locator('.command-item[data-action="nav"][data-value="shopping"]').click();
+    await page.locator("h1", { hasText: "Alles für den Einkauf" }).waitFor();
+    // Refresh asks the server again (a status or data request leaves the browser).
+    await settle(page);
+    const requested = page.waitForRequest((r) => r.url().endsWith("/api/bridge"));
+    await sel(page, "refresh").first().click();
+    await requested;
+    await settle(page);
+    assert.deepEqual(page.problems, []);
   } finally {
     await context.close();
   }

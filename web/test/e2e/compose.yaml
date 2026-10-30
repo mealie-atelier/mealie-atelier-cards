@@ -12,4 +12,8 @@ services:
       ALLOW_SIGNUP: "false"
       BASE_URL: http://127.0.0.1:${E2E_MEALIE_PORT:-29925}
       TZ: Europe/Berlin
+      # Mealie refuses to scrape local addresses; the import test serves its page from the host.
+      HTTP_ALLOW_LIST: host.docker.internal
+    # Lets the recipe import test point Mealie at a page served by the test process on the host.
+    extra_hosts: ["host.docker.internal:host-gateway"]
     tmpfs: [/app/data]

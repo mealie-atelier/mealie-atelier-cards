@@ -3,6 +3,7 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import { E2E_DIR, ACCOUNTS } from "./config.mjs";
 import { usersEnv } from "./app.mjs";
 
@@ -11,6 +12,10 @@ export const IMAGE = `${PROJECT}-mealie-atelier`;
 export const NETWORK = `${PROJECT}_default`;
 const MEALIE_INTERNAL = "http://mealie:9000";
 const work = process.env.E2E_WORK_DIR || E2E_DIR;
+// One id per e2e run, shared with the spec child processes through the environment. Every container
+// and volume carries it as a label, so the runner can sweep what a killed spec process left behind.
+export const RUN_ID = process.env.E2E_RUN_ID || randomUUID();
+const LABEL = `atelier-web-e2e-run=${RUN_ID}`;
 const started = [];
 const volumes = [];
 let counter = 0;
@@ -55,7 +60,7 @@ const hardening = [
 
 export const newVolume = () => {
   const name = `${PROJECT}-data-${process.pid}-${(counter += 1)}`;
-  docker("volume", "create", name);
+  docker("volume", "create", "--label", LABEL, name);
   volumes.push(name);
   return name;
 };
@@ -77,6 +82,8 @@ export async function startContainer(overrides = {}, { mock, volume } = {}) {
     "-d",
     "--name",
     name,
+    "--label",
+    LABEL,
     "--network",
     NETWORK,
     "-p",
@@ -142,8 +149,26 @@ export function runRefused(overrides = {}) {
 /** Removes every container, volume and env file this process created. */
 export function removeContainers() {
   for (const name of started.splice(0)) docker("rm", "-f", name);
+  // Containers created by another process of this run (a spec child that was killed) are found by label.
+  const labelled = docker("ps", "-aq", "--filter", `label=${LABEL}`)
+    .stdout.split("\n")
+    .filter(Boolean);
+  for (const id of labelled) docker("rm", "-f", id);
   for (const name of volumes.splice(0)) docker("volume", "rm", "-f", name);
+  const stray = docker("volume", "ls", "-q", "--filter", `label=${LABEL}`)
+    .stdout.split("\n")
+    .filter(Boolean);
+  for (const name of stray) docker("volume", "rm", "-f", name);
   rmSync(join(work, "container-env"), { recursive: true, force: true });
 }
 
 export const usersForContainer = usersEnv;
+
+// A spec process that is interrupted removes its own containers before it exits.
+if (process.env.E2E_RUN_ID) {
+  for (const signal of ["SIGINT", "SIGTERM"])
+    process.once(signal, () => {
+      removeContainers();
+      process.exit(130);
+    });
+}
