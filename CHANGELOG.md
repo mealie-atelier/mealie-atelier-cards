@@ -23,6 +23,22 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Demo site: the 404 page swaps its header, footer and language switch to the language of the URL below `/en/` or `/de/` and marks it as current. On any other path it stays neutral, German first with English beside it.
 - Install docs: the FAQ names where the Marketplace is (**Settings → Marketplace**, route `/marketplace/browse`).
 - README screenshots: the recipe dialog shot ends between two rows instead of slicing a step card, and the phone cooking shot shows the tools panel and the timer clear of the Back and Next bar.
+- Cooking mode: Enter in the timer fields starts the timer, and Enter in a prompt dialog (such as "Alternative Zutat") confirms it instead of cancelling.
+- Cooking mode: a shared timer is shown as a timer card with a running or finished label and a remove button.
+- Shared cooking: the family view stops at the recipe's last step and shows "Schritt x von y".
+- Recipe search without a match says so (naming the search) instead of reading like an empty library, and the German empty text is "Keine Rezepte gefunden."
+- Shopping: a free-text item typed with a leading 1 keeps it.
+- Light theme: form and editor errors use the readable error color. The plan dialog's sort field spans the form and its rows are spaced evenly.
+- Recipe editor: the English heading reads "Recipe name & description".
+- Shared cooking: helper tasks can be removed, and the refusal to remove a person who still has tasks is shown as translated text.
+- Pantry: amounts such as 0.25 are accepted and an amount of 0 is refused.
+- Forms: a name made of spaces only is refused with a message instead of being ignored silently.
+- Shared cooking: the helper mode is called "Helper view" ("Helferansicht") on the toggle, the person tag and the note, and the empty card spaces its "Browse recipes" button from the hint.
+- Quick actions (Ctrl+K): the clear button of the search field uses the Atelier color, and "no matching views" no longer shows above matching recipes.
+- Web app: switching the language also translates the title, group titles, note and buttons of the Sync & kitchen timers bar at once.
+- Timers: a finished timer started on another device says "Timer abgelaufen" instead of "Aktiver Timer", and the in-card finished message ends with "!" like the push and Home Assistant messages.
+- Cooking mode: on tall tablets in portrait the photo caption and the footnote stay inside the dialog, only the step column scrolls.
+- Shared cooking: the English feature name is "Cook together" in the navigation, the page title and the card picker, matching "Gemeinsam kochen".
 
 ## [0.11.0] - 2026-10-30
 

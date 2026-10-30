@@ -11,6 +11,7 @@ export const OFFLINE_ACTIONS = [
   "shopping_update",
   "shopping_clear_checked",
 ];
+const ALARM_STATUS_ERROR = "offlineAlarmStatusUnavailable";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class AtelierOfflineClient {
   constructor() {
@@ -217,6 +218,7 @@ export class AtelierAlarmClient {
     this.subscription = null;
   }
   async init() {
+    this.lastError = "";
     try {
       this.capabilities = await store.bridge("mealie_atelier/alarm_capabilities");
       const status = await store.bridge("mealie_atelier/alarms");
@@ -224,7 +226,8 @@ export class AtelierAlarmClient {
       const registration = await navigator.serviceWorker?.getRegistration?.("/");
       this.subscription = (await registration?.pushManager?.getSubscription?.()) || null;
     } catch (e) {
-      this.lastError = e.code || "offlineUnexpectedError";
+      // A plain fetch failure has no code: name the cause instead of the generic offline-action text.
+      this.lastError = e.code || ALARM_STATUS_ERROR;
     }
     this.onChange();
     return this;
@@ -254,6 +257,7 @@ export class AtelierAlarmClient {
     if (!navigator.onLine) throw offlineError("offlineAlarmRequiresServer");
     const result = await store.bridge("mealie_atelier/alarm_create", { timer });
     this.alarms.push(result);
+    this.lastError = "";
     this.onChange();
     return result;
   }
@@ -268,12 +272,14 @@ export class AtelierAlarmClient {
       return null;
     }
     this.alarms = this.alarms.map((x) => (x.id === id ? result : x));
+    this.lastError = "";
     this.onChange();
     return result;
   }
   async refresh() {
     const result = await store.bridge("mealie_atelier/alarms");
     this.alarms = result.alarms || [];
+    this.lastError = "";
     this.onChange();
     return result;
   }
@@ -295,6 +301,16 @@ export function localizeOfflineError(card, error) {
   return translate("offlineUnexpectedError") ?? "offlineUnexpectedError";
 }
 
+/**
+ * Rewrites the panel's static texts (title, group titles, note, buttons and the aria-label) from the
+ * current language. The panel is built once, so a language switch has to refresh them explicitly.
+ */
+export function applyPanelTexts(panel, t) {
+  panel.setAttribute("aria-label", t("offlinePanelLabel"));
+  for (const element of panel.querySelectorAll("[data-i18n]"))
+    element.textContent = t(element.dataset.i18n);
+}
+
 export function attachOfflineUi(card, offline, alarms) {
   const t = (key, values) => card?.t?.(key, values) ?? key;
   const localizedError = (error) => localizeOfflineError(card, error);
@@ -304,22 +320,22 @@ export function attachOfflineUi(card, offline, alarms) {
   panel.innerHTML = `
     <summary class="a-summary">
       <span class="a-summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.8 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.2-3"/></svg></span>
-      <span class="a-summary-copy"><strong>${t("offlineSyncTimers")}</strong><small id="a-sync-summary" role="status" aria-live="polite">${t("offlineLoading")}</small></span>
+      <span class="a-summary-copy"><strong data-i18n="offlineSyncTimers">${t("offlineSyncTimers")}</strong><small id="a-sync-summary" role="status" aria-live="polite">${t("offlineLoading")}</small></span>
       <span class="a-sync-indicator" id="a-sync-indicator" aria-hidden="true"></span>
       <svg class="a-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </summary>
     <div class="a-connectivity-details" id="a-connectivity-details">
       <section class="a-connectivity-group" aria-labelledby="a-shopping-title">
-        <header><h3 id="a-shopping-title">${t("offlineShopping")}</h3></header>
-        <p>${t("offlineStorageNote")}</p>
+        <header><h3 id="a-shopping-title" data-i18n="offlineShopping">${t("offlineShopping")}</h3></header>
+        <p data-i18n="offlineStorageNote">${t("offlineStorageNote")}</p>
         <p class="a-error" id="a-sync-error" hidden role="alert"></p>
-        <div class="a-actions"><button type="button" id="a-sync-enable">${t("offlineEnable")}</button><button type="button" data-quiet id="a-sync-now" hidden>${t("offlineSyncNow")}</button><button type="button" data-quiet id="a-sync-conflicts" hidden>${t("offlineReviewConflicts")}</button></div>
+        <div class="a-actions"><button type="button" id="a-sync-enable">${t("offlineEnable")}</button><button type="button" data-quiet id="a-sync-now" data-i18n="offlineSyncNow" hidden>${t("offlineSyncNow")}</button><button type="button" data-quiet id="a-sync-conflicts" data-i18n="offlineReviewConflicts" hidden>${t("offlineReviewConflicts")}</button></div>
         <div class="a-conflicts" id="a-conflicts" hidden></div>
       </section>
       <section class="a-connectivity-group" aria-labelledby="a-timers-title">
-        <header><h3 id="a-timers-title">${t("offlineBackgroundTimers")}</h3></header>
+        <header><h3 id="a-timers-title" data-i18n="offlineBackgroundTimers">${t("offlineBackgroundTimers")}</h3></header>
         <p id="a-alarm-status" role="status">${t("offlineCheckingDelivery")}</p>
-        <div class="a-actions"><button type="button" id="a-push-enable" hidden>${t("offlineAllowPush")}</button><button type="button" data-quiet id="a-alarm-refresh">${t("offlineRefreshTimers")}</button></div>
+        <div class="a-actions"><button type="button" id="a-push-enable" hidden>${t("offlineAllowPush")}</button><button type="button" data-quiet id="a-alarm-refresh" data-i18n="offlineRefreshTimers">${t("offlineRefreshTimers")}</button></div>
         <div class="a-alarms" id="a-alarms"></div>
       </section>
     </div>`;
@@ -383,6 +399,7 @@ export function attachOfflineUi(card, offline, alarms) {
     }
   };
   const update = () => {
+    applyPanelTexts(panel, t);
     const offlineNow = !navigator.onLine,
       problems = offline.conflicts.length;
     const conflicts = formatConflictCount(t, problems);
@@ -431,6 +448,10 @@ export function attachOfflineUi(card, offline, alarms) {
   alarms.onChange = update;
   window.addEventListener("offline", update);
   window.addEventListener("online", update);
+  // Back online: reload the timer status that may have failed while offline, so a stale error clears.
+  window.addEventListener("online", () => {
+    if (alarms.lastError) alarms.init().catch(() => {});
+  });
   card?.addEventListener("mealie-atelier-language-change", update);
   $("a-sync-enable").addEventListener("click", async () => {
     try {
@@ -456,7 +477,10 @@ export function attachOfflineUi(card, offline, alarms) {
       card._flash(localizedError(e));
     }
   });
-  $("a-sync-now").addEventListener("click", () => offline.sync());
+  $("a-sync-now").addEventListener("click", async () => {
+    await offline.sync();
+    if (alarms.lastError && navigator.onLine) await alarms.init().catch(() => {});
+  });
   $("a-sync-conflicts").addEventListener("click", () => {
     const box = $("a-conflicts");
     box.hidden = !box.hidden;
@@ -481,7 +505,7 @@ export function attachOfflineUi(card, offline, alarms) {
     try {
       await alarms.refresh();
     } catch (e) {
-      alarms.lastError = e.code || "offlineUnexpectedError";
+      alarms.lastError = e.code || ALARM_STATUS_ERROR;
       alarms.onChange();
     }
   });

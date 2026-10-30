@@ -365,8 +365,18 @@ class MealieAtelierCard extends HTMLElement {
     if (!config || typeof config !== "object") throw Error("Invalid card configuration");
     // Focused card types open their own view when the YAML names only the type.
     const { mode } = this.constructor.getStubConfig();
+    const allowedThemes = ["auto", "light", "dark"];
+    if (config.mode !== undefined && !MODES.includes(config.mode))
+      throw Error(`Invalid option mode: '${config.mode}'. Allowed: ${MODES.join(", ")}`);
+    if (config.theme !== undefined && !allowedThemes.includes(config.theme))
+      throw Error(`Invalid option theme: '${config.theme}'. Allowed: ${allowedThemes.join(", ")}`);
+    if (
+      config.columns !== undefined &&
+      !(Number.isInteger(Number(config.columns)) && Number(config.columns) > 0)
+    )
+      throw Error(`Invalid option columns: '${config.columns}'. Allowed: a positive whole number`);
     this._config = { ...DEFAULTS, mode, ...config };
-    this._view = MODES.includes(this._config.mode) ? this._config.mode : "dashboard";
+    this._view = this._config.mode;
     if (this.isConnected) this._render();
   }
   // Home Assistant sets layout "panel" when the card fills a whole view; the card then drops its
@@ -1399,6 +1409,16 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature D: recipe picker keyboard
     if (this._pickerKeydown(event)) return;
     // END feature D
+    // Enter in the timer fields starts the timer, like pressing the start button.
+    if (
+      event.key === "Enter" &&
+      !event.isComposing &&
+      target?.matches?.("[data-timer-minutes],[data-timer-label]")
+    ) {
+      event.preventDefault();
+      this.shadowRoot.querySelector('[data-action="timer-start"]')?.click();
+      return;
+    }
     // A nested Atelier dialog closes itself on Esc; the card dialog underneath must stay open.
     if (
       event.key === "Escape" &&
@@ -1978,7 +1998,9 @@ class MealieAtelierCard extends HTMLElement {
       const minutes = Number(rawMinutes);
       if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
         const rawLabel = this.shadowRoot.querySelector("[data-timer-label]")?.value;
-        this._flash(this.t("uiTimerMinutesRange"), "error");
+        // The toast sits behind the cooking dialog, so the range message is also shown inside the form.
+        this._timerError = this.t("uiTimerMinutesRange");
+        this._flash(this._timerError, "error");
         // The flash re-renders the card: mark and focus the new input and keep what was typed.
         const fresh = this.shadowRoot.querySelector("[data-timer-minutes]");
         if (fresh) {
@@ -1990,6 +2012,7 @@ class MealieAtelierCard extends HTMLElement {
         if (freshLabel && rawLabel !== undefined) freshLabel.value = rawLabel;
         return;
       }
+      this._timerError = "";
       // Create the audio context inside this click so iOS Safari lets the alert beep later.
       this._prepareAudio();
       const now = Date.now(),
@@ -2051,6 +2074,7 @@ class MealieAtelierCard extends HTMLElement {
         minutes = Number(v);
       if (input && [5, 10, 15].includes(minutes)) {
         input.value = String(minutes);
+        this._clearTimerError();
         input.focus({ preventScroll: true });
       }
       return;
@@ -2298,6 +2322,7 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "cook-start") {
       this._modal = "cook";
       this._cookIndex = 0;
+      this._timerError = "";
       this._render();
       return;
     }
@@ -2408,7 +2433,16 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
   }
+  _clearTimerError() {
+    if (!this._timerError) return;
+    this._timerError = "";
+    this.shadowRoot.querySelector("#cook-timer-err")?.remove?.();
+    const input = this.shadowRoot.querySelector("[data-timer-minutes]");
+    input?.removeAttribute?.("aria-invalid");
+    input?.removeAttribute?.("aria-describedby");
+  }
   _handleInput(event) {
+    if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     // BEGIN feature B: recipe editor inputs
     if (this._editorInput(event)) return;
     // END feature B
@@ -2549,6 +2583,10 @@ class MealieAtelierCard extends HTMLElement {
     if (!live) return;
     live.setAttribute("aria-busy", String(Boolean(busy)));
     live.innerHTML = markup;
+    // The "no matching views" notice must not sit above recipe hits that do match.
+    this.shadowRoot
+      .querySelector(".command-empty")
+      ?.toggleAttribute("hidden", this._commandTotal > 0);
   }
   async _searchCommandRecipes(query) {
     const seq = this._commandSearchSeq;
@@ -2651,6 +2689,15 @@ class MealieAtelierCard extends HTMLElement {
     event.preventDefault();
     if (this._busy) return;
     const values = Object.fromEntries(new FormData(form).entries());
+    // `required` accepts a value of only spaces, which would otherwise be dropped without any feedback.
+    const blank = Array.from(
+      form.querySelectorAll?.("input[required], textarea[required]") || [],
+    ).find((field) => typeof field.value === "string" && !field.value.trim());
+    if (blank) {
+      this._flash(this.t("fieldRequired"));
+      blank.focus?.();
+      return;
+    }
     const btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
     let ok = false;
@@ -2917,7 +2964,7 @@ const CARD_TYPES = [
   [
     "mealie-atelier-family",
     AtelierFamilyCard,
-    "Mealie Atelier · Family",
+    "Mealie Atelier · Cook together",
     "Shared cooking sessions with helper tasks",
   ],
   [

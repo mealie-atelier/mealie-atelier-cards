@@ -55,12 +55,15 @@ function atGroup(rows) {
     rows: rows.filter((x) => x.category === k),
   }));
 }
+const STUDIO_POLL_FAST_MS = 3000;
+const STUDIO_POLL_SLOW_MS = 12000;
 Object.assign(MealieAtelierCard.prototype, {
   async _studioRefresh({ silent = false } = {}) {
     try {
       const v = await this._ws("studio_state");
       if (v && Number.isInteger(v.revision)) {
         const prev = this._studio?.revision;
+        const cookBefore = this._cookIndex;
         this._studio = v;
         this._journal = v.journal || {};
         // While this card still sends its own step, the server's older step must not win.
@@ -76,8 +79,10 @@ Object.assign(MealieAtelierCard.prototype, {
             Math.max(0, steps.length - 1),
           );
         }
+        // The displayed step must always match the internal one, even when the revision is unchanged.
         if (
           !silent ||
+          this._cookIndex !== cookBefore ||
           (prev !== v.revision &&
             !this.shadowRoot.activeElement?.matches?.("input,textarea,select"))
         )
@@ -87,6 +92,15 @@ Object.assign(MealieAtelierCard.prototype, {
       this._studioError = error?.message || this.t("studioConnectionFailed");
       if (!silent) this._render();
     }
+  },
+  /**
+   * The Bridge reports a person who still has tasks as a bare `invalid_request` with an English
+   * message. That one message is mapped to its translated text; every other error keeps `_errorText`.
+   */
+  _studioErrorText(error) {
+    if (error?.code === "invalid_request" && /still has cooking tasks/i.test(error.message || ""))
+      return this.t("errMemberHasTasks");
+    return this._errorText(error);
   },
   async _studioWrite(action, payload) {
     // The personal journal needs no write grant; only a read-only kitchen blocks it.
@@ -109,7 +123,7 @@ Object.assign(MealieAtelierCard.prototype, {
       return true;
     } catch (error) {
       this._studioError = error?.code
-        ? this._errorText(error)
+        ? this._studioErrorText(error)
         : error?.message || this.t("studioSaveFailed");
       await this._studioRefresh();
       await this._recoverPermissions(error);
@@ -142,6 +156,32 @@ Object.assign(MealieAtelierCard.prototype, {
         if (failed) await this._studioRefresh();
       })();
     return this._cookStepSync;
+  },
+  /** Step count of the shared session's recipe, or null while it is not known yet. */
+  _sessionStepTotal(session) {
+    if (!session?.slug) return null;
+    if (this._detail?.slug === session.slug) {
+      const count = asArray(this._detail.recipeInstructions).length;
+      if (count) return count;
+    }
+    return this._sessionStepTotals?.[session.slug] || null;
+  },
+  /** Look up and remember the step count of the session's recipe (once per recipe). */
+  async _studioLoadStepTotal(session) {
+    if (!session?.slug || this._sessionStepTotal(session)) return;
+    this._sessionStepTotals ||= {};
+    this._sessionStepLoading ||= new Set();
+    if (this._sessionStepLoading.has(session.slug)) return;
+    this._sessionStepLoading.add(session.slug);
+    try {
+      const recipe = await this._ws("recipe", { slug: session.slug });
+      const count = asArray(recipe?.recipeInstructions).length;
+      if (count) this._sessionStepTotals[session.slug] = count;
+    } catch {
+      // Without a count the step stays unbounded, as before.
+    } finally {
+      this._sessionStepLoading.delete(session.slug);
+    }
   },
   async _studioCatalog() {
     if (this._fullCatalog?.length) return this._fullCatalog;
@@ -284,6 +324,15 @@ Object.assign(MealieAtelierCard.prototype, {
         }
       }
       this.shadowRoot.appendChild(dlg);
+      // The Cancel button comes first in the form, so Enter would submit it. Confirm instead.
+      dlg.querySelector(".at-prompt-input")?.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" || event.isComposing) return;
+        event.preventDefault();
+        const form = dlg.querySelector("form");
+        const confirm = dlg.querySelector('button[value="confirm"]');
+        if (form?.requestSubmit) form.requestSubmit(confirm);
+        else confirm?.click();
+      });
       dlg.addEventListener(
         "close",
         () => {
@@ -334,7 +383,8 @@ Object.assign(MealieAtelierCard.prototype, {
     this._diagnostics = [];
     this._render();
     const checks = [
-      [this.t("studioBridge"), "status", {}],
+      // The web app has no Bridge: its status call only proves the Mealie connection.
+      [this.t(this._isWebApp ? "studioMealieConnection" : "studioBridge"), "status", {}],
       [this.t("recipes"), "recipes", { page: 1, per_page: 1, search: "" }],
       [this.t("shopping"), "shopping", {}],
       [
@@ -557,7 +607,7 @@ Object.assign(MealieAtelierCard.prototype, {
       ${
         !this._permissions.can_write
           ? ""
-          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"${field(editing?.name)}></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required${field(editing?.amount)}></label></div>
+          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"${field(editing?.name)}></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0.01" max="100000" step="any" required${field(editing?.amount)}></label></div>
       <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit">${[
         ["g", "studioGrams"],
         ["ml", "studioMilliliters"],
@@ -594,6 +644,12 @@ Object.assign(MealieAtelierCard.prototype, {
       session = family.session;
     const people = family.members || [];
     const kid = Boolean(this._kidView);
+    const stepTotal = this._sessionStepTotal(session);
+    const sharedStep = stepTotal ? Math.min(session.step, stepTotal - 1) : session?.step;
+    if (session?.slug && !stepTotal)
+      this._studioLoadStepTotal(session).then(() => {
+        if (this._sessionStepTotal(session)) this._render();
+      });
     return this._studioShell(
       this.t("familyTitle"),
       this.t("familyLead"),
@@ -605,13 +661,13 @@ Object.assign(MealieAtelierCard.prototype, {
      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("familySession")}</span><h2>${esc(session?.name || this.t("familyNoSession"))}</h2></div>
      ${
        session
-         ? `<p class="studio-step-badge">${this.t("familyStep", { step: session.step + 1, date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next">${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
+         ? `<p class="studio-step-badge">${this.t("familyStep", { step: sharedStep + 1, total: stepTotal || "?", date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next" ${stepTotal && sharedStep >= stepTotal - 1 ? "disabled" : ""}>${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
      <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${esc(Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000)))} ${this.t("studioMinutesShort")}</b>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
      ${!kid && this._permissions.can_write ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
-     <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small></div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
+     <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-task-remove" data-id="${esc(t.id)}" aria-label="${esc(this.t("studioRemove"))}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
      ${!kid && this._permissions.can_manage && people.length ? `<form class="studio-form" data-form="studio-task"><label>${this.t("familyTask")}<input name="text" maxlength="300" required placeholder="${this.t("familyTaskPlaceholder")}"></label><label>${this.t("familyAssign")}<select name="memberId">${people.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label><label class="studio-inline"><input type="checkbox" name="adultApproved"><span>${this.t("familyApproval")}</span></label><button class="btn" type="submit">${this.t("familyAssignTask")}</button></form>` : ""}
      <p class="studio-muted">${this.t("familySafety")}</p>`
-         : `<p class="studio-muted">${this.t("familyStartHint")}</p><button class="btn primary" data-action="nav" data-value="recipes">${this.t("familyBrowse")}</button>`
+         : `<p class="studio-muted">${this.t("familyStartHint")}</p><div class="studio-actions studio-actions--after-text"><button class="btn primary" data-action="nav" data-value="recipes">${this.t("familyBrowse")}</button></div>`
      }</section></div>`,
     );
   },
@@ -881,19 +937,29 @@ MealieAtelierCard.prototype._aiErrorText = function (error) {
     ? this.t("studioAiNotConfigured")
     : error?.message || "";
 };
+/** MM:SS text of a shared timer; an expired one stays at 00:00. */
+function sharedTimerText(timer) {
+  const sec = Math.max(0, Math.ceil((timer.deadline - Date.now()) / 1000));
+  return `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+}
+/** A shared timer in cooking mode: same card as a local timer, with status and a remove button for writers. */
+MealieAtelierCard.prototype._sharedTimerCard = function (timer) {
+  const done = timer.deadline <= Date.now();
+  const canRemove = !this._kidView && this._permissions.can_write;
+  return `<article class="cook-timer-card is-progress-unknown ${done ? "is-done" : ""}" data-shared-timer-card="${esc(timer.id)}"><span class="cook-timer-dial" data-timer-ring style="--timer-progress:0%"><span><time role="timer" data-shared-timer="${esc(timer.id)}">${sharedTimerText(timer)}</time></span></span><span class="cook-timer-copy"><span class="cook-timer-status" data-shared-timer-status>${done ? this.t("uiREADY") : this.t("uiRUNNING")}</span><strong title="${esc(timer.name)}">${esc(timer.name)}</strong><small>${this.t("studioSharedTimer")}</small></span>${canRemove ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(timer.id)}" aria-label="${esc(this.t("studioRemove"))}">${icon("close", 16)}</button>` : ""}</article>`;
+};
 MealieAtelierCard.prototype._modalHtml = function () {
   let html = _atOriginalModal.call(this);
   if (this._modal === "cook" && this._detail) {
     const session = this._studio?.family?.session;
     const connected = session?.slug === this._detail.slug;
-    const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
+    const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${icon("refresh", 14)} ${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
     html = html.replace(/<section class="cook-utility"[^>]*>/, (open) => open + voice);
     if (connected && session.timers.length) {
       html = html.replace(/<div class="cook-timers-empty">.*?<\/div>/s, "");
       html = html.replace(
         /<div class="cook-timers"[^>]*>/,
-        (open) =>
-          `${open}${session.timers.map((x) => `<div class="cook-timer"><span>${esc(x.name)} · ${this.t("studioSharedTimer")}</span><strong data-shared-timer="${esc(x.id)}">${Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000))} ${this.t("studioMinutesShort")}</strong></div>`).join("")}`,
+        (open) => `${open}${session.timers.map((x) => this._sharedTimerCard(x, session)).join("")}`,
       );
     }
   }
@@ -922,17 +988,32 @@ MealieAtelierCard.prototype._tickTimers = function () {
       (x) => x.id === span.dataset.sharedTimer,
     );
     if (timer) {
-      const sec = Math.max(0, Math.ceil((timer.deadline - Date.now()) / 1000));
-      span.textContent = `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+      span.textContent = sharedTimerText(timer);
+      const card = span.closest(".cook-timer-card");
+      if (card) {
+        const done = timer.deadline <= Date.now();
+        card.classList.toggle("is-done", done);
+        const status = card.querySelector("[data-shared-timer-status]");
+        if (status) status.textContent = this.t(done ? "uiREADY" : "uiRUNNING");
+      }
     }
   }
 };
 MealieAtelierCard.prototype.connectedCallback = function () {
   _atOriginalConnected.call(this);
+  // A short tick keeps an open cooking mode close to the other cooks; other views poll every 12 s.
+  this._studioPollAt = 0;
   this._studioPoll = setInterval(() => {
-    if (["family", "discover", "pantry"].includes(this._view) || this._modal === "cook")
+    const now = Date.now();
+    const cooking = this._modal === "cook";
+    const fast = cooking && this._studio?.family?.session && document.visibilityState !== "hidden";
+    const slowDue = now - this._studioPollAt >= STUDIO_POLL_SLOW_MS - STUDIO_POLL_FAST_MS / 2;
+    if (!fast && !slowDue) return;
+    if (["family", "discover", "pantry"].includes(this._view) || cooking) {
+      this._studioPollAt = now;
       this._studioRefresh({ silent: true });
-  }, 12000);
+    }
+  }, STUDIO_POLL_FAST_MS);
 };
 MealieAtelierCard.prototype.disconnectedCallback = function () {
   _atOriginalDisconnected.call(this);
@@ -1124,11 +1205,14 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       return;
     }
     if (action === "studio-session-prev" || action === "studio-session-next") {
-      if (session)
-        await this._studioWrite("session_step", {
-          session_id: session.id,
-          step: Math.max(0, session.step + (action.endsWith("next") ? 1 : -1)),
-        });
+      if (session) {
+        await this._studioLoadStepTotal(session);
+        const total = this._sessionStepTotal(session);
+        const last = total ? total - 1 : Infinity;
+        const step = Math.max(0, Math.min(last, session.step + (action.endsWith("next") ? 1 : -1)));
+        if (step !== session.step)
+          await this._studioWrite("session_step", { session_id: session.id, step });
+      }
       return;
     }
     if (action === "studio-session-end") {
@@ -1156,6 +1240,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-timer-remove") {
       if (session)
         await this._studioWrite("session_timer", {
+          session_id: session.id,
+          id: el.dataset.id,
+          remove: true,
+        });
+      return;
+    }
+    if (action === "studio-task-remove") {
+      if (session)
+        await this._studioWrite("session_task", {
           session_id: session.id,
           id: el.dataset.id,
           remove: true,
@@ -1403,6 +1496,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     const replace = Boolean(active && !existed && choice === true);
     // The dialog awaited above, so the original event no longer targets the button.
     await _atOriginalClick.call(this, { target: el });
+    if (existed && this._modal === "cook") {
+      // Joining a running shared session: open at the shared step instead of step 1.
+      const steps = asArray(this._detail.recipeInstructions);
+      this._cookIndex = Math.min(
+        Math.max(0, Number(active.step) || 0),
+        Math.max(0, steps.length - 1),
+      );
+      this._render();
+    }
     if (this._permissions.can_write && !existed && (!active || replace))
       await this._studioWrite("session_start", { slug, name, replace_existing: replace });
     return;
@@ -1455,6 +1557,11 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
           .slice(0, 30),
       });
     if (type === "studio-pantry") {
+      // A stock row of zero (or less) is never useful; the browser check does not cover scripted submits.
+      if (!(Number(values.amount) > 0)) {
+        this._flash(this.t("studioAmountPositive"));
+        return;
+      }
       // A row that vanished meanwhile (deleted on another device) is saved as a new item, not under its dead id.
       const editId = (this._studio.pantry || []).some((x) => x.id === this._pantryEdit)
         ? this._pantryEdit

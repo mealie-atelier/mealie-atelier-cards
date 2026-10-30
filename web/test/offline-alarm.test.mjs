@@ -479,3 +479,46 @@ test("the connectivity panel maps Bridge error codes to their err texts", async 
     );
   }
 });
+test("a language switch rewrites the static texts of the sync panel", async () => {
+  const { applyPanelTexts } = await import("../public/offline-client.js");
+  const element = (key) => ({ dataset: { i18n: key }, textContent: "" });
+  const title = element("offlineSyncTimers");
+  const refresh = element("offlineRefreshTimers");
+  const attributes = {};
+  const panel = {
+    setAttribute: (name, value) => (attributes[name] = value),
+    querySelectorAll: () => [title, refresh],
+  };
+  const words = { de: "Timer aktualisieren", en: "Refresh timers" };
+  for (const language of ["de", "en"])
+    applyPanelTexts(panel, (key) =>
+      key === "offlineRefreshTimers" ? words[language] : `${key}:${language}`,
+    );
+  assert.equal(refresh.textContent, "Refresh timers");
+  assert.equal(title.textContent, "offlineSyncTimers:en");
+  assert.equal(attributes["aria-label"], "offlinePanelLabel:en");
+  const source = readFileSync(new URL("../public/offline-client.js", import.meta.url), "utf8");
+  assert.match(source, /const update = \(\) => \{\s*applyPanelTexts\(panel, t\);/);
+});
+
+test("a successful timer status reload clears a stale error and a failed one names the cause", async () => {
+  let fail = true;
+  const client = await alarmClientWith(async (path) => {
+    if (fail) throw new TypeError("Failed to fetch");
+    return path.endsWith("alarms") ? { alarms: [] } : { webPush: false };
+  });
+  await client.init();
+  assert.equal(client.lastError, "offlineAlarmStatusUnavailable");
+  fail = false;
+  await client.refresh();
+  assert.equal(client.lastError, "");
+  client.lastError = "offlineAlarmStatusUnavailable";
+  await client.init();
+  assert.equal(client.lastError, "");
+  for (const lang of ["de", "en"]) {
+    const texts = JSON.parse(
+      readFileSync(new URL(`../../src/i18n/${lang}.json`, import.meta.url), "utf8"),
+    );
+    assert.ok(texts.offlineAlarmStatusUnavailable);
+  }
+});

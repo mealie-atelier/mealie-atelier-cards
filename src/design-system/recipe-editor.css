@@ -78,7 +78,7 @@
   color: var(--ds-muted);
 }
 .atelier .ed-error {
-  color: #f6b6a4;
+  color: var(--at-danger);
   font-weight: 650;
 }
 .atelier .ed-error[hidden],

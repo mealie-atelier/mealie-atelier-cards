@@ -12,17 +12,23 @@
 }
 .atelier .picker {
   display: grid;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-4);
 }
 .atelier .picker-filters {
   display: grid;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-4);
 }
 .atelier .picker-filter-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ds-space-2);
+  gap: var(--ds-space-4);
   align-items: flex-start;
+}
+/* The sort select spans the dialog like the day and meal fields; the form's field margin would double the row gap. */
+.atelier .picker-filter-row > .field {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
 }
 .atelier .picker-filter {
   display: grid;

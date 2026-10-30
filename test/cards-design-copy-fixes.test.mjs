@@ -179,7 +179,7 @@ test("click and tap wording is device neutral", () => {
   const en = JSON.parse(read("../src/i18n/en.json"));
   assert.match(
     en.editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio,
-    /“Overview”/,
+    /Design Studio/,
   );
 });
 

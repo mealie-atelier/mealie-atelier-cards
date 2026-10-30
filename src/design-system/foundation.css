@@ -794,19 +794,31 @@ ha-card {
   color: var(--at-sub);
   font-size: 13px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
 .atelier .notice.error {
-  color: #f6b6a4;
+  color: var(--at-danger);
   border-color: #e7a79466;
 }
+.atelier .notice a {
+  color: var(--at-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.atelier .notice a:visited {
+  color: var(--at-accent);
+}
+/* Fixed to the viewport: .atelier clips its overflow, so a sticky toast would sit at the end of the card. */
 .atelier .toast {
-  position: sticky;
-  bottom: 20px;
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
   width: fit-content;
-  margin: 10px auto;
-  z-index: 8;
+  margin: 0 auto;
+  z-index: 90;
   background: var(--at-accent);
   color: var(--ds-brand-foreground);
   border-radius: 11px;
@@ -969,7 +981,7 @@ ha-card {
   margin-top: 15px;
 }
 .atelier .form-error {
-  color: #f6b6a4;
+  color: var(--at-danger);
   margin-bottom: 10px;
   font-size: 12px;
 }

@@ -130,7 +130,7 @@ test("theme auto without Home Assistant themes follows prefers-color-scheme", ()
 test("family title and recipe print word are translated", () => {
   const cards = loadCards();
   const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
-  assert.equal(card.t("familyTitle"), "Family");
+  assert.equal(card.t("familyTitle"), "Cook together");
   assert.equal(card.t("printDocRecipe"), "Recipe");
 });
 

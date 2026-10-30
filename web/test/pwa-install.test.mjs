@@ -206,3 +206,31 @@ test("app icons, favicon and install dialog mark carry the herb leaf of the in-a
   }
   assert.equal(await read("../public/favicon.svg"), await read("../../demo/site/favicon.svg"));
 });
+
+test("desktop Firefox and Safari get their own steps and no Home Screen wording", () => {
+  const firefox = getInstallContext({
+    userAgent: "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
+  });
+  const firefoxCopy = getInstallCopy("en-US", firefox);
+  assert.match(firefoxCopy.steps[0], /Firefox does not install web apps/);
+  assert.doesNotMatch(firefoxCopy.intro, /Home Screen/);
+  const safari = getInstallContext({
+    userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    platform: "MacIntel",
+    maxTouchPoints: 0,
+  });
+  assert.equal(safari.isSafariDesktop, true);
+  const safariCopy = getInstallCopy("de-DE", safari);
+  assert.match(safariCopy.steps[0], /Zum Dock hinzufügen/);
+  assert.doesNotMatch(safariCopy.intro, /Home-Bildschirm/);
+  const chrome = getInstallContext({
+    userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+    platform: "MacIntel",
+  });
+  assert.equal(chrome.isSafariDesktop, false);
+  assert.match(getInstallCopy("en", chrome).steps[0], /address bar/);
+  const phone = getInstallCopy("en", getInstallContext({ userAgent: "Android Chrome" }));
+  assert.match(phone.intro, /Home Screen/);
+});

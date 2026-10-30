@@ -209,6 +209,14 @@
   outline-offset: 2px;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-brand) 11%, transparent);
 }
+/* The search pill draws the one ring (.search:focus-within), so the inner input must not add a second. */
+.atelier .search input:not([type="checkbox"]):not([type="radio"]):focus,
+.atelier .search input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+.atelier .command-search input:not([type="checkbox"]):not([type="radio"]):focus-visible {
+  outline: 0;
+  box-shadow: none;
+  border: 0;
+}
 .atelier textarea {
   line-height: 1.6;
   min-height: 108px;
@@ -1665,6 +1673,49 @@
   }
 }
 
+/* Tall tablets in portrait: the dialog keeps its height, only the step column scrolls, the footnote
+   clears the pinned Back and Next bar. */
+@media (orientation: portrait) and (min-width: 761px) and (min-height: 681px) {
+  .atelier .modal.large:has(.cook-layout) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .atelier .modal:has(.cook-layout) .cook-layout {
+    min-height: 0;
+  }
+  .atelier .modal:has(.cook-layout) .cook-visual {
+    height: auto;
+    min-height: 0;
+  }
+  .atelier .modal:has(.cook-layout) .cook-content {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 0;
+  }
+  .atelier .modal:has(.cook-layout) .cook-controls {
+    display: contents;
+  }
+  .atelier .modal:has(.cook-layout) .cook-actions {
+    order: 3;
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    margin: 0;
+    padding: 10px 0 14px;
+    background: linear-gradient(180deg, transparent, var(--at-surface) 26%);
+  }
+  .atelier .modal:has(.cook-layout) .cook-utility,
+  .atelier .modal:has(.cook-layout) .cook-note {
+    order: 4;
+  }
+  .atelier .modal:has(.cook-layout) .cook-footnote {
+    order: 5;
+    padding-bottom: 18px;
+  }
+}
+
 @media (orientation: portrait) and (max-height: 680px) {
   .atelier .modal:has(.cook-layout) {
     max-height: calc(100dvh - 16px);
@@ -2457,6 +2508,16 @@
   hyphenate-limit-chars: 12 5 5;
   -webkit-hyphenate-limit-before: 5;
   -webkit-hyphenate-limit-after: 5;
+}
+/* Tablet week strip: seven narrow columns. A smaller name and tighter padding keep long German
+   words such as "Hähnchensalat" whole instead of splitting them mid-word. */
+@container atelier-card (min-width: 561px) and (max-width: 1080px) {
+  .atelier .week-grid .day-meal {
+    padding: 9px 8px;
+  }
+  .atelier .week-grid .day-meal-name {
+    font-size: 11px;
+  }
 }
 
 /* Touch devices: every tap target reaches 44px. */
