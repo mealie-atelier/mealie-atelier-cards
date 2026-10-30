@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
 
 const locale = (name) =>
@@ -145,4 +148,73 @@ test("a failed load does not claim there is no shopping list or nothing planned"
   assert.doesNotMatch(card._week(), /day-empty|Nothing planned/);
   assert.doesNotMatch(card._shopping(), /Create your first shopping list|class="notice"/);
   assert.doesNotMatch(card._today(), /Nothing planned|class="notice"/);
+});
+
+function findChrome() {
+  const candidates = [process.env.CHROME_BIN];
+  for (const dir of [".cache/ms-playwright", "Library/Caches/ms-playwright"]) {
+    const root = join(process.env.HOME ?? "", dir);
+    if (!existsSync(root)) continue;
+    for (const entry of readdirSync(root).sort().reverse()) {
+      if (!entry.startsWith("chromium_headless_shell-")) continue;
+      for (const sub of readdirSync(join(root, entry)))
+        candidates.push(join(root, entry, sub, "chrome-headless-shell"));
+    }
+  }
+  return candidates.find((path) => path && existsSync(path));
+}
+
+test("the tablet week strip keeps long meal names whole instead of splitting words", (t) => {
+  const chrome = findChrome();
+  if (!chrome) return t.skip("no headless Chromium available");
+  const bundle = new URL("../dist/mealie-atelier-cards.js", import.meta.url).pathname;
+  const dir = mkdtempSync(join(tmpdir(), "atelier-week-"));
+  try {
+    writeFileSync(
+      join(dir, "h.html"),
+      `<!doctype html><meta charset="utf-8"><body style="margin:0"><pre id="out">pending</pre><script src="file://${bundle}"></script><script>
+(async () => {
+  const card = document.createElement("mealie-atelier-card");
+  card.setConfig({ type: "custom:mealie-atelier-card" });
+  document.body.append(card);
+  card._status = { entries: [{ entry_id: "e1", can_write: true, can_manage: true }] };
+  card._hass = { language: "de", callWS: async () => ({}) };
+  const day = (n) => { const d = new Date(card._weekStart); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  card._data = { recipes: { total: 1, items: [] }, shopping: { items: [], lists: [] },
+    mealplan: ["Hähnchensalat mit Parmesan", "Kartoffelsuppe", "Pfannkuchen"].map((title, i) => ({ id: "m" + i, date: day(i), entryType: "dinner", title })) };
+  card._render();
+  await new Promise((r) => setTimeout(r, 1000));
+  const words = [];
+  for (const el of card.shadowRoot.querySelectorAll(".day-meal-name")) {
+    const range = document.createRange();
+    const node = el.firstChild;
+    let line = "", top = null;
+    for (let i = 0; i < node.length; i++) {
+      range.setStart(node, i); range.setEnd(node, i + 1);
+      const y = Math.round(range.getBoundingClientRect().top);
+      if (top !== null && y !== top && /\\S/.test(node.data[i - 1] || "") && /\\S/.test(node.data[i])) words.push(node.data);
+      top = y;
+    }
+  }
+  document.getElementById("out").textContent = JSON.stringify(words);
+})();
+</script>`,
+    );
+    const dom = execFileSync(
+      chrome,
+      [
+        "--no-sandbox",
+        "--allow-file-access-from-files",
+        "--virtual-time-budget=8000",
+        "--window-size=820,1180",
+        "--dump-dom",
+        `file://${join(dir, "h.html")}`,
+      ],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 120000 },
+    );
+    const out = dom.match(/<pre id="out">([\s\S]*?)<\/pre>/)[1].replaceAll("&quot;", '"');
+    assert.deepEqual(JSON.parse(out), []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

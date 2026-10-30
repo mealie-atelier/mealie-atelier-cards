@@ -2466,6 +2466,16 @@
   -webkit-hyphenate-limit-before: 5;
   -webkit-hyphenate-limit-after: 5;
 }
+/* Tablet week strip: seven narrow columns. A smaller name and tighter padding keep long German
+   words such as "Hähnchensalat" whole instead of splitting them mid-word. */
+@container atelier-card (min-width: 561px) and (max-width: 1080px) {
+  .atelier .week-grid .day-meal {
+    padding: 9px 8px;
+  }
+  .atelier .week-grid .day-meal-name {
+    font-size: 11px;
+  }
+}
 
 /* Touch devices: every tap target reaches 44px. */
 @media (pointer: coarse) {
