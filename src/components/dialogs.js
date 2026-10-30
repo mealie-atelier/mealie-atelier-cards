@@ -195,7 +195,7 @@ export const dialogMethods = {
                     const timeLabel = `${timer.label} · ${this.t("uitimeRemaining")}`;
                     const durationLabel = duration
                       ? `${Math.round(duration / 60000)} ${this.tp("uiMinute", Math.round(duration / 60000))}`
-                      : this.t("uiActiveTimer");
+                      : this.t(timer.done ? "uiTimerFinished" : "uiActiveTimer");
                     return `<article class="cook-timer-card ${timer.done ? "is-done" : ""} ${progress === null ? "is-progress-unknown" : ""}" data-cook-timer="${esc(timer.id)}"><span class="cook-timer-dial" data-timer-ring style="--timer-progress:${progress === null ? 0 : progress.toFixed(2)}%"><span><time role="timer" data-timer-remaining="${esc(timer.id)}" aria-label="${esc(timeLabel)}">${remainingText}</time></span></span><span class="cook-timer-copy"><span class="cook-timer-status">${timer.done ? this.t("uiREADY") : this.t("uiRUNNING")}</span><strong title="${esc(timer.label)}">${esc(timer.label)}</strong><small>${durationLabel}${context ? ` · ${esc(context)}` : ""}</small></span><button class="icon-btn" data-action="timer-remove" data-value="${esc(timer.id)}" aria-label="${esc(this.t("timerRemove"))}">${icon("close", 16)}</button></article>`;
                   })
                   .join("")

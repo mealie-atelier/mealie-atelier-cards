@@ -103,7 +103,7 @@ test("a timer that runs out raises a visible alert", () => {
   card._timers = [{ id: "t", label: "Pasta", deadline: Date.now() - 100, done: false }];
   card._tickTimers();
   assert.equal(card._timers[0].done, true);
-  assert.equal(flashes[0].text, "Pasta is done.");
+  assert.equal(flashes[0].text, "Pasta is ready!");
 });
 
 test("persisting timers keeps local timers written by another card", () => {

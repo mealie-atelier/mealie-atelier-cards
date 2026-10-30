@@ -2,9 +2,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
 
+let formValues = {};
+class FakeFormData {
+  entries() {
+    return Object.entries(formValues);
+  }
+}
 const familyCard = (extra = {}) => {
   const calls = [];
-  const card = makeCard(loadCards(), {
+  const card = makeCard(loadCards({ globals: { FormData: FakeFormData } }), {
     hass: {
       language: "en",
       callWS: async (msg) => {
@@ -58,4 +64,69 @@ test("the Bridge refusal to remove a person with tasks is shown as translated te
   assert.equal(card._studioError, "This person still has tasks. Remove their tasks first.");
   const german = makeCard(loadCards(), { hass: { language: "de", callWS: async () => ({}) } });
   assert.match(german._studioErrorText(error), /Diese Person hat noch Aufgaben/);
+});
+
+test("the pantry amount accepts fractions such as 0.25 and rejects zero", async () => {
+  const { card, calls } = familyCard();
+  const form = card._studioPantry();
+  const input = form.match(/<input type="number" name="amount"[^>]*>/)[0];
+  assert.match(input, /step="any"/);
+  assert.match(input, /min="0.01"/);
+  let flashed = "";
+  card._flash = (text) => (flashed = text);
+  const submit = (amount) => {
+    formValues = { name: "Rice", amount, unit: "g" };
+    const pantryForm = { dataset: { form: "studio-pantry" } };
+    return card._handleSubmit({ target: { closest: () => pantryForm }, preventDefault() {} });
+  };
+  card._studio.pantry = [];
+  await submit("0");
+  assert.equal(flashed, "Enter an amount greater than 0.");
+  assert.equal(calls.filter((c) => c.action === "pantry_put").length, 0);
+  await submit("0.25");
+  assert.equal(calls.filter((c) => c.action === "pantry_put").length, 1);
+});
+
+test("a whitespace-only name is refused with a visible message and no request", async () => {
+  const { card, calls } = familyCard();
+  let flashed = "";
+  let focused = false;
+  card._flash = (text) => (flashed = text);
+  const blank = { value: "   ", focus: () => (focused = true) };
+  const form = {
+    dataset: { form: "create" },
+    querySelectorAll: () => [blank],
+    querySelector: () => ({ disabled: false }),
+  };
+  formValues = { name: "   " };
+  await card._handleSubmit({ target: { closest: () => form }, preventDefault() {} });
+  assert.equal(flashed, "Fill in this field.");
+  assert.equal(focused, true);
+  assert.equal(calls.length, 0);
+});
+
+test("a finished timer without a known duration says it is finished, not active", () => {
+  const card = makeCard(loadCards());
+  card._detail = {
+    slug: "r",
+    name: "R",
+    recipeInstructions: [{ text: "Stir." }],
+    recipeIngredient: [],
+  };
+  card._modal = "cook";
+  card._timers = [
+    { id: "a", label: "Oven", deadline: 0, done: true },
+    { id: "b", label: "Pot", deadline: Date.now() + 60000, done: false },
+  ];
+  const html = card._modalHtml();
+  const cardOf = (id) => html.match(new RegExp(`data-cook-timer="${id}".*?</article>`, "s"))[0];
+  assert.match(cardOf("a"), /<small>Timer finished<\/small>/);
+  assert.match(cardOf("b"), /<small>Active timer<\/small>/);
+});
+
+test("the in-card timer message matches the push and Home Assistant wording", () => {
+  const de = makeCard(loadCards(), { hass: { language: "de", callWS: async () => ({}) } });
+  const en = makeCard(loadCards());
+  assert.equal(de.t("uiTimerDone", { label: "Ofen" }), "Ofen ist fertig!");
+  assert.equal(en.t("uiTimerDone", { label: "Oven" }), "Oven is ready!");
 });

@@ -2654,6 +2654,15 @@ class MealieAtelierCard extends HTMLElement {
     event.preventDefault();
     if (this._busy) return;
     const values = Object.fromEntries(new FormData(form).entries());
+    // `required` accepts a value of only spaces, which would otherwise be dropped without any feedback.
+    const blank = Array.from(
+      form.querySelectorAll?.("input[required], textarea[required]") || [],
+    ).find((field) => typeof field.value === "string" && !field.value.trim());
+    if (blank) {
+      this._flash(this.t("fieldRequired"));
+      blank.focus?.();
+      return;
+    }
     const btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true;
     let ok = false;

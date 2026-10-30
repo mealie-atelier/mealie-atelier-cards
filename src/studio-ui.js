@@ -606,7 +606,7 @@ Object.assign(MealieAtelierCard.prototype, {
       ${
         !this._permissions.can_write
           ? ""
-          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"${field(editing?.name)}></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0" max="100000" step="0.1" required${field(editing?.amount)}></label></div>
+          : `<form class="studio-form" data-form="studio-pantry"><div class="studio-formline"><label>${this.t("studioIngredient")}<input name="name" required maxlength="120" placeholder="${this.t("ingredientTomatoes")}"${field(editing?.name)}></label><label>${this.t("studioAmount")}<input type="number" name="amount" min="0.01" max="100000" step="any" required${field(editing?.amount)}></label></div>
       <div class="studio-formline"><label>${this.t("studioUnit")}<select name="unit">${[
         ["g", "studioGrams"],
         ["ml", "studioMilliliters"],
@@ -1556,6 +1556,11 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
           .slice(0, 30),
       });
     if (type === "studio-pantry") {
+      // A stock row of zero (or less) is never useful; the browser check does not cover scripted submits.
+      if (!(Number(values.amount) > 0)) {
+        this._flash(this.t("studioAmountPositive"));
+        return;
+      }
       // A row that vanished meanwhile (deleted on another device) is saved as a new item, not under its dead id.
       const editId = (this._studio.pantry || []).some((x) => x.id === this._pantryEdit)
         ? this._pantryEdit
