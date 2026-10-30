@@ -122,7 +122,6 @@ test("landing pages state the install route and setup facts correctly", () => {
     assert.match(html, /docker compose up -d --build/);
     assert.match(html, /OpenAI/);
     assert.match(html, /Anthropic/);
-    assert.doesNotMatch(html, /lernen\/mealie-atelier-ohne-home-assistant/);
     // The listing is submitted, not merged, so nothing may promise it is live today.
     assert.doesNotMatch(html, /jetzt im Marketplace|now in the Marketplace/i);
   }
@@ -1805,4 +1804,44 @@ test("the raw preview shows tags in the page language and searches by both langu
     terms,
     /item\.tags\s*\.map\(\(tag\) => catalog\.tagLabels\?\.\[tag\]\?\.\[demoLanguage === "de" \? "en" : "de"\]\)/,
   );
+});
+
+test("the web app guide links point at the real guide page, not a missing anchor", () => {
+  for (const locale of ["de", "en"]) {
+    const html = read(join(builds.local, locale, "index.html"));
+    assert.ok(
+      html.includes(
+        'href="https://alles-automatisch.de/lernen/mealie-atelier-ohne-home-assistant"',
+      ),
+      `${locale} links the web app guide`,
+    );
+    assert.ok(!html.includes("#variante-b"), `${locale} has no dead guide anchor`);
+  }
+});
+
+test("the install card offers one-click HACS links that open in a new tab", () => {
+  for (const locale of ["de", "en"]) {
+    const html = read(join(builds.local, locale, "index.html"));
+    const card = html.slice(
+      html.indexOf('class="card c-install'),
+      html.indexOf('class="card c-rights'),
+    );
+    for (const repo of ["mealie-atelier-cards", "mealie-atelier-bridge"]) {
+      assert.match(
+        card,
+        new RegExp(
+          `href="https://my\\.home-assistant\\.io/redirect/hacs_repository/\\?owner=mealie-atelier&amp;repository=${repo}&amp;category=[a-z]+" target="_blank" rel="noopener noreferrer"`,
+        ),
+        `${locale} install card links ${repo}`,
+      );
+    }
+  }
+  const en = read(join(builds.local, "en", "index.html"));
+  assert.doesNotMatch(en, /Install it straight from HACS/);
+});
+
+test("the English day label reads Forever, not For ever", () => {
+  const en = read(join(builds.local, "en", "index.html"));
+  assert.match(en, /07 · Forever</);
+  assert.doesNotMatch(en, /For ever/);
 });

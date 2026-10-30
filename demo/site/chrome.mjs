@@ -9,8 +9,11 @@ export const links = {
   discussions: "https://github.com/orgs/mealie-atelier/discussions",
   guide: "https://alles-automatisch.de/lernen/mealie-atelier",
   setup: "https://alles-automatisch.de/lernen/mealie-atelier-einrichten",
-  setupWeb:
-    "https://alles-automatisch.de/lernen/mealie-atelier-einrichten#variante-b-mealie-atelier-ohne-home-assistant",
+  setupWeb: "https://alles-automatisch.de/lernen/mealie-atelier-ohne-home-assistant",
+  hacsCards:
+    "https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-cards&category=plugin",
+  hacsBridge:
+    "https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-bridge&category=integration",
   troubleshooting: "https://alles-automatisch.de/lernen/mealie-atelier-fehlerbehebung",
   youtube: "https://www.youtube.com/@alles-automatisch/join",
   kofi: "https://ko-fi.com/allesautomatisch",

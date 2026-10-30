@@ -155,7 +155,7 @@ function everyday(ctx) {
       visual: scene(ctx, "phone", "app-phone-pantry-assist", alt.pantry),
     },
     {
-      num: t("07 · Für immer", "07 · For ever"),
+      num: t("07 · Für immer", "07 · Forever"),
       title: t("Dein eigenes Kochbuch.", "Your own cookbook."),
       text: t(
         "Wähle Lieblingsrezepte. Atelier gestaltet Cover, Inhaltsverzeichnis und A4-Rezeptseiten, als PDF fürs Familienarchiv oder gedruckt als Geschenk.",
