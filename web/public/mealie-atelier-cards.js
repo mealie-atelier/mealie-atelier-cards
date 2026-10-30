@@ -12427,8 +12427,18 @@ class MealieAtelierCard extends HTMLElement {
     if (!config || typeof config !== "object") throw Error("Invalid card configuration");
     // Focused card types open their own view when the YAML names only the type.
     const { mode } = this.constructor.getStubConfig();
+    const allowedThemes = ["auto", "light", "dark"];
+    if (config.mode !== undefined && !MODES.includes(config.mode))
+      throw Error(`Invalid option mode: '${config.mode}'. Allowed: ${MODES.join(", ")}`);
+    if (config.theme !== undefined && !allowedThemes.includes(config.theme))
+      throw Error(`Invalid option theme: '${config.theme}'. Allowed: ${allowedThemes.join(", ")}`);
+    if (
+      config.columns !== undefined &&
+      !(Number.isInteger(Number(config.columns)) && Number(config.columns) > 0)
+    )
+      throw Error(`Invalid option columns: '${config.columns}'. Allowed: a positive whole number`);
     this._config = { ...DEFAULTS, mode, ...config };
-    this._view = MODES.includes(this._config.mode) ? this._config.mode : "dashboard";
+    this._view = this._config.mode;
     if (this.isConnected) this._render();
   }
   // Home Assistant sets layout "panel" when the card fills a whole view; the card then drops its
