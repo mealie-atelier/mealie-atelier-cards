@@ -66,7 +66,7 @@ export const newVolume = () => {
 };
 
 /** Starts a container and resolves once the app prints its listening line. */
-export async function startContainer(overrides = {}, { mock, volume } = {}) {
+export async function startContainer(overrides = {}, { mock, volume, hostPort } = {}) {
   const env = { ...overrides };
   const extra = [];
   if (mock) {
@@ -87,7 +87,7 @@ export async function startContainer(overrides = {}, { mock, volume } = {}) {
     "--network",
     NETWORK,
     "-p",
-    "127.0.0.1::3000",
+    `127.0.0.1:${hostPort || ""}:3000`,
     "--env-file",
     envFile(env),
     ...hardening,
@@ -96,7 +96,7 @@ export async function startContainer(overrides = {}, { mock, volume } = {}) {
   );
   if (run.status !== 0) throw new Error(`docker run failed: ${run.stderr}`);
   started.push(name);
-  // A random host port is published again on every start, so the URL is looked up each time.
+  // A random host port is published again on every start (unless one is given), so the URL is looked up each time.
   const lookup = () =>
     `http://127.0.0.1:${docker("port", name, "3000/tcp").stdout.trim().split("\n")[0].split(":").pop()}`;
   const handle = { name, url: lookup() };
