@@ -3,6 +3,7 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { request as httpRequest } from "node:http";
+import { networkInterfaces } from "node:os";
 import { createECDH, randomBytes, randomUUID } from "node:crypto";
 import { startApp, usersEnv, newDataDir } from "../lib/app.mjs";
 import { startMocks } from "../lib/mocks.mjs";
@@ -204,11 +205,35 @@ test("ATELIER_DATA_DIR keeps kitchen state across a restart", async () => {
   assert.equal((await command(fresh.url, shared, "studio_state")).body.revision, before.revision);
 });
 
-test("PORT and HOST decide where the app listens", async () => {
-  const a = await app({ HOST: "127.0.0.1" });
-  assert.match(a.url, new RegExp(`:${a.port}$`));
-  assert.equal((await fetch(`${a.url}/healthz`)).status, 200);
-  assert.match(a.logs(), new RegExp(`available on http://127.0.0.1:${a.port}`));
+function externalAddress() {
+  for (const list of Object.values(networkInterfaces()))
+    for (const item of list ?? [])
+      if (item.family === "IPv4" && !item.internal) return item.address;
+  return undefined;
+}
+
+async function reachable(address, port) {
+  try {
+    return (await fetch(`http://${address}:${port}/healthz`, { signal: AbortSignal.timeout(3000) }))
+      .status;
+  } catch {
+    return "refused";
+  }
+}
+
+test("PORT and HOST decide where the app listens", async (t) => {
+  const loopback = await app({ HOST: "127.0.0.1" });
+  assert.match(loopback.url, new RegExp(`:${loopback.port}$`));
+  assert.equal(await reachable("127.0.0.1", loopback.port), 200);
+  const external = externalAddress();
+  if (!external) return t.skip("no non-loopback IPv4 address on this machine");
+  // Bound to loopback only: the machine's own LAN address must not answer.
+  assert.equal(await reachable(external, loopback.port), "refused");
+  // HOST unset means the default 0.0.0.0: every address of the machine answers.
+  const open = await app({ HOST: undefined });
+  assert.match(open.logs(), /available on http:\/\/0\.0\.0\.0:/);
+  assert.equal(await reachable("127.0.0.1", open.port), 200);
+  assert.equal(await reachable(external, open.port), 200);
 });
 
 test("ATELIER_STRUCTURED_EDITS switches ingredient editing on for admins only", async () => {

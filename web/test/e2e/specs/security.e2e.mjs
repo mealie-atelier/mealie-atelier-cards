@@ -1,6 +1,7 @@
 // Security headers, CSP in a real browser, and refused startup configurations.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 import { baseUrl, ACCOUNTS, basicHeader } from "../lib/config.mjs";
 import { browserSuite } from "../lib/suite.mjs";
 import { openContext, openApp } from "../lib/browser.mjs";
@@ -50,19 +51,45 @@ test("the CSP blocks inline script injection and the app still runs under it", a
     );
     assert.equal(outcome.injected, false, "the injected script never ran");
     assert.match(outcome.directive, /^script-src/);
-    const external = await page.evaluate(async () => {
-      try {
-        await fetch("https://example.invalid/", { mode: "no-cors" });
-        return "allowed";
-      } catch {
-        return "blocked";
-      }
+    // A reachable listener on another origin: without the CSP the request would arrive and resolve.
+    let hits = 0;
+    const outside = createServer((req, res) => {
+      hits += 1;
+      res.setHeader("access-control-allow-origin", "*");
+      res.end("reachable");
     });
-    assert.equal(external, "blocked");
+    await new Promise((resolve) => outside.listen(0, "127.0.0.1", resolve));
+    try {
+      const target = `http://localhost:${outside.address().port}/`;
+      assert.equal(
+        await (await fetch(target)).text(),
+        "reachable",
+        "the control listener is reachable",
+      );
+      hits = 0;
+      const external = await page.evaluate(
+        (url) =>
+          new Promise((resolve) => {
+            document.addEventListener(
+              "securitypolicyviolation",
+              (e) => resolve({ directive: e.violatedDirective, outcome: "blocked" }),
+              { once: true },
+            );
+            fetch(url, { mode: "no-cors" }).then(
+              () => resolve({ outcome: "allowed" }),
+              () => {},
+            );
+          }),
+        target,
+      );
+      assert.equal(external.outcome, "blocked");
+      assert.match(external.directive, /^(connect-src|default-src)/);
+      assert.equal(hits, 0, "the outbound request never left the browser");
+    } finally {
+      await new Promise((resolve) => outside.close(resolve));
+    }
     assert.deepEqual(
-      page.problems.filter(
-        (p) => !/Content Security Policy|example\.invalid|Failed to load resource/.test(p),
-      ),
+      page.problems.filter((p) => !/Content Security Policy|Failed to load resource/.test(p)),
       [],
     );
   } finally {
