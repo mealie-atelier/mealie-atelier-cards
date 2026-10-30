@@ -19,6 +19,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Home Assistant sync dialog: the send button of the setup form is a full-width row instead of a circle on phones, it stays neutral ("Speichern und senden") until a preview has produced a count, "Review and send first batch" opens a review that runs the preview itself, the newest run is listed first, rule cards name the destination like the picker ("name · platform"), and the German pending count reads "ausstehend".
+- Cooking mode: Back and Next stay pinned inside the dialog at laptop heights and on tall tablets in Safari, also after an ingredient alternatives result.
+- Docs: README and CHANGELOG use American spelling.
 - Web app: the app icons, favicon, touch icon, notification badge and the install dialog mark now show the herb leaf Week Dial like the logo inside the app and the demo site, instead of the old browser window glyph.
 - Demo site: the 404 page swaps its header, footer and language switch to the language of the URL below `/en/` or `/de/` and marks it as current. On any other path it stays neutral, German first with English beside it.
 - Install docs: the FAQ names where the Marketplace is (**Settings → Marketplace**, route `/marketplace/browse`).
@@ -65,7 +68,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Web app: restoring a recipe backup after the recipe was renamed now works. Mealie gives a renamed recipe a new slug, and the restore follows the slug it returns instead of the old one.
 - Demo site: unknown paths no longer answer 200 with the home page. `npm run build:demo` writes `404.html`, a bilingual page in the site design (noindex, no canonical, not in the sitemap) that Cloudflare Pages serves with status 404.
 - Cooking mode no longer flashes or twitches when you step through the recipe. Going to the next or previous step (buttons, arrow keys, swipe, a Home Assistant state update) now patches the open dialog in place instead of rebuilding it: the backdrop stays in the top layer and is never replayed from transparent, so the page behind no longer shines through. The step photo and the progress bar keep their elements (the bar grows to the next step), a running timer keeps its pulse, and only the step lines that changed fade in softly (never the photo, and not at all with reduced motion or motion off). A different step photo is decoded off screen first: its frame stands at full size at once (the old photo stays, or an empty calm slot), the new photo fades in over the old one (instantly with reduced motion), so the timer and the buttons below never jump.
-- URLs in the recipe detail step text are links too. The step number is now its own toggle button, so the text is no longer inside a button, and links in recipe text use the brand colour.
+- URLs in the recipe detail step text are links too. The step number is now its own toggle button, so the text is no longer inside a button, and links in recipe text use the brand color.
 - Removing a kitchen timer the server already dispatched or no longer knows now works on every server and language: the card matches the dedicated error codes (`timer_dispatched`, `timer_not_found`) instead of English message text, and a refused cancel names its real reason. The web app reports `timer_not_found` the same way and treats a dispatched timer as already removed.
 - On short landscape phones the cooking navigation stays one level row of three buttons with every label on one line.
 - The step number in the recipe detail is a round serif badge again (32 px on phones, 35 px elsewhere) although it is a real button now.
@@ -91,11 +94,11 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Demo photos: the skillet eggs and the pizza are cropped tight on the dish (no drink, no empty table), the skillet eggs recipe no longer lists crispbread, and all product screenshots were captured again with them.
 - Cooking mode on laptop-height screens (landscape, 701 to 1000 px tall): Back and Next sit right under the step and stay pinned to the bottom of the step column, the photo column keeps its full height with the recipe title readable, and only the step column scrolls. At 1440 × 900 the buttons were cut off at the dialog edge.
 - German copy now matches the Bridge wording: "Backup" instead of "Sicherung", "API-Token", "Home-Assistant-Nutzer" and "Mealie Atelier Bridge".
-- Theme auto follows the system colour scheme in the web app, live while it is open (the card and the theme colour of the browser bar included). The setup wizard offers Automatic next to the two presets. The Family page title and the provider banner eyebrow are translated. The recipe print word is normal case.
+- Theme auto follows the system color scheme in the web app, live while it is open (the card and the theme color of the browser bar included). The setup wizard offers Automatic next to the two presets. The Family page title and the provider banner eyebrow are translated. The recipe print word is normal case.
 - The card follows the Home Assistant light or dark mode by default (`theme: auto`).
 - Design Studio and the editor offer the automatic theme; print documents get a normal-case title (the file name when saving as PDF); the shopping card is called "Einkaufsliste" in the German picker.
 - Card picker: one name per view in the picker, navigation and settings (Discover, Meal plan, Family, Manage), neutral parallel descriptions in English and German, and the picker follows a language switch without a reload. Stub configs no longer write an unused `title`.
-- German UI: sidebar, menu label, Print Studio and Design Studio headings and the print masthead are translated. Week and shopping prints no longer ask "How was it last time?" and the print credit link matches the sheet colours. The week range uses an en dash.
+- German UI: sidebar, menu label, Print Studio and Design Studio headings and the print masthead are translated. Week and shopping prints no longer ask "How was it last time?" and the print credit link matches the sheet colors. The week range uses an en dash.
 - The start-view hint now says that only the overview keeps the navigation.
 - Shopping: quantity shown once, open items grouped by label with ticked items at the bottom, one print button per view, tidy toolbar on phones; Today items use a checkbox; footer credit link has a 44px touch target; English copy polished.
 - Shopping: items with a unit keep their amount ("1 kg Mehl"), unlabelled and ticked items get their own headings, a single toolbar button no longer stretches across the row.
@@ -149,7 +152,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - The phone week toolbar buttons now really reach 44px, the install dialog "Later" button keeps its visible text as accessible name, and the iOS install step 1 reads as an action.
 
 - The web app install dialog translates its "Later" button and no longer claims that only Safari can install on iPhone; the install button, week toolbar, Kochinspo choices and credit link reach 44px touch targets.
-- The web app manifest and browser theme colour match the shell colours, and the static page text uses no dashes as punctuation.
+- The web app manifest and browser theme color match the shell colors, and the static page text uses no dashes as punctuation.
 - The sidebar and print brand lines are localized, the iOS install steps no longer repeat Share, offline conflict counts use proper singular and plural, and the sync status reads "wird synchronisiert".
 - Web app: free-text shopping items show exactly as typed (no forced "1 " prefix).
 - Web app: a wrong Mealie token reports `mealie_auth` (HTTP 502) instead of a passed-through 401, and the status call reports `connected: false` and an `ai` feature flag.
@@ -203,11 +206,11 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - The card sidebar identity shows the Week Dial mark instead of the green leaf tile, in Home Assistant and in the web app.
 - Photo credits are quiet on the demo site: no more "Photo: X · Unsplash" overlays on the recipe grid, the AI helper photo, the closing photo or the recipe directory. A recipe page shows one small muted caption under its hero photo, and one complete list lives on the new "Bildnachweise" (de) and "Photo credits" (en) pages, linked from every footer.
 - Demo photos: eight of the ten photos are new (pancakes, skillet eggs, chicken salad, pumpkin soup, penne with artichokes, wonton soup, coconut curry, lemon focaccia), the gnocchi and pizza photos stay, and every fictional recipe now matches its photo. The shakshuka, Greek salad, chicken soup, lemon pasta, paneer curry, ramen and roasted vegetables gave way to the new dishes, the pizza became ham and mushroom, and the gnocchi and pancake recipes and all alt texts describe exactly what their photos show.
-- The light theme uses the Herb green of the brand mark (`#3e6b48`) instead of plum, for the default accent, inks, shadows and photo fallback; the default accent swatch in the Design Studio and the editor is shown and named "herb green" in the light theme, matching the colour you see.
+- The light theme uses the Herb green of the brand mark (`#3e6b48`) instead of plum, for the default accent, inks, shadows and photo fallback; the default accent swatch in the Design Studio and the editor is shown and named "herb green" in the light theme, matching the color you see.
 - New Week Dial icons replace the photo icon: a cream plate with seven day sections, today in paprika. The Cards icon carries a card grid on the plate (`brand/icon.svg` with `icon-192.png`, `icon-512.png` and `icon-1024.png`, also the GitHub social preview; the demo favicon is the organization Week Dial mark, not this icon).
 - The web app icon carries a browser window on the plate. It is used in the browser tab (`favicon.svg`, `favicon.ico` with 16, 32 and 48 px, `favicon-32.png`), on the iOS home screen, in the installed app (`web/public/icon-192.png`, `icon-512.png`) and as a maskable icon for Android.
-- The manifest is named "Mealie Atelier · Dein Küchenstudio" (language `de`, like the page). Its theme and splash colour, the browser theme colour and the window title now match the dark page surface (`#101613`), and the page title no longer uses a dash.
-- Timer notifications show a monochrome badge (`badge-96.png`) instead of the full-colour tile, so Android draws a clear glyph in the status bar.
+- The manifest is named "Mealie Atelier · Dein Küchenstudio" (language `de`, like the page). Its theme and splash color, the browser theme color and the window title now match the dark page surface (`#101613`), and the page title no longer uses a dash.
+- Timer notifications show a monochrome badge (`badge-96.png`) instead of the full-color tile, so Android draws a clear glyph in the status bar.
 - The overview tiles "Rezepte", "Geplant" and "Offene Artikel" are buttons that open the recipes, the week plan and the shopping list.
 - A card that fills a panel view in Home Assistant drops its frame and runs edge to edge.
 - Recipe photos appear in the week grid, in today's plan and in the cookbook list.

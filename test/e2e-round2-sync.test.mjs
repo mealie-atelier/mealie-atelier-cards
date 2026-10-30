@@ -141,3 +141,10 @@ test("German pending wording matches the other waiting strings", () => {
   assert.equal(de.syncRunLeft, "{count} ausstehend");
   assert.equal(de.syncPendingNone, "Nichts ausstehend");
 });
+
+test("README and CHANGELOG use American spelling", () => {
+  for (const file of ["../README.md", "../CHANGELOG.md"]) {
+    const text = readFileSync(new URL(file, import.meta.url), "utf8");
+    assert.doesNotMatch(text, /colour|behaviour|licence|centred/i, file);
+  }
+});
