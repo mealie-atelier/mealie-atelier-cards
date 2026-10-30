@@ -1685,17 +1685,32 @@ html.js .live-frame:not([data-ready])::after {
 /* Wider than a phone: text and phone sit side by side in every step instead of a left column over a
    centred phone. */
 @media (min-width: 641px) and (max-width: 1000px) {
+  /* The outer 1fr rows absorb the phone's height, so the text keeps its own spacing and sits centred. */
   .step {
     grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+    grid-template-rows: 1fr repeat(4, auto) 1fr;
     column-gap: clamp(28px, 4vw, 48px);
-    align-items: center;
+    row-gap: 18px;
   }
   .step > :not(.inline) {
     grid-column: 1;
   }
+  .step .num {
+    grid-row: 2;
+  }
+  .step h3 {
+    grid-row: 3;
+  }
+  .step p {
+    grid-row: 4;
+  }
+  .step .checks {
+    grid-row: 5;
+  }
   .step .inline {
     grid-column: 2;
-    grid-row: 1 / span 4;
+    grid-row: 1 / -1;
+    align-self: center;
     margin-top: 0;
   }
   .step .inline > .phone {

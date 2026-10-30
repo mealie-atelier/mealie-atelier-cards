@@ -1848,8 +1848,11 @@ test("tablet landscape layouts: story steps sit side by side, showcases are cent
   const css = readFileSync("demo/live-demo.css", "utf8");
   assert.match(
     css,
-    /@media \(min-width: 641px\) and \(max-width: 1000px\) \{\s*\.step \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(220px, 300px\)/,
+    /@media \(min-width: 641px\) and \(max-width: 1000px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.step \{[^}]*grid-template-columns: minmax\(0, 1fr\) minmax\(220px, 300px\)/,
   );
+  // The text keeps its own spacing next to the taller phone instead of spreading over the phone's rows.
+  assert.match(css, /\.step \{[^}]*grid-template-rows: 1fr repeat\(4, auto\) 1fr;/);
+  assert.match(css, /\.step \.inline \{[^}]*grid-row: 1 \/ -1;/);
   assert.match(css, /\.step \.inline \{\s*grid-column: 2;/);
   assert.match(css, /\.ha-hero \.copy \{[^}]*text-align: center/);
   assert.doesNotMatch(css, /@media \(min-width: 1180px\) \{\s*(?:\/\*[^*]*\*\/\s*)?\.hero-grid/);
