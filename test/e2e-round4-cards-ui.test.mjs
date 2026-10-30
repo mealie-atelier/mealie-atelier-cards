@@ -218,3 +218,66 @@ test("the tablet week strip keeps long meal names whole instead of splitting wor
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("the shopping edit hint omits the note for free-text items", () => {
+  const card = makeCard(loadCards());
+  card._data = {
+    shopping: {
+      lists: [{ id: "l1", name: "Groceries" }],
+      items: [
+        { id: "free", shoppingListId: "l1", note: "Flour", display: "3 kg Flour" },
+        { id: "food", shoppingListId: "l1", note: "organic", food: { name: "Flour" } },
+      ],
+    },
+  };
+  card._modal = "shopping-edit";
+  card._shoppingEditId = "free";
+  assert.doesNotMatch(card._modalHtml(), /name, quantity or note/);
+  assert.match(card._modalHtml(), /Change the name or quantity\./);
+  card._shoppingEditId = "food";
+  assert.match(card._modalHtml(), /name, quantity or note/);
+  assert.doesNotMatch(locale("de").shoppingEditTipFreeText, /Notiz/);
+});
+
+test("a clamped week strip aligns to a whole day card instead of cutting one", () => {
+  const card = makeCard(loadCards());
+  const width = 140,
+    gap = 11,
+    client = 742,
+    total = 7 * width + 6 * gap;
+  const grid = {
+    scrollWidth: total,
+    clientWidth: client,
+    _left: 0,
+    get scrollLeft() {
+      return this._left;
+    },
+    set scrollLeft(v) {
+      this._left = Math.max(0, Math.min(v, total - client));
+    },
+    getBoundingClientRect: () => ({ left: 0, right: client }),
+  };
+  const rect = (i) => () => ({
+    left: i * (width + gap) - grid._left,
+    right: i * (width + gap) - grid._left + width,
+  });
+  const days = Array.from({ length: 7 }, (_, i) => ({ getBoundingClientRect: rect(i) }));
+  grid.querySelector = () => days[4];
+  grid.querySelectorAll = () => days;
+  card.shadowRoot.querySelector = () => grid;
+  card._revealToday();
+  assert.equal(grid.scrollLeft, 2 * (width + gap));
+  assert.ok(
+    days.every(
+      (d) => !(d.getBoundingClientRect().left < -1 && d.getBoundingClientRect().right > 1),
+    ),
+  );
+});
+
+test("the breadcrumb page name stays readable on very narrow cards", () => {
+  const css = source("design-system/control-refinement.css");
+  assert.match(
+    css,
+    /@container atelier-card \(max-width: 360px\) \{\s*\.atelier \.topbar \.breadcrumb > svg,\s*\.atelier \.topbar \.breadcrumb > span \{\s*display: none;/,
+  );
+});

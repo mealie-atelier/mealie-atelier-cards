@@ -1206,6 +1206,7 @@
   "shoppingDeleteItem": "Löschen: {item}",
   "shoppingEditTitle": "Artikel bearbeiten",
   "shoppingEditTip": "Ändere Name, Menge oder Notiz. Nur was du änderst, wird an Mealie gesendet.",
+  "shoppingEditTipFreeText": "Ändere Name oder Menge. Nur was du änderst, wird an Mealie gesendet.",
   "shoppingItemName": "Name",
   "shoppingItemQuantity": "Menge",
   "shoppingItemNote": "Notiz",

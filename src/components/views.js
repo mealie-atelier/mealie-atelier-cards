@@ -106,6 +106,13 @@ export const viewMethods = {
       d = day.getBoundingClientRect();
     if (d.left >= g.left && d.right <= g.right) return;
     grid.scrollLeft += d.left - g.left;
+    // The browser clamps at the maximum scroll, which can cut a day card in half.
+    // Align to that card's edge instead, so every visible card starts whole.
+    const cut = [...(grid.querySelectorAll?.(".day") || [])].find((el) => {
+      const r = el.getBoundingClientRect();
+      return r.left < g.left - 1 && r.right > g.left + 1;
+    });
+    if (cut) grid.scrollLeft += cut.getBoundingClientRect().left - g.left;
   },
   _week() {
     const all = asArray(this._data.mealplan);

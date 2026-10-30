@@ -426,3 +426,10 @@
     opacity: 1;
   }
 }
+/* Very narrow cards: drop the home icon and separator so the page name stays readable. */
+@container atelier-card (max-width: 360px) {
+  .atelier .topbar .breadcrumb > svg,
+  .atelier .topbar .breadcrumb > span {
+    display: none;
+  }
+}
