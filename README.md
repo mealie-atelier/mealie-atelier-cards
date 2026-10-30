@@ -48,7 +48,7 @@
 
 Mealie Atelier Cards is submitted to the default catalog (`hacs/default`) that the Home Assistant Marketplace and HACS both read. Pick one route:
 
-- **Home Assistant Marketplace** (Home Assistant 2026.11 and newer): open the Marketplace, search for **Mealie Atelier Cards** and download it. Available as soon as the catalog listing is merged. Until then, use **Add from link**, paste `https://github.com/mealie-atelier/mealie-atelier-cards` and complete the one-time **Connect GitHub** login (a free GitHub account is needed).
+- **Home Assistant Marketplace** (Home Assistant 2026.11 and newer): open the Marketplace (**Settings → Marketplace**, route `/marketplace/browse`), search for **Mealie Atelier Cards** and download it. Available as soon as the catalog listing is merged. Until then, use **Add from link**, paste `https://github.com/mealie-atelier/mealie-atelier-cards` and complete the one-time **Connect GitHub** login (a free GitHub account is needed).
 - **HACS** (classic): add the repository as a custom repository of type **Dashboard**, then download it.
 - **Manual**: download `mealie-atelier-cards.js` from the [latest release](https://github.com/mealie-atelier/mealie-atelier-cards/releases/latest) and copy it to the `www/community/mealie-atelier-cards/` folder of your Home Assistant config. Then register it as a resource, either [in the UI](#ui-resource) or [in YAML](#yaml-resource).
 
@@ -66,6 +66,8 @@ You need a Mealie server that Home Assistant can reach: Mealie 3.x (tested with 
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | [Mealie Atelier Bridge](https://github.com/mealie-atelier/mealie-atelier-bridge) (recommended)     | Everything: photos, shopping and meal plan writes, recipe editing, timers, offline shopping, per-user grants. |
 | Home Assistant's built-in [Mealie integration](https://www.home-assistant.io/integrations/mealie/) | Read-only recipe browsing and cooking mode through its read actions, no photos or Atelier writes.             |
+
+Editing, deleting and clearing ticked shopping items (Cards 0.11 and newer) need Bridge 0.11 or newer. With an older Bridge those buttons fail.
 
 ### 3. Add a card
 
@@ -164,7 +166,7 @@ The cooking actions only run when you press them. Nothing triggers automatically
 - **Print Studio:** A4 layouts for recipes, shopping lists, the week plan and a whole cookbook, in Editorial, Compact or Ink saver style.
 - **Nutrition Lab:** match ingredients against USDA data, confirm grams and store per-serving values in Mealie. AI name suggestions are optional and off by default.
 - **Smart Shopping Sync:** rule-based sync from a Mealie list to a Home Assistant To-do list such as Bring!, with a preview before the first batch (Bridge).
-- **Offline shopping:** ticks, new items, edits, deletions and "clear ticked" made without a connection are kept on the device and replayed in order, exactly once, when the connection returns.
+- **Offline shopping:** ticks, new items, edits, deletions and "clear ticked" made without a connection are kept on the device and replayed in order, exactly once, when the connection returns. Editing, deleting and clearing ticked items need Bridge 0.11 or newer.
 - **Accessibility:** keyboard navigation and focus management in every dialog, screen reader labels and reduced motion support.
 
 ## Standalone web app and demo
@@ -177,7 +179,7 @@ Build the demo locally with `npm run build:demo` and serve `demo/public-site/`.
 
 1. Remove every Mealie Atelier card from your dashboards first. Leftover cards show a bare "Configuration error" once the files are gone.
 2. If you use the Bridge, delete its entry under **Settings → Devices & services**. This also deletes its backups and outbox.
-3. Uninstall the cards in the Marketplace or HACS, or remove the resource (**Settings → Dashboards → Resources**) and delete the `mealie-atelier-cards` folder from `www/community/`.
+3. Uninstall the cards in the Marketplace (**Settings → Marketplace**) or HACS, or remove the resource (**Settings → Dashboards → Resources**) and delete the `mealie-atelier-cards` folder from `www/community/`.
 4. Restart Home Assistant and hard-reload the browser.
 
 ## Documentation

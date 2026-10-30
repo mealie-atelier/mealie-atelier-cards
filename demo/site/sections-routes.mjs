@@ -44,7 +44,9 @@ function webApp(ctx) {
   const id = sectionIds[ctx.locale];
   const point = (iconName, title, text, delay = "", extra = "") =>
     `<article class="rv${delay}${extra}"><span class="ico">${icon(iconName)}</span><div><h3>${title}</h3>${text}</div></article>`;
-  const terminal = `<div class="term rv d3" role="img" aria-label="${t("Beispiel: Repository holen, drei Einstellungen in die .env schreiben, danach docker compose up -d --build", "Example: get the repository, write three settings into .env, then docker compose up -d --build")}"><div class="bar" aria-hidden="true"><i></i><i></i><i></i><span>web/.env</span></div><pre><span class="p">$</span> cp .env.example .env
+  const terminal = `<div class="term rv d3" role="img" aria-label="${t("Beispiel: Repository klonen, in den Ordner web wechseln, drei Einstellungen in die .env schreiben, danach docker compose up -d --build", "Example: clone the repository, change into the web folder, write three settings into .env, then docker compose up -d --build")}"><div class="bar" aria-hidden="true"><i></i><i></i><i></i><span>web/.env</span></div><pre><span class="p">$</span> git clone https://github.com/mealie-atelier/mealie-atelier-cards.git
+<span class="p">$</span> cd mealie-atelier-cards/web
+<span class="p">$</span> cp .env.example .env
 <span class="c"># .env</span>
 MEALIE_URL=https://mealie.example.com
 MEALIE_API_TOKEN=<span class="c">${t("dein-mealie-token", "your-mealie-token")}</span>

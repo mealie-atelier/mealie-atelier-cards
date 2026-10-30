@@ -8,7 +8,11 @@ Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **wit
 
 ## Docker quick start
 
+There is no prebuilt image: Docker builds it from the cloned repository.
+
 ```bash
+git clone https://github.com/mealie-atelier/mealie-atelier-cards.git
+cd mealie-atelier-cards/web
 cp .env.example .env
 # Edit MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD (at least 12 characters) in .env
 docker compose up -d --build
@@ -30,6 +34,8 @@ Behind a reverse proxy every request arrives from the proxy address, so the sign
 
 ```bash
 # Node.js 22 or later
+git clone https://github.com/mealie-atelier/mealie-atelier-cards.git
+cd mealie-atelier-cards/web
 cp .env.example .env
 # Edit MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD in .env
 npm start
@@ -136,7 +142,7 @@ The tests wait for defined states, never for fixed times. The card replaces its 
 
 - No npm packages; just Node 22 built-in server and fetch.
 - User credentials and Mealie tokens remain on the server. Never bake `.env` into your Docker image or expose it in Git.
-- Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos. The opt-in offline mode is the exception: it stores your shopping lists and permissions in the browser's IndexedDB on that device.
+- Use the **Install app** control at the bottom of the page for platform-specific instructions. Chromium can open its native install prompt; on iPhone/iPad, open the site in Safari, or in any browser on iOS 16.4 or later, and use **Share → Add to Home Screen → Open as Web App → Add**. The app includes dedicated Chromium and Apple home-screen icons. Serve it from a trusted HTTPS origin (or localhost for development). The service worker does not cache private API data or recipe photos. The opt-in offline mode is the exception: it stores your shopping lists and permissions in the browser's IndexedDB on that device.
 - This is not an installable Home Assistant integration. The Bridge and the cards are separate optional HA packages.
 - Currently supports one Mealie token/household per web server; all logins use its Mealie permissions, narrowed by their `ATELIER_USERS` role.
 

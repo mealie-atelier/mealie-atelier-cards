@@ -8,7 +8,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Added
 
-- Shopping: edit an item (name, quantity, note), delete it, or clear all ticked items of a list after a confirmation. The offline queue keeps these edits too, and the web app server mirrors them with the same permission rules. The Mealie Atelier Bridge provides the matching actions `shopping_update`, `shopping_delete` and `shopping_clear_checked`.
+- Shopping: edit an item (name, quantity, note), delete it, or clear all ticked items of a list after a confirmation. The offline queue keeps these edits too, and the web app server mirrors them with the same permission rules. The Mealie Atelier Bridge provides the matching actions `shopping_update`, `shopping_delete` and `shopping_clear_checked`. This needs Bridge 0.11 or newer; an older Bridge rejects these actions.
 - The web app's AI helpers also work with an Anthropic API key (`ANTHROPIC_API_KEY`); `ATELIER_AI_PROVIDER` picks one when both keys are set.
 - Demo site: the German and English landing pages are now a full product page, with hero, facts, food photos, a before/after slider (mouse, touch and keyboard), the live card in its own "try it" section, a week in the kitchen with a scroll stage, features, devices, Home Assistant, the web app without Home Assistant, the optional AI helpers, the recipe directory, open source and both install routes. Scroll reveals, counters, parallax and the slider sweep respect `prefers-reduced-motion`.
 - Demo site: new product screenshots from the current recipes at phone, tablet and desktop size, plus Home Assistant and Bridge captures with fictional data only. They ship as WebP with `srcset`, explicit width and height, and lazy loading below the first screen.
@@ -221,9 +221,13 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Hardcoded interface text was moved into the German and English locale files, and failed actions now show a message.
 - The plain-text ingredient path is replaced by the structured editor. The commands `ingredient_preview`, `ingredient_save`, `ingredient_catalog` and the route `/api/recipe-image/*` stay as deprecated aliases during 0.10.x.
 
-## 0.9.5
+## Developer previews (0.2.0 to 0.9.5)
 
-### Added
+These versions were never tagged or dated, so they are kept as plain headings below.
+
+### 0.9.5
+
+#### Added
 
 - Read-only provider for Home Assistant's built-in Mealie integration. Recipe search, details and cooking steps work without the Bridge and without a Mealie token in the card.
 - Guided card setup that detects a single Mealie connection, plus a provider choice per card (`auto`, `atelier`, `home_assistant`).
@@ -232,102 +236,102 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Standalone install path with platform-aware browser guidance, Apple touch and maskable icons.
 - Neutral Light and Dark themes.
 
-### Changed
+#### Changed
 
 - The standalone app and demo moved into the Cards repository (`web/` and `demo/`). The Bridge integration lives in its own repository.
 - Catalog paging, signed recipe and step photos, cookbooks, shopping and planning stay Bridge features. The Core provider requests up to 500 matches and pages them locally in sets of 24.
 
-## 0.9.3
+### 0.9.3
 
-### Changed
+#### Changed
 
 - Legacy stylesheets were merged into the design system modules. Views, dialogs, nutrition and journal displays, print renderers and the card editor moved into `src/components/`. The migration produced no visual change in a pixel comparison of ten views at four sizes.
 - The build assembles one deterministic bundle for `dist/` and `web/public/`.
 
-### Added
+#### Added
 
 - HTTP level contract tests for the ingredient workflow, photo upload, write limits and the Home Assistant handlers.
 
-## 0.9.2
+### 0.9.2
 
-### Added
+#### Added
 
 - Central polish stylesheet with consistent spacing, typography, surfaces and contrast.
 - Self-contained offline demo with eight embedded sample photos.
 
-### Changed
+#### Changed
 
 - Panels and grids follow the card width, not only the window width. Narrow card columns and tablet widths get proper layouts.
 - Icon-only buttons have accessible names and 44 × 44 px targets. Dialogs and views carry localized ARIA labels.
 - Buttons without an explicit type no longer submit forms by accident. Recipe search uses `type="search"`.
 
-### Fixed
+#### Fixed
 
 - Mobile overflow in the dashboard and in Manage caused by the recipe gallery rail.
 
-## 0.9.1
+### 0.9.1
 
-### Added
+#### Added
 
 - Shared control system for checkboxes, radios, checkable lists, selection buttons and forms, with 44 px touch targets, 22 px check marks and hover, focus, checked, disabled and validation states.
 - The card editor has consistent controls and four clear categories.
 
-### Fixed
+#### Fixed
 
 - The cookbook recipe picker updates its counter and PDF action.
 - Shopping and family checkboxes have the correct role and an accessible name.
 - Accent, theme, motion and print template choices report their state with `aria-pressed`.
 
-## 0.9.0
+### 0.9.0
 
-### Added
+#### Added
 
 - Modular design system with semantic tokens, layout primitives and shared card, form and button states.
 - Reproducible build of the Home Assistant bundle and the standalone bundle.
 - Unit tests for structured ingredient merging, version conflicts, file signatures and upload sizes.
 
-### Changed
+#### Changed
 
 - The width of the Home Assistant card, not the window, drives responsive grids. Mobile week cards use wider scroll-snap cards.
 
-### Fixed
+#### Fixed
 
 - Studio main view no longer squeezes into two narrow panels between 900 and 1180 px.
 - HTML in recipe titles is escaped.
 
-## 0.8.0
+### 0.8.0
 
-### Added
+#### Added
 
 - Connection check in Manage (read-only checks for the Bridge, recipes, shopping lists, meal plan and Atelier storage).
 - JSON export of Atelier household data (pantry, ratings, shared sessions).
 
-### Changed
+#### Changed
 
 - Pantry and ingredient matching uses structured quantities, normalizes g/kg and ml/l, flags unclear units, counts a pantry item only once and ignores expired items. Servings scale up and down.
 - Delete, session change, AI consent, quality check and shopping actions use styled dialogs instead of browser prompts.
 - The cookbook cover prints on white paper with dark green text, even with background graphics disabled.
 
-### Fixed
+#### Fixed
 
 - A new shared cooking session no longer replaces a running one without consent, and family members with open tasks cannot be removed silently.
 
-## 0.7.0
+### 0.7.0
 
-### Added
+#### Added
 
 - Quick access with Ctrl/Cmd + K (or `/`). In Home Assistant it only reacts while the card has focus.
 - Motion levels Lively, Subtle and Off per device, honoring the system reduced motion setting.
 - Swipeable main navigation on small screens, swipe and arrow key navigation in the cooking cockpit.
 
-### Changed
+#### Changed
 
 - Shared motion language: page transitions, card depth, dialog opening, success feedback and loading states.
 - Stronger keyboard focus rings, focus returns after a dialog closes, larger touch targets.
 
-## 0.6.0
+### 0.6.0
 
-### Added
+#### Added
 
 - Cookbook studio with cover, table of contents and several recipe pages.
 - Recommendations by time budget, pantry, expiry, taste, favorites and cooking history.
@@ -339,45 +343,45 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 - Cooking cockpit with timers, browser text to speech and voice input, and optional Home Assistant scene, volume and TTS actions.
 - Wall tablet kiosk layout and a graphical Lovelace editor.
 
-## 0.5.0
+### 0.5.0
 
-### Added
+#### Added
 
 - Nutrition: USDA FoodData Central search and per-ingredient totals in the Bridge and the standalone app. Eight tracked nutrients with coverage checks. Optional AI search term suggestions. Nothing is saved to Mealie without confirmation.
 - Multiple on-device cooking timers and a personal recipe journal.
 - Optional nutrition values in the Print Studio.
 
-## 0.4.0
+### 0.4.0
 
-### Added
+#### Added
 
 - Photo-first desktop gallery and mobile swipe gallery with a full-image recipe detail view.
 - Two-panel cooking mode with large steps and a progress line.
 - Photo crop choice (portrait, square or wide) in the Design Studio and the card editor.
 - Standalone HTML showroom with simulated data.
 
-### Changed
+#### Changed
 
 - UI write permissions default to off until the backend confirms them.
 
-## 0.3.0
+### 0.3.0
 
-### Added
+#### Added
 
 - Print Studio with A4 documents for recipe, shopping list and meal plan (landscape), editorial, compact and economical presets, and Save as PDF.
 - Guided forms for creating, importing and editing recipes, shopping lists and the week plan.
 - German and English card interface.
 
-## 0.2.0
+### 0.2.0
 
-### Added
+#### Added
 
 - Today card as the sixth card type.
 - Creating shopping lists and adding recipe ingredients to a list.
 - Extended recipe editor with name, description, servings and steps.
 - Read-only mode (Home Assistant option or `ATELIER_READ_ONLY=true`), enforced on the server.
 
-### Fixed
+#### Fixed
 
 - Meal plan API parameters (`start_date`, `end_date`).
 

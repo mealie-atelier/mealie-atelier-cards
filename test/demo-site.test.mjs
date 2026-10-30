@@ -1916,3 +1916,39 @@ test("the narrow product page uses one feature column and an opaque full-height 
     /\.top\.open \{\s*height: 100dvh;[^}]*background: var\(--bg, #0c120f\);[^}]*backdrop-filter: none;/,
   );
 });
+
+test("the web app quick starts say where to run the commands", () => {
+  const readme = read("web/README.md");
+  const clone = "git clone https://github.com/mealie-atelier/mealie-atelier-cards.git";
+  assert.equal(
+    readme.split(`${clone}\ncd mealie-atelier-cards/web\ncp .env.example .env`).length,
+    3,
+  );
+  assert.match(readme, /no prebuilt image/);
+  for (const page of ["de/index.html", "en/index.html"]) {
+    const html = read(join(builds.local, page));
+    assert.ok(
+      html.indexOf(clone) > 0 && html.indexOf(clone) < html.indexOf("cp .env.example .env"),
+      `${page} clones before copying .env.example`,
+    );
+    assert.match(html, /cd mealie-atelier-cards\/web/);
+  }
+});
+
+test("the install docs name the Marketplace location and the Bridge version for shopping edits", () => {
+  const readme = read("README.md");
+  assert.match(readme, /open the Marketplace \(\*\*Settings → Marketplace\*\*/);
+  assert.match(readme, /need Bridge 0\.11 or newer/);
+  assert.match(read("CHANGELOG.md"), /needs Bridge 0\.11 or newer/);
+  assert.match(read("web/README.md"), /any browser on iOS 16\.4 or later/);
+  assert.match(read("web/public/pwa-install.js"), /iOS 16\.4/);
+});
+
+test("the changelog keeps every release heading in the Keep a Changelog form", () => {
+  const headings = read("CHANGELOG.md").match(/^## .*$/gm);
+  for (const heading of headings)
+    assert.match(
+      heading,
+      /^## (\[(Unreleased|\d+\.\d+\.\d+)\]( - \d{4}-\d{2}-\d{2})?|Developer previews .*)$/,
+    );
+});
