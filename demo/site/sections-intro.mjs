@@ -1,6 +1,6 @@
 // Landing page, first half: hero, facts, food, before/after and the opening of the live demo.
 import { escapeHtml, icon, sectionIds, translator } from "./chrome.mjs";
-import { browser, host, phone, photo, shot, shotSources } from "./media.mjs";
+import { heroPhone, heroTablet, photo, shot, shotSources, weekDialRing } from "./media.mjs";
 
 export const bySlug = (ctx, slug) => {
   const recipe = ctx.recipes.find((row) => row.slug === slug);
@@ -14,38 +14,48 @@ export const SIZES = {
   tablet: "(max-width: 980px) 94vw, 640px",
 };
 
+// Measured widths of the screens (the device frame takes the rest), so the browser picks the smallest
+// file that is still crisp. test/demo-site.test.mjs and scripts/check-hero.py hold them to the layout:
+//   tablet screen: 477px at 641, 571 at 768, 711 from 1024 to 1179 (full width stage), 517 at 1180, 597 at 1280, 622 from 1440
+//   phone screen: 228px at 390, 261 from 640 (phone only), 176 at 641, 211 at 768, 262 from 1024, 191 at 1180, 220 at 1280, 229 from 1440
+const TABLET_SIZES =
+  "(max-width: 1179px) min(calc(80.8vw - 48px), 711px), min(calc(80vw - 427px), 622px)";
+const PHONE_SIZES =
+  "(max-width: 640px) min(calc((100vw - 40px) * 0.652), 261px), (max-width: 1179px) min(calc(29.8vw - 18px), 262px), min(calc(29vw - 151px), 229px)";
+
+const GIF_BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+
+// Kitchen tablet in cooking mode behind, phone with the shopping list in front. Both are real
+// captures (scripts/capture-hero.py). The timer is part of the tablet screen, not a floating toast.
+function heroStage(ctx) {
+  const t = translator(ctx.locale);
+  const tablet = shotSources(ctx, "hero-tablet-cook");
+  const tabletAlt = t(
+    "Kochmodus auf dem Küchentablet: Gnocchi alla Sorrentina, Schritt 1 von 3, Kirschtomaten aufplatzen lassen. Darunter läuft der Küchentimer „Sauce köcheln“ mit noch 7:28 Minuten.",
+    "Cooking mode on a kitchen tablet: Gnocchi alla Sorrentina, step 1 of 3, let the cherry tomatoes burst. Below it the kitchen timer “Simmer the sauce” runs with 7:28 minutes left.",
+  );
+  // On a phone the tablet is hidden: its picture source swaps to a one pixel GIF, so nothing is downloaded.
+  const tabletImg = `<picture><source media="(max-width: 640px)" srcset="${GIF_BLANK}"><img src="${tablet.src}" srcset="${tablet.srcset}" sizes="${TABLET_SIZES}" width="${tablet.entry.width}" height="${tablet.entry.height}" alt="${escapeHtml(tabletAlt)}" decoding="async" fetchpriority="high"></picture>`;
+  const phoneImg = shot(
+    ctx,
+    "hero-phone-shopping",
+    t(
+      "Einkaufsliste auf dem Smartphone: die Liste Wocheneinkauf für die Gnocchi. Noch zu kaufen: Kartoffelgnocchi, passierte Tomaten, Knoblauch, Oregano, Mozzarella, Basilikum und Salz. Schon abgehakt: Kirschtomaten und Olivenöl.",
+      "Shopping list on a phone: the list Weekly shop for the gnocchi. Still to buy: potato gnocchi, passata, garlic, oregano, mozzarella, basil and salt. Already ticked off: cherry tomatoes and olive oil.",
+    ),
+    PHONE_SIZES,
+    { eager: true },
+  );
+  return `<div class="hero-stage rv d2">${weekDialRing()}${heroTablet(tabletImg)}${heroPhone(ctx, phoneImg)}</div>`;
+}
+
 function hero(ctx) {
   const t = translator(ctx.locale);
   const id = sectionIds[ctx.locale];
   return `<section class="hero" aria-labelledby="hero-title"><div class="wrap hero-grid"><div class="hero-copy"><p class="kicker rv"><span class="dot"></span><span class="nw">${t("Für dein Mealie ·", "For your Mealie ·")}</span> <span class="nw">${t("mit oder ohne Home\u00a0Assistant", "with or without Home\u00a0Assistant")}</span></p><h1 id="hero-title" class="rv d1">${t("Gutes Essen.<br><em>Jeden Tag.</em>", "Good food.<br><em>Every day.</em>")}</h1><p class="lead rv d2">${t(
     "Mealie Atelier macht aus deinem selbst gehosteten Mealie eine ruhige, schöne Küche. Woche planen, einkaufen, Schritt für Schritt kochen: auf dem Handy, am Küchentablet und am großen Bildschirm.",
     "Mealie Atelier turns your self-hosted Mealie into a calm, beautiful kitchen. Plan the week, shop, cook step by step: on your phone, on the kitchen tablet and on the big screen.",
-  )}</p><div class="btn-row rv d3"><a class="btn btn-primary" href="#${id.demo}">${icon("play")}${t("Live-Demo ausprobieren", "Try the live demo")}</a><a class="btn btn-ghost" href="#${id.install}">${icon("download")}${t("Kostenlos installieren", "Install for free")}</a></div><ul class="hero-meta rv d3"><li>${icon("check")}${t("Open Source, MIT-Lizenz", "Open source, MIT license")}</li><li>${icon("check")}${t("Deutsch und Englisch", "English and German")}</li><li>${icon("check")}${t("Deine Daten bleiben bei dir", "Your data stays with you")}</li></ul></div><div class="stack rv d2">${browser(
-    host(ctx),
-    shot(
-      ctx,
-      "app-desktop-dashboard",
-      t(
-        "Übersicht im Browser: Begrüßung des Küchenassistenten, darunter das Gericht des Tages Pfannen-Eier mit Tomaten und Basilikum und links die Seitenleiste mit allen Bereichen",
-        "Overview in the browser: the kitchen assistant's greeting, today's dish Skillet eggs with tomatoes and basil and the sidebar with every view",
-      ),
-      SIZES.wide,
-      { eager: true, priority: true },
-    ),
-    "",
-  )}${phone(
-    shot(
-      ctx,
-      "app-phone-today",
-      t(
-        "Heute-Ansicht auf dem Smartphone mit dem geplanten Gericht und den offenen Einkäufen",
-        "Today view on a phone with the planned dish and the open shopping items",
-      ),
-      SIZES.phone,
-      { eager: true },
-    ),
-    ' data-speed="0.12"',
-  )}<div class="toast" data-speed="0.09" role="img" aria-label="${t("Beispiel einer Timer-Anzeige: Tomatensauce köcheln, noch etwa acht Minuten", "Example of a timer: simmer the tomato sauce, about eight minutes left")}"><span class="ic">${icon("timer")}</span><span><b>${t("Tomatensauce köcheln", "Simmer the tomato sauce")}</b>${t("Timer läuft", "Timer running")} · <time data-countdown="480">08:00</time></span></div></div></div></section>`;
+  )}</p><div class="btn-row rv d3"><a class="btn btn-primary" href="#${id.demo}">${icon("play")}${t("Live-Demo ausprobieren", "Try the live demo")}</a><a class="btn btn-ghost" href="#${id.install}">${icon("download")}${t("Kostenlos installieren", "Install for free")}</a></div><ul class="hero-meta rv d3"><li>${icon("check")}${t("Open Source, MIT-Lizenz", "Open source, MIT license")}</li><li>${icon("check")}${t("Deutsch und Englisch", "English and German")}</li><li>${icon("check")}${t("Deine Daten bleiben bei dir", "Your data stays with you")}</li></ul></div>${heroStage(ctx)}</div></section>`;
 }
 
 function facts(ctx) {
@@ -110,7 +120,7 @@ function demoOpen(ctx) {
   )}</p></div><ul class="live-tips rv d2"><li>${icon("cal")}${t("Wochenplan öffnen und ein Gericht einplanen", "Open the meal plan and add a dish")}</li><li>${icon("timer")}${t("Ein Rezept öffnen und „Kochen starten“", "Open a recipe and press “Start cooking”")}</li><li>${icon("spark")}${t("Kochinspo nach Ideen fragen", "Ask Discover for suggestions")}</li></ul></div><p class="live-note">${icon("shield")}<span>${t(
     "Demo-Modus: Suche, Haken, Planung und Timer verwenden Beispieldaten nur im Arbeitsspeicher dieses Tabs. Nichts wird an Mealie oder Home Assistant gesendet.",
     "Demo mode: search, ticks, planning and timers use sample data in this tab's memory only. Nothing is sent to Mealie or Home Assistant.",
-  )}</span></p><div class="live-frame"><div class="live-bar" aria-hidden="true"><i></i><i></i><i></i><span>${t("Live · läuft in deinem Browser", "Live · running in your browser")}</span></div>`;
+  )}</span></p><div class="live-frame" id="live-frame"><div class="live-bar"><span class="live-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="live-status">${t("Live", "Live")}<span class="live-status-more">${t(" · läuft in deinem Browser", " · running in your browser")}</span></span><button class="live-fs" type="button" aria-controls="live-frame" aria-label="${t("Live-Demo im Vollbild öffnen", "Open the live demo in fullscreen")}" data-enter-label="${t("Vollbild", "Fullscreen")}" data-exit-label="${t("Vollbild beenden", "Exit fullscreen")}" data-enter-aria="${t("Live-Demo im Vollbild öffnen", "Open the live demo in fullscreen")}" data-exit-aria="${t("Vollbild beenden", "Exit fullscreen")}" data-dialog-label="${t("Live-Demo im Vollbild", "Live demo in fullscreen")}" hidden><svg class="i" aria-hidden="true"><use href="#i-expand"/></svg><span data-live-fs-label>${t("Vollbild", "Fullscreen")}</span></button></div>`;
 }
 
 export const demoClose = () => `</div></div></section>`;

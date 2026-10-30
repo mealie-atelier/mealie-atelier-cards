@@ -15,7 +15,7 @@ function catalog(locale) {
     totalTime: recipe.prepMinutes + recipe.cookMinutes,
     recipeCategory: [{ name: recipe.category[locale] }],
     recipeCuisine: [{ name: recipe.cuisine[locale] }],
-    tags: recipe.tags.map((name) => ({ name })),
+    tags: recipe.tags.map((tag) => ({ name: data.tagLabels[tag][locale] })),
   }));
   const details = data.recipes.map((recipe, index) => ({
     ...recipes[index],

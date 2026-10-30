@@ -72,6 +72,10 @@ ha-card {
 .atelier.panel > .shell {
   min-height: inherit;
 }
+/* In a panel the sidebar is as tall as the view, not a fixed 780 or 900px, so its footer stays in view. */
+.atelier.panel .sidebar {
+  min-height: 0;
+}
 .atelier.compact {
   --at-gap: 13px;
   --at-pad: 20px;

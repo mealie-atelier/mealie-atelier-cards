@@ -1,6 +1,7 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -444,7 +445,10 @@ test("every asset a page references exists in the generated site", () => {
     const refs = [
       ...[...html.matchAll(/\s(?:src|href)="([^"]+)"/g)].map((m) => m[1]),
       ...[...html.matchAll(/\ssrcset="([^"]+)"/g)].flatMap((m) =>
-        m[1].split(",").map((part) => part.trim().split(/\s+/)[0]),
+        m[1]
+          .replace(/data:[^\s,]+,[^\s,]+/g, "")
+          .split(",")
+          .map((part) => part.trim().split(/\s+/)[0]),
       ),
     ].filter((ref) => !/^(https?:|mailto:|#|data:)/.test(ref));
     for (const ref of refs) {
@@ -789,22 +793,257 @@ test("light scheme and facts strip: no highlighter smear on labels, first cell o
   assert.match(css, /\.fact:nth-child\(odd\) \{\s*padding-left: 0/);
 });
 
-test("hero: one readable browser, a phone, no tablet, eyebrow breaks only between its phrases", () => {
+test("hero: a kitchen tablet in cooking mode and a phone, no browser, no toast, eyebrow breaks only between its phrases", () => {
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);
     const hero = html.match(/<section class="hero"[\s\S]*?<\/section>/)[0];
-    assert.doesNotMatch(hero, /class="tablet"/, `${locale} hero keeps no tiny tablet`);
-    assert.equal((hero.match(/class="phone"/g) ?? []).length, 1);
-    assert.equal((hero.match(/class="browser"/g) ?? []).length, 1);
-    assert.doesNotMatch(hero, /class="browser" data-speed/, "the browser does not drift");
+    assert.equal((hero.match(/class="device device-tablet"/g) ?? []).length, 1, `${locale} tablet`);
+    assert.equal((hero.match(/class="device device-phone"/g) ?? []).length, 1, `${locale} phone`);
+    for (const gone of [
+      /class="browser"/,
+      /class="phone"/,
+      /class="tablet"/,
+      /class="toast"/,
+      /data-countdown/,
+      /class="stack/,
+    ]) {
+      assert.doesNotMatch(hero, gone, `${locale} hero keeps no ${gone}`);
+    }
+    // Frame parts are decoration: only the two screenshots are exposed.
+    assert.match(hero, /<span class="cam" aria-hidden="true">/);
+    assert.match(hero, /<div class="status" aria-hidden="true">/);
+    assert.match(hero, /<span class="home-bar" aria-hidden="true">/);
+    assert.match(hero, /<svg class="dial" [^>]*aria-hidden="true" focusable="false">/);
+    assert.equal((hero.match(/<img\b/g) ?? []).length, 2, `${locale} two images in the hero`);
+    assert.doesNotMatch(hero, /data-speed/, "the hero devices do not drift");
+    // The tablet is swapped for a one pixel GIF on phones, so it is never downloaded there.
+    assert.match(hero, /<source media="\(max-width: 640px\)" srcset="data:image\/gif;base64,/);
+    assert.match(
+      hero,
+      /hero-tablet-cook-800\.webp \d+w, [^"]+hero-tablet-cook-1200\.webp \d+w, [^"]+hero-tablet-cook-1600\.webp \d+w/,
+    );
+    assert.match(hero, /fetchpriority="high"/);
+    // Sizes follow the measured screen widths (711px tablet and 262px phone at most below 1180px).
+    assert.match(
+      hero,
+      /sizes="\(max-width: 1179px\) min\(calc\(80\.8vw - 48px\), 711px\), min\(calc\(80vw - 427px\), 622px\)"/,
+    );
+    assert.match(
+      hero,
+      /sizes="\(max-width: 640px\) min\(calc\(\(100vw - 40px\) \* 0\.652\), 261px\), \(max-width: 1179px\) min\(calc\(29\.8vw - 18px\), 262px\), min\(calc\(29vw - 151px\), 229px\)"/,
+    );
     assert.equal((hero.match(/<span class="nw">/g) ?? []).length, 2, "eyebrow has two phrases");
+    const alts = [...hero.matchAll(/<img\b[^>]*\balt="([^"]+)"/g)].map((m) => m[1]);
+    assert.equal(alts.length, 2);
+    assert.match(
+      alts[0],
+      locale === "de" ? /7:28 Minuten/ : /7:28 minutes/,
+      "alt states the timer of the capture",
+    );
+    assert.match(
+      alts[1],
+      locale === "de"
+        ? /Wocheneinkauf.*Noch zu kaufen: Kartoffelgnocchi.*Schon abgehakt: Kirschtomaten und Olivenöl/
+        : /Weekly shop.*Still to buy: potato gnocchi.*Already ticked off: cherry tomatoes and olive oil/,
+      "the phone alt names what the picture shows",
+    );
+    for (const alt of alts)
+      assert.doesNotMatch(alt, /[\u2013\u2014]|,\s+und\b/, "no dash punctuation");
   }
   const css = read(join(builds.local, "assets/live-demo.css"));
   assert.match(css, /\.nw \{\s*white-space: nowrap/);
-  assert.match(css, /\.stack \.browser \{[^}]*width: 92%/);
+  assert.match(css, /\.hero-stage \{[^}]*container-type: inline-size/);
+  assert.match(css, /\.device-tablet \{[^}]*--w: 84cqi/);
+  assert.match(css, /\.device-phone \{[^}]*--w: 32cqi/);
   const js = read(join(builds.local, "assets/site.js"));
+  assert.doesNotMatch(
+    js,
+    /data-countdown/,
+    "no fake countdown next to a screenshot that reads 07:28",
+  );
   assert.match(js, /Math\.max\(-36, Math\.min\(36, raw\)\)/, "parallax is clamped");
   assert.match(js, /box\.top - current/, "parallax measures without its own offset");
+});
+
+test("hero: the entrance only runs when motion is welcome and the hero has no light override", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  const heroCss = css.slice(css.indexOf(".hero-stage {"), css.indexOf("/* facts */"));
+  assert.ok(heroCss.length > 500);
+  assert.doesNotMatch(heroCss, /prefers-color-scheme/, "the product page is dark only");
+  assert.match(heroCss, /\.reveal-ready \.hero-stage \.device-tablet \{[^}]*translate: 0 18px/);
+  assert.match(heroCss, /\.reveal-ready \.hero-stage \.device-phone \{[^}]*translate: 0 28px/);
+  assert.doesNotMatch(
+    heroCss.replace(/\.reveal-ready[^{]*\{[^}]*\}/g, ""),
+    /transition:/,
+    "no motion without reveal-ready",
+  );
+});
+
+test("hero: the devices keep a readable width, the stage fades only through its devices, the dial leaves the phone free", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  const heroCss = css.slice(css.indexOf(".hero-stage {"), css.indexOf("/* facts */"));
+  // Two columns only from 1180px: below that the devices would shrink under the readable sizes.
+  assert.match(heroCss, /@media \(min-width: 1180px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
+  assert.match(
+    heroCss,
+    /@media \(max-width: 1179px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
+  );
+  // Entrance timings of the concept: tablet 900ms, phone 900ms after 140ms.
+  assert.match(
+    heroCss,
+    /\.hero-stage\.in \.device-phone \{[^}]*opacity 0\.7s var\(--ease\) 0\.14s,\s*translate 0\.9s var\(--ease\) 0\.14s/,
+  );
+  assert.match(heroCss, /\.hero-stage\.in \.device-tablet \{[^}]*translate 0\.9s var\(--ease\);/);
+  // The hidden start state carries no transition, otherwise the devices would first fade out at load.
+  assert.doesNotMatch(
+    heroCss,
+    /\.reveal-ready \.hero-stage \.device(-phone|-tablet)? \{[^}]*transition/,
+  );
+  // The ring stays inside the stage: 100cqi wide, so its arcs never reach the screen edge.
+  assert.match(heroCss, /\.hero-stage \.dial \{[^}]*width: 100cqi/);
+  // The stage only carries .rv for the observer: its own fade and lift would nest with the devices.
+  assert.match(
+    heroCss,
+    /\.reveal-ready \.hero-stage\.rv \{[^}]*opacity: 1;[^}]*transform: none;[^}]*transition: none/,
+  );
+  // The default dial rule never applied (display: none above 640px), so it carries no geometry.
+  const dial = heroCss.match(/\.hero-stage \.dial \{[^}]*\}/)[0];
+  assert.doesNotMatch(dial, /\b(left|top|width):/, "dial geometry lives in the 640px rule only");
+  for (const locale of ["de", "en"]) {
+    const hero = landing(builds.local, locale).match(/<section class="hero"[\s\S]*?<\/section>/)[0];
+    const arcs = [
+      ...hero.matchAll(
+        /<path( class="today")? d="M([\d.]+) ([\d.]+)A46 46 0 0 1 ([\d.]+) ([\d.]+)"/g,
+      ),
+    ];
+    assert.equal(arcs.length, 7);
+    // The phone is 70cqi wide on a small screen, the dial 100cqi: only arcs within 40 degrees of the
+    // horizontal axis clear the phone. The paprika arc must be one of them, at both ends.
+    const today = arcs.find((m) => m[1]);
+    for (const [x, y] of [
+      [today[2], today[3]],
+      [today[4], today[5]],
+    ]) {
+      const turn = Number(
+        heroCss.match(/\.hero-stage \.dial \{[^}]*rotate: (-?[\d.]+)deg/)?.[1] ?? 0,
+      );
+      const angle = Math.abs(Math.atan2(y - 50, x - 50) * (180 / Math.PI) + turn);
+      assert.ok(
+        angle <= 40,
+        `${locale}: the today arc end at ${angle.toFixed(1)} degrees hides behind the phone`,
+      );
+    }
+  }
+});
+
+test("capture script keeps its rules: the rail is only scrolled, never restyled", () => {
+  const script = read(new URL("../scripts/capture-hero.py", import.meta.url));
+  assert.doesNotMatch(
+    script,
+    /margin-inline|mask-image\s*:\s*none|scroll-snap-type\s*:\s*none|style\.setProperty\('width'/,
+  );
+  assert.match(
+    script,
+    /# Capture only: the screen is framed by the CSS device[^\n]*\n(# [^\n]*\n)*CARD_FLAT = /,
+  );
+});
+
+// What the capture run measured, bound to the published files by their hashes.
+test("hero captures: what the run measured is what was published", () => {
+  const dir = new URL("../demo/showcase/", import.meta.url);
+  const report = JSON.parse(read(new URL("hero-capture.json", dir)));
+  const manifest = JSON.parse(read(new URL("manifest.json", dir)));
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const statusBg = css.match(/\.status \{[^}]*background: (#[0-9a-f]{6})/)[1];
+  for (const locale of ["de", "en"]) {
+    const tablet = report[locale]["hero-tablet-cook"];
+    assert.equal(tablet.timer, "07:28", `${locale} timer`);
+    assert.equal(tablet.step, "01 / 03");
+    assert.deepEqual(tablet.cut, [], `${locale} tablet has no cut text`);
+    const phone = report[locale]["hero-phone-shopping"];
+    assert.equal(phone.total, 9, `${locale} the nine Gnocchi ingredients`);
+    assert.equal(phone.ticked, 2, `${locale} two ticked items`);
+    assert.equal(phone.tickedShown, 2, `${locale} both ticked items are on the picture`);
+    assert.equal(phone.open, 7);
+    assert.ok(phone.allRowsShown, `${locale} every row is on the picture`);
+    assert.deepEqual(phone.cut, [], `${locale} phone has no cut text`);
+    assert.deepEqual(phone.rail.cut, [], `${locale} tab rail has no cut tab`);
+    assert.ok(phone.rail.activeWhole, `${locale} active tab is whole`);
+    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 40, `${locale} rail is even`);
+    assert.equal(phone.statusColour, statusBg, `${locale} status bar joins the capture`);
+    assert.match(
+      phone.tickedNames.join(" "),
+      locale === "de" ? /Kirschtomaten.*Olivenöl/ : /cherry tomatoes.*olive oil/,
+    );
+    const budget = {
+      "hero-tablet-cook": { 800: 52, 1200: 100, 1600: 163 },
+      "hero-phone-shopping": { 400: 24, 700: 40, 1179: 70 },
+    };
+    for (const name of ["hero-tablet-cook", "hero-phone-shopping"]) {
+      const entry = manifest[locale][name];
+      for (const width of entry.widths) {
+        const file = readFileSync(new URL(`${locale}/${name}-${width}.webp`, dir));
+        assert.equal(
+          createHash("sha256").update(file).digest("hex"),
+          report[locale][name].files[width],
+          `${locale}/${name}-${width} is the file the run measured`,
+        );
+        assert.ok(
+          file.length <= budget[name][width] * 1000,
+          `${locale}/${name}-${width} is ${file.length} bytes`,
+        );
+        if (width === entry.widths.at(-1)) {
+          // Lossy WebP: "VP8 " chunk, frame header after 3 tag bytes, 14 bit width and height.
+          assert.equal(file.toString("latin1", 12, 16), "VP8 ");
+          const w = file.readUInt16LE(26) & 0x3fff;
+          const h = file.readUInt16LE(28) & 0x3fff;
+          assert.equal(w, width, `${locale}/${name} width`);
+          // The manifest holds the size of the full capture, the file keeps its aspect ratio.
+          assert.ok(
+            Math.abs(h / w - entry.height / entry.width) < 0.002,
+            `${locale}/${name} aspect`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test(
+  "hero render: both screens decode at every breakpoint, files crisp, no layout shift, entrance and rail as designed",
+  { skip: spawnSync("uv", ["--version"]).error ? "uv is not installed" : false, timeout: 600000 },
+  () => {
+    const run = spawnSync(
+      "uv",
+      ["run", "--with", "playwright", "python", "scripts/check-hero.py", "--site", builds.local],
+      { encoding: "utf8", timeout: 580000 },
+    );
+    assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`.slice(-4000));
+    assert.match(run.stdout, /hero render check passed/);
+  },
+);
+
+test("hero captures: tablet and phone exist in both locales with every listed width", () => {
+  const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));
+  for (const locale of ["de", "en"]) {
+    for (const [name, widths] of [
+      ["hero-tablet-cook", [800, 1200, 1600]],
+      ["hero-phone-shopping", [400, 700, 1179]],
+    ]) {
+      const entry = manifest[locale][name];
+      assert.deepEqual(entry.widths, widths, `${locale}/${name}`);
+      for (const width of entry.widths) {
+        assert.ok(
+          existsSync(join(builds.local, `showcase/${locale}/${name}-${width}.webp`)),
+          `${locale}/${name}-${width}`,
+        );
+      }
+    }
+    // The hero shots replaced these two, nothing may keep them alive.
+    for (const old of ["app-desktop-dashboard", "app-phone-today"]) {
+      assert.equal(manifest[locale][old], undefined, `${locale}/${old} is gone`);
+    }
+  }
 });
 
 test("compare: rest position, labels as toggles and a phone-sized capture pair in both locales", () => {
@@ -1543,4 +1782,27 @@ test("404.html is a noindex bilingual page with root-absolute assets, kept out o
     assert.doesNotMatch(html, /,\s+und\b|\bund,/);
   }
   assert.doesNotMatch(read(join(builds.deployed, "sitemap.xml")), /404/);
+});
+
+test("localized demo data carries tags in the page language, never the English ids", () => {
+  const de = JSON.parse(readFileSync(join(builds.local, "data/de.json"), "utf8"));
+  const en = JSON.parse(readFileSync(join(builds.local, "data/en.json"), "utf8"));
+  const german = de.recipes.flatMap((recipe) => recipe.tags);
+  assert.ok(german.includes("vegetarisch") && german.includes("familienfreundlich"));
+  for (const english of ["vegetarian", "family-friendly", "quick", "one-pan", "dairy-free"])
+    assert.ok(!german.includes(english), `${english} leaked into the German data`);
+  assert.ok(en.recipes.flatMap((recipe) => recipe.tags).includes("family-friendly"));
+});
+
+test("the raw preview shows tags in the page language and searches by both languages like the built site", () => {
+  const preview = readFileSync("demo/preview.html", "utf8");
+  assert.match(
+    preview,
+    /tags: item\.tags\.map\(\(tag\) => \(\{ name: catalog\.tagLabels\?\.\[tag\]\?\.\[demoLanguage\] \?\? tag \}\)\)/,
+  );
+  const terms = preview.slice(preview.indexOf("searchTerms: ["), preview.indexOf("imageUrl:"));
+  assert.match(
+    terms,
+    /item\.tags\s*\.map\(\(tag\) => catalog\.tagLabels\?\.\[tag\]\?\.\[demoLanguage === "de" \? "en" : "de"\]\)/,
+  );
 });

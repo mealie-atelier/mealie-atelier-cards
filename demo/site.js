@@ -93,9 +93,16 @@ if ("IntersectionObserver" in window && !reduced()) {
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        entry.target.classList.add("in");
-        entry.target.querySelectorAll("[data-count]").forEach(countUp);
-        observer.unobserve(entry.target);
+        const target = entry.target;
+        observer.unobserve(target);
+        // Two frames: the hidden start state has to be painted first, otherwise an element that is on
+        // screen at load jumps straight to its end state and the entrance never plays.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            target.classList.add("in");
+            target.querySelectorAll("[data-count]").forEach(countUp);
+          }),
+        );
       }
     },
     { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
@@ -257,20 +264,6 @@ if (story && "IntersectionObserver" in window) {
   activate(0);
 }
 
-// Hero timer counts down and starts over, purely decorative.
-const countdown = document.querySelector("[data-countdown]");
-if (countdown && !reduced()) {
-  const total = Number(countdown.dataset.countdown);
-  let left = total;
-  const format = (seconds) =>
-    `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  setInterval(() => {
-    if (document.hidden) return;
-    left = left > 0 ? left - 1 : total;
-    countdown.textContent = format(left);
-  }, 1000);
-}
-
 // Live demo frame: a calm placeholder until the card has rendered its first view.
 const liveFrame = document.querySelector(".live-frame");
 const liveCard = liveFrame?.querySelector("mealie-atelier-card");
@@ -283,4 +276,17 @@ if (liveFrame && liveCard) {
     else requestAnimationFrame(poll);
   };
   poll();
+}
+
+// Fullscreen for the live demo: Fullscreen API where available, a viewport overlay on iPhone.
+const liveFullscreen = liveFrame?.querySelector(".live-fs");
+if (liveFrame && liveCard && liveFullscreen) {
+  // Loaded on its own so this script does not wait for a second file before the page reveals.
+  import("./live-fullscreen.js")
+    .then(({ setupLiveFullscreen }) =>
+      setupLiveFullscreen({ frame: liveFrame, button: liveFullscreen, card: liveCard }),
+    )
+    .catch(() => {
+      // Without the module the button stays hidden: there is no dead control.
+    });
 }

@@ -393,7 +393,8 @@
     bottom: 14px;
   }
   .atelier .cook-content {
-    padding: 30px 24px 33px;
+    --cook-pad-x: 24px;
+    padding: 30px var(--cook-pad-x) 33px;
     gap: 20px;
   }
   .atelier .cook-stage {
@@ -751,7 +752,8 @@
     height: 170px;
   }
   .atelier .cook-content {
-    padding: 24px 24px 32px;
+    --cook-pad-x: 24px;
+    padding: 24px var(--cook-pad-x) 32px;
     gap: 15px;
     justify-content: start;
   }

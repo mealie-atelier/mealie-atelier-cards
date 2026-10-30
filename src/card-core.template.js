@@ -111,6 +111,8 @@ const imageOk = (v) =>
     /^\.\.?\/(food|photos)\/[a-z0-9-]+\.webp$/.test(v))
     ? v
     : "";
+/** Width of the fade and of the scroll padding at the phone rail edges, in px (see the CSS). */
+const NAV_EDGE = 12;
 const asArray = (v) => (Array.isArray(v) ? v : []);
 /** Nearest scrolling ancestor across shadow roots; the document scroller when none is set. */
 function scrollParent(node) {
@@ -203,6 +205,36 @@ function dayString(locale, day, opts) {
 /** Dedicated print documents. No token/credentials or arbitrary HTML from Mealie is interpolated. */
 /* ATELIER_PRINT_DOCUMENT */
 
+/** Copy the attributes of `fresh` onto `live`, touching only what differs. */
+function syncAttributes(live, fresh) {
+  for (const attr of [...live.attributes])
+    if (!fresh.hasAttribute(attr.name)) live.removeAttribute(attr.name);
+  for (const attr of [...fresh.attributes])
+    if (live.getAttribute(attr.name) !== attr.value) live.setAttribute(attr.name, attr.value);
+}
+/**
+ * Make the live subtree equal to the freshly built one while keeping every node that can stay.
+ * Images keep their element (no reload or blank frame), the progress fill keeps its element
+ * (its width transition runs), timers keep their animation phase and focus stays where it is.
+ */
+function morphElement(live, fresh) {
+  syncAttributes(live, fresh);
+  if (live.nodeName === "INPUT") {
+    if (live.checked !== fresh.checked) live.checked = fresh.checked;
+    if (live.value !== fresh.value) live.value = fresh.value;
+  }
+  const liveKids = [...live.childNodes];
+  const freshKids = [...fresh.childNodes];
+  freshKids.forEach((next, i) => {
+    const current = liveKids[i];
+    if (!current) live.appendChild(next);
+    else if (current.nodeType !== next.nodeType || current.nodeName !== next.nodeName)
+      current.replaceWith(next);
+    else if (current.nodeType === 1) morphElement(current, next);
+    else if (current.data !== next.data) current.data = next.data;
+  });
+  for (const extra of liveKids.slice(freshKids.length)) extra.remove();
+}
 class MealieAtelierCard extends HTMLElement {
   static getConfigElement() {
     return document.createElement("mealie-atelier-card-editor");
@@ -240,6 +272,8 @@ class MealieAtelierCard extends HTMLElement {
     this._error = "";
     this._toast = "";
     this._toastKind = "status";
+    /** Text of the polite live region inside the cooking dialog (timer started). */
+    this._timerAnnouncement = "";
     this._providerTruncated = false;
     this._wakeLock = AtelierWakeLock.create();
     this._boundVisibility = () => {
@@ -879,14 +913,61 @@ class MealieAtelierCard extends HTMLElement {
       </nav><div class="sidebar-footer"><div class="tiny-leaf">${icon("spark", 17)}</div>${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}<span class="atelier-version">Mealie Atelier ${VERSION}</span></div>
     </aside>`;
   }
+  /**
+   * Keep the active tab fully visible in the phone rail. Tabs snap to their start, so when the
+   * active one is cut off the rail scrolls until it starts on that whole tab (never centred, which
+   * would cut the labels on both sides). A tab that is already fully visible does not move the rail.
+   */
   _revealActiveNav() {
     const rail = this.shadowRoot?.querySelector(".sidebar .nav");
     const selected = rail?.querySelector('[data-action="nav"].active');
     if (!rail || !selected) return;
     const r = rail.getBoundingClientRect(),
       a = selected.getBoundingClientRect();
-    if (a.left >= r.left + 10 && a.right <= r.right - 10) return;
-    rail.scrollLeft += a.left - r.left - (r.width - a.width) / 2;
+    const more = rail.scrollWidth - rail.clientWidth - rail.scrollLeft > 1;
+    if (a.left >= r.left - 0.5 && a.right <= r.right - (more ? NAV_EDGE : 0) + 0.5) {
+      this._syncNavHints(rail);
+      return;
+    }
+    rail.scrollLeft += a.left - r.left - NAV_EDGE;
+    this._syncNavHints(rail);
+  }
+  /** Put the trailing rail space of the replaced rail on the new one right after a render. */
+  _keepNavEndPad(pad) {
+    this.shadowRoot?.querySelector(".sidebar .nav")?.style?.setProperty("--nav-end-pad", pad);
+  }
+  /**
+   * The edge fades only show on a side where more tabs wait behind it. The end of the rail also
+   * ends on a whole tab: trailing space is added so the last scroll position starts on a tab
+   * (otherwise the end position would cut the tab at the left edge).
+   */
+  _syncNavHints(rail = this.shadowRoot?.querySelector(".sidebar .nav")) {
+    if (!rail) return;
+    if (rail.querySelectorAll && rail.style?.setProperty) {
+      const pad = parseFloat(rail.style.getPropertyValue("--nav-end-pad")) || 0;
+      const natural = rail.scrollWidth - rail.clientWidth - pad;
+      let needed = 0;
+      if (natural > 1) {
+        const r = rail.getBoundingClientRect();
+        for (const tab of rail.querySelectorAll("button")) {
+          const start = tab.getBoundingClientRect().left - r.left + rail.scrollLeft - NAV_EDGE;
+          if (start >= natural - 0.5) {
+            needed = Math.ceil(Math.max(0, start - natural));
+            break;
+          }
+        }
+      }
+      if (needed !== pad) rail.style.setProperty("--nav-end-pad", `${needed}px`);
+    }
+    const max = rail.scrollWidth - rail.clientWidth;
+    rail.toggleAttribute?.("data-more-start", max > 1 && rail.scrollLeft > 1);
+    rail.toggleAttribute?.("data-more-end", max > 1 && rail.scrollLeft < max - 1);
+    if (!rail._navHintBound && rail.addEventListener) {
+      rail._navHintBound = true;
+      rail.addEventListener("scroll", () => this._syncNavHints(rail), { passive: true });
+      if (typeof ResizeObserver === "function")
+        new ResizeObserver(() => this._syncNavHints(rail)).observe(rail);
+    }
   }
   _topbar() {
     return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
@@ -1120,6 +1201,11 @@ class MealieAtelierCard extends HTMLElement {
           const el = this.shadowRoot.querySelector(selector);
           return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
         });
+    // The swapped rail starts without the trailing space of the old one: carry it over before the
+    // scroll position is restored, or a rail resting at its end is clamped onto a cut tab.
+    const navEndPad =
+      this.shadowRoot.querySelector(".sidebar .nav")?.style?.getPropertyValue("--nav-end-pad") ||
+      "";
     const motion = ["off", "balanced", "expressive"].includes(d.motion) ? d.motion : "expressive";
     if (!this._styleReady) {
       this.shadowRoot.innerHTML = STYLE;
@@ -1131,7 +1217,9 @@ class MealieAtelierCard extends HTMLElement {
     const modalMarkup = this._modalHtml();
     const displayedModal = modalChanged
       ? modalMarkup
-      : modalMarkup.replace('class="modal ', 'class="modal modal-stable ');
+      : modalMarkup
+          .replace('class="modal-backdrop"', 'class="modal-backdrop modal-stable"')
+          .replace('class="modal ', 'class="modal modal-stable ');
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
@@ -1144,8 +1232,18 @@ class MealieAtelierCard extends HTMLElement {
     // WebKit loses its scroll anchor when the card subtree is swapped and jumps the page by
     // the card's height. Nothing above the card changes here, so any drift is undone.
     const topBefore = card ? this.getBoundingClientRect().top : null;
-    if (card) card.replaceWith(template.content.firstElementChild);
-    else this.shadowRoot.appendChild(template.content.firstElementChild);
+    // Stepping through the cooking dialog patches it in place. The backdrop stays in the top
+    // layer and nothing replays, so no frame can show the page behind it.
+    const patched =
+      !modalChanged &&
+      this._modal === "cook" &&
+      card &&
+      this._patchCookDialog(card, template.content.firstElementChild);
+    if (!patched) {
+      this._cookPhotoPending = null;
+      if (card) card.replaceWith(template.content.firstElementChild);
+      else this.shadowRoot.appendChild(template.content.firstElementChild);
+    }
     if (topBefore !== null) {
       const drift = this.getBoundingClientRect().top - topBefore;
       if (Math.abs(drift) > 1) scrollParent(this)?.scrollBy(0, drift);
@@ -1159,6 +1257,7 @@ class MealieAtelierCard extends HTMLElement {
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
+    if (navEndPad) this._keepNavEndPad(navEndPad);
     if (!viewChanged)
       for (const snap of scrolls) {
         const el = this.shadowRoot.querySelector(snap.selector);
@@ -1174,6 +1273,7 @@ class MealieAtelierCard extends HTMLElement {
     this._revealTodayNext = false;
     const gridAppeared =
       !viewChanged && !gridBefore && Boolean(this.shadowRoot.querySelector(".week-grid"));
+    this._syncNavHints();
     if (viewChanged) {
       this._revealActiveNav();
       this._revealToday();
@@ -1366,6 +1466,141 @@ class MealieAtelierCard extends HTMLElement {
         nodes[0].focus();
       }
     }
+  }
+  /**
+   * Patch the open cooking dialog from a freshly built card instead of swapping the card.
+   * The page around the dialog is rebuilt as before. Returns false when the dialog is not there.
+   */
+  _patchCookDialog(card, fresh) {
+    const oldRoot = card.querySelector(":scope > .atelier");
+    const newRoot = fresh.querySelector(":scope > .atelier");
+    const oldBackdrop = oldRoot?.querySelector(":scope > .modal-backdrop");
+    const newBackdrop = newRoot?.querySelector(":scope > .modal-backdrop");
+    const oldModal = oldBackdrop?.querySelector(":scope > .modal");
+    const newModal = newBackdrop?.querySelector(":scope > .modal");
+    if (!oldModal || !newModal) return false;
+    const oldStage = oldModal.querySelector(".cook-stage");
+    const newStage = newModal.querySelector(".cook-stage");
+    // Text pieces of the step, by tag and class. Only these ever fade, never the photo.
+    const textKey = (el) => `${el.tagName}.${el.className}`;
+    const isText = (el) => !el.matches(".cook-step-figure, .muted");
+    const before = new Map();
+    for (const el of oldStage?.children || [])
+      if (isText(el)) before.set(textKey(el), el.innerHTML);
+    // A different step photo is decoded off screen first. The figure with its fixed size slot
+    // is in place at once (old photo, or an empty slot in the calm surface colour), so the
+    // timer and the buttons below never move while the picture loads.
+    // A cross-fade still running ends right now, so the figure holds one photo again.
+    this._cookFade?.();
+    this._cookFade = null;
+    this._cookPhotoPending = null;
+    const newFigure = newStage?.querySelector(".cook-step-figure");
+    const oldFigure = oldStage?.querySelector(".cook-step-figure");
+    const newImg = newFigure?.querySelector("img");
+    let pending = null;
+    if (
+      newImg &&
+      newImg.getAttribute("src") !== oldFigure?.querySelector("img")?.getAttribute("src")
+    ) {
+      // The fresh markup lives in an inert template document where images never load, so
+      // the picture is rebuilt as a live element that decodes while the old one stays.
+      const photo = document.createElement("img");
+      for (const attr of newImg.attributes)
+        if (attr.name !== "src") photo.setAttribute(attr.name, attr.value);
+      photo.src = newImg.getAttribute("src");
+      // Not placed into the inert figure yet: that would adopt it and drop the loading.
+      pending = { src: photo.getAttribute("src"), img: photo };
+      if (oldFigure) {
+        const keep = oldFigure.cloneNode(true);
+        keep.querySelector("img")?.setAttribute("alt", newImg.getAttribute("alt") || "");
+        newFigure.replaceWith(keep);
+      } else {
+        // An empty slot of the same size: same classes, nothing to announce.
+        const slot = document.createElement("img");
+        for (const attr of newImg.attributes)
+          if (attr.name !== "src" && attr.name !== "alt") slot.setAttribute(attr.name, attr.value);
+        slot.setAttribute("alt", "");
+        slot.setAttribute("aria-hidden", "true");
+        // A transparent pixel keeps the engine from drawing a broken image or alt text.
+        slot.setAttribute(
+          "src",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+        );
+        newImg.replaceWith(slot);
+      }
+    }
+    syncAttributes(oldRoot, newRoot);
+    const siblings = [...newRoot.children];
+    const split = siblings.indexOf(newBackdrop);
+    for (const child of [...oldRoot.children]) if (child !== oldBackdrop) child.remove();
+    siblings.forEach((child, i) => {
+      if (i < split) oldRoot.insertBefore(child, oldBackdrop);
+      else if (i > split) oldRoot.appendChild(child);
+    });
+    // The backdrop keeps its popover attribute, only its look classes follow the new markup.
+    oldBackdrop.className = newBackdrop.className;
+    morphElement(oldModal, newModal);
+    const stage = oldModal.querySelector(".cook-stage");
+    const calm =
+      newRoot.classList.contains("motion-off") ||
+      globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (pending && stage) {
+      const token = pending;
+      this._cookPhotoPending = token;
+      const place = () => {
+        if (this._cookPhotoPending !== token) return;
+        this._cookPhotoPending = null;
+        const figure = this.shadowRoot?.querySelector(".modal .cook-stage .cook-step-figure");
+        if (!figure) return;
+        const shown = figure.querySelector("img");
+        if (!shown || calm || typeof token.img.animate !== "function") {
+          if (shown) shown.replaceWith(token.img);
+          else figure.append(token.img);
+          return;
+        }
+        // Cross-fade: the new photo sits on top of the old one, then the old one goes.
+        figure.style.position = "relative";
+        Object.assign(token.img.style, { position: "absolute", inset: "0" });
+        figure.append(token.img);
+        const fade = token.img.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 220,
+          easing: "ease-out",
+        });
+        let over = false;
+        const done = () => {
+          if (over) return;
+          over = true;
+          if (this._cookFade === done) this._cookFade = null;
+          fade.cancel();
+          shown.remove();
+          token.img.style.removeProperty("position");
+          token.img.style.removeProperty("inset");
+          if (!token.img.getAttribute("style")) token.img.removeAttribute("style");
+          figure.style.removeProperty("position");
+          if (!figure.getAttribute("style")) figure.removeAttribute("style");
+        };
+        this._cookFade = done;
+        fade.onfinish = done;
+        fade.oncancel = done;
+        // A hidden tab pauses animations: the old photo must still go.
+        setTimeout(done, 400);
+      };
+      // A decode that never settles must not keep the old photo forever.
+      setTimeout(place, 1500);
+      if (typeof token.img.decode === "function") token.img.decode().then(place, place);
+      else place();
+    }
+    // A short fade of the step text that changed. The photo, the dialog and the unchanged
+    // lines are never touched, so nothing washes out or turns transparent.
+    if (!calm && stage)
+      for (const el of stage.children)
+        if (
+          isText(el) &&
+          before.get(textKey(el)) !== el.innerHTML &&
+          typeof el.animate === "function"
+        )
+          el.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+    return true;
   }
   /**
    * Open dialogs in the top layer (Popover API), above Home Assistant's sidebar and header.
@@ -1781,6 +2016,7 @@ class MealieAtelierCard extends HTMLElement {
         this._timers.push(timer);
         this._persistTimers();
         this._render();
+        this._announceTimer(timer);
         if (armError) {
           // A refusal without a known code (default web app, read-only) is raw English: show the local notice.
           const translated = this._errorText(armError) !== armError?.message;
@@ -1789,7 +2025,8 @@ class MealieAtelierCard extends HTMLElement {
               ? this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) })
               : this.t("uiLocalTimerEnabled"),
           );
-        } else {
+        } else if (this._modal !== "cook") {
+          // In cooking mode the dialog covers the toast: the live region announces the timer.
           this._flash(
             this.t(timer.serverArmed ? "uiBackgroundTimerEnabled" : "uiLocalTimerEnabled"),
           );
@@ -2278,6 +2515,27 @@ class MealieAtelierCard extends HTMLElement {
     this._commandQuery = "";
     this._commandResults = [];
     this._commandTotal = 0;
+  }
+  /**
+   * Announce a started timer through the live region that already exists inside the dialog.
+   * Nothing is scrolled or focused: the new timer card sits right under the start button.
+   */
+  _announceTimer(timer) {
+    const minutes = Math.round((Number(timer.durationMs) || 0) / 60000);
+    const text = this.t("uiTimerStartedAnnouncement", {
+      label: timer.label,
+      minutes,
+      unit: this.tp("uiMinute", minutes),
+    });
+    // Emptied first so an identical text is announced again, then filled in the same live node.
+    this._timerAnnouncement = "";
+    const live = this.shadowRoot?.querySelector("[data-timer-announce]");
+    if (live) live.textContent = "";
+    this._timerAnnouncement = text;
+    setTimeout(() => {
+      const node = this.shadowRoot?.querySelector("[data-timer-announce]");
+      if (node && this._timerAnnouncement === text) node.textContent = text;
+    }, 50);
   }
   _commandPaint(markup = "", busy = false) {
     const live = this.shadowRoot.querySelector("[data-command-live]");

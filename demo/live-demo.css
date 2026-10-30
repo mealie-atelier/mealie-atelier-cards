@@ -554,112 +554,249 @@ h2 em {
   height: 16px;
   color: var(--mint);
 }
-/* One large browser the visitor can read, a phone that only touches its bottom-right corner and
-   the timer toast in the free row beside the phone, so nothing covers app text. */
 .nw {
   white-space: nowrap;
 }
-.stack {
+/* Hero stage: kitchen tablet in cooking mode behind, phone with the shopping list in front. Every
+   dimension of a device derives from its own --w, so bezels, radii and the island scale together.
+   Dark only, like the rest of the page. */
+.hero-stage {
   position: relative;
-  aspect-ratio: 1 / 0.8;
+  aspect-ratio: 100 / 76;
+  container-type: inline-size;
+  isolation: isolate;
 }
-.stack > * {
+.hero-stage .dial {
+  display: none;
   position: absolute;
+  z-index: -1;
+  height: auto;
+  pointer-events: none;
 }
-.stack .browser {
-  top: 0;
-  left: 0;
-  width: 92%;
+.hero-stage .dial path {
+  fill: none;
+  stroke: rgba(242, 233, 216, 0.14);
+  stroke-width: 0.9;
+  stroke-linecap: round;
 }
-.stack .phone {
-  right: 0;
-  bottom: 0;
-  width: 20%;
+.hero-stage .dial .today {
+  stroke: #b8532e;
+  stroke-opacity: 0.55;
 }
-/* The capture ends in the middle of the title of today's card, which would show cut descenders on
-   the window edge. Crop at row 825 of 1000, between the last sidebar label and the card label, so no text is cut. */
-.stack .browser img {
-  aspect-ratio: 1600 / 825;
-  object-fit: cover;
-  object-position: top;
+.device {
+  position: absolute;
+  margin: 0;
+  background: #060807;
+  box-shadow:
+    0 0 0 calc(var(--w) * 0.004) #2b3530,
+    0 0 0 calc(var(--w) * 0.007) #0b0e0c,
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 28px 56px -16px rgba(0, 0, 0, 0.6),
+    0 70px 120px -40px rgba(0, 0, 0, 0.7);
 }
-.toast {
-  z-index: 3;
-  left: 3%;
-  bottom: 4%;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 16px 10px 10px;
-  border-radius: 16px;
-  background: rgba(23, 32, 26, 0.92);
-  border: 1px solid var(--line2);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-  font-size: 13px;
-  line-height: 1.35;
-  white-space: nowrap;
+.device .screen {
+  position: relative;
+  overflow: hidden;
+  background: #0c120f;
 }
-.toast .ic {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  background: var(--mint);
-  color: var(--mint-ink);
-}
-.toast b {
+.device .screen img {
   display: block;
-  font-size: 13.5px;
+  width: 100%;
+  height: auto;
 }
-.toast time {
-  font: 600 15px/1 var(--mono);
-  color: var(--mint);
+.device .screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    118deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.015) 30%,
+    transparent 46%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.device-tablet {
+  --w: 84cqi;
+  top: 0;
+  right: 0;
+  width: var(--w);
+  padding: calc(var(--w) * 0.019);
+  border-radius: calc(var(--w) * 0.036);
+}
+.device-tablet .screen {
+  border-radius: calc(var(--w) * 0.016);
+}
+.device-tablet .cam {
+  position: absolute;
+  top: calc(var(--w) * 0.0085);
+  left: 50%;
+  width: calc(var(--w) * 0.0055);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #2b3a46, #07090a 70%);
+}
+.device-phone {
+  --w: 32cqi;
+  left: 0;
+  bottom: 0;
+  width: var(--w);
+  padding: calc(var(--w) * 0.034);
+  border-radius: calc(var(--w) * 0.172);
+}
+.device-phone .screen {
+  border-radius: calc(var(--w) * 0.138);
+}
+.device-phone::before,
+.device-phone::after {
+  content: "";
+  position: absolute;
+  width: calc(var(--w) * 0.012);
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1a201d, #3a443e);
+}
+.device-phone::before {
+  right: calc(var(--w) * -0.016);
+  top: 25%;
+  height: 12%;
+}
+.device-phone::after {
+  left: calc(var(--w) * -0.016);
+  top: 17%;
+  height: 4%;
+  background: linear-gradient(270deg, #1a201d, #3a443e);
+  box-shadow:
+    0 calc(var(--w) * 0.12) 0 0 #262e2a,
+    0 calc(var(--w) * 0.26) 0 0 #262e2a;
+}
+.status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--w) * 0.128);
+  padding: 0 calc(var(--w) * 0.09) 0 calc(var(--w) * 0.11);
+  background: #111613;
+  color: #f3f0e8;
+  font: 600 calc(var(--w) * 0.043) / 1 var(--sans);
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
-@media (min-width: 981px) {
+.status .island {
+  position: absolute;
+  top: calc(var(--w) * 0.026);
+  left: 50%;
+  width: calc(var(--w) * 0.296);
+  height: calc(var(--w) * 0.087);
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #000;
+}
+.status svg {
+  height: calc(var(--w) * 0.032);
+  width: auto;
+  fill: currentColor;
+}
+.status .icons {
+  display: flex;
+  gap: calc(var(--w) * 0.016);
+  align-items: center;
+}
+.home-bar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--w) * 0.02);
+  width: 36%;
+  height: calc(var(--w) * 0.013);
+  translate: -50% 0;
+  border-radius: 999px;
+  background: rgba(243, 240, 232, 0.85);
+  z-index: 1;
+}
+/* Two columns from 1180px: there the tablet is 538px wide and the phone 205px, the smallest sizes at
+   which the app text stays readable. Below that the stage runs full width under the copy. */
+@media (min-width: 1180px) {
   .hero-grid {
     grid-template-columns: minmax(0, 4.6fr) minmax(0, 7.4fr);
   }
 }
 @media (min-width: 1280px) {
-  .stack {
+  .hero-stage {
     margin-right: -40px;
   }
 }
-@media (max-width: 980px) {
+@media (max-width: 1179px) {
   .hero-grid {
     grid-template-columns: 1fr;
   }
-  .stack {
-    margin-top: 16px;
-    aspect-ratio: 1 / 0.8;
+  .hero-stage {
+    width: 100%;
+    max-width: 880px;
+    margin: 16px auto 0;
   }
 }
-/* Phone: no tiny browser, the app on a phone shown whole, with the timer toast beside it. */
+/* Phone: the tablet is not rendered (and not downloaded), the phone stands in front of the Week Dial. */
 @media (max-width: 640px) {
-  .stack {
+  .hero-stage {
     aspect-ratio: auto;
     display: grid;
     justify-items: center;
     padding-bottom: 8px;
   }
-  .stack > * {
-    position: relative;
+  .hero-stage .dial {
+    display: block;
+    left: 50%;
+    top: 50%;
+    width: 100cqi;
+    translate: -50% -50%;
+    /* Turned so the paprika arc of today sits at the side of the phone, not behind it. */
+    rotate: 24deg;
   }
-  .stack .browser {
+  .device-tablet {
     display: none;
   }
-  .stack .phone {
-    inset: auto;
-    width: min(64%, 250px);
+  .device-phone {
+    --w: min(70cqi, 280px);
+    position: relative;
   }
-  .toast {
-    inset: auto;
-    margin-top: 18px;
-    max-width: 100%;
-    white-space: nowrap;
-  }
+}
+/* Entrance, only when the script confirmed that motion is welcome: with reduced motion the
+   devices simply stand there. The stage keeps .rv only so the observer marks it .in: its own fade
+   and lift are off, otherwise they would nest with the devices and add to their travel. As in the
+   concept: the tablet rises 18px over 900ms, the phone 28px over 900ms after a 140ms delay. */
+.reveal-ready .hero-stage.rv {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.reveal-ready .hero-stage .device {
+  opacity: 0;
+}
+.reveal-ready .hero-stage .device-tablet {
+  translate: 0 18px;
+}
+.reveal-ready .hero-stage .device-phone {
+  translate: 0 28px;
+}
+/* The transitions live on the end state only: the hidden start state is set without one, so the
+   entrance does not first fade the devices out. */
+.reveal-ready .hero-stage.in .device {
+  opacity: 1;
+  translate: none;
+}
+.reveal-ready .hero-stage.in .device-tablet {
+  transition:
+    opacity 0.7s var(--ease),
+    translate 0.9s var(--ease);
+}
+.reveal-ready .hero-stage.in .device-phone {
+  transition:
+    opacity 0.7s var(--ease) 0.14s,
+    translate 0.9s var(--ease) 0.14s;
 }
 
 /* facts */
@@ -1125,18 +1262,116 @@ h2 em {
   background: #151d18;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
 }
+.live-dots {
+  display: flex;
+  gap: 7px;
+}
 .live-bar i {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: #3a463e;
 }
-.live-bar span {
+.live-fs[hidden] {
+  display: none;
+}
+.live-status {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   margin-left: 12px;
   color: var(--mint);
   font: 600 12px/1 var(--sans);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+.live-fs {
+  flex: none;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line2);
+  background: transparent;
+  color: var(--mint);
+  font: 600 12px/1 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.live-fs:hover {
+  background: rgba(157, 203, 178, 0.12);
+  border-color: var(--mint-deep);
+}
+.live-fs .i {
+  width: 16px;
+  height: 16px;
+}
+/* Fullscreen: the frame fills the screen (Fullscreen API) or the dynamic viewport (iPhone overlay)
+   and the card takes what the bar leaves, so its container queries pick the layout by width. */
+.live-frame[data-fullscreen] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #0a0f0c;
+  color-scheme: dark;
+}
+.live-frame[data-fullscreen="overlay"] {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: contain;
+}
+.live-frame[data-fullscreen] .live-bar {
+  flex: none;
+  min-height: 56px;
+  border-radius: 0;
+  padding-inline: max(18px, env(safe-area-inset-left)) max(18px, env(safe-area-inset-right));
+  padding-block: max(12px, env(safe-area-inset-top)) 10px;
+  box-sizing: content-box;
+}
+/* The card is a panel: live-fullscreen.js measures the height the bar leaves and hands it to the card
+   as --header-height, so the panel shell is exactly that tall whatever the bar or the safe areas add. */
+.live-frame[data-fullscreen] .live-fs {
+  min-height: 40px;
+  padding-inline: 16px;
+  background: rgba(157, 203, 178, 0.12);
+  border-color: var(--mint-deep);
+  color: var(--mint2);
+}
+/* One calm ring inside the button, so it never reaches past the bar's padding on the right edge. */
+.live-frame[data-fullscreen] .live-fs:focus-visible {
+  outline: 2px solid var(--mint2);
+  outline-offset: -4px;
+  border-radius: 999px;
+}
+.live-frame[data-fullscreen] mealie-atelier-card {
+  flex: 1 1 0;
+  min-height: 0;
+  border-radius: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+}
+html.live-fs-lock,
+html.live-fs-lock body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 .live-frame mealie-atelier-card {
   display: block;
@@ -1187,9 +1422,40 @@ html.js .live-frame:not([data-ready])::after {
   }
   .live-bar {
     border-radius: 20px 20px 0 0;
+    padding-inline: 12px;
+  }
+  .live-dots {
+    display: none;
+  }
+  .live-status {
+    margin-left: 0;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  /* Fullscreen on a phone: an icon led close, its label stays for screen readers. */
+  .live-frame[data-fullscreen] .live-fs {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .live-frame[data-fullscreen] .live-fs [data-live-fs-label] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .live-frame mealie-atelier-card {
     border-radius: 0 0 20px 20px;
+  }
+}
+
+/* Narrow, not fullscreen: the bar only has room for "Live" next to the labelled button. */
+@media (max-width: 460px) {
+  .live-frame:not([data-fullscreen]) .live-status-more {
+    display: none;
   }
 }
 

@@ -774,6 +774,7 @@
   "offlineEnableHelp": "Offline-Einkauf aktivieren",
   "offlineAlarmError": "Fehler bei der Küchen-Timer-Benachrichtigung",
   "uiBackgroundTimerEnabled": "Hintergrundtimer aktiviert",
+  "uiTimerStartedAnnouncement": "Timer gestartet: {label}, {minutes} {unit}. Er steht unter dem Startknopf.",
   "uiLocalTimerEnabled": "Der Timer läuft nur auf diesem Gerät.",
   "uiBackgroundTimerError": "Hintergrundtimer nicht aktiviert: {error} Der Timer läuft auf diesem Gerät weiter.",
   "uiTimerStopError": "Timer konnte nicht entfernt werden: {error}",

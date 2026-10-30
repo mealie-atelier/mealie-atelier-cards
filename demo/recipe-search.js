@@ -110,7 +110,9 @@ export function searchDemoRecipes(recipes, details, query) {
     .filter(({ detail }) => {
       const indexed = fields(detail);
       const haystack = `${indexed.title} ${indexed.ingredientText} ${indexed.metadata} ${indexed.tags}`;
-      if (parsed.diets.some((diet) => !indexed.tags.includes(diet))) return false;
+      const dietWords = { vegan: ["vegan"], vegetarian: ["vegetarian", "vegetarisch"] };
+      if (parsed.diets.some((diet) => !dietWords[diet].some((word) => indexed.tags.includes(word))))
+        return false;
       if (parsed.maxMinutes !== null && duration(detail) > parsed.maxMinutes) return false;
       if (parsed.servings !== null && recipeServings(detail) !== parsed.servings) return false;
       if (parsed.requiredIngredient && !indexed.ingredientText.includes(parsed.requiredIngredient))

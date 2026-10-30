@@ -778,6 +778,7 @@
   "offlineEnableHelp": "Enable offline shopping",
   "offlineAlarmError": "Kitchen timer notification error",
   "uiBackgroundTimerEnabled": "Background timer enabled",
+  "uiTimerStartedAnnouncement": "Timer started: {label}, {minutes} {unit}. It is listed below the start button.",
   "uiLocalTimerEnabled": "The timer runs on this device only.",
   "uiBackgroundTimerError": "Background timer was not enabled: {error} The timer keeps running on this device.",
   "uiTimerStopError": "Could not remove the timer: {error}",
