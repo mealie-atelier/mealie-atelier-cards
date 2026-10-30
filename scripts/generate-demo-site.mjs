@@ -20,6 +20,7 @@ import {
   iconLinks,
   renderSiteFooter,
   renderSiteHeader,
+  sectionIds,
   translator,
 } from "../demo/site/chrome.mjs";
 import { creditRow, photo, photoCaption } from "../demo/site/media.mjs";
@@ -644,6 +645,45 @@ function renderCreditsPage(locale) {
   return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${escapeHtml(description)}"><meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta name="color-scheme" content="dark light"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">${ogImage}${ogUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(title)}"><meta name="twitter:description" content="${escapeHtml(description)}">${iconLinks("../../assets/")}${canonical}${hreflang("de", pageUrls.de)}${hreflang("en", pageUrls.en)}${hreflang("x-default", pageUrls.de)}<link rel="stylesheet" href="../../assets/live-demo.css"><title>${escapeHtml(title)}</title></head><body class="credits-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page"><div class="wrap"><header class="recipe-head"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><span aria-current="page">${heading}</span></nav><h1>${heading}</h1><p class="lead">${lead}</p></header><ul class="credit-list">${rows}</ul><p class="credits-switch"><a class="textlink" href="${escapeHtml(pageUrls[counterpartLocale])}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${t("Photo credits in English", "Bildnachweise auf Deutsch")}</a></p></div></main>${renderSiteFooter(ctx)}<script type="module" src="../../assets/site.js"></script></body></html>`;
 }
 
+// Served by Cloudflare Pages with status 404 for every unknown path, at any depth, so every URL in it
+// is root-absolute (or built on the deployment base). One bilingual page: German first, English below
+// on phones and beside it on wide screens. Not canonical, not in the sitemap, not indexable.
+function renderNotFoundPage() {
+  const prefix = deploymentBase || "/";
+  const ctx = {
+    locale: "de",
+    root: prefix,
+    manifest: showcase,
+    recipes: catalog.recipes,
+    home: { de: `${prefix}de/`, en: `${prefix}en/` },
+    alternate: { de: `${prefix}de/`, en: `${prefix}en/` },
+    creditsUrl: `${prefix}${creditsPath("de")}`,
+    onLanding: false,
+  };
+  const block = (locale, kicker, heading, lead, labels) => {
+    const home = `${prefix}${locale}/`;
+    const tag = locale === "en" ? "h2" : "h1";
+    return `<section class="notfound-col" lang="${locale}"><p class="kicker"><span class="dot"></span>${kicker}</p><${tag}>${heading}</${tag}><p class="lead">${lead}</p><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(home)}">${labels[0]}</a><a class="btn btn-ghost" href="${escapeHtml(`${home}#${sectionIds[locale].demo}`)}">${labels[1]}</a><a class="btn btn-ghost" href="${escapeHtml(`${home}#${sectionIds[locale].recipes}`)}">${labels[2]}</a></div></section>`;
+  };
+  const german = block(
+    "de",
+    "Fehler 404",
+    "Diese Seite gibt es nicht",
+    "Der Link ist veraltet oder falsch geschrieben. Von hier aus kommst du zurück in die Küche.",
+    ["Zur Startseite", "Live-Demo ausprobieren", "Rezepte ansehen"],
+  );
+  const english = block(
+    "en",
+    "Error 404",
+    "This page does not exist",
+    "The link is outdated or mistyped. From here you can find your way back to the kitchen.",
+    ["Go to the home page", "Try the live demo", "Browse the recipes"],
+  );
+  const title = "Seite nicht gefunden · Page not found · Mealie Atelier";
+  const assets = `${prefix}assets/`;
+  return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta name="color-scheme" content="dark light">${iconLinks(assets)}<link rel="stylesheet" href="${assets}live-demo.css"><title>${title}</title></head><body class="credits-body notfound-body">${renderSiteHeader(ctx)}<main id="main" class="credits-page notfound-page"><div class="wrap notfound-grid">${german}${english}</div></main>${renderSiteFooter(ctx)}<script type="module" src="${assets}site.js"></script></body></html>`;
+}
+
 function localizedRecipePage(locale, slug) {
   const recipe = catalog.recipes.find((row) => row.slug === slug);
   assert(recipe, `unknown recipe slug ${slug}`);
@@ -742,6 +782,7 @@ await removeUnlisted(
 const ogImages = await buildOgImages();
 renderedOg = new Set(ogImages.keys());
 await writeFile(join(siteRoot, "index.html"), rootIndex());
+await writeFile(join(siteRoot, "404.html"), renderNotFoundPage());
 for (const [output, bytes] of ogImages) {
   await mkdir(dirname(join(siteRoot, output)), { recursive: true });
   await writeFile(join(siteRoot, output), bytes);
