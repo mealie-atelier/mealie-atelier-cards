@@ -509,7 +509,7 @@ test("cover removal and restore go through the commands with their revision guar
   assert.equal(calls.find((c) => c.type.endsWith("recipe_image_delete")).expected_image, "tok");
   await card._editorToggleHistory();
   const html = card._editorHistoryHtml();
-  assert.match(html, /Cover photo replaced/);
+  assert.match(html, /<small>Cover photo<\/small>/);
   assert.match(html, /data-action="ed-restore-ask"/);
   await card._editorClick({ dataset: { action: "ed-restore-ask", value: "b-9" } });
   assert.match(card._editorHistoryHtml(), /Your current state is saved as a backup first/);
@@ -655,4 +655,82 @@ test("every editor and err translation key used by the component exists in en an
     assert.doesNotMatch(text, /[—–]/, key);
     assert.doesNotMatch(text, /\b(ae|oe|ue)\b|[^a-zäöüß](Aender|Loesch)/i, key);
   }
+});
+
+test("version history builds a localized summary with plurals and falls back to the stored text", async () => {
+  const backups = [
+    {
+      backup_id: "a",
+      created_at: "2030-01-02T10:15:00Z",
+      user_name: "Kai",
+      kind: "ingredients",
+      ingredient_count: 1,
+      summary: "1 ingredients",
+    },
+    {
+      backup_id: "b",
+      created_at: "2030-01-02T10:16:00Z",
+      user_name: "Kai",
+      kind: "ingredients",
+      ingredient_count: 4,
+      summary: "4 ingredients",
+    },
+    {
+      backup_id: "c",
+      created_at: "2030-01-02T10:17:00Z",
+      user_name: "Kai",
+      kind: "instructions",
+      step_count: 1,
+      summary: "1 steps",
+    },
+    {
+      backup_id: "d",
+      created_at: "2030-01-02T10:18:00Z",
+      user_name: "Kai",
+      kind: "instructions",
+      step_count: 3,
+      summary: "3 steps",
+    },
+    {
+      backup_id: "e",
+      created_at: "2030-01-02T10:19:00Z",
+      user_name: "Kai",
+      kind: "basics",
+      summary: "Name, description and servings",
+    },
+    {
+      backup_id: "f",
+      created_at: "2030-01-02T10:20:00Z",
+      user_name: "Kai",
+      kind: "ingredients",
+      summary: "Old stored text",
+    },
+  ];
+  const html = async (language) => {
+    const { card } = editor({
+      language,
+      callWS: async (message) =>
+        message.type.endsWith("recipe_backups") ? { backups } : structuredClone(PREVIEW),
+    });
+    card._editorOpen();
+    await card._editorLoad();
+    await card._editorToggleHistory();
+    return [...card._editorHistoryHtml().matchAll(/<small>(.*?)<\/small>/g)].map((m) => m[1]);
+  };
+  assert.deepEqual(await html("de"), [
+    "1 Zutat",
+    "4 Zutaten",
+    "1 Schritt",
+    "3 Schritte",
+    "Name, Beschreibung und Portionen",
+    "Old stored text",
+  ]);
+  assert.deepEqual(await html("en"), [
+    "1 ingredient",
+    "4 ingredients",
+    "1 step",
+    "3 steps",
+    "Name, description and servings",
+    "Old stored text",
+  ]);
 });

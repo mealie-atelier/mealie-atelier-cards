@@ -436,7 +436,8 @@ export const shoppingSyncMethods = {
     const caps = this._syncCaps();
     if (sync.view === "review") return this._syncReviewHtml();
     const rules = this._syncRules();
-    const audit = asArray(sync.state?.audit).slice(0, 20);
+    // The bridge sends the audit oldest first; the newest run is shown on top.
+    const audit = asArray(sync.state?.audit).slice().reverse().slice(0, 20);
     // A calm success is only announced to screen readers; the rule card shows the last run.
     const live = sync.result
       ? sync.resultQuiet
@@ -510,7 +511,9 @@ export const shoppingSyncMethods = {
     const route = `${rule.source_list_name} → ${destName}`;
     if (this._syncRuleTitle(rule, destination, destName) === route)
       return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
-    return `<p class="sync-route">${esc(route)}${platform ? ` (${esc(platform)})` : ""}</p>`;
+    // The same notation as the destination picker: "name · platform".
+    const label = platform ? this._syncDestinationLabel(destName, destination.platform) : destName;
+    return `<p class="sync-route">${esc(`${rule.source_list_name} → ${label}`)}</p>`;
   },
   _syncRuleHtml(rule, caps) {
     const sync = this._syncData();
@@ -556,7 +559,7 @@ export const shoppingSyncMethods = {
     ].filter(Boolean);
     const actions = [
       !rule.activated && caps.admin
-        ? `<button class="btn tiny primary" data-action="sync-setup-open" data-value="${id}">${icon("arrow", 14)} ${esc(this._syncBringT("syncFirstBatch"))}</button>`
+        ? `<button class="btn tiny primary" data-action="sync-first-batch" data-value="${id}">${icon("arrow", 14)} ${esc(this._syncBringT("syncFirstBatch"))}</button>`
         : "",
       // The way out of a deleted list lives in the banner at the top, not repeated here.
       rule.activated && !bringGone
@@ -695,7 +698,8 @@ ${this._syncRouteHtml(rule, destination, destName)}
     if (!whole(draft.poll_minutes, 1, 60)) errors.poll = { min: 1, max: 60 };
     return errors;
   },
-  async _syncSetupOpen(ruleId) {
+  // With firstBatch the dialog is the review of a rule that was saved without sending: the preview runs on its own.
+  async _syncSetupOpen(ruleId, { firstBatch = false } = {}) {
     const sync = this._syncData();
     const rule = this._syncRules().find((r) => r.id === ruleId);
     const lists = asArray(this._data.shopping?.lists);
@@ -705,6 +709,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     const free = lists.filter((l) => !used.includes(String(l.id)));
     sync.setup = {
       rule_id: rule?.id || "",
+      firstBatch: firstBatch && !!rule && rule.activated !== true,
       expected_revision: rule?.revision,
       activated: rule?.activated === true,
       name: rule
@@ -747,6 +752,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     }
     if (sync.setup) sync.setup.destinationsLoaded = true;
     this._render();
+    if (sync.setup?.firstBatch && sync.setup.destination_entity_id) await this._syncPreview();
   },
   _syncSetupHtml() {
     const d = this._syncData().setup;
@@ -794,13 +800,15 @@ ${this._syncRouteHtml(rule, destination, destName)}
               : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
           }`
         : "";
-    const confirmLabel = destination
-      ? this.tp("syncConfirmSend", sendCount, {
-          source: sourceName,
-          destination: this._syncDestinationName(destination.name, destination.platform),
-        })
-      : this.t("syncConfirmSendNeutral");
-    return `<div class="modal-content sync-panel atelier-editor">${this._syncLead(this.t(d.rule_id ? "syncEditRule" : "syncSetup"))}
+    // The real count is only known once a preview has run, so until then the label stays neutral.
+    const confirmLabel =
+      destination && d.preview && !d.previewBusy
+        ? this.tp("syncConfirmSend", sendCount, {
+            source: sourceName,
+            destination: this._syncDestinationName(destination.name, destination.platform),
+          })
+        : this.t("syncConfirmSendNeutral");
+    return `<div class="modal-content sync-panel atelier-editor">${this._syncLead(d.firstBatch ? this._syncBringT("syncFirstBatch") : this.t(d.rule_id ? "syncEditRule" : "syncSetup"))}
       ${d.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(d.error)}</span></div>` : ""}
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("syncSource").toUpperCase())}</div>
         ${
@@ -865,8 +873,9 @@ ${this._syncRouteHtml(rule, destination, destName)}
       if (caps.bringSetup && caps.admin) await this._syncBringDisconnect();
       return true;
     }
-    if (action === "sync-setup-open") {
-      if (caps.supported && caps.admin) await this._syncSetupOpen(value);
+    if (action === "sync-setup-open" || action === "sync-first-batch") {
+      if (caps.supported && caps.admin)
+        await this._syncSetupOpen(value, { firstBatch: action === "sync-first-batch" });
       return true;
     }
     if (action === "sync-setup-cancel") {
