@@ -38,3 +38,20 @@ test("a card that fills a panel view runs edge to edge, elsewhere it keeps its f
   card.layout = "panel";
   assert.match(cards.document.markup, /class="atelier [^"]*\bpanel\b/);
 });
+
+test("re-rendering an open dialog does not replay the backdrop or heading enter animation", () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  card._detail = {
+    slug: "gnocchi",
+    name: "Gnocchi",
+    recipeInstructions: [{ text: "a" }, { text: "b" }],
+  };
+  card._modal = "cook";
+  card._render();
+  assert.match(cards.document.markup, /class="modal-backdrop"/);
+  card._cookIndex = 1;
+  card._render();
+  assert.match(cards.document.markup, /class="modal-backdrop modal-stable"/);
+  assert.match(cards.document.markup, /class="modal modal-stable /);
+});

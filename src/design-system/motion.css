@@ -1140,7 +1140,9 @@
   }
 }
 
-.atelier .modal.modal-stable {
+.atelier .modal.modal-stable,
+.atelier .modal-backdrop.modal-stable,
+.atelier .modal-stable .cook-stage h2 {
   animation: none !important;
 }
 /* The navigation rail must never compress labels on narrow viewports. */
