@@ -363,7 +363,7 @@
   }
 }
 /* A header strip behind the sticky button: once the dialog scrolls, content passes under the strip instead of
-   being cut by the button. It fades in with the scroll position, so it stays invisible over the hero at the top. */
+   being cut by the button. It switches on in one step when the dialog heading is under it (class bar-on), so it stays invisible over the hero at the top. */
 .atelier .modal > .modal-close::before {
   content: "";
   position: absolute;
@@ -376,7 +376,13 @@
   background: var(--at-surface);
   border-bottom: 1px solid var(--at-line);
   opacity: 0;
+  transition: opacity var(--ds-motion-fast) linear;
   pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .modal > .modal-close::before {
+    transition: none;
+  }
 }
 /* The strip is a child of the button's stacking context and would paint over the button's own background. So the
    button paints its tile on ::after (later in tree order, same layer) and keeps its own background transparent. */
@@ -415,22 +421,13 @@
 .atelier .modal.sync-modal > .modal-close::after {
   backdrop-filter: none;
 }
-@supports (animation-timeline: scroll()) {
-  .atelier .modal > .modal-close::before {
-    animation: at-close-strip linear both;
-    animation-timeline: scroll(nearest block);
-    animation-range: 0 48px;
-  }
+.atelier .modal.bar-on > .modal-close::before {
+  opacity: 1;
 }
 /* Only on phones in landscape (about 500px tall or less) the strip would take a quarter of the dialog, so no strip. Laptop windows keep it. */
 @media (orientation: landscape) and (max-height: 500px) {
   .atelier .modal > .modal-close::before {
     display: none;
-  }
-}
-@keyframes at-close-strip {
-  to {
-    opacity: 1;
   }
 }
 /* Very narrow cards: drop the home icon and separator so the page name stays readable. */

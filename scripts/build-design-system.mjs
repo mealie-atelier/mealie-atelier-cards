@@ -22,6 +22,7 @@ const cssFiles = [
   "src/design-system/shopping-sync.css",
   "src/design-system/bring-wizard.css",
   "src/design-system/recipe-picker.css", // feature D
+  "src/design-system/mobile-forms.css",
   "src/design-system/corners.css",
 ];
 const content = cssFiles.map((file) => readFileSync(resolve(folder, file), "utf8").trim());

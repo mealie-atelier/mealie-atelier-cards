@@ -129,8 +129,8 @@ test("Tab pulls focus back into the dialog when it sits outside, and traps at th
  * Drive the real _render against a stub shadow root. `world` describes what the DOM holds after
  * the subtree swap: `dialog`, `controls` (querySelectorAll results per selector) and `byQuery`.
  */
-function renderHarness(world) {
-  const cards = loadCards();
+function renderHarness(world, globals = {}) {
+  const cards = loadCards({ globals });
   const card = makeCard(cards);
   card.getBoundingClientRect = () => ({ top: 0 });
   card._body = () => "";
@@ -259,4 +259,88 @@ test("cook mode: a gone or disabled target hands focus to the primary button, no
   const primary = { name: "primary" };
   const { root } = cookRender({ index: 1, disabledIndex: 1, primary });
   assert.equal(root.activeElement?.name, "primary");
+});
+
+const touchGlobals = (coarse) => ({
+  matchMedia: (query) => ({
+    matches: coarse && query === "(pointer: coarse)",
+    addEventListener() {},
+  }),
+});
+
+test("on a touch screen a dialog takes focus itself instead of raising the keyboard", () => {
+  // A focused text field opens the iOS keyboard over half of the dialog the moment it appears.
+  const world = {};
+  const { card, root } = renderHarness(world, touchGlobals(true));
+  const dialog = world.make("dialog");
+  const nameField = { ...world.make("name"), tagName: "INPUT", type: "text" };
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return dialog;
+    if (selector.includes("data-autofocus")) return nameField;
+    return null;
+  };
+  card._modal = "create";
+  card._render();
+  assert.equal(root.activeElement, dialog);
+});
+
+test("on a touch screen a non-text autofocus control or the close button still takes focus", () => {
+  const world = {};
+  const { card, root } = renderHarness(world, touchGlobals(true));
+  const dialog = world.make("dialog");
+  const select = { ...world.make("select"), tagName: "SELECT" };
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return dialog;
+    if (selector.includes("data-autofocus")) return select;
+    return null;
+  };
+  card._modal = "sync";
+  card._render();
+  assert.equal(root.activeElement, select);
+});
+
+test("with a fine pointer the text field of a dialog keeps the autofocus", () => {
+  const world = {};
+  const { card, root } = renderHarness(world, touchGlobals(false));
+  const dialog = world.make("dialog");
+  const nameField = { ...world.make("name"), tagName: "INPUT", type: "text" };
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return dialog;
+    if (selector.includes("data-autofocus")) return nameField;
+    return null;
+  };
+  card._modal = "create";
+  card._render();
+  assert.equal(root.activeElement, nameField);
+});
+
+test("on a touch iPad with a hardware keyboard Cmd+K still focuses the palette search", () => {
+  const world = {};
+  const { card, root } = renderHarness(world, touchGlobals(true));
+  const dialog = world.make("dialog");
+  const search = { ...world.make("search"), tagName: "INPUT", type: "text" };
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return dialog;
+    if (selector.includes("command-search")) return search;
+    return null;
+  };
+  card._handleKeyDown({
+    key: "k",
+    metaKey: true,
+    target: {},
+    preventDefault() {},
+  });
+  assert.equal(card._modal, "command");
+  assert.equal(root.activeElement, search);
+});
+
+test("only keyboard-raising controls count as opening the touch keyboard", () => {
+  const card = makeCard(loadCards({ globals: touchGlobals(true) }));
+  assert.equal(card._opensTouchKeyboard({ tagName: "INPUT", type: "text" }), true);
+  assert.equal(card._opensTouchKeyboard({ tagName: "INPUT", type: "number" }), true);
+  assert.equal(card._opensTouchKeyboard({ tagName: "TEXTAREA" }), true);
+  assert.equal(card._opensTouchKeyboard({ tagName: "INPUT", type: "checkbox" }), false);
+  assert.equal(card._opensTouchKeyboard({ tagName: "SELECT" }), false);
+  assert.equal(card._opensTouchKeyboard({ tagName: "BUTTON" }), false);
+  assert.equal(card._opensTouchKeyboard(null), false);
 });

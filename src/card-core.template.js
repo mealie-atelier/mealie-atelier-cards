@@ -448,6 +448,7 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   disconnectedCallback() {
+    this._modalBarObserver?.disconnect();
     // BEGIN feature H: offline queue listener
     this._offlineDetach();
     // END feature H
@@ -1236,7 +1237,10 @@ class MealieAtelierCard extends HTMLElement {
       ? modalMarkup
       : modalMarkup
           .replace('class="modal-backdrop"', 'class="modal-backdrop modal-stable"')
-          .replace('class="modal ', 'class="modal modal-stable ');
+          .replace(
+            'class="modal ',
+            `class="modal modal-stable${this.shadowRoot.querySelector(".modal")?.classList.contains("bar-on") ? " bar-on" : ""} `,
+          );
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
@@ -1271,6 +1275,7 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
+    this._watchModalBar();
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -1307,13 +1312,22 @@ class MealieAtelierCard extends HTMLElement {
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     const closeButton = () =>
       this.shadowRoot.querySelector('[role="dialog"] [data-action="close-modal"]');
+    const openedByKeyboard = Boolean(this._modalOpenedByKeyboard);
+    if (modalChanged) this._modalOpenedByKeyboard = false;
     if (modalChanged && dialog) {
-      this._focusAfterRender(
-        () =>
+      this._focusAfterRender(() => {
+        const first =
           this.shadowRoot.querySelector(
             '[role="dialog"] [data-input="command-search"], [role="dialog"] [data-autofocus]',
-          ) || closeButton(),
-      );
+          ) || closeButton();
+        // A text field would raise the on-screen keyboard over the dialog on touch screens, so the
+        // dialog itself takes focus there. Keyboard users still Tab into the first control.
+        // A dialog opened from a hardware keyboard (Cmd+K, "/") keeps the field focus: that user
+        // types right away, even on an iPad whose primary pointer is coarse.
+        return !openedByKeyboard && this._opensTouchKeyboard(first)
+          ? this.shadowRoot.querySelector('[role="dialog"]')
+          : first;
+      });
     } else if (modalChanged && !dialog && this._modalReturn) {
       const { action, value } = this._modalReturn;
       this._modalReturn = null;
@@ -1339,6 +1353,43 @@ class MealieAtelierCard extends HTMLElement {
         );
       });
     }
+  }
+  /**
+   * The sticky header strip of a dialog switches on in one step, when the dialog heading has scrolled under it:
+   * the strip becomes opaque with its border and names the dialog by the heading's own text. No scroll-linked alpha.
+   */
+  _watchModalBar() {
+    this._modalBarObserver?.disconnect();
+    this._modalBarObserver = null;
+    const modal = this.shadowRoot.querySelector(".modal");
+    const strip = modal?.querySelector(":scope > .modal-bar-title");
+    const heading = modal?.querySelector("h2");
+    if (!modal || !strip || !heading) return;
+    strip.textContent = heading.textContent.trim();
+    if (typeof IntersectionObserver === "undefined") return;
+    // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
+    const edge = 20 + (strip.offsetHeight || 48);
+    this._modalBarObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1];
+        const under =
+          !entry.isIntersecting &&
+          entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge;
+        modal.classList.toggle("bar-on", under);
+      },
+      { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
+    );
+    this._modalBarObserver.observe(heading);
+  }
+  /** True when focusing the element would open the on-screen keyboard of a touch device. */
+  _opensTouchKeyboard(el) {
+    if (!el) return false;
+    const textual =
+      el.tagName === "TEXTAREA" ||
+      (el.tagName === "INPUT" &&
+        !/^(checkbox|radio|button|submit|reset|range|color|file|image)$/i.test(el.type || "text"));
+    if (!textual) return false;
+    return Boolean(globalThis.matchMedia?.("(pointer: coarse)")?.matches);
   }
   /**
    * Focus an element after the subtree was swapped. Home Assistant's own ha-card renders its
@@ -1395,6 +1446,7 @@ class MealieAtelierCard extends HTMLElement {
       } else {
         this._resetCommandSearch();
         this._modal = "command";
+        this._modalOpenedByKeyboard = true;
       }
       this._render();
       return;
@@ -1403,6 +1455,7 @@ class MealieAtelierCard extends HTMLElement {
       event.preventDefault();
       this._resetCommandSearch();
       this._modal = "command";
+      this._modalOpenedByKeyboard = true;
       this._render();
       return;
     }
