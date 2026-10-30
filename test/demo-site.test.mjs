@@ -1806,3 +1806,16 @@ test("the raw preview shows tags in the page language and searches by both langu
     /item\.tags\s*\.map\(\(tag\) => catalog\.tagLabels\?\.\[tag\]\?\.\[demoLanguage === "de" \? "en" : "de"\]\)/,
   );
 });
+
+test("every page extends under the iOS Safari bar and the header absorbs the safe area", () => {
+  for (const locale of ["de", "en"]) {
+    assert.match(landing(builds.local, locale), /viewport-fit=cover/, `${locale} landing`);
+  }
+  for (const file of ["de/credits/index.html", "404.html"]) {
+    const path = join(builds.local, file);
+    if (existsSync(path)) assert.match(readFileSync(path, "utf8"), /viewport-fit=cover/, file);
+  }
+  const css = readFileSync("demo/live-demo.css", "utf8");
+  const header = css.slice(css.indexOf("\n.top {"), css.indexOf("\n.top.scrolled"));
+  assert.match(header, /padding-top: env\(safe-area-inset-top/);
+});
