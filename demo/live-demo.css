@@ -3138,11 +3138,11 @@ details[open] .chev {
   .credits-body .top {
     background: rgba(242, 233, 216, 0.88);
   }
-  .top .brand-mark {
-    border-radius: 50%;
-    box-shadow:
-      0 0 0 1px rgba(20, 32, 26, 0.16),
-      0 3px 10px rgba(20, 32, 26, 0.14);
+  .brand-mark {
+    background-image: url("./mealie-atelier-mark-light.svg");
+  }
+  .site-footer .brand-mark {
+    background-image: url("./mealie-atelier-mark.svg");
   }
   .btn-ghost {
     background: rgba(20, 32, 26, 0.03);

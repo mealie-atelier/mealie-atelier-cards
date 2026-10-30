@@ -31,7 +31,15 @@ const cardsRoot = join(scriptDirectory, "..");
 const demoRoot = join(cardsRoot, "demo");
 const siteRoot = process.env.ATELIER_DEMO_OUT_DIR || join(demoRoot, "public-site");
 const catalog = JSON.parse(await readFile(join(demoRoot, "data/recipes.json"), "utf8"));
-const brandAssets = ["favicon.svg", "favicon.ico", "apple-touch-icon.png"];
+const brandAssets = [
+  "favicon.svg",
+  "favicon.ico",
+  "apple-touch-icon.png",
+  "site.webmanifest",
+  "icon-192.png",
+  "icon-512.png",
+  "icon-maskable-512.png",
+];
 const template = await readFile(join(demoRoot, "preview.html"), "utf8");
 const styles = join(demoRoot, "live-demo.css");
 const siteScript = join(demoRoot, "site.js");
@@ -694,6 +702,10 @@ await copyFile(
   join(cardsRoot, "demo/site/week-dial-mark.svg"),
   join(siteRoot, "assets/mealie-atelier-mark.svg"),
 );
+await copyFile(
+  join(cardsRoot, "demo/site/week-dial-mark-light.svg"),
+  join(siteRoot, "assets/mealie-atelier-mark-light.svg"),
+);
 for (const asset of brandAssets) {
   await copyFile(join(cardsRoot, "demo/site", asset), join(siteRoot, "assets", asset));
 }
@@ -707,6 +719,7 @@ await removeUnlisted(
       "recipe-search.js",
       "mealie-atelier-cards.js",
       "mealie-atelier-mark.svg",
+      "mealie-atelier-mark-light.svg",
       ...brandAssets,
     ].map((name) => join(siteRoot, "assets", name)),
   ),

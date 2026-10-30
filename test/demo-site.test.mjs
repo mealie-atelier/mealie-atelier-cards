@@ -1359,3 +1359,42 @@ test("recipe metric values never split a word mid-word (no overflow-wrap anywher
   assert.ok(blocks.length >= 2);
   for (const block of blocks) assert.doesNotMatch(block, /overflow-wrap:\s*anywhere/);
 });
+
+test("light scheme uses the light Week Dial plate and every page links a web app manifest", () => {
+  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
+  const light = css.slice(css.indexOf("@media (prefers-color-scheme: light)"));
+  assert.match(
+    light,
+    /\.brand-mark\s*\{\s*background-image: url\("\.\/mealie-atelier-mark-light\.svg"\)/,
+  );
+  assert.match(
+    light,
+    /\.site-footer \.brand-mark\s*\{\s*background-image: url\("\.\/mealie-atelier-mark\.svg"\)/,
+  );
+  assert.doesNotMatch(light, /\.top \.brand-mark/, "no stand-in ring around the mark");
+  const lightSvg = readFileSync(join(builds.local, "assets/mealie-atelier-mark-light.svg"), "utf8");
+  assert.match(lightSvg, /class="plate" fill="#14201A"/);
+  const manifest = JSON.parse(readFileSync(join(builds.local, "assets/site.webmanifest"), "utf8"));
+  assert.deepEqual(
+    manifest.icons.map((icon) => icon.purpose),
+    ["any", "any", "maskable"],
+  );
+  for (const icon of manifest.icons) {
+    assert.ok(existsSync(join(builds.local, "assets", icon.src)), icon.src);
+  }
+  for (const page of ["de/index.html", "en/index.html", "de/bildnachweise/index.html"]) {
+    const file = join(builds.local, page);
+    if (existsSync(file)) {
+      assert.match(
+        readFileSync(file, "utf8"),
+        /<link rel="manifest" href="[^"]*site\.webmanifest">/,
+        page,
+      );
+    }
+  }
+  const recipe = readdirSync(join(builds.local, "de/rezepte"))[0];
+  assert.match(
+    readFileSync(join(builds.local, "de/rezepte", recipe, "index.html"), "utf8"),
+    /<link rel="manifest"/,
+  );
+});

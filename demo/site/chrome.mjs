@@ -116,7 +116,7 @@ export const brandMark = () => `<span class="brand-mark" aria-hidden="true"></sp
 
 // Favicon (SVG with an ICO fallback) and touch icon, all from the Week Dial masters.
 export const iconLinks = (prefix) =>
-  `<link rel="icon" href="${prefix}favicon.ico" sizes="32x32"><link rel="icon" type="image/svg+xml" href="${prefix}favicon.svg"><link rel="apple-touch-icon" href="${prefix}apple-touch-icon.png">`;
+  `<link rel="icon" href="${prefix}favicon.ico" sizes="32x32"><link rel="icon" type="image/svg+xml" href="${prefix}favicon.svg"><link rel="apple-touch-icon" href="${prefix}apple-touch-icon.png"><link rel="manifest" href="${prefix}site.webmanifest">`;
 
 // ctx: { locale, home: { de, en }, alternate: { de, en }, creditsUrl, onLanding }
 function anchor(ctx, key) {
