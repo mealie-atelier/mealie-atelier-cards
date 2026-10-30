@@ -1,11 +1,15 @@
 """Capture the two hero screens of the product page from the built public demo.
 
   hero-tablet-cook     cooking mode of Gnocchi alla Sorrentina, step 1, kitchen timer reading 07:28
-  hero-phone-shopping  shopping list "Wocheneinkauf" filled from the same recipe, one item ticked, shown from
-                       the top: heading, list name and the first ingredients, tab rail on whole tabs
+  hero-phone-shopping  shopping list "Wocheneinkauf" filled from the same recipe, two items ticked (they sink
+                       to the "done" group at the end of the list), scrolled so that the list name, all
+                       nine ingredients and the done group are on screen, tab rail on whole tabs
 
 The shots come from the real cards with the fixture data of the demo, a frozen clock and no pixel
 retouching. Every gate below fails the run instead of fixing a picture afterwards.
+
+Besides the images the run writes demo/showcase/hero-capture.json: what every gate measured plus the sha256
+of each published file. test/demo-site.test.mjs reads it, so a capture that broke a gate cannot be committed.
 
 Usage (after `npm run build:demo`):
   npm run capture:hero
@@ -13,6 +17,7 @@ Usage (after `npm run build:demo`):
 """
 
 import datetime
+import hashlib
 import socket
 import io
 import json
@@ -31,10 +36,15 @@ SHOWCASE = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "demo/showcase"
 RECIPE = "gnocchi-alla-sorrentina"
 CLOCK = datetime.datetime(2026, 10, 26, 18, 52, 0)
 TABLET_WIDTHS = [800, 1200, 1600]
+WEBP_QUALITY = 82
+# The tablet carries a dish photo, so its 1600w file would pass the 163 KB budget at 82. 78 keeps it under.
+TABLET_QUALITY = 78
 PHONE_WIDTHS = [400, 700, 1179]
 # 1180 x 880: the dialog is then high enough for the step column down to its footnote. The Back and Next
 # bar sits below the dialog edge at every height from 701 px up (product layout), so the clip ends under the
 # footnote, a little before that bar, and the gate below checks that nothing inside the clip is cut.
+# This is why the tablet is 2096 x 1546 (aspect 1.356) and not the 1.424 of an iPad Air frame: at 820 high the
+# footnote and the end of the step text would be cut. The CSS stage aspect (100 / 76) follows this picture.
 TABLET_VIEWPORT = {"width": 1180, "height": 880}
 FOOT_MARGIN = 5  # CSS px between the footnote and the lower clip edge
 # Viewport heights tried for the phone (CSS px, 393 wide, status bar drawn by the page not counted), the one
@@ -43,8 +53,8 @@ PHONE_HEIGHTS = sorted(range(700, 861), key=lambda h: abs(h - 798))
 SHAVE = 2  # device pixels cut from each side of the dialog clip (anti aliased edge)
 
 TEXT = {
-    "de": dict(locale="de-DE", label="Sauce köcheln", list="Wocheneinkauf", heading="Alles für den Einkauf", first="Kartoffelgnocchi"),
-    "en": dict(locale="en-US", label="Simmer the sauce", list="Weekly shop", heading="Shopping list", first="potato gnocchi"),
+    "de": dict(locale="de-DE", label="Sauce köcheln", list="Wocheneinkauf", first="Kartoffelgnocchi", tick=["Kirschtomaten", "Olivenöl"], done="2/9 erledigt"),
+    "en": dict(locale="en-US", label="Simmer the sauce", list="Weekly shop", first="potato gnocchi", tick=["cherry tomatoes", "olive oil"], done="2/9 done"),
 }
 GERMAN_LEAK = re.compile(r"\b(Heute|Einkauf|Rezept|Zutaten|Schritt)\b")
 ENGLISH_LEAK = re.compile(r"\b(Today|Recipe|Ingredients|Step|Cooking mode)\b")
@@ -75,20 +85,61 @@ CUT_JS = """(card, opts) => {
     for (const el of root.querySelectorAll('*')) {
       if (el.shadowRoot) walk(el.shadowRoot);
       if (!el.matches('button,input,label,p,h1,h2,h3,strong,small,time,span,a,li')) continue;
-      if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
+      // Text elements are judged by their text, form fields (the add item bar, the list picker) by their box.
+      const field = el.matches('input,select,textarea');
+      if (!field && ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
       if (el.closest('.sidebar .nav')) continue; // the tab rail has its own gate
       const b = el.getBoundingClientRect();
       if (b.width === 0 || b.height === 0) continue;
       // Vertical: an element that shows more than a fifth of its height but not all of it is cut.
-      // Less than that is box padding, no glyph reaches the edge.
+      // Less than that is box padding, no glyph reaches the edge. A field has no padding to hide in: any
+      // visible sliver of it is a cut.
       const shown = Math.min(b.bottom, view.h) - Math.max(b.top, view.t);
       const share = shown / b.height;
-      if (b.left < view.l - 0.5 || b.right > view.w + 0.5 || (share > 0.2 && share < 0.98))
+      if (b.left < view.l - 0.5 || b.right > view.w + 0.5 || (share > (field ? 0.02 : 0.2) && share < 0.98))
         out.push((el.textContent || '').trim().slice(0, 40));
     }
   };
   walk(sel ? card.shadowRoot.querySelector(sel) : card.shadowRoot);
   return out;
+}"""
+
+LIST_GAP = 14  # CSS px between the tab rail and the list picker after scrolling
+
+# Scrolls the card so that the list picker sits LIST_GAP px under the sticky tab rail.
+SCROLL_TO_LIST_JS = """(card, gap) => {
+  const r = card.shadowRoot;
+  card.scrollTo({ top: 0, behavior: 'instant' });
+  const rail = r.querySelector('.sidebar .nav').closest('.sidebar') || r.querySelector('.sidebar .nav');
+  const select = r.querySelector('select');
+  const delta = select.getBoundingClientRect().top - rail.getBoundingClientRect().bottom - gap;
+  card.scrollTo({ top: Math.max(0, delta), behavior: 'instant' });
+}"""
+
+RAIL_BOTTOM_JS = """(card) => {
+  const r = card.shadowRoot;
+  const rail = r.querySelector('.sidebar .nav').closest('.sidebar') || r.querySelector('.sidebar .nav');
+  return rail.getBoundingClientRect().bottom;
+}"""
+
+# What the list shows: every row complete between the rail and the lower edge, how many are ticked.
+ROWS_JS = """(card, gap) => {
+  const r = card.shadowRoot;
+  const rail = r.querySelector('.sidebar .nav').closest('.sidebar') || r.querySelector('.sidebar .nav');
+  const top = rail.getBoundingClientRect().bottom;
+  const rows = [...r.querySelectorAll('.shopping-row')];
+  const shown = (e) => { const b = e.getBoundingClientRect(); return b.top >= top - 0.5 && b.bottom <= innerHeight + 0.5; };
+  const ticked = rows.filter((e) => e.classList.contains('checked'));
+  const names = (list) => list.map((e) => e.querySelector('.shopping-name').textContent.trim());
+  return {
+    total: rows.length,
+    ticked: ticked.length,
+    open: rows.length - ticked.length,
+    allShown: rows.length > 0 && rows.every(shown),
+    tickedShown: ticked.filter(shown).length,
+    tickedNames: names(ticked),
+    checkedAria: ticked.every((e) => e.querySelector('[role=checkbox]').getAttribute('aria-checked') === 'true'),
+  };
 }"""
 
 RAIL_JS = """(card, [fade, clear]) => {
@@ -242,7 +293,8 @@ def capture_tablet(browser, loc):
     cut = card.evaluate(CUT_JS, {"sel": "[role=dialog]", "bottom": bottom})
     print(loc, "tablet cut:", cut or "none", "| timer", dial)
     ctx.close()
-    return Image.open(io.BytesIO(png)).convert("RGB"), cut
+    report = {"timer": dial, "step": "01 / 03", "cut": cut, "viewport": TABLET_VIEWPORT}
+    return Image.open(io.BytesIO(png)).convert("RGB"), cut, report
 
 
 def capture_phone(browser, loc):
@@ -280,23 +332,26 @@ def capture_phone(browser, loc):
     page.clock.run_for(2000)
     count = card.locator("[data-action='shopping-toggle']").count()
     assert count == 9, f"the new list holds {count} items, expected the nine Gnocchi ingredients"
-    card.locator("[data-action='shopping-toggle']").nth(1).click()  # tick the tomatoes, stays in the list
-    page.clock.run_for(1200)
-    page.clock.run_for(7000)  # the "saved" toast of the tick leaves on its own
+    for name in t["tick"]:
+        # Ticked rows sink to the done group, so every row is looked up by its text, never by its index.
+        card.locator(".shopping-row", has_text=name).locator("[data-action='shopping-toggle']").click()
+        page.clock.run_for(1500)
+    page.clock.run_for(7000)  # the "saved" toast of the ticks leaves on its own
     card.evaluate("c => { const s = document.createElement('style'); s.textContent = %s; c.shadowRoot.appendChild(s); }" % json.dumps(CARD_FLAT))
-    # The shot starts at the top of the card: heading, list name and the first ingredient are on screen. The
-    # sticky tab rail sits on top. A viewport height is chosen where no row or label is cut at the lower edge.
-    card.evaluate("c => c.scrollTo({ top: 0, behavior: 'instant' })")
+    # The shot is scrolled to the list: the sticky tab rail sits on top, right under it the list picker with
+    # the done counter, then the open items and the done group with the two ticked rows. A viewport height
+    # is chosen where no row or label is cut at the lower edge.
     placed = None
     for height in PHONE_HEIGHTS:
         page.set_viewport_size({"width": 393, "height": height})
         page.clock.run_for(400)
-        card.evaluate("c => c.scrollTo({ top: 0, behavior: 'instant' })")
-        low = card.evaluate(CUT_JS, {})
-        if not low:
+        card.evaluate(SCROLL_TO_LIST_JS, LIST_GAP)
+        page.clock.run_for(300)
+        low = card.evaluate(CUT_JS, {"top": card.evaluate(RAIL_BOTTOM_JS)})
+        if not low and card.evaluate(ROWS_JS, LIST_GAP)["allShown"]:
             placed = height
             break
-    assert placed, "no viewport height lets the list end between two rows"
+    assert placed, "no viewport height shows the whole list between the tab rail and the lower edge"
     page.clock.run_for(400)
     rail_move = card.evaluate(RAIL_JS, [RAIL_FADE, RAIL_CLEAR])
     assert not rail_move.get("failed"), f"no scroll position keeps the rail clean at both ends: {rail_move}"
@@ -308,8 +363,13 @@ def capture_phone(browser, loc):
         "c => [...c.shadowRoot.querySelectorAll('*')].filter((e) => e.tagName !== 'STYLE' && (e.tagName === 'SELECT' || [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) && e.getBoundingClientRect().top >= 0 && e.getBoundingClientRect().bottom <= innerHeight).map((e) => e.tagName === 'SELECT' ? e.selectedOptions[0].textContent.trim() : e.textContent.trim()).join(' | ')"
     )
     print(loc, "visible:", visible[:400])
-    for needle in (t["heading"], t["list"], t["first"]):
+    for needle in (t["list"], t["first"], t["done"]):
         assert needle in visible, f"{needle!r} is not on the phone screen"
+    rows = card.evaluate(ROWS_JS, LIST_GAP)
+    assert rows["total"] == 9 and rows["allShown"], f"the nine ingredient rows are not all on screen: {rows}"
+    assert rows["ticked"] == 2 and rows["tickedShown"] == 2, f"two ticked rows must be visible: {rows}"
+    assert rows["tickedNames"] and all(any(n.lower() in x.lower() for x in rows["tickedNames"]) for n in t["tick"]), rows
+    assert rows["open"] == 7, rows
     toast = card.evaluate("c => [...c.shadowRoot.querySelectorAll('.toast, [role=status]')].filter((e) => e.getBoundingClientRect().height).map((e) => e.innerText)")
     assert not toast, f"a toast is on screen: {toast}"
     blur_everything(page, card)
@@ -324,18 +384,44 @@ def capture_phone(browser, loc):
     img = Image.open(io.BytesIO(png)).convert("RGB")
     top = [img.getpixel((img.width // 2, y)) for y in range(0, 4)]
     assert all(max(abs(a - b) for a, b in zip(px, top[3])) <= 2 for px in top), f"seam in the top rows: {top}"
-    return img, cut, top[0]
+    report = {
+        "height": placed,
+        "ticked": rows["ticked"],
+        "open": rows["open"],
+        "total": rows["total"],
+        "tickedShown": rows["tickedShown"],
+        "allRowsShown": rows["allShown"],
+        "tickedNames": rows["tickedNames"],
+        "rail": {k: rail[k] for k in ("cut", "activeWhole", "shown", "gapLeft", "gapRight")},
+        "cut": cut,
+        "statusColour": "#%02x%02x%02x" % top[0],
+    }
+    return img, cut, top[0], report
 
 
-def save_variants(img, name, widths, loc):
+def save_variants(img, name, widths, loc, quality=WEBP_QUALITY):
     folder = SHOWCASE / loc
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob(f"{name}-*.webp"):
         old.unlink()
     for width in widths:
         out = img if width == img.width else img.resize((width, round(img.height * width / img.width)), Image.LANCZOS)
-        out.save(folder / f"{name}-{width}.webp", "WEBP", quality=82, method=6)
+        out.save(folder / f"{name}-{width}.webp", "WEBP", quality=quality, method=6)
     return {"width": img.width, "height": img.height, "widths": widths}
+
+
+def sha256(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def write_report(reports, entries):
+    for loc, items in entries.items():
+        for name, entry in items.items():
+            reports[loc][name]["files"] = {
+                str(w): sha256(SHOWCASE / loc / f"{name}-{w}.webp") for w in entry["widths"]
+            }
+    text = json.dumps(reports, indent=2, ensure_ascii=False) + "\n"
+    (SHOWCASE / "hero-capture.json").write_text(text)
 
 
 def write_manifest(entries):
@@ -356,17 +442,19 @@ def main():
     )
     time.sleep(1.2)
     entries = {}
+    reports = {}
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch()
             try:
                 for loc in TEXT:
-                    tablet, cut_t = capture_tablet(browser, loc)
-                    phone, cut_p, status = capture_phone(browser, loc)
+                    tablet, cut_t, report_t = capture_tablet(browser, loc)
+                    phone, cut_p, status, report_p = capture_phone(browser, loc)
+                    reports[loc] = {"hero-tablet-cook": report_t, "hero-phone-shopping": report_p}
                     assert not cut_t and not cut_p, f"{loc}: text cut by the screenshot edge: {cut_t} {cut_p}"
                     print(loc, "status bar colour (CSS .status background):", "#%02x%02x%02x" % status)
                     entries[loc] = {
-                        "hero-tablet-cook": save_variants(tablet, "hero-tablet-cook", TABLET_WIDTHS, loc),
+                        "hero-tablet-cook": save_variants(tablet, "hero-tablet-cook", TABLET_WIDTHS, loc, TABLET_QUALITY),
                         "hero-phone-shopping": save_variants(phone, "hero-phone-shopping", PHONE_WIDTHS, loc),
                     }
             finally:
@@ -374,6 +462,7 @@ def main():
     finally:
         server.terminate()
     write_manifest(entries)
+    write_report(reports, entries)
     print("wrote", ", ".join(f"{loc}/{n}" for loc, e in entries.items() for n in e))
 
 

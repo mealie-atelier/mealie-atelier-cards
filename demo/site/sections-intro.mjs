@@ -14,6 +14,15 @@ export const SIZES = {
   tablet: "(max-width: 980px) 94vw, 640px",
 };
 
+// Measured widths of the screens (the device frame takes the rest), so the browser picks the smallest
+// file that is still crisp. test/demo-site.test.mjs and scripts/check-hero.py hold them to the layout:
+//   tablet screen: 477px at 641, 571 at 768, 711 from 1024 to 1179 (full width stage), 517 at 1180, 597 at 1280, 622 from 1440
+//   phone screen: 228px at 390, 261 from 640 (phone only), 176 at 641, 211 at 768, 262 from 1024, 191 at 1180, 220 at 1280, 229 from 1440
+const TABLET_SIZES =
+  "(max-width: 1179px) min(calc(80.8vw - 48px), 711px), min(calc(80vw - 427px), 622px)";
+const PHONE_SIZES =
+  "(max-width: 640px) min(calc((100vw - 40px) * 0.652), 261px), (max-width: 1179px) min(calc(29.8vw - 18px), 262px), min(calc(29vw - 151px), 229px)";
+
 const GIF_BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 // Kitchen tablet in cooking mode behind, phone with the shopping list in front. Both are real
@@ -26,15 +35,15 @@ function heroStage(ctx) {
     "Cooking mode on a kitchen tablet: Gnocchi alla Sorrentina, step 1 of 3, let the cherry tomatoes burst. Below it the kitchen timer “Simmer the sauce” runs with 7:28 minutes left.",
   );
   // On a phone the tablet is hidden: its picture source swaps to a one pixel GIF, so nothing is downloaded.
-  const tabletImg = `<picture><source media="(max-width: 640px)" srcset="${GIF_BLANK}"><img src="${tablet.src}" srcset="${tablet.srcset}" sizes="(max-width: 1279px) min(80vw, 700px), 620px" width="${tablet.entry.width}" height="${tablet.entry.height}" alt="${escapeHtml(tabletAlt)}" decoding="async" fetchpriority="high"></picture>`;
+  const tabletImg = `<picture><source media="(max-width: 640px)" srcset="${GIF_BLANK}"><img src="${tablet.src}" srcset="${tablet.srcset}" sizes="${TABLET_SIZES}" width="${tablet.entry.width}" height="${tablet.entry.height}" alt="${escapeHtml(tabletAlt)}" decoding="async" fetchpriority="high"></picture>`;
   const phoneImg = shot(
     ctx,
     "hero-phone-shopping",
     t(
-      "Einkaufsliste auf dem Smartphone: Alles für den Einkauf, die Liste Wocheneinkauf für die Gnocchi mit 800 g Kartoffelgnocchi, passierten Tomaten, Knoblauch, Olivenöl und Oregano.",
-      "Shopping list on a phone: the list Weekly shop for the gnocchi with 800 g potato gnocchi, passata, garlic, olive oil and oregano.",
+      "Einkaufsliste auf dem Smartphone: die Liste Wocheneinkauf für die Gnocchi. Noch zu kaufen: Kartoffelgnocchi, passierte Tomaten, Knoblauch, Oregano, Mozzarella, Basilikum und Salz. Schon abgehakt: Kirschtomaten und Olivenöl.",
+      "Shopping list on a phone: the list Weekly shop for the gnocchi. Still to buy: potato gnocchi, passata, garlic, oregano, mozzarella, basil and salt. Already ticked off: cherry tomatoes and olive oil.",
     ),
-    "(max-width: 640px) min(65vw, 260px), (max-width: 1279px) min(28vw, 270px), 220px",
+    PHONE_SIZES,
     { eager: true },
   );
   return `<div class="hero-stage rv d2">${weekDialRing()}${heroTablet(tabletImg)}${heroPhone(ctx, phoneImg)}</div>`;

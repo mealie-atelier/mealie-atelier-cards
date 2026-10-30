@@ -1,6 +1,7 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -822,6 +823,15 @@ test("hero: a kitchen tablet in cooking mode and a phone, no browser, no toast, 
       /hero-tablet-cook-800\.webp \d+w, [^"]+hero-tablet-cook-1200\.webp \d+w, [^"]+hero-tablet-cook-1600\.webp \d+w/,
     );
     assert.match(hero, /fetchpriority="high"/);
+    // Sizes follow the measured screen widths (711px tablet and 262px phone at most below 1180px).
+    assert.match(
+      hero,
+      /sizes="\(max-width: 1179px\) min\(calc\(80\.8vw - 48px\), 711px\), min\(calc\(80vw - 427px\), 622px\)"/,
+    );
+    assert.match(
+      hero,
+      /sizes="\(max-width: 640px\) min\(calc\(\(100vw - 40px\) \* 0\.652\), 261px\), \(max-width: 1179px\) min\(calc\(29\.8vw - 18px\), 262px\), min\(calc\(29vw - 151px\), 229px\)"/,
+    );
     assert.equal((hero.match(/<span class="nw">/g) ?? []).length, 2, "eyebrow has two phrases");
     const alts = [...hero.matchAll(/<img\b[^>]*\balt="([^"]+)"/g)].map((m) => m[1]);
     assert.equal(alts.length, 2);
@@ -833,8 +843,8 @@ test("hero: a kitchen tablet in cooking mode and a phone, no browser, no toast, 
     assert.match(
       alts[1],
       locale === "de"
-        ? /Alles für den Einkauf.*Wocheneinkauf.*800 g Kartoffelgnocchi/
-        : /Shopping list.*Weekly shop.*800 g potato gnocchi/,
+        ? /Wocheneinkauf.*Noch zu kaufen: Kartoffelgnocchi.*Schon abgehakt: Kirschtomaten und Olivenöl/
+        : /Weekly shop.*Still to buy: potato gnocchi.*Already ticked off: cherry tomatoes and olive oil/,
       "the phone alt names what the picture shows",
     );
     for (const alt of alts)
@@ -872,14 +882,18 @@ test("hero: the entrance only runs when motion is welcome and the hero has no li
 test("hero: the devices keep a readable width, the stage fades only through its devices, the dial leaves the phone free", () => {
   const css = read(join(builds.local, "assets/live-demo.css"));
   const heroCss = css.slice(css.indexOf(".hero-stage {"), css.indexOf("/* facts */"));
-  // Two columns from 981px, so the devices sit beside the copy on an iPad landscape and a small laptop.
-  assert.match(heroCss, /@media \(min-width: 981px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
+  // Two columns only from 1180px: below that the devices would shrink under the readable sizes.
+  assert.match(heroCss, /@media \(min-width: 1180px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
   assert.match(
     heroCss,
-    /@media \(max-width: 980px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
+    /@media \(max-width: 1179px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
   );
-  // The phone never fades while the tablet is behind it for longer than a moment.
-  assert.match(heroCss, /\.hero-stage\.in \.device-phone \{[^}]*transition:\s*opacity 0\.3s/);
+  // Entrance timings of the concept: tablet 900ms, phone 900ms after 140ms.
+  assert.match(
+    heroCss,
+    /\.hero-stage\.in \.device-phone \{[^}]*opacity 0\.7s var\(--ease\) 0\.14s,\s*translate 0\.9s var\(--ease\) 0\.14s/,
+  );
+  assert.match(heroCss, /\.hero-stage\.in \.device-tablet \{[^}]*translate 0\.9s var\(--ease\);/);
   // The hidden start state carries no transition, otherwise the devices would first fade out at load.
   assert.doesNotMatch(
     heroCss,
@@ -922,33 +936,104 @@ test("hero: the devices keep a readable width, the stage fades only through its 
   }
 });
 
-test("capture script: the phone rail is only scrolled, never resized or unmasked", () => {
+test("capture script keeps its rules: the rail is only scrolled, never restyled", () => {
   const script = read(new URL("../scripts/capture-hero.py", import.meta.url));
   assert.doesNotMatch(
     script,
     /margin-inline|mask-image\s*:\s*none|scroll-snap-type\s*:\s*none|style\.setProperty\('width'/,
   );
-  assert.match(script, /rail\.scrollTo\(\{ left: best\.s, behavior: 'instant' \}\)/);
-  // Each capture-only style carries its own comment line.
   assert.match(
     script,
     /# Capture only: the screen is framed by the CSS device[^\n]*\n(# [^\n]*\n)*CARD_FLAT = /,
   );
-  assert.doesNotMatch(script, /RAIL_PLAIN/);
 });
 
-test("capture script and rail CSS treat both ends of the phone tab rail alike", () => {
-  const script = read(new URL("../scripts/capture-hero.py", import.meta.url));
-  assert.match(script, /assert not rail\["cut"\] and rail\["activeWhole"\]/);
-  assert.match(script, /W - fade/, "the right end is checked like the left end");
-  assert.match(script, /scrollTo\(\{ top: 0/, "the phone shot starts at the top of the list");
+test("phone tab rail: fade, padding and mandatory start snapping are the same at both ends", () => {
   const polish = read(new URL("../src/design-system/polish.css", import.meta.url));
+  assert.match(polish, /scroll-snap-type: x mandatory;/);
+  assert.doesNotMatch(polish, /scroll-snap-type: x proximity/);
   assert.match(polish, /padding-inline: 20px;\s*scroll-padding-inline: 20px;/);
+  assert.match(polish, /scroll-snap-align: start;/);
   assert.match(
     polish,
     /#000 calc\(100% - 20px\),\s*transparent calc\(100% - 10px\),\s*transparent 100%/,
   );
 });
+
+// What the capture run measured, bound to the published files by their hashes.
+test("hero captures: what the run measured is what was published", () => {
+  const dir = new URL("../demo/showcase/", import.meta.url);
+  const report = JSON.parse(read(new URL("hero-capture.json", dir)));
+  const manifest = JSON.parse(read(new URL("manifest.json", dir)));
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const statusBg = css.match(/\.status \{[^}]*background: (#[0-9a-f]{6})/)[1];
+  for (const locale of ["de", "en"]) {
+    const tablet = report[locale]["hero-tablet-cook"];
+    assert.equal(tablet.timer, "07:28", `${locale} timer`);
+    assert.equal(tablet.step, "01 / 03");
+    assert.deepEqual(tablet.cut, [], `${locale} tablet has no cut text`);
+    const phone = report[locale]["hero-phone-shopping"];
+    assert.equal(phone.total, 9, `${locale} the nine Gnocchi ingredients`);
+    assert.equal(phone.ticked, 2, `${locale} two ticked items`);
+    assert.equal(phone.tickedShown, 2, `${locale} both ticked items are on the picture`);
+    assert.equal(phone.open, 7);
+    assert.ok(phone.allRowsShown, `${locale} every row is on the picture`);
+    assert.deepEqual(phone.cut, [], `${locale} phone has no cut text`);
+    assert.deepEqual(phone.rail.cut, [], `${locale} tab rail has no cut tab`);
+    assert.ok(phone.rail.activeWhole, `${locale} active tab is whole`);
+    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 40, `${locale} rail is even`);
+    assert.equal(phone.statusColour, statusBg, `${locale} status bar joins the capture`);
+    assert.match(
+      phone.tickedNames.join(" "),
+      locale === "de" ? /Kirschtomaten.*Olivenöl/ : /cherry tomatoes.*olive oil/,
+    );
+    const budget = {
+      "hero-tablet-cook": { 800: 52, 1200: 100, 1600: 163 },
+      "hero-phone-shopping": { 400: 24, 700: 40, 1179: 70 },
+    };
+    for (const name of ["hero-tablet-cook", "hero-phone-shopping"]) {
+      const entry = manifest[locale][name];
+      for (const width of entry.widths) {
+        const file = readFileSync(new URL(`${locale}/${name}-${width}.webp`, dir));
+        assert.equal(
+          createHash("sha256").update(file).digest("hex"),
+          report[locale][name].files[width],
+          `${locale}/${name}-${width} is the file the run measured`,
+        );
+        assert.ok(
+          file.length <= budget[name][width] * 1000,
+          `${locale}/${name}-${width} is ${file.length} bytes`,
+        );
+        if (width === entry.widths.at(-1)) {
+          // Lossy WebP: "VP8 " chunk, frame header after 3 tag bytes, 14 bit width and height.
+          assert.equal(file.toString("latin1", 12, 16), "VP8 ");
+          const w = file.readUInt16LE(26) & 0x3fff;
+          const h = file.readUInt16LE(28) & 0x3fff;
+          assert.equal(w, width, `${locale}/${name} width`);
+          // The manifest holds the size of the full capture, the file keeps its aspect ratio.
+          assert.ok(
+            Math.abs(h / w - entry.height / entry.width) < 0.002,
+            `${locale}/${name} aspect`,
+          );
+        }
+      }
+    }
+  }
+});
+
+test(
+  "hero render: both screens decode at every breakpoint, files crisp, no layout shift, entrance and rail as designed",
+  { skip: spawnSync("uv", ["--version"]).error ? "uv is not installed" : false, timeout: 600000 },
+  () => {
+    const run = spawnSync(
+      "uv",
+      ["run", "--with", "playwright", "python", "scripts/check-hero.py", "--site", builds.local],
+      { encoding: "utf8", timeout: 580000 },
+    );
+    assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`.slice(-4000));
+    assert.match(run.stdout, /hero render check passed/);
+  },
+);
 
 test("hero captures: tablet and phone exist in both locales with every listed width", () => {
   const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));

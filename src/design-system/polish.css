@@ -944,11 +944,12 @@
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    scroll-snap-type: x proximity;
+    scroll-snap-type: x mandatory;
   }
   /* The rail fades 20px at each end, the same on both sides. The tabs start and snap after that
      fade (start aligned, not centred) and the rail pads 20px at both ends, so a tab at rest never
-     sits half faded under it. The mask is fully clear for the outer 10px: a tab 6px beyond the last
+     sits half faded under it. Snapping is mandatory: a hand scroll always comes to rest on a tab edge,
+     never on half a label. The mask is fully clear for the outer 10px: a tab 6px beyond the last
      whole tab keeps its icon and label inside that clear part, so no half label shows at either end. */
   .atelier .sidebar .nav {
     padding-inline: 20px;
