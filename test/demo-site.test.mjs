@@ -1048,6 +1048,39 @@ function pagesBelow(root) {
 // Every page, the bare domain redirect included, must point its share image at a real JPEG of
 // 1200x630 pixels under 300 KB that the build wrote. Crawlers such as Twitter/X ignore a meta refresh,
 // so the root page needs the full card itself.
+// Without Chromium and with an empty cache no share image exists. The build must still succeed and
+// must not advertise image URLs it does not ship (they would 404 on the deployed site).
+test("a build without Chromium and without cached share images emits no dead og:image or twitter:image", () => {
+  const out = mkdtempSync(join(tmpdir(), "atelier-demo-noog-"));
+  const cache = mkdtempSync(join(tmpdir(), "atelier-og-empty-"));
+  try {
+    const env = { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: baseUrl };
+    env.ATELIER_DEMO_OG_CACHE = cache;
+    env.CHROME_BIN = "/nonexistent/chrome";
+    env.HOME = "/nonexistent-home";
+    delete env.ATELIER_DEMO_REQUIRE_OG;
+    execFileSync("node", ["scripts/generate-demo-site.mjs"], { env, stdio: "pipe" });
+    const pages = pagesBelow(out);
+    assert.ok(pages.length >= 25, "pages were still generated");
+    for (const page of pages) {
+      const html = read(page);
+      assert.doesNotMatch(html, /og:image|twitter:image/, `${page} advertises no missing image`);
+    }
+    assert.equal(existsSync(join(out, "og")) ? listFiles(join(out, "og"), ".jpg").length : 0, 0);
+    assert.throws(
+      () =>
+        execFileSync("node", ["scripts/generate-demo-site.mjs"], {
+          env: { ...env, ATELIER_DEMO_REQUIRE_OG: "1" },
+          stdio: "pipe",
+        }),
+      "ATELIER_DEMO_REQUIRE_OG=1 turns the missing images into an error",
+    );
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+    rmSync(cache, { recursive: true, force: true });
+  }
+});
+
 test("every generated page has og:image and twitter:image pointing at an existing 1200x630 JPEG", (t) => {
   if (!ogRendered(builds.local) || !ogRendered(builds.deployed)) {
     return t.skip("share images were not rendered: no headless Chromium and an empty OG cache");

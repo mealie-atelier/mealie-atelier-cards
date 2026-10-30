@@ -96,21 +96,34 @@ function ogAlt(locale, recipe) {
     : "Mealie Atelier: a calm kitchen for your Mealie, with a recipe card and the shopping list on a phone";
 }
 
+// Output paths of the share images the build really wrote. A build without Chromium and without
+// a cached image skips some of them; pages must not point at a file that is not shipped (404).
+let renderedOg = null;
+
 // Meta tags for the share image of a page. Local builds fall back to a relative URL.
 function ogImageMeta(locale, recipe, prefix) {
   const url = escapeHtml(`${deploymentBase || prefix}${ogPath(locale, recipe)}`);
   const alt = escapeHtml(ogAlt(locale, recipe));
   const other = locale === "de" ? "en" : "de";
+  const hasImage = !renderedOg || renderedOg.has(ogPath(locale, recipe));
   return [
-    `<meta property="og:image" content="${url}">`,
-    `<meta property="og:image:type" content="image/jpeg">`,
-    `<meta property="og:image:width" content="${OG_WIDTH}">`,
-    `<meta property="og:image:height" content="${OG_HEIGHT}">`,
-    `<meta property="og:image:alt" content="${alt}">`,
+    ...(hasImage
+      ? [
+          `<meta property="og:image" content="${url}">`,
+          `<meta property="og:image:type" content="image/jpeg">`,
+          `<meta property="og:image:width" content="${OG_WIDTH}">`,
+          `<meta property="og:image:height" content="${OG_HEIGHT}">`,
+          `<meta property="og:image:alt" content="${alt}">`,
+        ]
+      : []),
     `<meta property="og:locale" content="${ogLocales[locale]}">`,
     `<meta property="og:locale:alternate" content="${ogLocales[other]}">`,
-    `<meta name="twitter:image" content="${url}">`,
-    `<meta name="twitter:image:alt" content="${alt}">`,
+    ...(hasImage
+      ? [
+          `<meta name="twitter:image" content="${url}">`,
+          `<meta name="twitter:image:alt" content="${alt}">`,
+        ]
+      : []),
   ].join("");
 }
 
@@ -152,7 +165,7 @@ async function buildOgImages() {
       });
     }
   }
-  return renderOgImages(jobs, join(demoRoot, ".og-cache"));
+  return renderOgImages(jobs, process.env.ATELIER_DEMO_OG_CACHE || join(demoRoot, ".og-cache"));
 }
 
 // Photos are self-hosted: the catalog names a local file relative to recipes.json.
@@ -725,8 +738,9 @@ await removeUnlisted(
     ].map((name) => join(siteRoot, "assets", name)),
   ),
 );
-await writeFile(join(siteRoot, "index.html"), rootIndex());
 const ogImages = await buildOgImages();
+renderedOg = new Set(ogImages.keys());
+await writeFile(join(siteRoot, "index.html"), rootIndex());
 for (const [output, bytes] of ogImages) {
   await mkdir(dirname(join(siteRoot, output)), { recursive: true });
   await writeFile(join(siteRoot, output), bytes);
