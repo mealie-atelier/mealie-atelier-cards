@@ -19,6 +19,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Editor version history: the summary line is built in the card from the backup's ingredient and step counts, in the language of the interface with singular and plural forms ("1 Zutat", "3 Schritte"). Backups without counts keep the text the Bridge stored.
+- Product page: the app screenshots with a sidebar or tab bar (desktop, tablet, phone) and the German Home Assistant dashboard shots are recaptured from the current card, so they show the names of the live demo (Discover, Meal plan, Cook together) and in German KÜCHENSTUDIO and MENÜ. The capture scripts are `scripts/capture-app-showcase.py` and `scripts/capture-ha-showcase.py`.
 - Home Assistant sync dialog: the send button of the setup form is a full-width row instead of a circle on phones, it stays neutral ("Speichern und senden") until a preview has produced a count, "Review and send first batch" opens a review that runs the preview itself, the newest run is listed first, rule cards name the destination like the picker ("name · platform"), and the German pending count reads "ausstehend".
 - Cooking mode: Back and Next stay pinned inside the dialog at laptop heights and on tall tablets in Safari, also after an ingredient alternatives result.
 - Docs: README and CHANGELOG use American spelling.
