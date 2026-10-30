@@ -203,12 +203,35 @@ function dayString(locale, day, opts) {
 /** Dedicated print documents. No token/credentials or arbitrary HTML from Mealie is interpolated. */
 /* ATELIER_PRINT_DOCUMENT */
 
-/** Current width of a progress fill as a percentage of its track, also while it is transitioning. */
-function cookFillShare(fill) {
-  const track = fill.parentElement?.getBoundingClientRect?.().width;
-  const width = fill.getBoundingClientRect?.().width;
-  if (track > 0 && width >= 0) return `${((width / track) * 100).toFixed(2)}%`;
-  return fill.style?.width || "";
+/** Copy the attributes of `fresh` onto `live`, touching only what differs. */
+function syncAttributes(live, fresh) {
+  for (const attr of [...live.attributes])
+    if (!fresh.hasAttribute(attr.name)) live.removeAttribute(attr.name);
+  for (const attr of [...fresh.attributes])
+    if (live.getAttribute(attr.name) !== attr.value) live.setAttribute(attr.name, attr.value);
+}
+/**
+ * Make the live subtree equal to the freshly built one while keeping every node that can stay.
+ * Images keep their element (no reload or blank frame), the progress fill keeps its element
+ * (its width transition runs), timers keep their animation phase and focus stays where it is.
+ */
+function morphElement(live, fresh) {
+  syncAttributes(live, fresh);
+  if (live.nodeName === "INPUT") {
+    if (live.checked !== fresh.checked) live.checked = fresh.checked;
+    if (live.value !== fresh.value) live.value = fresh.value;
+  }
+  const liveKids = [...live.childNodes];
+  const freshKids = [...fresh.childNodes];
+  freshKids.forEach((next, i) => {
+    const current = liveKids[i];
+    if (!current) live.appendChild(next);
+    else if (current.nodeType !== next.nodeType || current.nodeName !== next.nodeName)
+      current.replaceWith(next);
+    else if (current.nodeType === 1) morphElement(current, next);
+    else if (current.data !== next.data) current.data = next.data;
+  });
+  for (const extra of liveKids.slice(freshKids.length)) extra.remove();
 }
 class MealieAtelierCard extends HTMLElement {
   static getConfigElement() {
@@ -1150,15 +1173,20 @@ class MealieAtelierCard extends HTMLElement {
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
-    // The cooking progress bar is rebuilt with the card. Keep its previous width so the new
-    // bar can grow from there instead of appearing at the target width.
-    const oldFill = !modalChanged && card?.querySelector?.(".cook-fill");
-    const previousFill = oldFill ? cookFillShare(oldFill) : "";
     // WebKit loses its scroll anchor when the card subtree is swapped and jumps the page by
     // the card's height. Nothing above the card changes here, so any drift is undone.
     const topBefore = card ? this.getBoundingClientRect().top : null;
-    if (card) card.replaceWith(template.content.firstElementChild);
-    else this.shadowRoot.appendChild(template.content.firstElementChild);
+    // Stepping through the cooking dialog patches it in place. The backdrop stays in the top
+    // layer and nothing replays, so no frame can show the page behind it.
+    const patched =
+      !modalChanged &&
+      this._modal === "cook" &&
+      card &&
+      this._patchCookDialog(card, template.content.firstElementChild);
+    if (!patched) {
+      if (card) card.replaceWith(template.content.firstElementChild);
+      else this.shadowRoot.appendChild(template.content.firstElementChild);
+    }
     if (topBefore !== null) {
       const drift = this.getBoundingClientRect().top - topBefore;
       if (Math.abs(drift) > 1) scrollParent(this)?.scrollBy(0, drift);
@@ -1169,7 +1197,6 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
-    this._keepCookingMotionContinuous(previousFill);
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -1382,26 +1409,38 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   /**
-   * A rebuilt cooking dialog must not restart motion that is meant to run on its own.
-   * The progress bar grows from its previous width, and the running-timer pulse keeps its phase.
+   * Patch the open cooking dialog from a freshly built card instead of swapping the card.
+   * The page around the dialog is rebuilt as before. Returns false when the dialog is not there.
    */
-  _keepCookingMotionContinuous(previousFill) {
-    const fill = this.shadowRoot.querySelector(".cook-fill");
-    if (fill && previousFill && typeof fill.animate === "function") {
-      // A transition does not start on an element that was just inserted, so animate it.
-      const style = globalThis.getComputedStyle?.(fill);
-      const seconds = parseFloat(style?.transitionDuration) || 0;
-      if (seconds > 0 && fill.style.width && fill.style.width !== previousFill)
-        fill.animate([{ width: previousFill }, { width: fill.style.width }], {
-          duration: seconds * 1000,
-          easing: style.transitionTimingFunction || "ease",
-        });
-    }
-    if (typeof this.shadowRoot.querySelector(".cook-timer-status")?.getAnimations !== "function")
-      return;
-    for (const status of this.shadowRoot.querySelectorAll(".cook-timer-status"))
-      for (const animation of status.getAnimations({ subtree: true }))
-        if (animation.animationName === "at-timer-live") animation.startTime = 0;
+  _patchCookDialog(card, fresh) {
+    const oldRoot = card.querySelector(":scope > .atelier");
+    const newRoot = fresh.querySelector(":scope > .atelier");
+    const oldBackdrop = oldRoot?.querySelector(":scope > .modal-backdrop");
+    const newBackdrop = newRoot?.querySelector(":scope > .modal-backdrop");
+    const oldModal = oldBackdrop?.querySelector(":scope > .modal");
+    const newModal = newBackdrop?.querySelector(":scope > .modal");
+    if (!oldModal || !newModal) return false;
+    const oldStage = oldModal.querySelector(".cook-stage");
+    const stageChanged = oldStage?.innerHTML !== newModal.querySelector(".cook-stage")?.innerHTML;
+    syncAttributes(oldRoot, newRoot);
+    const siblings = [...newRoot.children];
+    const split = siblings.indexOf(newBackdrop);
+    for (const child of [...oldRoot.children]) if (child !== oldBackdrop) child.remove();
+    siblings.forEach((child, i) => {
+      if (i < split) oldRoot.insertBefore(child, oldBackdrop);
+      else if (i > split) oldRoot.appendChild(child);
+    });
+    // The backdrop keeps its popover attribute, only its look classes follow the new markup.
+    oldBackdrop.className = newBackdrop.className;
+    morphElement(oldModal, newModal);
+    const calm =
+      newRoot.classList.contains("motion-off") ||
+      globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const stage = oldModal.querySelector(".cook-stage");
+    // A short fade of the step text only, so the dialog itself never turns transparent.
+    if (stageChanged && !calm && typeof stage?.animate === "function")
+      stage.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 200, easing: "ease-out" });
+    return true;
   }
   /**
    * Open dialogs in the top layer (Popover API), above Home Assistant's sidebar and header.
