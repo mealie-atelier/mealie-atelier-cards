@@ -1429,8 +1429,12 @@ class MealieAtelierCard extends HTMLElement {
     const before = new Map();
     for (const el of oldStage?.children || [])
       if (isText(el)) before.set(textKey(el), el.innerHTML);
-    // A different step photo is decoded off screen first. Until then the old photo (or no
-    // photo) stays, so the photo area never goes blank between two steps.
+    // A different step photo is decoded off screen first. The figure with its fixed size slot
+    // is in place at once (old photo, or an empty slot in the calm surface colour), so the
+    // timer and the buttons below never move while the picture loads.
+    // A cross-fade still running ends right now, so the figure holds one photo again.
+    this._cookFade?.();
+    this._cookFade = null;
     this._cookPhotoPending = null;
     const newFigure = newStage?.querySelector(".cook-step-figure");
     const oldFigure = oldStage?.querySelector(".cook-step-figure");
@@ -1447,13 +1451,25 @@ class MealieAtelierCard extends HTMLElement {
         if (attr.name !== "src") photo.setAttribute(attr.name, attr.value);
       photo.src = newImg.getAttribute("src");
       // Not placed into the inert figure yet: that would adopt it and drop the loading.
-      pending = { src: photo.getAttribute("src"), figure: newFigure, img: photo };
+      pending = { src: photo.getAttribute("src"), img: photo };
       if (oldFigure) {
         const keep = oldFigure.cloneNode(true);
-        const keepImg = keep.querySelector("img");
-        if (keepImg) keepImg.setAttribute("alt", newImg.getAttribute("alt") || "");
+        keep.querySelector("img")?.setAttribute("alt", newImg.getAttribute("alt") || "");
         newFigure.replaceWith(keep);
-      } else newFigure.remove();
+      } else {
+        // An empty slot of the same size: same classes, nothing to announce.
+        const slot = document.createElement("img");
+        for (const attr of newImg.attributes)
+          if (attr.name !== "src" && attr.name !== "alt") slot.setAttribute(attr.name, attr.value);
+        slot.setAttribute("alt", "");
+        slot.setAttribute("aria-hidden", "true");
+        // A transparent pixel keeps the engine from drawing a broken image or alt text.
+        slot.setAttribute(
+          "src",
+          "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+        );
+        newImg.replaceWith(slot);
+      }
     }
     syncAttributes(oldRoot, newRoot);
     const siblings = [...newRoot.children];
@@ -1467,27 +1483,55 @@ class MealieAtelierCard extends HTMLElement {
     oldBackdrop.className = newBackdrop.className;
     morphElement(oldModal, newModal);
     const stage = oldModal.querySelector(".cook-stage");
+    const calm =
+      newRoot.classList.contains("motion-off") ||
+      globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     if (pending && stage) {
       const token = pending;
       this._cookPhotoPending = token;
       const place = () => {
         if (this._cookPhotoPending !== token) return;
         this._cookPhotoPending = null;
-        const live = this.shadowRoot?.querySelector(".modal .cook-stage");
-        if (!live) return;
-        const current = live.querySelector(".cook-step-figure");
-        if (current) current.replaceWith(token.figure);
-        else live.insertBefore(token.figure, live.querySelector(":scope > .muted"));
-        token.figure.querySelector("img")?.replaceWith(token.img);
+        const figure = this.shadowRoot?.querySelector(".modal .cook-stage .cook-step-figure");
+        if (!figure) return;
+        const shown = figure.querySelector("img");
+        if (!shown || calm || typeof token.img.animate !== "function") {
+          if (shown) shown.replaceWith(token.img);
+          else figure.append(token.img);
+          return;
+        }
+        // Cross-fade: the new photo sits on top of the old one, then the old one goes.
+        figure.style.position = "relative";
+        Object.assign(token.img.style, { position: "absolute", inset: "0" });
+        figure.append(token.img);
+        const fade = token.img.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 220,
+          easing: "ease-out",
+        });
+        let over = false;
+        const done = () => {
+          if (over) return;
+          over = true;
+          if (this._cookFade === done) this._cookFade = null;
+          fade.cancel();
+          shown.remove();
+          token.img.style.removeProperty("position");
+          token.img.style.removeProperty("inset");
+          if (!token.img.getAttribute("style")) token.img.removeAttribute("style");
+          figure.style.removeProperty("position");
+          if (!figure.getAttribute("style")) figure.removeAttribute("style");
+        };
+        this._cookFade = done;
+        fade.onfinish = done;
+        fade.oncancel = done;
+        // A hidden tab pauses animations: the old photo must still go.
+        setTimeout(done, 400);
       };
       // A decode that never settles must not keep the old photo forever.
       setTimeout(place, 1500);
       if (typeof token.img.decode === "function") token.img.decode().then(place, place);
       else place();
     }
-    const calm =
-      newRoot.classList.contains("motion-off") ||
-      globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     // A short fade of the step text that changed. The photo, the dialog and the unchanged
     // lines are never touched, so nothing washes out or turns transparent.
     if (!calm && stage)
