@@ -31,8 +31,8 @@ function heroStage(ctx) {
     ctx,
     "hero-phone-shopping",
     t(
-      "Einkaufsliste auf dem Smartphone: der Wocheneinkauf für die Gnocchi mit passierten Tomaten, Knoblauch, Olivenöl, Oregano, Mozzarella, Basilikum und Salz. Die Kirschtomaten sind schon abgehakt.",
-      "Shopping list on a phone: the weekly shop for the gnocchi with passata, garlic, olive oil, oregano, mozzarella, basil and salt. The cherry tomatoes are already ticked off.",
+      "Einkaufsliste auf dem Smartphone: Alles für den Einkauf, die Liste Wocheneinkauf für die Gnocchi mit 800 g Kartoffelgnocchi, passierten Tomaten, Knoblauch, Olivenöl und Oregano.",
+      "Shopping list on a phone: the list Weekly shop for the gnocchi with 800 g potato gnocchi, passata, garlic, olive oil and oregano.",
     ),
     "(max-width: 640px) min(65vw, 260px), (max-width: 1279px) min(28vw, 270px), 220px",
     { eager: true },

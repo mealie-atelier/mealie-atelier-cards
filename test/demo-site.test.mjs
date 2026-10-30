@@ -830,6 +830,13 @@ test("hero: a kitchen tablet in cooking mode and a phone, no browser, no toast, 
       locale === "de" ? /7:28 Minuten/ : /7:28 minutes/,
       "alt states the timer of the capture",
     );
+    assert.match(
+      alts[1],
+      locale === "de"
+        ? /Alles für den Einkauf.*Wocheneinkauf.*800 g Kartoffelgnocchi/
+        : /Shopping list.*Weekly shop.*800 g potato gnocchi/,
+      "the phone alt names what the picture shows",
+    );
     for (const alt of alts)
       assert.doesNotMatch(alt, /[\u2013\u2014]|,\s+und\b/, "no dash punctuation");
   }
@@ -865,13 +872,21 @@ test("hero: the entrance only runs when motion is welcome and the hero has no li
 test("hero: the devices keep a readable width, the stage fades only through its devices, the dial leaves the phone free", () => {
   const css = read(join(builds.local, "assets/live-demo.css"));
   const heroCss = css.slice(css.indexOf(".hero-stage {"), css.indexOf("/* facts */"));
-  // Two columns give the devices too little room below 1280px (app text under 7px at 1024px).
-  assert.doesNotMatch(heroCss, /min-width: 98\d?px/, "no two columns between 981px and 1279px");
-  assert.match(heroCss, /@media \(min-width: 1280px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
+  // Two columns from 981px, so the devices sit beside the copy on an iPad landscape and a small laptop.
+  assert.match(heroCss, /@media \(min-width: 981px\) \{\s*\.hero-grid \{[^}]*minmax\(0, 4\.6fr\)/);
   assert.match(
     heroCss,
-    /@media \(max-width: 1279px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
+    /@media \(max-width: 980px\) \{\s*\.hero-grid \{[^}]*grid-template-columns: 1fr/,
   );
+  // The phone never fades while the tablet is behind it for longer than a moment.
+  assert.match(heroCss, /\.hero-stage\.in \.device-phone \{[^}]*transition:\s*opacity 0\.3s/);
+  // The hidden start state carries no transition, otherwise the devices would first fade out at load.
+  assert.doesNotMatch(
+    heroCss,
+    /\.reveal-ready \.hero-stage \.device(-phone|-tablet)? \{[^}]*transition/,
+  );
+  // The ring stays inside the stage: 100cqi wide, so its arcs never reach the screen edge.
+  assert.match(heroCss, /\.hero-stage \.dial \{[^}]*width: 100cqi/);
   // The stage only carries .rv for the observer: its own fade and lift would nest with the devices.
   assert.match(
     heroCss,
@@ -888,16 +903,19 @@ test("hero: the devices keep a readable width, the stage fades only through its 
       ),
     ];
     assert.equal(arcs.length, 7);
-    // The phone is 70cqi wide on a small screen, the dial 118cqi: only arcs within 49 degrees of the
+    // The phone is 70cqi wide on a small screen, the dial 100cqi: only arcs within 40 degrees of the
     // horizontal axis clear the phone. The paprika arc must be one of them, at both ends.
     const today = arcs.find((m) => m[1]);
     for (const [x, y] of [
       [today[2], today[3]],
       [today[4], today[5]],
     ]) {
-      const angle = Math.abs(Math.atan2(y - 50, x - 50)) * (180 / Math.PI);
+      const turn = Number(
+        heroCss.match(/\.hero-stage \.dial \{[^}]*rotate: (-?[\d.]+)deg/)?.[1] ?? 0,
+      );
+      const angle = Math.abs(Math.atan2(y - 50, x - 50) * (180 / Math.PI) + turn);
       assert.ok(
-        angle <= 49,
+        angle <= 40,
         `${locale}: the today arc end at ${angle.toFixed(1)} degrees hides behind the phone`,
       );
     }
@@ -910,13 +928,26 @@ test("capture script: the phone rail is only scrolled, never resized or unmasked
     script,
     /margin-inline|mask-image\s*:\s*none|scroll-snap-type\s*:\s*none|style\.setProperty\('width'/,
   );
-  assert.match(script, /rail\.scrollTo\(\{ left: target, behavior: 'instant' \}\)/);
+  assert.match(script, /rail\.scrollTo\(\{ left: best\.s, behavior: 'instant' \}\)/);
   // Each capture-only style carries its own comment line.
   assert.match(
     script,
     /# Capture only: the screen is framed by the CSS device[^\n]*\n(# [^\n]*\n)*CARD_FLAT = /,
   );
   assert.doesNotMatch(script, /RAIL_PLAIN/);
+});
+
+test("capture script and rail CSS treat both ends of the phone tab rail alike", () => {
+  const script = read(new URL("../scripts/capture-hero.py", import.meta.url));
+  assert.match(script, /assert not rail\["cut"\] and rail\["activeWhole"\]/);
+  assert.match(script, /W - fade/, "the right end is checked like the left end");
+  assert.match(script, /scrollTo\(\{ top: 0/, "the phone shot starts at the top of the list");
+  const polish = read(new URL("../src/design-system/polish.css", import.meta.url));
+  assert.match(polish, /padding-inline: 20px;\s*scroll-padding-inline: 20px;/);
+  assert.match(
+    polish,
+    /#000 calc\(100% - 20px\),\s*transparent calc\(100% - 10px\),\s*transparent 100%/,
+  );
 });
 
 test("hero captures: tablet and phone exist in both locales with every listed width", () => {

@@ -946,29 +946,29 @@
     scrollbar-width: none;
     scroll-snap-type: x proximity;
   }
-  /* The rail fades 32px at each end. The tabs start and snap after that fade (start aligned, not
-     centred), so a tab at rest never sits half faded under it. The tab before it ends 6px earlier:
-     the left fade is fully clear until 22px, so no half label of it shows. The right end keeps the
-     full fade as the hint that more tabs follow. */
+  /* The rail fades 20px at each end, the same on both sides. The tabs start and snap after that
+     fade (start aligned, not centred) and the rail pads 20px at both ends, so a tab at rest never
+     sits half faded under it. The mask is fully clear for the outer 10px: a tab 6px beyond the last
+     whole tab keeps its icon and label inside that clear part, so no half label shows at either end. */
   .atelier .sidebar .nav {
-    padding-inline: 32px;
-    scroll-padding-inline: 32px;
-  }
-  .atelier .sidebar .nav {
+    padding-inline: 20px;
+    scroll-padding-inline: 20px;
     -webkit-mask-image: linear-gradient(
       90deg,
       transparent 0,
-      transparent 22px,
-      #000 32px,
-      #000 calc(100% - 32px),
+      transparent 10px,
+      #000 20px,
+      #000 calc(100% - 20px),
+      transparent calc(100% - 10px),
       transparent 100%
     );
     mask-image: linear-gradient(
       90deg,
       transparent 0,
-      transparent 22px,
-      #000 32px,
-      #000 calc(100% - 32px),
+      transparent 10px,
+      #000 20px,
+      #000 calc(100% - 20px),
+      transparent calc(100% - 10px),
       transparent 100%
     );
   }

@@ -93,9 +93,16 @@ if ("IntersectionObserver" in window && !reduced()) {
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
-        entry.target.classList.add("in");
-        entry.target.querySelectorAll("[data-count]").forEach(countUp);
-        observer.unobserve(entry.target);
+        const target = entry.target;
+        observer.unobserve(target);
+        // Two frames: the hidden start state has to be painted first, otherwise an element that is on
+        // screen at load jumps straight to its end state and the entrance never plays.
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            target.classList.add("in");
+            target.querySelectorAll("[data-count]").forEach(countUp);
+          }),
+        );
       }
     },
     { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
