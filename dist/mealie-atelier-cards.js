@@ -19717,9 +19717,11 @@ Object.assign(MealieAtelierCard.prototype, {
         const prev = this._studio?.revision;
         this._studio = v;
         this._journal = v.journal || {};
+        // While this card still sends its own step, the server's older step must not win.
         if (
           this._modal === "cook" &&
           this._detail &&
+          !this._cookStepSync &&
           v.family?.session?.slug === this._detail.slug
         ) {
           const steps = asArray(this._detail.recipeInstructions);
@@ -19767,6 +19769,29 @@ Object.assign(MealieAtelierCard.prototype, {
       await this._recoverPermissions(error);
       return false;
     }
+  },
+  /**
+   * Send the shared cooking step. Quick clicks are sent one after another and only the newest
+   * step that is still waiting goes out, so an older answer never moves the dialog back.
+   */
+  _studioSyncStep(sessionId, step) {
+    this._cookStepWanted = { sessionId, step };
+    if (!this._cookStepSync)
+      this._cookStepSync = (async () => {
+        try {
+          while (this._cookStepWanted) {
+            const wanted = this._cookStepWanted;
+            this._cookStepWanted = null;
+            await this._studioWrite("session_step", {
+              session_id: wanted.sessionId,
+              step: wanted.step,
+            });
+          }
+        } finally {
+          this._cookStepSync = null;
+        }
+      })();
+    return this._cookStepSync;
   },
   async _studioCatalog() {
     if (this._fullCatalog?.length) return this._fullCatalog;
@@ -21038,10 +21063,10 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       steps = this._detail.recipeInstructions || [];
     await _atOriginalClick.call(this, event);
     if (session?.slug === slug && this._permissions.can_write)
-      await this._studioWrite("session_step", {
-        session_id: session.id,
-        step: Math.max(0, Math.min(steps.length - 1, this._cookIndex)),
-      });
+      await this._studioSyncStep(
+        session.id,
+        Math.max(0, Math.min(steps.length - 1, this._cookIndex)),
+      );
     return;
   }
   if (action === "cook-finish" && this._detail) {

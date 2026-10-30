@@ -75,3 +75,62 @@ test("the nav hover tint only applies where hover exists, so touch taps leave no
     /@media \(hover: hover\) \{\s*\.atelier \.nav button:hover \{[^}]*background: var\(--at-panel2\)/,
   );
 });
+
+test("quick back and next in a shared session keep the newest step", async () => {
+  const cards = loadCards();
+  const card = makeCard(cards);
+  const steps = [{ text: "a" }, { text: "b" }, { text: "c" }];
+  // The server keeps the shared session and refuses a write against an older revision.
+  const server = { revision: 1, step: 2 };
+  const state = () => ({
+    revision: server.revision,
+    family: { members: [], session: { id: "s1", slug: "gnocchi", step: server.step } },
+    journal: {},
+  });
+  card._detail = { slug: "gnocchi", name: "Gnocchi", recipeInstructions: steps };
+  card._modal = "cook";
+  card._cookIndex = 2;
+  card._studio = state();
+  card._render = () => {};
+  card.shadowRoot.activeElement = null;
+  const sent = [];
+  const pending = [];
+  card._ws = (type, payload) => {
+    if (type === "studio_update")
+      return new Promise((resolve, reject) =>
+        pending.push(() => {
+          if (payload.expected_revision !== server.revision) {
+            reject(Object.assign(new Error("conflict"), { code: "conflict" }));
+            return;
+          }
+          sent.push(payload.payload.step);
+          server.step = payload.payload.step;
+          server.revision += 1;
+          resolve(state());
+        }),
+      );
+    if (type === "studio_state") return Promise.resolve(state());
+    return Promise.resolve({});
+  };
+  const click = (action) => {
+    const button = { dataset: { action }, disabled: false, closest: () => button };
+    return card._handleClick({ target: button, preventDefault() {} });
+  };
+  const settle = () => new Promise((r) => setTimeout(r, 0));
+  // Back, then next while the back step is still on its way to the server.
+  const back = click("cook-back");
+  await settle();
+  const next = click("cook-next");
+  await settle();
+  assert.equal(card._cookIndex, 2, "local step follows the clicks at once");
+  // The server answers one write at a time, as it would over the wire.
+  for (let i = 0; i < 10 && pending.length; i++) {
+    pending.shift()();
+    await settle();
+    await settle();
+  }
+  await Promise.all([back, next]);
+  assert.equal(card._cookIndex, 2, "an older answer never moves the dialog back");
+  assert.equal(server.step, 2, "the shared session ends on the newest step");
+  assert.equal(sent.at(-1), 2);
+});
