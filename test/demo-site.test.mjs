@@ -1413,3 +1413,28 @@ test("light scheme uses the light Week Dial plate and every page links a web app
     /<link rel="manifest"/,
   );
 });
+
+test("demo mock responses are localized and free of dash punctuation", () => {
+  const preview = read("demo/preview.html");
+  for (const bad of ["DEMO – kein", "– Demo-", "DEMODATEN –", "USDA Live-Treffer"])
+    assert.ok(!preview.includes(bad), `preview.html must not contain "${bad}"`);
+  for (const german of [
+    'issue: "Demo: Unklare Einheit"',
+    'disclaimer: "',
+    'source: "FIKTIVE',
+    'note: "Demo-KI',
+    'name: "Hafercuisine',
+  ])
+    assert.ok(!preview.includes(german), `${german} must go through tr()`);
+  assert.match(preview, /DEMO: No real AI call\./);
+});
+
+test("ham and mushroom pizza does not halve already halved mushrooms again", () => {
+  const recipe = JSON.parse(read("demo/data/recipes.json")).recipes.find(
+    (r) => r.id === "ham-mushroom-pizza",
+  );
+  assert.ok(recipe);
+  const text = JSON.stringify(recipe);
+  assert.ok(!/Champignons halbieren/.test(text));
+  assert.ok(!/halve the mushrooms/.test(text));
+});

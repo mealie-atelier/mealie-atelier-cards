@@ -56,6 +56,7 @@
         return value;
       };
       document.documentElement.lang = demoLanguage;
+      const tr = (de, en) => (demoLanguage === "de" ? de : en);
       // The card only renders relative demo photo paths, so resolve each photo against this page.
       const photoPath = (file, catalogUrl) => {
         const { pathname } = new URL(file, catalogUrl);
@@ -310,23 +311,26 @@
               issues: [
                 {
                   severity: "warning",
-                  area: "Zutaten",
-                  issue: "Demo: Unklare Einheit",
-                  suggestion: "Bitte Menge prüfen.",
+                  area: tr("Zutaten", "Ingredients"),
+                  issue: tr("Demo: Unklare Einheit", "Demo: Unclear unit"),
+                  suggestion: tr("Bitte Menge prüfen.", "Please check the amount."),
                 },
               ],
-              summary: "Fiktiver Demo-KI-Check",
-              disclaimer: "DEMO – kein echter KI-Aufruf.",
+              summary: tr("Fiktiver Demo-KI-Check", "Fictional demo review"),
+              disclaimer: tr("DEMO: Kein echter KI-Aufruf.", "DEMO: No real AI call."),
             };
           if (type === "mealie_atelier/studio_substitute")
             return {
               alternatives: [
                 {
-                  name: "Hafercuisine (Demovorschlag)",
-                  adjustment: "Menge und Konsistenz überprüfen.",
+                  name: tr("Hafercuisine (Demovorschlag)", "Oat cream (demo suggestion)"),
+                  adjustment: tr(
+                    "Menge und Konsistenz überprüfen.",
+                    "Check the amount and consistency.",
+                  ),
                 },
               ],
-              warning: "DEMO: Kein echter KI-Aufruf.",
+              warning: tr("DEMO: Kein echter KI-Aufruf.", "DEMO: No real AI call."),
             };
           if (type === "mealie_atelier/status")
             return {
@@ -363,12 +367,15 @@
             };
           }
           if (type === "mealie_atelier/nutrition_search") {
-            const name = req.query || "Lebensmittel";
+            const name = req.query || tr("Lebensmittel", "Food");
             return [
               {
                 id: 10000 + name.length,
-                name: `${name} – Demo-Nährwertdatensatz (kein USDA Live-Treffer)`,
-                data_type: "DEMO (fiktiv)",
+                name: tr(
+                  `${name}: Demo-Nährwertdatensatz (kein USDA-Live-Treffer)`,
+                  `${name}: demo nutrition record (no live USDA match)`,
+                ),
+                data_type: tr("DEMO (fiktiv)", "DEMO (fictional)"),
                 per_100g: {
                   calories: 120,
                   protein: 6.2,
@@ -382,8 +389,8 @@
               },
               {
                 id: 20000 + name.length,
-                name: `${name} – Demo-Alternative`,
-                data_type: "DEMO (fiktiv)",
+                name: tr(`${name}: Demo-Alternative`, `${name}: demo alternative`),
+                data_type: tr("DEMO (fiktiv)", "DEMO (fictional)"),
                 per_100g: { calories: 105, protein: 5, carbohydrate: 16, fat: 3 },
               },
             ];
@@ -393,7 +400,10 @@
               (row, index) => ({
                 index,
                 query: row.display.replace(/^\d+(?:[.,]\d+)?\s*(?:kg|g|EL)?\s*/i, "").trim(),
-                note: "Demo-KI-Vorschlag, keine echte Anfrage",
+                note: tr(
+                  "Demo-KI-Vorschlag, keine echte Anfrage",
+                  "Demo AI suggestion, no real request",
+                ),
               }),
             );
           if (
@@ -403,7 +413,12 @@
             const grams = req.entries.reduce((s, x) => s + Number(x.grams || 0), 0),
               servings = 2;
             if (req.entries.some((x) => !Number(x.grams) || !Number(x.fdc_id)))
-              throw Error("Bitte jede Zutat mit Menge und Testdatensatz versehen");
+              throw Error(
+                tr(
+                  "Bitte jede Zutat mit Menge und Testdatensatz versehen",
+                  "Please give every ingredient an amount and a test record",
+                ),
+              );
             const per_portion = {
               calories: Math.round((120 * grams) / 100 / servings),
               protein: Math.round(((6.2 * grams) / 100 / servings) * 10) / 10,
@@ -417,7 +432,10 @@
               per_portion,
               servings,
               coverage: { calories: "5/5", protein: "5/5", fat: "5/5", carbohydrate: "5/5" },
-              source: "FIKTIVE DEMODATEN – KEINE ECHTEN NÄHRWERTE",
+              source: tr(
+                "FIKTIVE DEMODATEN, KEINE ECHTEN NÄHRWERTE",
+                "FICTIONAL DEMO DATA, NOT REAL NUTRITION VALUES",
+              ),
               ingredients: req.entries.map((x) => ({
                 fdc_id: x.fdc_id,
                 source_url: "https://fdc.nal.usda.gov/",

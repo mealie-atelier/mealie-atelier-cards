@@ -129,7 +129,7 @@ test("the ingredient substitute request sends the card language", async () => {
 test("shopping sync shows the dedicated read-only message even when a write grant exists", () => {
   for (const [language, text] of [
     ["en", /read-only mode/],
-    ["de", /Nur-Lesen-Modus/],
+    ["de", /Nur-Lese-Modus/],
   ]) {
     const { card } = setup(language);
     card._status = {
