@@ -227,10 +227,11 @@ test("cooking dialog keeps Back and Next on screen at laptop heights", () => {
   const block = text.slice(start, text.indexOf("@media", start + 10));
   for (const rule of [
     ".atelier .modal.large:has(.cook-layout){display:grid;grid-template-rows:minmax(0,1fr);overflow:hidden;}",
-    ".atelier .modal:has(.cook-layout) .cook-controls{display:contents;}",
     "position:sticky;bottom:0;",
   ])
     assert.ok(block.includes(rule), rule);
+  // A real box (not display: contents) so the sticky bar also pins in Safari.
+  assert.match(block, /\.modal\.large:has\(\.cook-layout\) \.cook-controls\{[^}]*display:flex;/);
   assert.match(block, /\.cook-content\{min-height:0;overflow-y:auto;/);
 });
 

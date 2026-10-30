@@ -10006,8 +10006,12 @@ ha-card {
     overscroll-behavior: contain;
     padding-bottom: 0;
   }
-  .atelier .modal:has(.cook-layout) .cook-controls {
-    display: contents;
+  .atelier .modal.large:has(.cook-layout) .cook-controls {
+    /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    gap: inherit;
   }
   .atelier .modal:has(.cook-layout) .cook-actions {
     order: 3;
@@ -10049,8 +10053,12 @@ ha-card {
     overscroll-behavior: contain;
     padding-bottom: 0;
   }
-  .atelier .modal:has(.cook-layout) .cook-controls {
-    display: contents;
+  .atelier .modal.large:has(.cook-layout) .cook-controls {
+    /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    gap: inherit;
   }
   .atelier .modal:has(.cook-layout) .cook-actions {
     order: 3;
