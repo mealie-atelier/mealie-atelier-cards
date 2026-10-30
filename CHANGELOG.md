@@ -13,6 +13,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Changed
 
+- Home Assistant sync dialog: the run button now reads "Send now" ("Jetzt senden"), the duplicate options say "entries" instead of "items", the rule card shows its status as a facts layout (mode, status, waiting, last run), and a clean run shows no result line (screen readers still announce it).
 - Demo site: the shopping texts no longer say that the sync to Bring! needs Home Assistant, and "Bring!" is spelled with its exclamation mark throughout.
 - The note that the standalone app never sends shopping data to third parties now reads: shopping items go to Bring! only after an administrator connects an account.
 
