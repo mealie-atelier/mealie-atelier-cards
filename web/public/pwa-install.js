@@ -24,6 +24,16 @@ const INSTALL_COPY = {
       "Nutze „App installieren“ in der Adressleiste oder im Browser-Menü.",
       "Bestätige den Dialog, um Atelier in einem eigenen Fenster zu öffnen.",
     ],
+    introDesktop: "Öffne Mealie Atelier wie eine App in einem eigenen Fenster.",
+    safariDesktop: [
+      "Wähle in Safari „Ablage“ > „Zum Dock hinzufügen“. Das braucht macOS Sonoma oder neuer.",
+      "Bestätige den Namen. Atelier öffnet danach in einem eigenen Fenster.",
+    ],
+    introUnsupported: "Dieser Browser kann Mealie Atelier am Computer nicht als App installieren.",
+    firefoxDesktop: [
+      "Firefox installiert Web-Apps am Computer nicht.",
+      "Öffne Mealie Atelier in Chrome, Edge oder Safari, um es als App zu installieren, oder speichere die Seite als Lesezeichen.",
+    ],
   },
   en: {
     label: "Install app",
@@ -50,6 +60,16 @@ const INSTALL_COPY = {
       "Use “Install app” in the address bar or browser menu.",
       "Confirm the prompt to open Atelier in its own window.",
     ],
+    introDesktop: "Open Mealie Atelier like an app in its own window.",
+    safariDesktop: [
+      "In Safari, choose “File” > “Add to Dock”. This needs macOS Sonoma or later.",
+      "Confirm the name. Atelier then opens in its own window.",
+    ],
+    introUnsupported: "This browser cannot install Mealie Atelier as an app on a computer.",
+    firefoxDesktop: [
+      "Firefox does not install web apps on a computer.",
+      "Open Mealie Atelier in Chrome, Edge or Safari to install it as an app, or bookmark the page.",
+    ],
   },
 };
 
@@ -64,11 +84,21 @@ export function getInstallContext(navigatorRef = {}, windowRef = {}) {
       windowRef.matchMedia?.("(display-mode: standalone)")?.matches ||
       windowRef.matchMedia?.("(display-mode: fullscreen)")?.matches,
   );
+  const isDesktop = !isAppleMobile && !/Android/i.test(userAgent);
+  const isFirefoxDesktop = isDesktop && /Firefox/i.test(userAgent);
+  const isSafariDesktop =
+    isDesktop &&
+    /Macintosh|Mac OS X/i.test(userAgent) &&
+    /Safari\//i.test(userAgent) &&
+    !/Chrome|Chromium|CriOS|Edg|OPR|Firefox|FxiOS/i.test(userAgent) &&
+    (navigatorRef.maxTouchPoints || 0) <= 1;
   return {
     isAppleMobile,
     isStandalone,
     isIOSBrowserWithoutPrompt: isAppleMobile && !isStandalone,
-    isDesktop: !isAppleMobile && !/Android/i.test(userAgent),
+    isDesktop,
+    isFirefoxDesktop,
+    isSafariDesktop,
   };
 }
 
@@ -78,10 +108,20 @@ export function getInstallCopy(language = "de", context = {}) {
     ? copy.ios
     : context.canPrompt
       ? copy.prompt
-      : context.isDesktop
-        ? copy.desktop
-        : copy.menu;
-  return { ...copy, steps };
+      : context.isFirefoxDesktop
+        ? copy.firefoxDesktop
+        : context.isSafariDesktop
+          ? copy.safariDesktop
+          : context.isDesktop
+            ? copy.desktop
+            : copy.menu;
+  // "Home Screen" only makes sense on a phone or tablet.
+  const intro = context.isFirefoxDesktop
+    ? copy.introUnsupported
+    : context.isDesktop
+      ? copy.introDesktop
+      : copy.intro;
+  return { ...copy, intro, steps };
 }
 
 export function initPwaInstall({
