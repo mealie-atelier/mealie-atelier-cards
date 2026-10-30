@@ -1675,11 +1675,6 @@ html:not(.js) .step {
   color: var(--sub);
   font-size: 15px;
 }
-.notif-note {
-  margin-top: 10px;
-  color: var(--sub);
-  font-size: 13px;
-}
 .notif-phone {
   position: relative;
   align-self: stretch;

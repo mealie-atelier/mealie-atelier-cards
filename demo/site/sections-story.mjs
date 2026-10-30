@@ -30,11 +30,11 @@ function everyday(ctx) {
   const alt = {
     mealplan: t(
       "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
-      "Week plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
+      "Meal plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
     ),
     discover: t(
-      "Kochinspo schlägt Pfannen-Eier mit Tomaten und Basilikum vor: 17 Minuten, für 2 Personen, aus euren Rezepten",
-      "Cook ideas suggests skillet eggs with tomatoes and basil: 17 minutes, for 2 people, from your recipes",
+      "Kochinspo schlägt Pfannen-Eier mit Tomaten und Basilikum vor: 17 Minuten, für 2 Personen, aus deinen Rezepten",
+      "Discover suggests skillet eggs with tomatoes and basil: 17 minutes, for 2 people, from your recipes",
     ),
     shopping: t(
       "Einkaufsliste Wocheneinkauf auf dem Smartphone mit einem abgehakten Artikel",
@@ -46,7 +46,7 @@ function everyday(ctx) {
     ),
     family: t(
       "Gemeinsam kochen in der einfachen Helferansicht: Alex und ein Küchenhelfer im Helfermodus",
-      "Family cooking in the simple helper view: Alex and a little helper in helper mode",
+      "Family in the simple helper view: Alex and a little helper in helper mode",
     ),
     pantry: t(
       "Einkaufsassistent: was für die geplanten Gerichte wirklich fehlt, sortiert nach Kühlregal, Vorrat und Gemüse",
@@ -68,7 +68,7 @@ function everyday(ctx) {
       list: [
         t(
           "Wochenplan mit durchsuchbarer Rezeptauswahl",
-          "Week plan with a searchable recipe picker",
+          "Meal plan with a searchable recipe picker",
         ),
         t("Zutaten direkt auf die Einkaufsliste", "Ingredients straight to the shopping list"),
         t("Wochenplan als A4 für den Kühlschrank drucken", "Print the week as A4 for the fridge"),
@@ -80,7 +80,7 @@ function everyday(ctx) {
       title: t("„Was kochen wir heute?“ beantwortet.", "“What are we cooking?” answered."),
       text: t(
         "Kochinspo fragt kurz nach Appetit, Ernährung, Zeit und dem, was noch da ist. Dann schlägt Atelier passende Rezepte aus deiner Sammlung vor, auf Wunsch gleich ein Menü für sieben Tage.",
-        "Cook ideas briefly asks about appetite, diet, time and what is still in the house. Then Atelier suggests matching recipes from your own collection, or a menu for seven days if you like.",
+        "Discover briefly asks about appetite, diet, time and what is still in the house. Then Atelier suggests matching recipes from your own collection, or a menu for seven days if you like.",
       ),
       list: [
         t("Vegetarisch, vegan, mit Fleisch oder Fisch", "Vegetarian, vegan, with meat or fish"),
@@ -133,7 +133,7 @@ function everyday(ctx) {
       title: t("Gemeinsam kochen.", "Cook together."),
       text: t(
         "Gemeinsam kochen verteilt Helferaufgaben. Kinder sehen in einer einfachen Ansicht nur die Aufgaben, die Erwachsene freigegeben haben. Alle verfolgen denselben Kochfortschritt.",
-        "Family cooking hands out helper tasks. Children see only the tasks an adult approved, in a simple view, and everyone follows the same cooking progress.",
+        "Family hands out helper tasks. Children see only the tasks an adult approved, in a simple view, and everyone follows the same cooking progress.",
       ),
       list: [
         t("Einfache Helferansicht für Kinder", "A simple helper view for children"),
@@ -156,7 +156,7 @@ function everyday(ctx) {
     },
     {
       num: t("07 · Für immer", "07 · For ever"),
-      title: t("Euer eigenes Kochbuch.", "Your own cookbook."),
+      title: t("Dein eigenes Kochbuch.", "Your own cookbook."),
       text: t(
         "Wähle Lieblingsrezepte. Atelier gestaltet Cover, Inhaltsverzeichnis und A4-Rezeptseiten, als PDF fürs Familienarchiv oder gedruckt als Geschenk.",
         "Pick your favourite recipes. Atelier designs the cover, contents and A4 recipe pages, as a PDF for the family archive or printed as a gift.",
@@ -164,7 +164,7 @@ function everyday(ctx) {
       list: [
         t(
           "Druckstudio für Rezepte, Listen und Wochenplan",
-          "Print studio for recipes, lists and the week plan",
+          "Print studio for recipes, lists and the meal plan",
         ),
         t("Editorial, Kompakt oder tintensparend", "Editorial, compact or ink saver"),
       ],
@@ -200,16 +200,16 @@ function features(ctx) {
   };
   return `<section class="sec" id="${id.features}" aria-labelledby="features-title"><div class="wrap"><div class="sec-head"><p class="kicker rv">${t("Alles in einer Karte", "All in one card")}</p><h2 id="features-title" class="rv d1">${t("Alles, was deine Küche <em>braucht</em>.", "Everything your kitchen <em>needs</em>.")}</h2><p class="lead rv d2">${t("Zehn Ansichten, ein Gefühl. Jede ist für einen Moment im Küchenalltag gebaut.", "Ten views, one feel. Each one is built for a moment in your kitchen day.")}</p></div><div class="bento">${imageTile(
     "cal",
-    t("Wochenplan", "Week plan"),
+    t("Wochenplan", "Meal plan"),
     t(
       "Sieben Tage auf einen Blick, Gerichte per Suche einplanen, als A4 für den Kühlschrank drucken.",
       "Seven days at a glance, plan dishes by search, print as A4 for the fridge.",
     ),
-    t("Wochenplan", "Week plan"),
+    t("Wochenplan", "Meal plan"),
     { wide: "feature-mealplan", phone: "app-phone-mealplan" },
     t(
       "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
-      "Week plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
+      "Meal plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
     ),
   )}${imageTile(
     "cart",
@@ -225,7 +225,7 @@ function features(ctx) {
       "Shopping list with items to tick off",
     ),
     " d1",
-  )}${tile("timer", t("Kochmodus", "Cooking mode"), t("Ein Schritt pro Bildschirm, Timer direkt am Schritt, der Bildschirm bleibt an.", "One step per screen, timers right at the step, the screen stays on."))}${tile("spark", t("Kochinspo", "Cook ideas"), t("Vorschläge nach Ernährung, Zeit und Vorrat. Aus deiner eigenen Sammlung.", "Suggestions by diet, time and pantry. From your own collection."), " d1")}${tile("jar", t("Vorräte", "Pantry"), t("Mit Mindesthaltbarkeit. Die Einkaufsvorschau zieht ab, was noch da ist.", "With best-before dates. The shopping preview subtracts what you still have."), " d2")}${tile("kids", t("Gemeinsam kochen", "Family cooking"), t("Helferaufgaben für Kinder in einer einfachen Ansicht, ein Fortschritt für alle.", "Helper tasks for children in a simple view, one progress for everyone."))}${tile("print", t("Kochbuch und Druck", "Cookbook and print"), t("Cover, Inhaltsverzeichnis, A4-Rezeptseiten. Als PDF oder gedruckt als Geschenk.", "Cover, contents, A4 recipe pages. As a PDF or printed as a gift."), " d1")}${tile("leaf", t("Nährwerte", "Nutrition"), t("Pro Portion berechnet aus USDA FoodData Central, mit einem kostenlosen Schlüssel.", "Per serving from USDA FoodData Central, with a free key."), " d2")}${tile("edit", t("Rezepteditor", "Recipe editor"), t("Rezepte anlegen, importieren und bearbeiten. Vor jeder Änderung wird gesichert.", "Create, import and edit recipes. Every change is backed up first."))}${tile("book", t("Rezeptsammlung", "Recipe collection"), t("Große Fotos, Suche, Kategorien. Deine Sammlung, endlich zum Stöbern.", "Big photos, search, categories. Your collection, finally fun to browse."), " d1")}${tile("globe", t("Deutsch und Englisch", "English and German"), t("Komplett übersetzt. In Home Assistant folgt die Karte deiner Sprache.", "Fully translated. In Home Assistant the card follows your language."), " d2", " full-m")}</div></div></section>`;
+  )}${tile("timer", t("Kochmodus", "Cooking mode"), t("Ein Schritt pro Bildschirm, Timer direkt am Schritt, der Bildschirm bleibt an.", "One step per screen, timers right at the step, the screen stays on."))}${tile("spark", t("Kochinspo", "Discover"), t("Vorschläge nach Ernährung, Zeit und Vorrat. Aus deiner eigenen Sammlung.", "Suggestions by diet, time and pantry. From your own collection."), " d1")}${tile("jar", t("Vorräte", "Pantry"), t("Mit Mindesthaltbarkeit. Die Einkaufsvorschau zieht ab, was noch da ist.", "With best-before dates. The shopping preview subtracts what you still have."), " d2")}${tile("kids", t("Gemeinsam kochen", "Family"), t("Helferaufgaben für Kinder in einer einfachen Ansicht, ein Fortschritt für alle.", "Helper tasks for children in a simple view, one progress for everyone."))}${tile("print", t("Kochbuch und Druck", "Cookbook and print"), t("Cover, Inhaltsverzeichnis, A4-Rezeptseiten. Als PDF oder gedruckt als Geschenk.", "Cover, contents, A4 recipe pages. As a PDF or printed as a gift."), " d1")}${tile("leaf", t("Nährwerte", "Nutrition"), t("Pro Portion berechnet aus USDA FoodData Central, mit einem kostenlosen Schlüssel.", "Per serving from USDA FoodData Central, with a free key."), " d2")}${tile("edit", t("Rezepteditor", "Recipe editor"), t("Rezepte anlegen, importieren und bearbeiten. Vor jeder Änderung wird gesichert.", "Create, import and edit recipes. Every change is backed up first."))}${tile("book", t("Rezeptsammlung", "Recipe collection"), t("Große Fotos, Suche, Kategorien. Deine Sammlung, endlich zum Stöbern.", "Big photos, search, categories. Your collection, finally fun to browse."), " d1")}${tile("globe", t("Deutsch und Englisch", "English and German"), t("Komplett übersetzt. In Home Assistant folgt die Karte deiner Sprache.", "Fully translated. In Home Assistant the card follows your language."), " d2", " full-m")}</div></div></section>`;
 }
 
 function devices(ctx) {

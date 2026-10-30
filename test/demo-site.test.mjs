@@ -125,22 +125,54 @@ test("landing pages state the install route and setup facts correctly", () => {
   }
 });
 
-test("the timer notification mockup shows the text the Bridge really sends", () => {
-  // mealie-atelier-bridge alarms.py sends this German title and "<label> ist fertig!" only.
+test("the timer notification mockup shows the text the Bridge really sends per language", () => {
+  // mealie-atelier-bridge alarms.py _TEXTS: German on a German Home Assistant, English otherwise.
+  const expected = {
+    de: ["Mealie Atelier Bridge · Küchentimer", "Tomatensauce ist fertig!"],
+    en: ["Mealie Atelier Bridge · Kitchen timer", "Tomato sauce is ready!"],
+  };
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);
     const mockup = html.match(/<div class="notif-phone"[\s\S]*?<\/article>/)?.[0] ?? "";
-    assert.match(mockup, /lang="de"/, locale);
-    assert.equal(mockup.match(/Mealie Atelier · Küchentimer/g)?.length, 3, locale);
-    assert.match(mockup, /Tomatensauce ist fertig!/, locale);
+    assert.doesNotMatch(mockup, /lang="de"/, locale);
+    assert.equal(mockup.split(expected[locale][0]).length - 1, 3, locale);
+    assert.ok(mockup.includes(expected[locale][1]), locale);
+    assert.doesNotMatch(html, /notif-note|notification in German/, locale);
   }
+});
+
+test("page copy names the card features and buttons exactly as the card labels them", () => {
   const en = landing(builds.local, "en");
-  assert.doesNotMatch(en, /kitchen timer<\/b>|is done!/);
-  assert.match(
-    en,
-    /<p class="notif-note">The Bridge sends this notification in German for now\.<\/p>/,
-  );
-  assert.doesNotMatch(landing(builds.local, "de"), /notif-note/);
+  const de = landing(builds.local, "de");
+  for (const wrong of [/Cook ideas/, /Family cooking/, /week plan/i, /AI check/]) {
+    assert.doesNotMatch(en, wrong, String(wrong));
+  }
+  assert.match(en, /Ask Discover for suggestions/);
+  assert.match(en, /Open the meal plan and add a dish/);
+  assert.match(en, /“Review with AI”/);
+  assert.match(de, /„Mit KI prüfen“/);
+  assert.doesNotMatch(de, /hake ein,|[Ee]uer |euren |euch /);
+  assert.match(de, /hake ab, starte/);
+  assert.match(de, /Dein eigenes Kochbuch/);
+});
+
+test("long resting recipes include the rest in the total time chip and structured data", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const rest = locale === "de" ? "inkl. Ruhezeit" : "incl. resting";
+    assert.ok(
+      html.includes(`165&nbsp;${locale === "de" ? "Minuten" : "minutes"} ${rest} · 8`),
+      locale,
+    );
+    assert.ok(
+      html.includes(`107&nbsp;${locale === "de" ? "Minuten" : "minutes"} ${rest} · 2`),
+      locale,
+    );
+    assert.ok(!/ 45 (Minuten|minutes) · 8/.test(html), locale);
+  }
+  const dir = join(builds.local, "de", "rezepte");
+  const page = readFileSync(join(dir, "zitronen-focaccia-mit-rosmarin", "index.html"), "utf8");
+  assert.match(page, /"totalTime":"PT165M"/);
 });
 
 test("English pages do not call the Cards or the Bridge an add-on", () => {

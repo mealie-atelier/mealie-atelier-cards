@@ -85,7 +85,7 @@ function ogAlt(locale, recipe) {
   }
   return locale === "de"
     ? "Mealie Atelier: eine ruhige Küche für dein Mealie, mit Wochenplan und Kochmodus auf dem Smartphone"
-    : "Mealie Atelier: a calm kitchen for your Mealie, with the week plan and cooking mode on a phone";
+    : "Mealie Atelier: a calm kitchen for your Mealie, with the meal plan and cooking mode on a phone";
 }
 
 // Meta tags for the share image of a page. Local builds fall back to a relative URL.
@@ -167,6 +167,7 @@ async function validateCatalog() {
     assert(/^[a-z0-9-]+$/.test(recipe.slugEn ?? ""), `${recipe.id} needs a safe English slug`);
     assert(recipe.servings > 0, `${recipe.id} needs a serving count`);
     assert(recipe.prepMinutes >= 0 && recipe.cookMinutes >= 0, `${recipe.id} needs valid times`);
+    assert((recipe.restMinutes ?? 0) >= 0, `${recipe.id} needs a valid rest time`);
     assert(Array.isArray(recipe.tags) && recipe.tags.length, `${recipe.id} needs searchable tags`);
     assert(
       /^\.\.\/photos\/[a-z0-9-]+\.webp$/.test(recipe.image?.file ?? "") && !recipe.image.url,
@@ -212,6 +213,7 @@ const copy = {
     recipeIngredients: "Zutaten",
     recipeSteps: "Zubereitung",
     minutes: "Minuten",
+    withRest: "inkl. Ruhezeit",
     prep: "Vorbereitung",
     cooking: "Kochen",
     servings: "Portionen",
@@ -231,11 +233,12 @@ const copy = {
     recipeIngredients: "Ingredients",
     recipeSteps: "Method",
     minutes: "minutes",
+    withRest: "incl. resting",
     prep: "prep",
     cooking: "cooking",
     servings: "servings",
     appDescription:
-      "A calm kitchen interface for Mealie: week plan, shopping list, cooking mode and pantry, as cards for Home Assistant or as a standalone web app.",
+      "A calm kitchen interface for Mealie: meal plan, shopping list, cooking mode and pantry, as cards for Home Assistant or as a standalone web app.",
     backToDemo: "Go to the live demo",
     recipeLabel: "Recipe",
     openRecipe: "Open the recipe page",
@@ -264,6 +267,12 @@ function safeJson(value) {
     .replace(/</g, "\\u003c")
     .replace(/\u2028/g, "\\u2028")
     .replace(/\u2029/g, "\\u2029");
+}
+
+// Total time includes dough rests (restMinutes), otherwise bread and pizza would claim to be done
+// long before their own steps allow.
+function totalMinutes(recipe) {
+  return recipe.prepMinutes + recipe.cookMinutes + (recipe.restMinutes ?? 0);
 }
 
 function isoDuration(minutes) {
@@ -339,7 +348,7 @@ function recipeStructuredData(recipe, locale, url, prefix) {
     recipeYield: `${recipe.servings} ${copy[locale].servings}`,
     prepTime: isoDuration(recipe.prepMinutes),
     cookTime: isoDuration(recipe.cookMinutes),
-    totalTime: isoDuration(recipe.prepMinutes + recipe.cookMinutes),
+    totalTime: isoDuration(totalMinutes(recipe)),
     recipeIngredient: recipe.ingredients[locale],
     recipeInstructions: recipe.steps[locale].map((step) => ({
       "@type": "HowToStep",
@@ -374,9 +383,10 @@ function renderRecipeDirectory(ctx) {
           (step) => `<li><strong>${escapeHtml(step.title)}.</strong> ${escapeHtml(step.text)}</li>`,
         )
         .join("");
-      const time = recipe.prepMinutes + recipe.cookMinutes;
+      const time = totalMinutes(recipe);
+      const restNote = recipe.restMinutes ? ` ${words.withRest}` : "";
       const thumb = photo(ctx, recipe, "112px", { className: "thumb" });
-      return `<article class="recipe-item"><details><summary>${thumb}<span class="recipe-item-copy"><span class="meta">${time} ${words.minutes} · ${recipe.servings} ${words.servings}</span><h3>${escapeHtml(recipe.title[ctx.locale])}</h3><span class="meta">${escapeHtml(recipe.category[ctx.locale])}</span></span><span class="chev" aria-hidden="true"></span></summary><div class="recipe-item-body"><p>${escapeHtml(recipe.description[ctx.locale])}</p><div class="recipe-item-cols"><div><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul></div><div><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol></div></div><div class="recipe-item-foot"><a class="textlink" href="${escapeHtml(url)}">${words.openRecipe}<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div></details></article>`;
+      return `<article class="recipe-item"><details><summary>${thumb}<span class="recipe-item-copy"><span class="meta">${time}&nbsp;${words.minutes}${restNote} · ${recipe.servings}&nbsp;${words.servings}</span><h3>${escapeHtml(recipe.title[ctx.locale])}</h3><span class="meta">${escapeHtml(recipe.category[ctx.locale])}</span></span><span class="chev" aria-hidden="true"></span></summary><div class="recipe-item-body"><p>${escapeHtml(recipe.description[ctx.locale])}</p><div class="recipe-item-cols"><div><h4>${words.recipeIngredients}</h4><ul>${ingredientRows}</ul></div><div><h4>${words.recipeSteps}</h4><ol>${stepRows}</ol></div></div><div class="recipe-item-foot"><a class="textlink" href="${escapeHtml(url)}">${words.openRecipe}<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a></div></div></details></article>`;
     })
     .join("");
 }
@@ -554,7 +564,7 @@ function renderRecipePage(locale, recipe) {
   const description = escapeHtml(recipe.description[locale]);
   const ogImage = ogImageMeta(locale, recipe, "../../../");
   const recipeOgUrl = pageUrl ? `<meta property="og:url" content="${escapeHtml(pageUrl)}">` : "";
-  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${description}"><meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta name="color-scheme" content="dark light"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}">${ogImage}${recipeOgUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}">${iconLinks("../../../assets/")}${canonical}${hreflang("de", absolute.de)}${hreflang("en", absolute.en)}${hreflang("x-default", absolute.de)}<link rel="stylesheet" href="../../../assets/live-demo.css"><title>${title}</title><script type="application/ld+json">${structured}</script></head><body class="recipe-body">${renderSiteHeader(ctx)}<main id="main" class="recipe-page"><article><div class="wrap"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><a href="${escapeHtml(`${demoHome[locale]}#${locale === "de" ? "rezepte" : "recipes"}`)}">${t("Rezepte", "Recipes")}</a></nav></div><div class="wrap recipe-hero"><header class="recipe-head"><p class="kicker"><span class="dot"></span>${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="lead">${description}</p><div class="recipe-metrics">${metrics}</div></header><figure class="recipe-figure">${image}<figcaption>${photoCaption(ctx, recipe)}</figcaption></figure></div><div class="wrap recipe-grid"><section class="recipe-ingredients" aria-labelledby="ingredients-title"><h2 id="ingredients-title">${words.recipeIngredients}</h2><p class="meta">${recipe.servings} ${words.servings}</p><ul>${ingredients}</ul></section><section class="recipe-method" aria-labelledby="method-title"><h2 id="method-title">${words.recipeSteps}</h2><ol>${steps}</ol></section></div><aside class="wrap recipe-cta"><div class="recipe-cta-inner">${brandMark()}<div><h2>${words.tryInDemo}</h2><p>${t("Kochmodus mit Timer, Wochenplan und Einkaufsliste: alles in der echten Karte, direkt im Browser.", "Cooking mode with timers, week plan and shopping list: all in the real card, right in your browser.")}</p></div><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(`${demoHome[locale]}#live-demo`)}">${words.backToDemo}</a><a class="btn btn-ghost" href="${escapeHtml(counterpartUrl)}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${words.otherLanguage}</a></div></div></aside></article></main>${renderSiteFooter(ctx)}<script type="module" src="../../../assets/site.js"></script></body></html>`;
+  return `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="${description}"><meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta name="color-scheme" content="dark light"><meta property="og:type" content="article"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}">${ogImage}${recipeOgUrl}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title}"><meta name="twitter:description" content="${description}">${iconLinks("../../../assets/")}${canonical}${hreflang("de", absolute.de)}${hreflang("en", absolute.en)}${hreflang("x-default", absolute.de)}<link rel="stylesheet" href="../../../assets/live-demo.css"><title>${title}</title><script type="application/ld+json">${structured}</script></head><body class="recipe-body">${renderSiteHeader(ctx)}<main id="main" class="recipe-page"><article><div class="wrap"><nav class="crumbs" aria-label="${t("Brotkrümel", "Breadcrumb")}"><a href="${escapeHtml(demoHome[locale])}">Mealie Atelier</a><span aria-hidden="true">/</span><a href="${escapeHtml(`${demoHome[locale]}#${locale === "de" ? "rezepte" : "recipes"}`)}">${t("Rezepte", "Recipes")}</a></nav></div><div class="wrap recipe-hero"><header class="recipe-head"><p class="kicker"><span class="dot"></span>${words.recipeLabel} · ${escapeHtml(recipe.category[locale])}</p><h1>${escapeHtml(recipe.title[locale])}</h1><p class="lead">${description}</p><div class="recipe-metrics">${metrics}</div></header><figure class="recipe-figure">${image}<figcaption>${photoCaption(ctx, recipe)}</figcaption></figure></div><div class="wrap recipe-grid"><section class="recipe-ingredients" aria-labelledby="ingredients-title"><h2 id="ingredients-title">${words.recipeIngredients}</h2><p class="meta">${recipe.servings} ${words.servings}</p><ul>${ingredients}</ul></section><section class="recipe-method" aria-labelledby="method-title"><h2 id="method-title">${words.recipeSteps}</h2><ol>${steps}</ol></section></div><aside class="wrap recipe-cta"><div class="recipe-cta-inner">${brandMark()}<div><h2>${words.tryInDemo}</h2><p>${t("Kochmodus mit Timer, Wochenplan und Einkaufsliste: alles in der echten Karte, direkt im Browser.", "Cooking mode with timers, meal plan and shopping list: all in the real card, right in your browser.")}</p></div><div class="btn-row"><a class="btn btn-primary" href="${escapeHtml(`${demoHome[locale]}#live-demo`)}">${words.backToDemo}</a><a class="btn btn-ghost" href="${escapeHtml(counterpartUrl)}" hreflang="${counterpartLocale}" lang="${counterpartLocale}">${words.otherLanguage}</a></div></div></aside></article></main>${renderSiteFooter(ctx)}<script type="module" src="../../../assets/site.js"></script></body></html>`;
 }
 
 // The one complete credits list, linked from every footer.

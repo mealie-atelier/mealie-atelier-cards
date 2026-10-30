@@ -105,9 +105,9 @@ function demoOpen(ctx) {
   const t = translator(ctx.locale);
   const id = sectionIds[ctx.locale];
   return `<section class="sec live" id="${id.demo}" aria-labelledby="live-title"><div class="wrap"><div class="live-head"><div class="sec-head"><p class="kicker rv"><span class="dot pulse"></span>${t("Live-Demo", "Live demo")}</p><h2 id="live-title" class="rv d1">${t("Keine Bilder. <em>Die echte Karte.</em>", "No pictures. <em>The real card.</em>")}</h2><p class="lead rv d2">${t(
-    "Hier läuft genau die Karte, die du installierst, mit zehn erfundenen Rezepten. Plane die Woche, hake ein, starte den Kochmodus mit Timer.",
+    "Hier läuft genau die Karte, die du installierst, mit zehn erfundenen Rezepten. Plane die Woche, hake ab, starte den Kochmodus mit Timer.",
     "This is exactly the card you install, running on ten fictional recipes. Plan the week, tick items off, start cooking mode with a timer.",
-  )}</p></div><ul class="live-tips rv d2"><li>${icon("cal")}${t("Wochenplan öffnen und ein Gericht einplanen", "Open the week plan and add a dish")}</li><li>${icon("timer")}${t("Ein Rezept öffnen und „Kochen starten“", "Open a recipe and press “Start cooking”")}</li><li>${icon("spark")}${t("Kochinspo nach Ideen fragen", "Ask Cook ideas for suggestions")}</li></ul></div><p class="live-note">${icon("shield")}<span>${t(
+  )}</p></div><ul class="live-tips rv d2"><li>${icon("cal")}${t("Wochenplan öffnen und ein Gericht einplanen", "Open the meal plan and add a dish")}</li><li>${icon("timer")}${t("Ein Rezept öffnen und „Kochen starten“", "Open a recipe and press “Start cooking”")}</li><li>${icon("spark")}${t("Kochinspo nach Ideen fragen", "Ask Discover for suggestions")}</li></ul></div><p class="live-note">${icon("shield")}<span>${t(
     "Demo-Modus: Suche, Haken, Planung und Timer verwenden Beispieldaten nur im Arbeitsspeicher dieses Tabs. Nichts wird an Mealie oder Home Assistant gesendet.",
     "Demo mode: search, ticks, planning and timers use sample data in this tab's memory only. Nothing is sent to Mealie or Home Assistant.",
   )}</span></p><div class="live-frame"><div class="live-bar" aria-hidden="true"><i></i><i></i><i></i><span>${t("Live · läuft in deinem Browser", "Live · running in your browser")}</span></div>`;
