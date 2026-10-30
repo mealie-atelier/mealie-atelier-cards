@@ -24,6 +24,7 @@ ONLY = set(os.environ.get("SHOTS", "").split(",")) - {""}
 sys.argv = [sys.argv[0], str(ROOT / "assets" / "screens"), "en"]
 
 import asyncio  # noqa: E402
+from datetime import datetime  # noqa: E402
 
 import capture_screens as cs  # noqa: E402
 
@@ -47,7 +48,7 @@ def save(png: Path, name: str, size: tuple[int, int]) -> Image.Image:
 
 
 def context(browser, theme: str, viewport: dict, phone: bool):
-    return browser.new_context(
+    ctx = browser.new_context(
         viewport=viewport,
         color_scheme=theme,
         locale="en-US",
@@ -56,6 +57,9 @@ def context(browser, theme: str, viewport: dict, phone: bool):
         has_touch=phone,
         service_workers="block",
     )
+    # Every shot is taken at the same time of day, so the overview greets the same way on phone and desktop.
+    ctx.clock.set_fixed_time(datetime.now().replace(hour=9, minute=0, second=0, microsecond=0))
+    return ctx
 
 
 PHONE_BOARD = "atelier-shots-phone"
@@ -206,15 +210,8 @@ def fit_recipe_top(page) -> None:
     tall = 1140
     page.set_viewport_size({"width": DESKTOP["width"], "height": tall})
     page.wait_for_timeout(400)
-    top = modal.evaluate(
-        "(m, [cuts, limit]) => { m.style.transition = 'none';"
-        " for (let t = 0; t <= limit; t += 1) { m.scrollTop = t; if (eval(cuts)(m, false, 14, 2) === 0) return t; }"
-        " return -1; }",
-        [CUTS, 200],
-    )
-    if top < 0:
-        raise SystemExit("no scroll position with a clean dialog bottom edge")
-    print("recipe dialog scroll", top)
+    # From the top, as the dialog opens: the photo stays whole, the lists continue below the dialog edge.
+    modal.evaluate("m => { m.style.transition = 'none'; m.scrollTop = 0; }")
     CLIP = {"x": 0, "y": (tall - DESKTOP["height"]) // 2, "width": DESKTOP["width"], "height": DESKTOP["height"]}
     page.mouse.move(2, 2)
     page.wait_for_timeout(600)
@@ -405,7 +402,7 @@ def main() -> None:
                     modal = page.locator(".modal >> visible=true").first
                     if step == "cook":
                         start_cooking(page)
-                        scroll_cook_dialog(page)
+                        modal.evaluate("m => { m.scrollTop = 0; }")
                     else:
                         modal.evaluate("m => { m.scrollTop = 0; }")
                         fit_phone_viewport(page, lambda: modal.evaluate(CUTS, False))
