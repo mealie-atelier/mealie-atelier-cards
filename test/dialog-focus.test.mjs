@@ -314,6 +314,26 @@ test("with a fine pointer the text field of a dialog keeps the autofocus", () =>
   assert.equal(root.activeElement, nameField);
 });
 
+test("on a touch iPad with a hardware keyboard Cmd+K still focuses the palette search", () => {
+  const world = {};
+  const { card, root } = renderHarness(world, touchGlobals(true));
+  const dialog = world.make("dialog");
+  const search = { ...world.make("search"), tagName: "INPUT", type: "text" };
+  world.query = (selector) => {
+    if (selector === '[role="dialog"]') return dialog;
+    if (selector.includes("command-search")) return search;
+    return null;
+  };
+  card._handleKeyDown({
+    key: "k",
+    metaKey: true,
+    target: {},
+    preventDefault() {},
+  });
+  assert.equal(card._modal, "command");
+  assert.equal(root.activeElement, search);
+});
+
 test("only keyboard-raising controls count as opening the touch keyboard", () => {
   const card = makeCard(loadCards({ globals: touchGlobals(true) }));
   assert.equal(card._opensTouchKeyboard({ tagName: "INPUT", type: "text" }), true);

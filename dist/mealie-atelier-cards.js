@@ -11821,7 +11821,7 @@ ha-card {
 .atelier .editor-card .editor-check {
   box-sizing: border-box;
   min-block-size: var(--ds-control-height);
-  padding: 0 var(--ds-control-padding-x);
+  padding: var(--ds-space-3) var(--ds-control-padding-x);
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-control-radius);
   background: var(--ds-background);
@@ -13394,6 +13394,8 @@ class MealieAtelierCard extends HTMLElement {
     const dialog = this.shadowRoot.querySelector('[role="dialog"]');
     const closeButton = () =>
       this.shadowRoot.querySelector('[role="dialog"] [data-action="close-modal"]');
+    const openedByKeyboard = Boolean(this._modalOpenedByKeyboard);
+    if (modalChanged) this._modalOpenedByKeyboard = false;
     if (modalChanged && dialog) {
       this._focusAfterRender(() => {
         const first =
@@ -13402,7 +13404,9 @@ class MealieAtelierCard extends HTMLElement {
           ) || closeButton();
         // A text field would raise the on-screen keyboard over the dialog on touch screens, so the
         // dialog itself takes focus there. Keyboard users still Tab into the first control.
-        return this._opensTouchKeyboard(first)
+        // A dialog opened from a hardware keyboard (Cmd+K, "/") keeps the field focus: that user
+        // types right away, even on an iPad whose primary pointer is coarse.
+        return !openedByKeyboard && this._opensTouchKeyboard(first)
           ? this.shadowRoot.querySelector('[role="dialog"]')
           : first;
       });
@@ -13497,6 +13501,7 @@ class MealieAtelierCard extends HTMLElement {
       } else {
         this._resetCommandSearch();
         this._modal = "command";
+        this._modalOpenedByKeyboard = true;
       }
       this._render();
       return;
@@ -13505,6 +13510,7 @@ class MealieAtelierCard extends HTMLElement {
       event.preventDefault();
       this._resetCommandSearch();
       this._modal = "command";
+      this._modalOpenedByKeyboard = true;
       this._render();
       return;
     }

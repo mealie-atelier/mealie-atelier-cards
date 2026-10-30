@@ -42,6 +42,7 @@ test("selects in a form fill their field and the picker filters stack at one wid
 test("the favorites check row has the height and radius of the fields around it", () => {
   const block = rule(".atelier .editor-card .editor-check");
   assert.match(block, /min-block-size: var\(--ds-control-height\);/);
+  assert.match(block, /padding: var\(--ds-space-3\) var\(--ds-control-padding-x\);/);
   assert.match(block, /border-radius: var\(--ds-control-radius\);/);
   assert.match(block, /border: 1px solid var\(--ds-border\);/);
 });
