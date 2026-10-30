@@ -1344,18 +1344,20 @@ h2 em {
   padding-block: max(12px, env(safe-area-inset-top)) 10px;
   box-sizing: content-box;
 }
-/* The card is a panel: the bar and the safe areas are taken off its viewport height. */
-.live-frame[data-fullscreen] mealie-atelier-card {
-  --header-height: calc(
-    100vh - 100dvh + 79px + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)
-  );
-}
+/* The card is a panel: live-fullscreen.js measures the height the bar leaves and hands it to the card
+   as --header-height, so the panel shell is exactly that tall whatever the bar or the safe areas add. */
 .live-frame[data-fullscreen] .live-fs {
   min-height: 40px;
   padding-inline: 16px;
   background: rgba(157, 203, 178, 0.12);
   border-color: var(--mint-deep);
   color: var(--mint2);
+}
+/* One calm ring inside the button, so it never reaches past the bar's padding on the right edge. */
+.live-frame[data-fullscreen] .live-fs:focus-visible {
+  outline: 2px solid var(--mint2);
+  outline-offset: -4px;
+  border-radius: 999px;
 }
 .live-frame[data-fullscreen] mealie-atelier-card {
   flex: 1 1 0;

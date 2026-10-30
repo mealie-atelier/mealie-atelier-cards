@@ -11,6 +11,7 @@ export function setupLiveFullscreen({ frame, button, card, doc = document }) {
   let opener = null;
   let inerted = [];
   let wasInert = [];
+  let observer = null;
 
   const fullscreenElement = () => doc.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
   const request = () => frame.requestFullscreen ?? frame.webkitRequestFullscreen;
@@ -66,10 +67,34 @@ export function setupLiveFullscreen({ frame, button, card, doc = document }) {
       frame.removeAttribute("aria-modal");
       frame.removeAttribute("aria-label");
     }
-    button.setAttribute("aria-pressed", String(active));
+    // One state, one announcement: the name changes between "open" and "exit" and there is no
+    // pressed state, so a screen reader never says "exit fullscreen, toggle button, pressed".
     button.setAttribute("aria-label", button.dataset[active ? "exitAria" : "enterAria"]);
     if (label) label.textContent = button.dataset[active ? "exitLabel" : "enterLabel"];
     iconUse?.setAttribute("href", active ? "#i-shrink" : "#i-expand");
+    trackHeight(active);
+  }
+
+  // The card's panel shell is as tall as the viewport minus --header-height. The card itself is a flex
+  // child that takes what the bar leaves, so its own height is known: --header-height is whatever
+  // makes the shell exactly that tall (100vh - h). No fixed bar height, no safe area arithmetic.
+  function trackHeight(active) {
+    const view = doc.defaultView;
+    if (!card?.style || !view) return;
+    const apply = () => {
+      const height = card.clientHeight;
+      if (height > 0) card.style.setProperty("--header-height", `calc(100vh - ${height}px)`);
+    };
+    if (active && !observer && typeof view.ResizeObserver === "function") {
+      observer = new view.ResizeObserver(apply);
+      observer.observe(card);
+    }
+    if (active) apply();
+    else {
+      observer?.disconnect();
+      observer = null;
+      card.style.removeProperty("--header-height");
+    }
   }
 
   function focusButton() {

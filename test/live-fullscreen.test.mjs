@@ -28,11 +28,16 @@ test("both live demo pages carry the labelled fullscreen button inside the frame
     assert.ok(button, `${locale} button inside the live frame`);
     assert.ok(frame.indexOf(button) < frame.indexOf("<mealie-atelier-card>"), locale);
     const [enter, exit, aria] = words[locale];
-    assert.match(button, /type="button" aria-pressed="false" aria-controls="live-frame"/);
+    assert.match(button, /type="button" aria-controls="live-frame"/);
     assert.ok(button.includes(`data-enter-label="${enter}"`), locale);
     assert.ok(button.includes(`data-exit-label="${exit}"`), locale);
     assert.ok(button.includes(`aria-label="${aria}"`), locale);
     assert.ok(button.includes(`data-live-fs-label>${enter}<`), locale);
+    assert.equal(
+      button.includes("aria-pressed"),
+      false,
+      `${locale} no pressed state next to a changing name`,
+    );
   }
   assert.ok(readFileSync(join(out, "assets/live-fullscreen.js"), "utf8").includes("overlay"));
   assert.match(readFileSync(join(out, "assets/site.js"), "utf8"), /setupLiveFullscreen/);
@@ -131,13 +136,13 @@ function makeEnv({ native, prefixed = false }) {
 test("without element fullscreen (iPhone) the frame becomes a locked overlay and closes with Escape", async () => {
   const e = makeEnv({ native: false });
   const api = setupLiveFullscreen({ frame: e.frame, button: e.button, card: null, doc: e.doc });
-  assert.equal(e.buttonAttrs.get("aria-pressed"), "false");
+  assert.equal(e.buttonAttrs.get("aria-label"), "Live-Demo im Vollbild öffnen");
+  assert.equal(e.buttonAttrs.has("aria-pressed"), false);
   await api.enter();
   assert.equal(api.mode(), "overlay");
   assert.equal(e.frameAttrs.get("data-fullscreen"), "overlay");
   assert.equal(e.frameAttrs.get("role"), "dialog");
   assert.equal(e.frameAttrs.get("aria-modal"), "true");
-  assert.equal(e.buttonAttrs.get("aria-pressed"), "true");
   assert.equal(e.buttonAttrs.get("aria-label"), "Vollbild beenden");
   assert.equal(e.labelNode.textContent, "Vollbild beenden");
   assert.equal(e.uses.get("href"), "#i-shrink");
@@ -179,13 +184,14 @@ test("with element fullscreen the button follows fullscreenchange, including the
   assert.equal(e.frame.requestCalls, 1);
   assert.equal(api.mode(), "native");
   assert.equal(e.frameAttrs.get("data-fullscreen"), "native");
-  assert.equal(e.buttonAttrs.get("aria-pressed"), "true");
+  assert.equal(e.buttonAttrs.get("aria-label"), "Vollbild beenden");
+  assert.equal(e.buttonAttrs.has("aria-pressed"), false);
   assert.equal(e.sibling.inert, false, "the Fullscreen API needs no inert page");
   // The user leaves with the browser's Escape: only the change event arrives.
   e.doc.fullscreenElement = null;
   e.fire("doc", "fullscreenchange");
   assert.equal(api.mode(), null);
-  assert.equal(e.buttonAttrs.get("aria-pressed"), "false");
+  assert.equal(e.buttonAttrs.get("aria-label"), "Live-Demo im Vollbild öffnen");
   assert.equal(e.doc.activeElement, e.opener);
 });
 
@@ -245,14 +251,15 @@ test("with only the webkit prefixed API (iPad Safari) the frame goes fullscreen 
   await api.enter();
   assert.equal(e.frame.requestCalls, 1, "webkitRequestFullscreen was used");
   assert.equal(api.mode(), "native");
-  assert.equal(e.buttonAttrs.get("aria-pressed"), "true");
+  assert.equal(e.buttonAttrs.get("aria-label"), "Vollbild beenden");
+  assert.equal(e.buttonAttrs.has("aria-pressed"), false);
   assert.equal(e.doc.documentElement.set.has("live-fs-lock"), false);
   assert.equal(e.doc.activeElement, e.button);
   // The button exits through webkitExitFullscreen.
   await api.exit();
   assert.equal(e.doc.webkitFullscreenElement, null);
   assert.equal(api.mode(), null);
-  assert.equal(e.buttonAttrs.get("aria-pressed"), "false");
+  assert.equal(e.buttonAttrs.get("aria-label"), "Live-Demo im Vollbild öffnen");
   assert.equal(e.doc.activeElement, e.opener);
   // The browser's own exit arrives as webkitfullscreenchange only.
   await api.enter();
@@ -315,4 +322,42 @@ test("in the panel layout the sidebar is no taller than the view, so its footer 
     readFileSync("dist/mealie-atelier-cards.js", "utf8"),
     /\.atelier\.panel \.sidebar \{\s*min-height: 0/,
   );
+});
+
+test("the card's panel height follows the measured space under the bar, with no fixed bar height", async () => {
+  const e = makeEnv({ native: false });
+  const props = new Map();
+  let notify;
+  let disconnected = false;
+  e.doc.defaultView = {
+    ResizeObserver: class {
+      constructor(fn) {
+        notify = fn;
+      }
+      observe() {}
+      disconnect() {
+        disconnected = true;
+      }
+    },
+  };
+  const card = {
+    shadowRoot: { querySelector: () => null },
+    clientHeight: 733,
+    style: {
+      setProperty: (k, v) => props.set(k, v),
+      removeProperty: (k) => props.delete(k),
+    },
+  };
+  const api = setupLiveFullscreen({ frame: e.frame, button: e.button, card, doc: e.doc });
+  assert.equal(props.has("--header-height"), false, "nothing set while not fullscreen");
+  await api.enter();
+  assert.equal(props.get("--header-height"), "calc(100vh - 733px)");
+  card.clientHeight = 640; // rotation, a taller bar, a changed safe area
+  notify();
+  assert.equal(props.get("--header-height"), "calc(100vh - 640px)");
+  await api.exit();
+  assert.equal(disconnected, true);
+  assert.equal(props.has("--header-height"), false, "the card's own value comes back");
+  const css = readFileSync("demo/live-demo.css", "utf8");
+  assert.doesNotMatch(css, /--header-height:\s*calc\(\s*100vh - 100dvh \+ 79px/);
 });
