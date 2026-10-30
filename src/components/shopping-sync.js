@@ -415,12 +415,21 @@ export const shoppingSyncMethods = {
     const id = esc(rule.id);
     const write = (action, label, extra = "") =>
       `<button class="btn tiny ${extra}" data-action="${action}" data-value="${id}"${caps.write ? "" : ' aria-disabled="true"'}>${label}</button>`;
+    // Bring! answering nothing is not the same as a deleted list: the first keeps the advice to wait.
+    const bringGone =
+      caps.bringSetup && destination.available === false && destination.reason !== "unreachable";
+    const bringUnreachable =
+      caps.bringSetup &&
+      !bringGone &&
+      (destination.reason === "unreachable" || last?.outcome === "destination_unavailable");
     const problems = [
-      destination.available === false
-        ? caps.bringSetup
-          ? this.t("bwListGone", { destination: destName })
-          : this.tp("syncErrorDestinationUnavailable", open, { destination: destName })
-        : "",
+      bringGone
+        ? this.t("bwListGone", { destination: destName })
+        : bringUnreachable
+          ? this.tp("bwUnreachable", open, { count: open })
+          : !caps.bringSetup && destination.available === false
+            ? this.tp("syncErrorDestinationUnavailable", open, { destination: destName })
+            : "",
       last?.outcome === "source_unavailable" ? this.t("syncErrorSourceUnavailable") : "",
     ].filter(Boolean);
     const actions = [

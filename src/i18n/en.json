@@ -1303,5 +1303,7 @@
   "bwReauthText": "Bring! no longer accepts the saved sign-in. Sign in once more. Your rules and waiting items stay as they are.",
   "bwReauthButton": "Sign in again",
   "bwSaveOnly": "Save only",
-  "bwListGone": "The Bring! list {destination} no longer exists or cannot be reached. Choose another Bring! list with Edit."
+  "bwListGone": "The Bring! list {destination} no longer exists. Choose another Bring! list with Edit.",
+  "bwUnreachable.one": "Bring! cannot be reached right now. 1 item stays open in Mealie and is sent as soon as Bring! answers again.",
+  "bwUnreachable.other": "Bring! cannot be reached right now. {count} items stay open in Mealie and are sent as soon as Bring! answers again."
 }

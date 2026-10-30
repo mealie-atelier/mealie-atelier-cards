@@ -329,12 +329,14 @@ export class BringDestination {
     return rows;
   }
 
-  describe(row, available = true) {
+  /** `reason` tells an unavailable list apart: "missing" (not on the account) or "unreachable" (Bring! did not answer). */
+  describe(row, available = true, reason = "") {
     return {
       entity_id: row.entity_id,
       name: row.name,
       platform: "bring",
       available,
+      ...(available ? {} : { reason: reason || "missing" }),
       supports: { create: true, description: true, update: false },
     };
   }
@@ -685,15 +687,18 @@ export class SyncManager {
 
   /** Describes a destination for a rule; unreachable or missing lists read as unavailable. */
   async describe(entityId, fallbackName = "") {
+    let reason = "missing";
     try {
       const row = await this.destination.find(entityId);
       if (row) return this.destination.describe(row);
     } catch {
-      // Fall through to the unavailable description.
+      // Bring! did not answer: the list may well exist, so it is not reported as gone.
+      reason = "unreachable";
     }
     return this.destination.describe(
       { entity_id: entityId, name: fallbackName || entityId },
       false,
+      reason,
     );
   }
 

@@ -1303,5 +1303,7 @@
   "bwReauthText": "Bring! akzeptiert die gespeicherte Anmeldung nicht mehr. Melde dich einmal neu an. Deine Regeln und wartenden Einträge bleiben erhalten.",
   "bwReauthButton": "Erneut anmelden",
   "bwSaveOnly": "Nur speichern",
-  "bwListGone": "Die Bring!-Liste {destination} gibt es nicht mehr oder sie ist nicht erreichbar. Wähle mit Bearbeiten eine andere Bring!-Liste."
+  "bwListGone": "Die Bring!-Liste {destination} gibt es nicht mehr. Wähle mit Bearbeiten eine andere Bring!-Liste.",
+  "bwUnreachable.one": "Bring! ist gerade nicht erreichbar. 1 Eintrag bleibt in Mealie offen und geht raus, sobald Bring! wieder antwortet.",
+  "bwUnreachable.other": "Bring! ist gerade nicht erreichbar. {count} Einträge bleiben in Mealie offen und gehen raus, sobald Bring! wieder antwortet."
 }

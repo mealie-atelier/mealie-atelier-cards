@@ -466,8 +466,24 @@ test("an unreachable Bring reports destination_unavailable and nothing is lost",
     const status = await env.manager.state();
     assert.equal(status.rules[0].destination.available, false);
     assert.equal(status.rules[0].destination.name, "Einkauf");
+    // Bring! not answering is not a deleted list: the card must not tell the user to pick another one.
+    assert.equal(status.rules[0].destination.reason, "unreachable");
     env.bring.state.blocked = false;
     assert.equal((await env.manager.run(ruleId, "manual")).outcome, "sent");
+  } finally {
+    await env.close();
+  }
+});
+
+test("a list deleted in Bring! is reported as missing, not as unreachable", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    await env.save();
+    env.bring.state.lists = env.bring.state.lists.filter((row) => row.name !== "Einkauf");
+    env.manager.destination.cache = null;
+    const status = await env.manager.state();
+    assert.equal(status.rules[0].destination.available, false);
+    assert.equal(status.rules[0].destination.reason, "missing");
   } finally {
     await env.close();
   }

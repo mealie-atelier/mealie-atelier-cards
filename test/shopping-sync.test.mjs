@@ -758,9 +758,32 @@ test("web app: a dead stored session offers a one-step sign-in that keeps the ru
 
 test("web app: a Bring! list that is gone tells how to choose another", async () => {
   const env = bringCard({ state: "connected" });
-  const rule = withRule({ destination: { ...RULE.destination, available: false } });
+  const rule = withRule({
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
   await openStatus(env, [rule]);
-  assert.match(markup(env.cards), /no longer exists or cannot be reached[^]*with Edit/);
+  assert.match(markup(env.cards), /no longer exists\. Choose another Bring! list[^]*with Edit/);
+});
+
+test("web app: an unreachable Bring! asks to wait instead of choosing another list", async () => {
+  const env = bringCard({ state: "connected" });
+  const rule = withRule({
+    destination: { ...RULE.destination, available: false, reason: "unreachable" },
+  });
+  await openStatus(env, [rule]);
+  const html = markup(env.cards);
+  assert.match(html, /Bring! cannot be reached right now/);
+  assert.match(html, /sent as soon as Bring! answers again/);
+  assert.doesNotMatch(html, /no longer exists/);
+});
+
+test("web app: a failed last run names the unreachable Bring! even when the lists load", async () => {
+  const env = bringCard({ state: "connected" });
+  const rule = withRule({
+    last_run: { at: new Date().toISOString(), outcome: "destination_unavailable" },
+  });
+  await openStatus(env, [rule]);
+  assert.match(markup(env.cards), /Bring! cannot be reached right now/);
 });
 
 test("web app: the connected state shows the masked account and disconnecting asks first", async () => {
