@@ -39,7 +39,7 @@ test("both live demo pages carry the labelled fullscreen button inside the frame
 });
 
 // A tiny DOM: just what the module touches.
-function makeEnv({ native }) {
+function makeEnv({ native, prefixed = false }) {
   const listeners = new Map();
   const on = (target) => (type, fn) => {
     const key = `${target}:${type}`;
@@ -74,7 +74,19 @@ function makeEnv({ native }) {
   doc.body.children = [sibling, main];
   const frame = { ...attrs(frameAttrs), tagName: "DIV", parentElement: main, requestCalls: 0 };
   main.children = [frame, { tagName: "P", inert: false }];
-  if (native) {
+  if (native && prefixed) {
+    // iPad Safari: only the webkit names exist.
+    frame.webkitRequestFullscreen = () => {
+      frame.requestCalls++;
+      doc.webkitFullscreenElement = frame;
+      fire("doc", "webkitfullscreenchange");
+    };
+    doc.webkitExitFullscreen = () => {
+      doc.webkitFullscreenElement = null;
+      fire("doc", "webkitfullscreenchange");
+    };
+    doc.webkitFullscreenEnabled = true;
+  } else if (native) {
     frame.requestFullscreen = async () => {
       frame.requestCalls++;
       doc.fullscreenElement = frame;
@@ -195,4 +207,112 @@ test("the stylesheet fills the dynamic viewport, respects safe areas and stays d
   assert.match(css, /safe-area-inset-bottom/);
   assert.match(css, /html\.live-fs-lock/);
   assert.match(css, /\.live-frame\[data-fullscreen\] \{[^}]*color-scheme: dark/);
+});
+
+test("a card with its own native confirm dialog open keeps Escape, the overlay stays", async () => {
+  const e = makeEnv({ native: false });
+  // The card's confirm and prompt dialogs are <dialog class="at-premium-dialog"> without a role.
+  let dialogOpen = false;
+  const card = {
+    shadowRoot: {
+      querySelector: (selector) =>
+        dialogOpen && selector.split(",").some((part) => part.trim() === "dialog[open]")
+          ? {}
+          : null,
+    },
+  };
+  const api = setupLiveFullscreen({ frame: e.frame, button: e.button, card, doc: e.doc });
+  await api.enter();
+  dialogOpen = true;
+  let prevented = false;
+  e.fire("doc", "keydown", {
+    key: "Escape",
+    defaultPrevented: false,
+    preventDefault: () => (prevented = true),
+  });
+  assert.equal(prevented, false, "the dialog's own cancel is not suppressed");
+  assert.equal(api.mode(), "overlay");
+  assert.equal(e.sibling.inert, true);
+  dialogOpen = false;
+  e.fire("doc", "keydown", { key: "Escape", defaultPrevented: false, preventDefault() {} });
+  await Promise.resolve();
+  assert.equal(api.mode(), null, "with the dialog closed Escape leaves the overlay");
+});
+
+test("with only the webkit prefixed API (iPad Safari) the frame goes fullscreen and follows webkitfullscreenchange", async () => {
+  const e = makeEnv({ native: true, prefixed: true });
+  const api = setupLiveFullscreen({ frame: e.frame, button: e.button, card: null, doc: e.doc });
+  await api.enter();
+  assert.equal(e.frame.requestCalls, 1, "webkitRequestFullscreen was used");
+  assert.equal(api.mode(), "native");
+  assert.equal(e.buttonAttrs.get("aria-pressed"), "true");
+  assert.equal(e.doc.documentElement.set.has("live-fs-lock"), false);
+  assert.equal(e.doc.activeElement, e.button);
+  // The button exits through webkitExitFullscreen.
+  await api.exit();
+  assert.equal(e.doc.webkitFullscreenElement, null);
+  assert.equal(api.mode(), null);
+  assert.equal(e.buttonAttrs.get("aria-pressed"), "false");
+  assert.equal(e.doc.activeElement, e.opener);
+  // The browser's own exit arrives as webkitfullscreenchange only.
+  await api.enter();
+  e.doc.webkitFullscreenElement = null;
+  e.fire("doc", "webkitfullscreenchange");
+  assert.equal(api.mode(), null);
+  assert.equal(e.labelNode.textContent, "Vollbild");
+});
+
+test("webkitfullscreenerror falls back to the overlay", async () => {
+  const e = makeEnv({ native: true, prefixed: true });
+  e.frame.webkitRequestFullscreen = () => e.fire("doc", "webkitfullscreenerror");
+  const api = setupLiveFullscreen({ frame: e.frame, button: e.button, card: null, doc: e.doc });
+  await api.enter();
+  assert.equal(api.mode(), "overlay");
+  assert.ok(e.doc.documentElement.set.has("live-fs-lock"));
+});
+
+test("fullscreen puts the card in its panel layout (edge to edge, full height) and restores it", async () => {
+  const e = makeEnv({ native: false });
+  const card = { shadowRoot: { querySelector: () => null }, layout: undefined };
+  const api = setupLiveFullscreen({ frame: e.frame, button: e.button, card, doc: e.doc });
+  await api.enter();
+  assert.equal(card.layout, "panel");
+  await api.exit();
+  assert.equal(card.layout, undefined);
+});
+
+test("the button is hidden in the static markup and shown only once it is wired", () => {
+  for (const locale of ["de", "en"]) {
+    const html = readFileSync(join(out, locale, "index.html"), "utf8");
+    assert.match(html, /<button class="live-fs"[^>]* hidden>/, locale);
+  }
+  const e = makeEnv({ native: false });
+  e.button.hidden = true;
+  setupLiveFullscreen({ frame: e.frame, button: e.button, card: null, doc: e.doc });
+  assert.equal(e.button.hidden, false);
+  const css = readFileSync("demo/live-demo.css", "utf8");
+  assert.match(css, /\.live-fs\[hidden\] \{\s*display: none/);
+  assert.match(readFileSync("demo/site.js", "utf8"), /live-fullscreen\.js"\)[\s\S]*\.catch\(/);
+});
+
+test("on narrow screens the bar keeps one line and fullscreen closes with an icon button", () => {
+  const css = readFileSync("demo/live-demo.css", "utf8");
+  assert.match(css, /\.live-status \{[^}]*white-space: nowrap/);
+  const narrow = css.slice(css.indexOf("@media (max-width: 640px)"));
+  assert.match(narrow, /\.live-dots \{\s*display: none/);
+  assert.match(
+    narrow,
+    /\.live-frame\[data-fullscreen\] \.live-fs \[data-live-fs-label\] \{[^}]*clip-path/,
+  );
+  assert.match(css, /live-frame:not\(\[data-fullscreen\]\) \.live-status-more \{\s*display: none/);
+  assert.match(css, /padding-block: max\(12px, env\(safe-area-inset-top\)\)/);
+});
+
+test("in the panel layout the sidebar is no taller than the view, so its footer is not clipped", () => {
+  const css = readFileSync("src/design-system/foundation.css", "utf8");
+  assert.match(css, /\.atelier\.panel \.sidebar \{\s*min-height: 0/);
+  assert.match(
+    readFileSync("dist/mealie-atelier-cards.js", "utf8"),
+    /\.atelier\.panel \.sidebar \{\s*min-height: 0/,
+  );
 });

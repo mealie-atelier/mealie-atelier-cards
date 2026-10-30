@@ -1272,7 +1272,14 @@ h2 em {
   border-radius: 50%;
   background: #3a463e;
 }
+.live-fs[hidden] {
+  display: none;
+}
 .live-status {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   margin-left: 12px;
   color: var(--mint);
   font: 600 12px/1 var(--sans);
@@ -1280,6 +1287,7 @@ h2 em {
   text-transform: uppercase;
 }
 .live-fs {
+  flex: none;
   margin-left: auto;
   display: inline-flex;
   align-items: center;
@@ -1332,9 +1340,15 @@ h2 em {
   flex: none;
   min-height: 56px;
   border-radius: 0;
-  padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
-  padding-top: env(safe-area-inset-top);
+  padding-inline: max(18px, env(safe-area-inset-left)) max(18px, env(safe-area-inset-right));
+  padding-block: max(12px, env(safe-area-inset-top)) 10px;
   box-sizing: content-box;
+}
+/* The card is a panel: the bar and the safe areas are taken off its viewport height. */
+.live-frame[data-fullscreen] mealie-atelier-card {
+  --header-height: calc(
+    100vh - 100dvh + 79px + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)
+  );
 }
 .live-frame[data-fullscreen] .live-fs {
   min-height: 40px;
@@ -1408,11 +1422,38 @@ html.js .live-frame:not([data-ready])::after {
     border-radius: 20px 20px 0 0;
     padding-inline: 12px;
   }
+  .live-dots {
+    display: none;
+  }
   .live-status {
-    margin-left: 8px;
+    margin-left: 0;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  /* Fullscreen on a phone: an icon led close, its label stays for screen readers. */
+  .live-frame[data-fullscreen] .live-fs {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .live-frame[data-fullscreen] .live-fs [data-live-fs-label] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .live-frame mealie-atelier-card {
     border-radius: 0 0 20px 20px;
+  }
+}
+
+/* Narrow, not fullscreen: the bar only has room for "Live" next to the labelled button. */
+@media (max-width: 460px) {
+  .live-frame:not([data-fullscreen]) .live-status-more {
+    display: none;
   }
 }
 

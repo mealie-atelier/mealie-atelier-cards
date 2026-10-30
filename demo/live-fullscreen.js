@@ -20,7 +20,10 @@ export function setupLiveFullscreen({ frame, button, card, doc = document }) {
     doc.webkitFullscreenEnabled !== false;
 
   // The card owns Escape while one of its own dialogs is open.
-  const cardDialogOpen = () => Boolean(card?.shadowRoot?.querySelector?.('[role="dialog"]'));
+  // That covers the modal sheets (role="dialog") and the native confirm and prompt dialogs
+  // (<dialog class="at-premium-dialog">, opened with showModal and without a role attribute).
+  const cardDialogOpen = () =>
+    Boolean(card?.shadowRoot?.querySelector?.('[role="dialog"], dialog[open]'));
 
   function lockPage() {
     root.classList.add("live-fs-lock");
@@ -49,6 +52,9 @@ export function setupLiveFullscreen({ frame, button, card, doc = document }) {
 
   function render() {
     const active = mode !== null;
+    // Fullscreen is the card's panel layout: no frame, no rounded corners, the full height.
+    if (card && card.layout !== (active ? "panel" : undefined))
+      card.layout = active ? "panel" : undefined;
     if (mode) frame.setAttribute("data-fullscreen", mode);
     else frame.removeAttribute("data-fullscreen");
     if (mode === "overlay") {
@@ -139,5 +145,7 @@ export function setupLiveFullscreen({ frame, button, card, doc = document }) {
     exit();
   });
   render();
+  // The static markup keeps the button hidden: it only shows once it is wired up.
+  button.hidden = false;
   return { enter, exit, mode: () => mode };
 }

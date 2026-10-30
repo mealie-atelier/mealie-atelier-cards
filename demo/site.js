@@ -282,7 +282,11 @@ if (liveFrame && liveCard) {
 const liveFullscreen = liveFrame?.querySelector(".live-fs");
 if (liveFrame && liveCard && liveFullscreen) {
   // Loaded on its own so this script does not wait for a second file before the page reveals.
-  import("./live-fullscreen.js").then(({ setupLiveFullscreen }) =>
-    setupLiveFullscreen({ frame: liveFrame, button: liveFullscreen, card: liveCard }),
-  );
+  import("./live-fullscreen.js")
+    .then(({ setupLiveFullscreen }) =>
+      setupLiveFullscreen({ frame: liveFrame, button: liveFullscreen, card: liveCard }),
+    )
+    .catch(() => {
+      // Without the module the button stays hidden: there is no dead control.
+    });
 }
