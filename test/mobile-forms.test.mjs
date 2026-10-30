@@ -63,3 +63,9 @@ test("the dialog header names the dialog instead of staying an empty band", () =
     /position: sticky;/,
   );
 });
+
+test("the header title fades in only after the strip behind it is fully opaque", () => {
+  const block = rule(".atelier .modal > .modal-bar-title {\n    --at-bar-size");
+  assert.match(block, /animation: at-bar-title linear both;/);
+  assert.match(block, /animation-range: 48px 96px;/);
+});

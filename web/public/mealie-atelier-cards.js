@@ -11834,7 +11834,7 @@ ha-card {
 }
 
 /* The header strip that appears behind the sticky close button names the dialog instead of staying an empty band.
-   It fades in with the strip (scroll-driven), so it never doubles the heading while that is still on screen. */
+   The strip is fully opaque after 48px of scroll, so the title fades in only after that (48px to 96px), once the dialog heading is under the strip. */
 .atelier .modal > .modal-bar-title {
   display: none;
 }
@@ -11858,9 +11858,14 @@ ha-card {
     color: var(--at-ink);
     pointer-events: none;
     opacity: 0;
-    animation: at-close-strip linear both;
+    animation: at-bar-title linear both;
     animation-timeline: scroll(nearest block);
-    animation-range: 0 48px;
+    animation-range: 48px 96px;
+  }
+}
+@keyframes at-bar-title {
+  to {
+    opacity: 1;
   }
 }
 @container atelier-card (max-width: 420px) {
