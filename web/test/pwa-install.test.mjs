@@ -24,6 +24,8 @@ test("web manifest includes installable and maskable raster icons", async () => 
   const manifest = JSON.parse(
     await readFile(new URL("../public/manifest.webmanifest", import.meta.url)),
   );
+  assert.equal(manifest.lang, "de");
+  assert.match(manifest.name, /Küchenstudio/);
   const pngIcons = manifest.icons.filter((icon) => icon.type === "image/png");
   assert.ok(pngIcons.some((icon) => icon.sizes === "192x192" && icon.purpose === "any"));
   assert.ok(pngIcons.some((icon) => icon.sizes === "512x512" && icon.purpose === "maskable"));
