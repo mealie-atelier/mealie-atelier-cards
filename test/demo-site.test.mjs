@@ -1351,3 +1351,11 @@ test("story steps are never dimmed with opacity (contrast stays AA)", async () =
   const block = css.match(/\n\.step \{[^}]*\}/)[0];
   assert.doesNotMatch(block, /opacity/);
 });
+
+test("recipe metric values never split a word mid-word (no overflow-wrap anywhere)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../demo/live-demo.css", import.meta.url), "utf8");
+  const blocks = css.match(/\.recipe-metrics b \{[^}]*\}/g);
+  assert.ok(blocks.length >= 2);
+  for (const block of blocks) assert.doesNotMatch(block, /overflow-wrap:\s*anywhere/);
+});
