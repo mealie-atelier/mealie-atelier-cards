@@ -377,17 +377,9 @@ test("every page shares the designed footer in its own language without photo cr
       `${page} footer links the credits list`,
     );
     if (locale === "de") assert.doesNotMatch(footer, /Made with/, page);
-    assert.match(html, /<meta name="color-scheme" content="dark light"/, page);
-    assert.match(
-      html,
-      /<meta name="theme-color" content="#0c120f" media="\(prefers-color-scheme: dark\)"/,
-      page,
-    );
-    assert.match(
-      html,
-      /<meta name="theme-color" content="#f2e9d8" media="\(prefers-color-scheme: light\)"/,
-      page,
-    );
+    assert.match(html, /<meta name="color-scheme" content="dark"/, page);
+    assert.match(html, /<meta name="theme-color" content="#0c120f"/, page);
+    assert.doesNotMatch(html, /theme-color"[^>]*media=/, page);
   }
 });
 
@@ -695,14 +687,23 @@ test("page CSS keeps the footer wordmark off the rule and the metric grid divide
   }
 });
 
-test("the page ships a dark and a light scheme that follow the system setting", () => {
+test("the product page and the live demo are dark only", () => {
   const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
-  assert.match(css, /@media \(prefers-color-scheme: light\)/);
   assert.match(css, /color-scheme:\s*dark/);
-  assert.match(css, /color-scheme:\s*light/);
-  for (const page of contentPages(builds.local)) {
-    assert.match(read(page), /<meta name="color-scheme" content="dark light"/, page);
+  assert.doesNotMatch(css, /prefers-color-scheme\s*:\s*light/);
+  assert.doesNotMatch(css, /color-scheme:\s*light/);
+  assert.ok(!existsSync(join(builds.local, "assets/mealie-atelier-mark-light.svg")));
+  assert.ok(!existsSync("demo/site/week-dial-mark-light.svg"));
+  for (const page of listFiles(builds.local, ".html")) {
+    const html = read(page);
+    assert.doesNotMatch(html, /prefers-color-scheme\s*:\s*light/, page);
+    assert.doesNotMatch(html, /name="color-scheme" content="[^"]*light/, page);
+    assert.doesNotMatch(html, /mark-light/, page);
   }
+  const preview = readFileSync("demo/preview.html", "utf8");
+  assert.doesNotMatch(preview, /prefers-color-scheme\s*:\s*light/);
+  assert.match(preview, /theme: "dark"/, "live demo card config forces the dark theme");
+  assert.match(preview, /themes: \{ darkMode: true \}/, "live demo hass reports dark mode");
 });
 
 test("the recipe hero shows the whole photo instead of cropping it to a fixed ratio", () => {
@@ -1176,17 +1177,9 @@ test("every photo master matches its manifest size and the skillet eggs master i
   assert.equal(manifest.photos["pfannen-eier-mit-tomaten-und-basilikum"].width, 2100);
 });
 
-test("the product page light scheme and share images follow the Herb palette without a purple cast", () => {
-  const css = readFileSync("demo/live-demo.css", "utf8");
-  const start = css.indexOf("@media (prefers-color-scheme: light)");
-  assert.ok(start > 0, "light scheme exists");
-  const light = css.slice(start);
-  const token = (name) => light.match(new RegExp(`--${name}: (#[0-9a-f]{6})`))?.[1];
-  assert.equal(token("bg"), "#f2e9d8", "Oat page surface");
-  assert.equal(token("ink"), "#14201a", "Night ink");
-  assert.equal(token("mint"), "#3e6b48", "Herb accent");
+test("the share images and the page sources follow the Herb palette without a purple cast", () => {
   const sources = [
-    ["demo/live-demo.css", light],
+    ["demo/live-demo.css", readFileSync("demo/live-demo.css", "utf8")],
     ["scripts/og-images.mjs", readFileSync("scripts/og-images.mjs", "utf8")],
     ["scripts/generate-demo-site.mjs", readFileSync("scripts/generate-demo-site.mjs", "utf8")],
     ["demo/preview.html", readFileSync("demo/preview.html", "utf8")],
@@ -1347,45 +1340,6 @@ test("the three language switches have distinct landmark names on every page", (
   }
 });
 
-test("small saffron and avatar text keep AA contrast in the light scheme", () => {
-  const css = read(new URL("../demo/live-demo.css", import.meta.url));
-  const light = css.match(/@media \(prefers-color-scheme: light\) \{\s*:root \{([^}]*)\}/)[1];
-  const token = (name) => light.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`))[1];
-  const lum = (hex) => {
-    const [r, g, b] = [1, 3, 5].map((i) => {
-      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
-      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  };
-  const ratio = (a, b) => {
-    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  };
-  assert.ok(ratio(token("--saffron"), token("--bg2")) >= 4.5, "AI source label");
-  assert.match(css, /\.who i \{[^}]*color: var\(--mint2\)/);
-  assert.ok(ratio(token("--mint2"), token("--panel3")) >= 4.5, "rights avatar initial");
-});
-
-test("the compare hint stays AA readable on the shadowed Oat backdrop in the light scheme", () => {
-  const css = read(new URL("../demo/live-demo.css", import.meta.url));
-  const hint = css.match(/\n\.hint \{([^}]*)\}/)[1];
-  assert.match(hint, /color: var\(--sub\)/);
-  const light = css.match(/@media \(prefers-color-scheme: light\) \{\s*:root \{([^}]*)\}/)[1];
-  const hex = light.match(/--sub:\s*(#[0-9a-f]{6})/)[1];
-  const lum = (h) => {
-    const [r, g, b] = [1, 3, 5].map((i) => {
-      const v = parseInt(h.slice(i, i + 2), 16) / 255;
-      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  };
-  // Worst measured backdrop behind the hint under the frame shadow is about 3.8:1 against #56635A.
-  const worstBackdrop = "#d4cbb8";
-  const [hi, lo] = [lum(hex), lum(worstBackdrop)].sort((a, b) => b - a);
-  assert.ok((hi + 0.05) / (lo + 0.05) >= 4.5);
-});
-
 test("every recipe page sends its own recipe slug to the live demo and the demo reads it", () => {
   const catalog = JSON.parse(read("demo/data/recipes.json")).recipes;
   for (const recipe of catalog) {
@@ -1480,20 +1434,7 @@ test("recipe metric values never split a word mid-word (no overflow-wrap anywher
   for (const block of blocks) assert.doesNotMatch(block, /overflow-wrap:\s*anywhere/);
 });
 
-test("light scheme uses the light Week Dial plate and every page links a web app manifest", () => {
-  const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
-  const light = css.slice(css.indexOf("@media (prefers-color-scheme: light)"));
-  assert.match(
-    light,
-    /\.brand-mark\s*\{\s*background-image: url\("\.\/mealie-atelier-mark-light\.svg"\)/,
-  );
-  assert.match(
-    light,
-    /\.site-footer \.brand-mark\s*\{\s*background-image: url\("\.\/mealie-atelier-mark\.svg"\)/,
-  );
-  assert.doesNotMatch(light, /\.top \.brand-mark/, "no stand-in ring around the mark");
-  const lightSvg = readFileSync(join(builds.local, "assets/mealie-atelier-mark-light.svg"), "utf8");
-  assert.match(lightSvg, /class="plate" fill="#14201A"/);
+test("every page links a web app manifest", () => {
   const manifest = JSON.parse(readFileSync(join(builds.local, "assets/site.webmanifest"), "utf8"));
   assert.deepEqual(
     manifest.icons.map((icon) => icon.purpose),
