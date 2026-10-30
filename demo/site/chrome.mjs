@@ -132,7 +132,7 @@ function languageSwitch(ctx, className, place) {
   };
   const label = names[ctx.locale][place];
   const item = (code, name) =>
-    `<a href="${escapeHtml(ctx.alternate[code])}" hreflang="${code}" lang="${code}"${code === ctx.locale ? ' aria-current="page"' : ""}><span aria-hidden="true">${code.toUpperCase()}</span><span class="sr">${name}</span></a>`;
+    `<a href="${escapeHtml(ctx.alternate[code])}" hreflang="${code}" lang="${code}"${code === ctx.locale && !ctx.noCurrent ? ' aria-current="page"' : ""}><span aria-hidden="true">${code.toUpperCase()}</span><span class="sr">${name}</span></a>`;
   return `<nav class="${className}" aria-label="${label}">${item("de", "Deutsch")}${item("en", "English")}</nav>`;
 }
 

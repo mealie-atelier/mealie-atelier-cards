@@ -1572,6 +1572,7 @@ test("404.html is a noindex bilingual page with root-absolute assets, kept out o
     assert.ok(existsSync(join(out, "404.html")), "404.html exists");
     const html = read(join(out, "404.html"));
     assert.match(html, /<meta name="robots" content="noindex">/);
+    assert.doesNotMatch(html, /aria-current/, "no language link is the current page");
     assert.doesNotMatch(html, /rel="canonical"|og:image|twitter:image|rel="alternate" hreflang/);
     // Served at any depth, so no reference may be relative.
     const refs = [...html.matchAll(/\s(?:src|href)="([^"]+)"/g)]

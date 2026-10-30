@@ -659,6 +659,8 @@ function renderNotFoundPage() {
     alternate: { de: `${prefix}de/`, en: `${prefix}en/` },
     creditsUrl: `${prefix}${creditsPath("de")}`,
     onLanding: false,
+    // The visitor is on no language page, so the switch must not mark one as current.
+    noCurrent: true,
   };
   const block = (locale, kicker, heading, lead, labels) => {
     const home = `${prefix}${locale}/`;
