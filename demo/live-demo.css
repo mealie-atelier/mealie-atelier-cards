@@ -1,5 +1,5 @@
 /* Public product site of Mealie Atelier: landing pages, live demo frame and recipe pages.
-   Dark by default, with a light scheme for visitors who prefer it. Green and warm saffron accents. */
+   Dark only. Green and warm saffron accents. */
 :root {
   --bg: #0c120f;
   --bg2: #101813;

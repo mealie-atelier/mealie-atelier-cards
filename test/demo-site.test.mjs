@@ -700,6 +700,9 @@ test("the product page and the live demo are dark only", () => {
     assert.doesNotMatch(html, /name="color-scheme" content="[^"]*light/, page);
     assert.doesNotMatch(html, /mark-light/, page);
   }
+  const manifest = JSON.parse(readFileSync("demo/site/site.webmanifest", "utf8"));
+  assert.equal(manifest.background_color, "#0c120f", "splash screen matches the dark page");
+  assert.doesNotMatch(css, /Dark by default|light scheme/i);
   const preview = readFileSync("demo/preview.html", "utf8");
   assert.doesNotMatch(preview, /prefers-color-scheme\s*:\s*light/);
   assert.match(preview, /theme: "dark"/, "live demo card config forces the dark theme");
