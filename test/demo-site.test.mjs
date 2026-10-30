@@ -1336,3 +1336,11 @@ test("German landing copy uses idiomatic words for tap areas and nominal Abhaken
   assert.match(html, /große Tippflächen am Küchentablet/);
   assert.match(html, /Daumen und Abhaken auch ohne Netz/);
 });
+
+test("the open mobile drawer makes the page inert and traps Tab inside the header", () => {
+  const script = readFileSync("demo/site.js", "utf8");
+  assert.match(script, /part\.inert = open/);
+  assert.match(script, /event\.key !== "Tab"/);
+  assert.match(script, /last\.focus\(\)/);
+  assert.match(script, /first\.focus\(\)/);
+});

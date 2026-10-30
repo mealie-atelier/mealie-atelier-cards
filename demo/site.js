@@ -27,10 +27,38 @@ function setDrawer(open) {
   menu.querySelector("use")?.setAttribute("href", open ? "#i-close" : "#i-menu");
   drawer.hidden = !open;
   header?.classList.toggle("open", open);
+  // The open drawer covers the page, so everything behind it leaves the tab order.
+  for (const part of document.body.children) {
+    if (part === header || part.tagName === "SCRIPT") continue;
+    part.inert = open;
+  }
+}
+function drawerFocusables() {
+  return [...header.querySelectorAll("a[href], button, input, select, textarea")].filter(
+    (element) => !element.closest("[hidden]") && element.getClientRects().length > 0,
+  );
 }
 menu?.addEventListener("click", () => setDrawer(menu.getAttribute("aria-expanded") !== "true"));
 drawer?.addEventListener("click", (event) => {
   if (event.target.closest("a")) setDrawer(false);
+});
+// Keep Tab inside the header while the drawer is open.
+addEventListener("keydown", (event) => {
+  if (event.key !== "Tab" || !header || menu?.getAttribute("aria-expanded") !== "true") return;
+  const items = drawerFocusables();
+  if (!items.length) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (!header.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 });
 addEventListener("keydown", (event) => {
   if (event.key === "Escape" && menu?.getAttribute("aria-expanded") === "true") {
