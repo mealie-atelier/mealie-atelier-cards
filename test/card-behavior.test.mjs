@@ -307,6 +307,25 @@ test("_permissions prefers the structured permissions over the legacy mirrors", 
   assert.equal(p.limits.upload_max_bytes, 5);
 });
 
+test("web app shows Bring! specific texts for destination and sync support errors", () => {
+  for (const language of ["de", "en"]) {
+    const cards = loadCards();
+    const web = makeCard(cards, {
+      hass: { language, atelierOfflineHost: true, callWS: async () => ({}) },
+    });
+    for (const [code, key] of [
+      ["destination_unavailable", "errDestinationUnavailable"],
+      ["sync_not_supported", "errSyncNotSupportedWeb"],
+      ["sync_destination_unsupported", "errSyncDestinationUnsupportedWeb"],
+    ]) {
+      const text = web._errorText({ code, message: "raw" });
+      assert.equal(text, web.t(key), `${language} ${code}`);
+      assert.notEqual(text, key);
+      assert.doesNotMatch(text, /Home Assistant|Mealie|to-do|To-do/);
+    }
+  }
+});
+
 test("_errorText maps every contract code to its err key and falls back to the message", () => {
   const { card } = permissionCard(grants(true, true, true));
   assert.equal(

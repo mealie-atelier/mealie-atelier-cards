@@ -399,6 +399,8 @@ test("a Bring outage answers with a clear code and a wrong password never leaks"
     bring.close();
     const down = await body(await app.call("mealie_atelier/sync_destinations"));
     assert.equal(down.status, 502);
+    assert.equal(down.code, "destination_unavailable");
+    assert.doesNotMatch(down.error, /Mealie/);
   } finally {
     await app.stop();
     remote.server.close();

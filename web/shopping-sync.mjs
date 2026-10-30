@@ -1350,13 +1350,16 @@ export class SyncManager {
 
 /** A destination problem outside a pass (list, save, preview) as a `SyncError`. */
 function destinationFailure(error) {
+  let failure = error;
   if (error instanceof BringAuthError)
-    return new SyncError("destination_auth", "Bring! refused the credentials", 502);
-  if (error instanceof BringRateLimitError)
-    return new SyncError("destination_rate_limit", "Bring! is rate limiting requests", 502);
-  if (error instanceof BringNetworkError || error instanceof BringRequestError)
-    return new SyncError("destination_unavailable", "Bring! is unreachable", 502);
-  return error;
+    failure = new SyncError("destination_auth", "Bring! refused the credentials", 502);
+  else if (error instanceof BringRateLimitError)
+    failure = new SyncError("destination_rate_limit", "Bring! is rate limiting requests", 502);
+  else if (error instanceof BringNetworkError || error instanceof BringRequestError)
+    failure = new SyncError("destination_unavailable", "Bring! is unreachable", 502);
+  // Keeps the server from swapping in its "Could not reach Mealie" text for a Bring! problem.
+  if (failure !== error) failure.atelierCode = failure.code;
+  return failure;
 }
 
 // Messages (the `mealie_atelier/sync_*` contract of the Bridge)
