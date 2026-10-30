@@ -45,6 +45,7 @@ before(() => {
     "photos/kokos-curry-mit-champignons-und-gruenkohl.webp",
     "showcase/photos/kokos-curry-mit-champignons-und-gruenkohl-800.webp",
     "showcase/de/app-desktop-retired-1600.webp",
+    "assets/mealie-atelier-icon-192.png",
   ]) {
     mkdirSync(dirname(join(stale, leftover)), { recursive: true });
     writeFileSync(join(stale, leftover), "old photo");
@@ -1083,4 +1084,20 @@ test("recipe hero sizes hint matches the side by side layout and metrics columns
   );
   const css = readFileSync(join(builds.local, "assets/live-demo.css"), "utf8");
   assert.match(css, /\.recipe-metrics \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+});
+
+test("a retired brand file in a reused output folder does not ship", () => {
+  assert.equal(existsSync(join(builds.local, "assets/mealie-atelier-icon-192.png")), false);
+  assert.equal(existsSync(join(builds.local, "assets/apple-touch-icon.png")), true);
+});
+
+test("English recipe metric labels all start with a capital", () => {
+  const html = readFileSync(
+    join(builds.local, "en/recipes/gnocchi-alla-sorrentina/index.html"),
+    "utf8",
+  );
+  const labels = [...html.matchAll(/<div><b>[^<]*<\/b><span>([^<]*)<\/span><\/div>/g)].map(
+    (m) => m[1],
+  );
+  assert.deepEqual(labels, ["Prep", "Cooking", "Servings", "Cuisine"]);
 });

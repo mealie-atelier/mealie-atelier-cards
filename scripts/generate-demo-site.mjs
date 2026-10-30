@@ -517,9 +517,11 @@ function renderRecipePage(locale, recipe) {
   });
   // A zero time means the step does not exist for this recipe, so it is left out.
   const metrics = [
-    recipe.prepMinutes ? [`${recipe.prepMinutes} ${words.minutes}`, words.prep] : null,
-    recipe.cookMinutes ? [`${recipe.cookMinutes} ${words.minutes}`, words.cooking] : null,
-    [`${recipe.servings}`, words.servings],
+    recipe.prepMinutes ? [`${recipe.prepMinutes} ${words.minutes}`, capitalize(words.prep)] : null,
+    recipe.cookMinutes
+      ? [`${recipe.cookMinutes} ${words.minutes}`, capitalize(words.cooking)]
+      : null,
+    [`${recipe.servings}`, capitalize(words.servings)],
     [escapeHtml(recipe.cuisine[locale]), t("Küche", "Cuisine")],
   ]
     .filter(Boolean)
@@ -593,6 +595,11 @@ function rootIndex() {
   return `<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="index,follow"><meta name="description" content="${escapeHtml(copy.de.description)}">${iconLinks("assets/")}<meta name="theme-color" content="#f2e9d8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c120f" media="(prefers-color-scheme: dark)"><meta property="og:type" content="website"><meta property="og:site_name" content="Mealie Atelier"><meta property="og:title" content="${escapeHtml(copy.de.title)}"><meta property="og:description" content="${escapeHtml(copy.de.description)}">${ogImageMeta("de", null, "")}${deploymentBase ? `<meta property="og:url" content="${escapeHtml(deploymentBase)}">` : ""}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(copy.de.title)}"><meta name="twitter:description" content="${escapeHtml(copy.de.description)}"><title>${copy.de.title}</title><link rel="alternate" hreflang="de" href="de/"><link rel="alternate" hreflang="en" href="en/"><meta http-equiv="refresh" content="0;url=de/"></head><body><p>Demo laden: <a href="de/">Deutsch</a> · <a href="en/">English</a></p></body></html>`;
 }
 
+// Metric labels read as a set, so every label starts with a capital in both languages.
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 // Deletes every file below `target` that has no counterpart below `source`.
 async function removeStaleFiles(source, target) {
   const entries = await readdir(target, { withFileTypes: true });
@@ -652,6 +659,20 @@ await copyFile(
 for (const asset of brandAssets) {
   await copyFile(join(cardsRoot, "demo/site", asset), join(siteRoot, "assets", asset));
 }
+// Brand files of older builds (for example a retired icon size) must not ship with the site.
+await removeUnlisted(
+  join(siteRoot, "assets"),
+  new Set(
+    [
+      "live-demo.css",
+      "site.js",
+      "recipe-search.js",
+      "mealie-atelier-cards.js",
+      "mealie-atelier-mark.svg",
+      ...brandAssets,
+    ].map((name) => join(siteRoot, "assets", name)),
+  ),
+);
 await writeFile(join(siteRoot, "index.html"), rootIndex());
 const ogImages = await buildOgImages();
 for (const [output, bytes] of ogImages) {
