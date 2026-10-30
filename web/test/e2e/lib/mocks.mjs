@@ -3,7 +3,33 @@
 // It records requests so tests can assert what left the app. No real keys, no real hosts.
 import { createServer } from "node:http";
 
-export async function startMocks() {
+/** Finds the `ingredients` array the app put into a provider request, wherever the provider keeps it. */
+function findIngredients(value) {
+  if (typeof value === "string") {
+    try {
+      return findIngredients(JSON.parse(value));
+    } catch {
+      return null;
+    }
+  }
+  if (Array.isArray(value)) {
+    for (const entry of value) {
+      const found = findIngredients(entry);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (value && typeof value === "object") {
+    if (Array.isArray(value.ingredients)) return value.ingredients;
+    for (const entry of Object.values(value)) {
+      const found = findIngredients(entry);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+export async function startMocks({ host = "127.0.0.1" } = {}) {
   const requests = [];
   const behaviour = { aiStatus: 200 };
   const server = createServer(async (req, res) => {
@@ -42,6 +68,18 @@ export async function startMocks() {
             },
           ],
         });
+      const detail = path.match(/\/food\/(\d+)$/);
+      if (detail)
+        return json(200, {
+          fdcId: Number(detail[1]),
+          description: `Mock food ${detail[1]}`,
+          foodNutrients: [
+            { nutrientId: 1008, value: 120 },
+            { nutrientId: 1003, value: 4 },
+            { nutrientId: 1004, value: 2 },
+            { nutrientId: 1005, value: 20 },
+          ],
+        });
       return json(404, {});
     }
     if (path.startsWith("/openai/") || path.startsWith("/anthropic/")) {
@@ -67,7 +105,17 @@ export async function startMocks() {
           ],
           summary: "Mock summary",
         };
-      else
+      else if (required.includes("suggestions")) {
+        // One search term per ingredient the app sent, in order.
+        const ingredients = findIngredients(body) || [];
+        answer = {
+          suggestions: ingredients.map((text, index) => ({
+            index,
+            query: `mock ${String(text).split(" ").pop()}`,
+            note: "Mock note",
+          })),
+        };
+      } else
         answer = Object.fromEntries(
           required.map((key) => [key, schema.properties[key]?.type === "array" ? [] : "mock"]),
         );
@@ -81,10 +129,13 @@ export async function startMocks() {
     }
     json(404, { error: "mock: unknown route" });
   });
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  const origin = `http://127.0.0.1:${server.address().port}`;
+  await new Promise((resolve) => server.listen(0, host, resolve));
+  const port = server.address().port;
+  const origin = `http://127.0.0.1:${port}`;
   return {
     origin,
+    // How a container reaches the mock on the host (the Docker route binds the mock to all interfaces).
+    containerOrigin: `http://host.docker.internal:${port}`,
     requests,
     behaviour,
     since: (mark) => requests.slice(mark),

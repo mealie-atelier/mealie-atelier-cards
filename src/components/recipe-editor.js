@@ -1090,8 +1090,26 @@ export const recipeEditorMethods = {
       if (error?.code === "recipe_changed") await this._editorReloadFresh();
     }
   },
+  /**
+   * Mealie gives every step a new id each time the steps are written, so after a photo change the
+   * step rows of the open editor are pointed at the new ids (matched by their old id), or the photo
+   * controls of that step would find nothing and stay empty.
+   */
+  _editorFollowStepIds(before) {
+    const after = asArray(this._detail?.recipeInstructions);
+    for (const row of this.shadowRoot.querySelectorAll("[data-editor-step]")) {
+      const index = before.indexOf(row.dataset.stepId);
+      const next = index < 0 ? "" : after[index]?.id;
+      if (!next || next === row.dataset.stepId) continue;
+      row.dataset.stepId = next;
+      const box = row.querySelector("[data-ed-step-photos]");
+      if (box) box.dataset.edStepPhotos = next;
+    }
+  },
   _editorAfterPhoto(result, state) {
+    const before = asArray(this._detail?.recipeInstructions).map((step) => step?.id);
     if (result?.recipe) this._detail = result.recipe;
+    this._editorFollowStepIds(before);
     this._data.recipes = null;
     state.upload = null;
     state.photoConfirm = false;

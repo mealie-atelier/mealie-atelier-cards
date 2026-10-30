@@ -17,6 +17,7 @@ import { join } from "node:path";
 import { E2E_DIR, ACCOUNTS } from "./lib/config.mjs";
 import { startApp, usersEnv, newDataDir } from "./lib/app.mjs";
 import { createToken, seed, waitForMealie } from "./seed.mjs";
+import { removeContainers } from "./lib/container.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name) => args.find((a) => a.startsWith(`--${name}=`))?.split("=")[1];
@@ -29,8 +30,15 @@ const keep = args.includes("--keep");
 const MEALIE_PORT = process.env.E2E_MEALIE_PORT || "29925";
 const DOCKER_PORT = process.env.E2E_DOCKER_PORT || "23008";
 const MEALIE_URL = `http://127.0.0.1:${MEALIE_PORT}`;
+// The Mealie base file, the shipped web/compose.yaml and the small override. Order matters: relative
+// paths resolve against the first file, which is why the override names the build context itself.
+const composeFiles = [
+  join(E2E_DIR, "compose.yaml"),
+  join(E2E_DIR, "..", "..", "compose.yaml"),
+  join(E2E_DIR, "app.override.yaml"),
+].flatMap((file) => ["-f", file]);
 const compose = (...rest) =>
-  spawnSync("docker", ["compose", "-f", join(E2E_DIR, "compose.yaml"), ...rest], {
+  spawnSync("docker", ["compose", ...composeFiles, ...rest], {
     cwd: E2E_DIR,
     stdio: "inherit",
     env: { ...process.env, E2E_MEALIE_PORT: MEALIE_PORT, ATELIER_HOST_PORT: DOCKER_PORT },
@@ -91,6 +99,7 @@ function runSpecs(route, baseUrl, token) {
         env: {
           ...process.env,
           E2E_ROUTE: route,
+          E2E_WORK_DIR: work,
           E2E_BASE_URL: baseUrl,
           E2E_MEALIE_URL: MEALIE_URL,
           E2E_MEALIE_TOKEN: token,
@@ -102,7 +111,7 @@ function runSpecs(route, baseUrl, token) {
   });
 }
 
-async function waitHealthy(url, tries = 60) {
+async function waitHealthy(url, tries = 90) {
   for (let i = 0; i < tries; i += 1) {
     try {
       if ((await fetch(`${url}/healthz`)).status === 200) return;
@@ -114,8 +123,9 @@ async function waitHealthy(url, tries = 60) {
 
 const cleanup = async () => {
   await primary?.stop().catch(() => {});
-  compose("--profile", "app", "rm", "-sf", "atelier");
-  if (!keep) compose("--profile", "app", "down", "-v", "--remove-orphans");
+  removeContainers();
+  compose("rm", "-sf", "mealie-atelier");
+  if (!keep) compose("down", "-v", "--remove-orphans");
   rmSync(work, { recursive: true, force: true });
 };
 for (const signal of ["SIGINT", "SIGTERM"])
@@ -153,7 +163,7 @@ try {
       writeFileSync(envFile, envText("http://mealie:9000"), { mode: 0o600 });
       process.env.E2E_ENV_FILE = envFile;
       console.log("Building and starting the Docker image from web/Dockerfile ...");
-      const up = compose("--profile", "app", "up", "-d", "--build", "atelier");
+      const up = compose("up", "-d", "--build", "mealie-atelier");
       if (up.status !== 0) throw new Error("docker compose up (app) failed");
       const url = `http://127.0.0.1:${DOCKER_PORT}`;
       await waitHealthy(url);

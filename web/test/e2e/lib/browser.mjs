@@ -22,11 +22,56 @@ export function openContext(
   });
 }
 
-/** Opens the app and waits until the card has rendered its navigation. */
+/**
+ * The defined "ready" state of the card: two animation frames (so a click has been handled and its
+ * request started), no bridge or image request in flight, and two more frames (so the response has
+ * been rendered). The card replaces its whole subtree on every render, so a test must only type into
+ * a form or click a control once the page is settled; filling earlier loses the value to a re-render.
+ */
+export async function settle(page) {
+  const frames = () =>
+    page.evaluate(
+      () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+    );
+  await frames();
+  await page.waitForFunction(() => window.__atelierInflight === 0, null, { timeout: 20000 });
+  await frames();
+}
+
+/**
+ * Types into a search field whose query the card sends after a debounce, and waits for the answer to
+ * that exact query. Without this, the late response re-renders the card and wipes whatever a test
+ * typed into a dialog it opened in the meantime.
+ */
+export async function searchFor(page, locator, text) {
+  const answered = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/bridge") &&
+      (response.request().postData() || "").includes(`"${text}"`),
+  );
+  await locator.fill(text);
+  await answered;
+  await settle(page);
+}
+
+/** Opens the app and waits until the card has rendered its navigation and loaded its data. */
 export async function openApp(context, url, { clock = false } = {}) {
   const page = await context.newPage();
   // A faked clock lets a test fast-forward kitchen timers instead of waiting minutes.
   if (clock) await page.clock.install();
+  // Counts requests to the app's own API in flight, which is what settle() waits on.
+  await page.addInitScript(() => {
+    window.__atelierInflight = 0;
+    const realFetch = window.fetch.bind(window);
+    window.fetch = (...args) => {
+      const target = String(args[0]?.url || args[0]);
+      if (!/\/api\//.test(target)) return realFetch(...args);
+      window.__atelierInflight += 1;
+      return realFetch(...args).finally(() => {
+        window.__atelierInflight -= 1;
+      });
+    };
+  });
   const problems = [];
   page.on("pageerror", (error) => problems.push(`pageerror: ${error.message}`));
   page.on("console", (message) => {
@@ -38,31 +83,41 @@ export async function openApp(context, url, { clock = false } = {}) {
   // The shell calls setConfig after the first paint, which resets the view; the seeded recipe tiles
   // appear only once the app has booted and loaded its data.
   await page.locator(".recipe-tile").first().waitFor({ timeout: 20000 });
+  await settle(page);
   return page;
 }
 
 export const nav = (page, label) => page.locator('[data-action="nav"]', { hasText: label }).first();
 
-/** Switches the view and waits until its nav button is the active one (a re-render can eat a click). */
+/** Switches the view: one click, then waits until its nav button is active and the page is settled. */
 export async function gotoView(page, label) {
-  const button = nav(page, label);
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    await button.click();
-    try {
-      await page.waitForFunction(
-        (text) =>
-          [
-            ...document
-              .querySelector("mealie-atelier-card")
-              .shadowRoot.querySelectorAll('[data-action="nav"].active'),
-          ].some((el) => el.textContent.trim() === text),
-        label,
-        { timeout: 2500 },
-      );
-      return;
-    } catch {}
-  }
-  throw new Error(`could not switch to the view "${label}"`);
+  await nav(page, label).click();
+  await page.waitForFunction(
+    (text) =>
+      [
+        ...document
+          .querySelector("mealie-atelier-card")
+          .shadowRoot.querySelectorAll('[data-action="nav"].active'),
+      ].some((el) => el.textContent.trim() === text),
+    label,
+    { timeout: 10000 },
+  );
+  await settle(page);
+}
+
+/** Opens the editor of the named recipe (German UI, administrator) and waits until it is ready. */
+export async function openRecipeEditor(context, url, name) {
+  const page = await openApp(context, url);
+  await gotoView(page, "Rezepte");
+  await page.locator("h1", { hasText: "Deine Rezeptsammlung" }).waitFor();
+  await searchFor(page, page.locator('input[type="search"]'), name);
+  await page.locator(".recipe-tile", { hasText: name }).first().click();
+  await settle(page);
+  await page.locator('[data-action="edit-form"]').click();
+  await page.locator("h2", { hasText: "Rezept bearbeiten" }).waitFor();
+  // The editor re-renders once the full recipe has loaded; only then does typing stick.
+  await settle(page);
+  return page;
 }
 
 export { basicHeader };

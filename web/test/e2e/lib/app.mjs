@@ -1,7 +1,7 @@
 // Starts extra copies of the web app (plain Node route) with their own environment, so each env
 // option can be switched on in isolation without touching the primary app under test.
 import { spawn } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import net from "node:net";
@@ -28,7 +28,17 @@ export async function usersEnv() {
   return rows.join(";");
 }
 
-export const newDataDir = () => mkdtempSync(join(tmpdir(), "atelier-e2e-data-"));
+// Data directories live inside the runner's work directory (E2E_WORK_DIR, removed at teardown). When a
+// spec file runs on its own, they sit in the system temp directory and are removed when it exits.
+const dataDirs = [];
+process.on("exit", () => {
+  for (const dir of dataDirs) rmSync(dir, { recursive: true, force: true });
+});
+export function newDataDir() {
+  const dir = mkdtempSync(join(process.env.E2E_WORK_DIR || tmpdir(), "atelier-e2e-data-"));
+  dataDirs.push(dir);
+  return dir;
+}
 
 function baseEnv(dataDir) {
   return {

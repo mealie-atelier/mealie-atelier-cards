@@ -3,7 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { baseUrl, VIEWPORTS } from "../lib/config.mjs";
 import { browserSuite } from "../lib/suite.mjs";
-import { openContext, openApp } from "../lib/browser.mjs";
+import { openContext, openApp, settle } from "../lib/browser.mjs";
 
 const state = browserSuite();
 
@@ -110,7 +110,7 @@ test("the shopping sync button explains that sync needs Home Assistant", async (
   }
 });
 
-test("the language and theme follow the browser, and the design studio opens", async () => {
+test("the language and theme follow the browser, and the design studio changes and remembers them", async () => {
   const context = await openContext(state.browser, { locale: "en-US", colorScheme: "light" });
   try {
     const page = await openApp(context, baseUrl);
@@ -118,7 +118,22 @@ test("the language and theme follow the browser, and the design studio opens", a
     // The shell follows the card's resolved language, which settles right after the first render.
     await page.waitForFunction(() => document.title === "Mealie Atelier · Your kitchen studio");
     await page.locator('[data-action="settings"]').first().click();
-    await page.locator(".modal").first().waitFor();
+    const modal = page.locator(".modal").first();
+    await modal.waitFor();
+    assert.match(await modal.innerText(), /Design Studio[\s\S]*Appearance[\s\S]*Accent color/);
+    await settle(page);
+    await modal.locator('[data-action="design"][data-value="dark"]').click();
+    await page.waitForFunction(() => document.documentElement.dataset.theme === "dark");
+    await modal.locator("select[data-input=language]").selectOption("de");
+    await page.waitForFunction(() => document.title === "Mealie Atelier · Dein Küchenstudio");
+    // The choice is stored on this device and survives a reload.
+    await page.reload();
+    await page.locator(".recipe-tile").first().waitFor();
+    assert.equal(await page.locator("html").getAttribute("data-theme"), "dark");
+    assert.equal(await page.locator("html").getAttribute("lang"), "de");
+    await page.locator('[data-action="settings"]').first().click();
+    await page.locator('[data-action="reset-design"]').click();
+    await page.waitForFunction(() => document.documentElement.dataset.theme === "light");
   } finally {
     await context.close();
   }

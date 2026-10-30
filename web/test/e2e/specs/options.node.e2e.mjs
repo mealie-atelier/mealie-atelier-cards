@@ -6,15 +6,33 @@ import { createECDH, randomBytes, randomUUID } from "node:crypto";
 import { startApp, usersEnv, newDataDir } from "../lib/app.mjs";
 import { startMocks } from "../lib/mocks.mjs";
 import { ACCOUNTS, basicHeader } from "../lib/config.mjs";
-import { command, mutate, openContext, openApp, gotoView, launch } from "../lib/browser.mjs";
-import { eventually, shoppingItems, recipeList } from "../lib/mealie.mjs";
+import {
+  command,
+  mutate,
+  openContext,
+  openApp,
+  gotoView,
+  launch,
+  openRecipeEditor,
+  settle,
+} from "../lib/browser.mjs";
+import {
+  eventually,
+  shoppingItems,
+  recipeList,
+  recipeBySlug,
+  makeRecipe,
+  removeRecipes,
+} from "../lib/mealie.mjs";
 
 let mocks;
 const running = [];
 before(async () => {
   mocks = await startMocks();
 });
+const madeRecipes = [];
 after(async () => {
+  await removeRecipes(madeRecipes);
   for (const app of running) await app.stop();
   await mocks.stop();
 });
@@ -59,13 +77,15 @@ for (const value of ["true", "1", "yes", "TRUE"]) {
         note: "never",
       });
       assert.equal(add.status, 403, key);
-      assert.match(JSON.stringify(add.body), /read_only|Read-only/i, key);
+      assert.equal(add.body.code, "read_only", key);
       const alarm = await command(a.url, ACCOUNTS[key], "alarm_create", { timer: timer() });
       assert.equal(alarm.status, 403, key);
+      assert.equal(alarm.body.code, "read_only", key);
       const push = await command(a.url, ACCOUNTS[key], "push_register", {
         subscription: subscription(),
       });
       assert.equal(push.status, 403, key);
+      assert.equal(push.body.code, "read_only", key);
     }
     assert.ok(!(await shoppingItems()).some((item) => item.note === "never"));
     // Reading keeps working.
@@ -307,16 +327,59 @@ test("Home Assistant notify delivers an expiring timer to the notify service", a
   assert.match(JSON.stringify(call.body), /Pasta Mock/);
 });
 
-test("a cancelled timer is never delivered", async () => {
+test("a cancelled timer is never delivered while a later timer is", async () => {
   const a = await app({ ...haEnv, ATELIER_HA_URL: mocks.origin, ATELIER_ALARM_CHANNEL: "ha" });
   const mark = mocks.requests.length;
-  const t = timer(2, "Cancelled Mock");
-  assert.equal((await command(a.url, shared, "alarm_create", { timer: t })).status, 200);
-  assert.equal((await command(a.url, shared, "alarm_cancel", { timer_id: t.id })).status, 200);
-  await new Promise((resolve) => setTimeout(resolve, 3500));
-  assert.ok(
-    !mockedSince(mark).some((r) => JSON.stringify(r.body || "").includes("Cancelled Mock")),
+  const cancelled = timer(2, "Cancelled Mock");
+  assert.equal((await command(a.url, shared, "alarm_create", { timer: cancelled })).status, 200);
+  assert.equal(
+    (await command(a.url, shared, "alarm_cancel", { timer_id: cancelled.id })).status,
+    200,
   );
+  // A sentinel that expires after the cancelled one proves the scheduler ran past its deadline.
+  const sentinel = timer(4, "Sentinel Mock");
+  assert.equal((await command(a.url, shared, "alarm_create", { timer: sentinel })).status, 200);
+  const delivered = () =>
+    mockedSince(mark)
+      .filter((r) => r.path === "/api/services/notify/mobile_app_phone")
+      .map((r) => JSON.stringify(r.body));
+  await eventually(() => delivered().some((body) => body.includes("Sentinel Mock")), {
+    timeout: 20000,
+    label: "sentinel notification",
+  });
+  assert.ok(!delivered().some((body) => body.includes("Cancelled Mock")));
+});
+
+test("ATELIER_ALARM_CHANNEL=both with Home Assistant and Web Push active delivers to both", async () => {
+  const key = createECDH("prime256v1");
+  key.generateKeys();
+  const a = await app({
+    ...haEnv,
+    ATELIER_HA_URL: mocks.origin,
+    ATELIER_ALARM_CHANNEL: "both",
+    ATELIER_VAPID_PUBLIC_KEY: key.getPublicKey().toString("base64url"),
+    ATELIER_VAPID_PRIVATE_KEY: key.getPrivateKey().toString("base64url"),
+    ATELIER_VAPID_SUBJECT: "mailto:kitchen@example.com",
+  });
+  const caps = (await command(a.url, shared, "alarm_capabilities")).body;
+  assert.deepEqual([caps.homeAssistant, caps.webPush, caps.mode], [true, true, "both"]);
+  assert.equal(
+    (await command(a.url, shared, "push_register", { subscription: subscription() })).status,
+    200,
+  );
+  const mark = mocks.requests.length;
+  assert.equal(
+    (await command(a.url, shared, "alarm_create", { timer: timer(2, "Both Mock") })).status,
+    200,
+  );
+  await eventually(
+    () =>
+      mockedSince(mark).some((r) => r.path === "/api/services/notify/mobile_app_phone") &&
+      mockedSince(mark).some((r) => r.path.startsWith("/push/")),
+    { timeout: 20000, label: "delivery on both channels" },
+  );
+  const ha = mockedSince(mark).find((r) => r.path === "/api/services/notify/mobile_app_phone");
+  assert.match(JSON.stringify(ha.body), /Both Mock/);
 });
 
 test("ATELIER_ALARM_CHANNEL=push ignores Home Assistant even when it is configured", async () => {
@@ -397,4 +460,130 @@ test("read-only mode hides the shopping and editing controls in the browser", as
   } finally {
     await browser.close();
   }
+});
+
+test("ATELIER_STRUCTURED_EDITS=true: ingredients are edited in the editor, backed up and restorable", async () => {
+  const a = await app({ ATELIER_USERS: await usersEnv(), ATELIER_STRUCTURED_EDITS: "true" });
+  const { name, slug, id } = await makeRecipe("Struktur-Rezept", madeRecipes);
+  const browser = await launch();
+  try {
+    const context = await openContext(browser);
+    const page = await openRecipeEditor(context, a.url, name);
+    const quantity = page.locator('[data-ed-input="quantity"][data-ed-row="0"]');
+    await quantity.waitFor();
+    await settle(page);
+    await quantity.fill("3");
+    await page.locator('[data-ed-input="note"][data-ed-row="0"]').fill("grob");
+    await page.locator('[data-action="ed-review"]').click();
+    await page.locator('[data-action="ed-save"]').click();
+    const saved = await eventually(
+      async () => {
+        const recipe = await recipeBySlug(slug);
+        return recipe.recipeIngredient[0].quantity === 3 ? recipe : null;
+      },
+      { label: "ingredient quantity in Mealie" },
+    );
+    assert.equal(saved.recipeIngredient[0].note, "grob");
+    const listed = (await command(a.url, ACCOUNTS.admin, "recipe_backups", { slug })).body.backups;
+    const backup = listed.find((b) => b.kind === "ingredients");
+    assert.ok(backup, "the change was backed up first");
+    assert.deepEqual(page.problems, []);
+    await context.close();
+
+    const preview = (await command(a.url, ACCOUNTS.admin, "ingredients_get", { slug })).body;
+    const writer = await command(a.url, ACCOUNTS.writer, "ingredients_save", {
+      slug,
+      expected_hash: preview.expected_hash,
+      rows: [{ reference_id: null, quantity: 1, unit_id: null, food_id: null, note: "x" }],
+    });
+    assert.equal(writer.status, 403, "only administrators edit ingredients");
+    assert.equal(writer.body.code, "unauthorized");
+    const stale = await command(a.url, ACCOUNTS.admin, "ingredients_save", {
+      slug,
+      expected_hash: "0".repeat(64),
+      rows: preview.rows.map((r) => ({
+        reference_id: r.reference_id,
+        quantity: 9,
+        unit_id: null,
+        food_id: null,
+        note: "x",
+      })),
+    });
+    assert.equal(stale.status, 409);
+    assert.equal(stale.body.code, "recipe_changed");
+    const restored = await command(a.url, ACCOUNTS.admin, "recipe_restore", {
+      slug,
+      backup_id: backup.backup_id,
+    });
+    assert.equal(restored.status, 200, JSON.stringify(restored.body));
+    const back = await recipeBySlug(slug);
+    assert.notEqual(back.recipeIngredient[0].quantity, 3, "the old ingredient is back");
+    assert.ok(id);
+  } finally {
+    await browser.close();
+  }
+});
+
+test("Nutrition Lab: prepare, AI term suggestions, calculation and save with the replacement consent", async () => {
+  const a = await app({
+    ATELIER_USERS: await usersEnv(),
+    USDA_FDC_API_KEY: "usda-mock-key-2",
+    OPENAI_API_KEY: "sk-mock-openai-5",
+  });
+  const { slug } = await makeRecipe("Nährwert-Rezept", madeRecipes);
+  const prepared = (await command(a.url, ACCOUNTS.reader, "nutrition_prepare", { slug })).body;
+  assert.equal(prepared.fdc_enabled, true);
+  assert.equal(prepared.ai_enabled, true);
+  assert.equal(prepared.ingredients.length, 1);
+  assert.match(prepared.hash, /^[0-9a-f]{64}$/);
+
+  const mark = mocks.requests.length;
+  const stale = await command(a.url, ACCOUNTS.reader, "nutrition_ai", {
+    slug,
+    expected_hash: "0".repeat(64),
+  });
+  assert.equal(stale.status, 400, "AI never runs on a changed recipe");
+  assert.equal(mockedSince(mark).filter((r) => r.path.startsWith("/openai/")).length, 0);
+  const suggested = await command(a.url, ACCOUNTS.reader, "nutrition_ai", {
+    slug,
+    expected_hash: prepared.hash,
+  });
+  assert.equal(suggested.status, 200, JSON.stringify(suggested.body));
+  assert.match(JSON.stringify(suggested.body), /Mock note/);
+
+  const found = (await command(a.url, ACCOUNTS.reader, "nutrition_search", { query: "salt" })).body;
+  const fdcId = found[0].id;
+  const entries = [{ index: 0, grams: 100, fdc_id: fdcId }];
+  const report = await command(a.url, ACCOUNTS.reader, "nutrition_calculate", {
+    slug,
+    entries,
+    expected_hash: prepared.hash,
+  });
+  assert.equal(report.status, 200, JSON.stringify(report.body));
+  assert.equal(report.body.per_portion.calories, 60, "120 kcal per 100 g, 100 g, 2 servings");
+  const changed = await command(a.url, ACCOUNTS.reader, "nutrition_calculate", {
+    slug,
+    entries,
+    expected_hash: "0".repeat(64),
+  });
+  assert.equal(changed.body.code, "recipe_changed");
+
+  const save = (who, extra = {}) =>
+    command(a.url, ACCOUNTS[who], "nutrition_save", {
+      slug,
+      entries,
+      expected_hash: prepared.hash,
+      ...extra,
+    });
+  assert.equal((await save("writer")).status, 403);
+  const first = await save("admin");
+  assert.equal(first.status, 200, JSON.stringify(first.body));
+  const stored = await recipeBySlug(slug);
+  assert.equal(stored.nutrition.calories, "60.0 kcal");
+  assert.equal(stored.settings.showNutrition, true);
+  const protectedValues = await save("admin");
+  assert.equal(protectedValues.status, 400);
+  assert.equal(protectedValues.body.code, "existing_values_protected");
+  const replaced = await save("admin", { overwrite_existing: true });
+  assert.equal(replaced.status, 200, JSON.stringify(replaced.body));
 });

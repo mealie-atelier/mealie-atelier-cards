@@ -3,7 +3,7 @@ import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { baseUrl, ACCOUNTS } from "../lib/config.mjs";
 import { browserSuite } from "../lib/suite.mjs";
-import { openContext, openApp, gotoView, mutate } from "../lib/browser.mjs";
+import { openContext, openApp, gotoView, mutate, settle, searchFor } from "../lib/browser.mjs";
 import { mealie, mealPlans, recipeList, eventually } from "../lib/mealie.mjs";
 
 const state = browserSuite();
@@ -32,9 +32,10 @@ test("a dish is planned through the picker and shows up in Mealie and in the wee
     const page = await openApp(context, baseUrl);
     await gotoView(page, "Wochenplan");
     await sel(page, "plan-form").first().click();
+    await settle(page);
     await page.locator('.modal input[name="date"]').fill(date);
     await page.locator('.modal select[name="meal_type"]').selectOption("lunch");
-    await page.locator(".combobox-input").fill("Nudeln");
+    await searchFor(page, page.locator(".combobox-input"), "Nudeln");
     await sel(page, "picker-pick").first().click();
     await page.locator('[data-picker="submit"]').click();
     const entry = await eventually(
@@ -63,17 +64,18 @@ test("the week view moves forward and back and a planned dish opens", async () =
     const soup = page.locator(".day-meal", { hasText: "Tomatensuppe" });
     for (let weeks = 0; weeks < 3 && !(await soup.count()); weeks += 1) {
       await sel(page, "week-next").click();
-      await page.waitForTimeout(700);
+      await settle(page);
     }
     await soup.first().waitFor();
     await sel(page, "week-today").click();
+    await settle(page);
     await page.locator(".day-meal", { hasText: "Zitronen-Nudeln" }).first().waitFor();
     await sel(page, "week-prev").click();
-    await page.waitForTimeout(700);
+    await settle(page);
     await sel(page, "week-today").click();
     await page.locator(".day-meal", { hasText: "Zitronen-Nudeln" }).first().waitFor();
     // The day dialog of a planned dish opens and closes again.
-    await page.waitForTimeout(700);
+    await settle(page);
     await page.locator(".day-meal", { hasText: "Zitronen-Nudeln" }).first().click();
     await page.locator(".modal").first().waitFor();
     await sel(page, "close-modal").first().click();
@@ -130,9 +132,10 @@ test("a planned dish is removed through the plan dialog and disappears from Meal
     const add = page.locator(`[data-action="plan-form"][data-value="${date}"]`);
     for (let weeks = 0; weeks < 3 && !(await add.count()); weeks += 1) {
       await sel(page, "week-next").click();
-      await page.waitForTimeout(700);
+      await settle(page);
     }
     await add.first().click();
+    await settle(page);
     await sel(page, "remove-meal").first().click();
     await eventually(async () => !(await mealPlans()).some((p) => p.id === entry.id), {
       label: "plan entry removed in Mealie",

@@ -3,8 +3,7 @@ import { test, before, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { baseUrl, ACCOUNTS } from "../lib/config.mjs";
 import { browserSuite } from "../lib/suite.mjs";
-import { openContext, openApp, gotoView, endCookingSession } from "../lib/browser.mjs";
-import { eventually } from "../lib/mealie.mjs";
+import { openContext, openApp, gotoView, endCookingSession, settle } from "../lib/browser.mjs";
 
 const state = browserSuite();
 // Starting to cook opens a household-wide session; later tests must not meet a replace dialog.
@@ -21,7 +20,11 @@ async function startCooking(page, recipe, viewLabel, tileHeading) {
   await gotoView(page, viewLabel);
   await page.locator("h1", { hasText: tileHeading }).waitFor();
   await page.locator(".recipe-tile", { hasText: recipe }).click();
+  await settle(page);
   await sel(page, "cook-start").click();
+  // Cooking opens the household session through the bridge; the dialog re-renders when it answers.
+  await page.locator(".modal").waitFor();
+  await settle(page);
 }
 
 test("cooking mode walks through every step, back and forth, and finishes", async () => {
@@ -90,18 +93,10 @@ test("a custom timer with its own minutes and label is created", async () => {
   try {
     const page = await openApp(context, baseUrl);
     await startCooking(page, "Haferflocken-Bowl", "Rezepte", "Deine Rezeptsammlung");
-    // The modal re-renders while the session loads, so fill again until the values stick.
-    await eventually(
-      async () => {
-        await page.locator('.modal input[type="number"]').fill("7");
-        await page.locator('.modal input[type="text"]').fill("Brei rühren");
-        return (
-          (await page.locator('.modal input[type="number"]').inputValue()) === "7" &&
-          (await page.locator('.modal input[type="text"]').inputValue()) === "Brei rühren"
-        );
-      },
-      { label: "timer form filled" },
-    );
+    await page.locator('.modal input[type="number"]').fill("7");
+    await page.locator('.modal input[type="text"]').fill("Brei rühren");
+    assert.equal(await page.locator('.modal input[type="number"]').inputValue(), "7");
+    assert.equal(await page.locator('.modal input[type="text"]').inputValue(), "Brei rühren");
     await sel(page, "timer-start").click();
     await page.getByText("Brei rühren").first().waitFor();
     await page.getByText("07:00").or(page.getByText("06:59")).first().waitFor();

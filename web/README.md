@@ -126,7 +126,11 @@ npm run test:e2e -- --strict          # exit 1 instead of skipping when Docker i
 npm run test:e2e -- --keep            # leave the disposable Mealie running (debugging)
 ```
 
-Mealie listens on port 29925 and the container on 23008 (override with `E2E_MEALIE_PORT` and `E2E_DOCKER_PORT`), so it does not collide with other local stacks. The suite tears everything down when it ends. The first run installs Playwright into `test/e2e/node_modules`. Without Docker it prints a skip message and exits 0. The AI, USDA, Web Push and Home Assistant paths run against a local mock, so no real key or network service is involved. The suite is not part of GitHub Actions or the pre-commit hook.
+Mealie listens on port 29925 and the container on 23008 (override with `E2E_MEALIE_PORT` and `E2E_DOCKER_PORT`), so it does not collide with other local stacks. The suite tears everything down when it ends, including the extra containers and temporary data directories it started. The first run installs Playwright into `test/e2e/node_modules`. Without Docker it prints a skip message and exits 0. The AI, USDA, Web Push and Home Assistant paths run against a local mock, so no real key or network service is involved. The suite is not part of GitHub Actions or the pre-commit hook.
+
+How the Docker route works: the app container is started from the shipped `web/compose.yaml`, layered on a Mealie file and a small `test/e2e/app.override.yaml` that only changes the build context, the env file and the published port. The suite then checks that this container really carries the hardening, limits and health check of the shipped file. The configured paths, env options, startup refusals and the `ATELIER_DATA_DIR` volume of the image are exercised with extra containers of the same image (`specs/options.docker.e2e.mjs`). The plain Node route runs the same shared specs plus the Node-only ones (`*.node.e2e.mjs`).
+
+The tests wait for defined states, never for fixed times. The card replaces its whole subtree on every render, so a test settles the page (no bridge request in flight, two animation frames) before it types into a dialog, and waits for the answer to a debounced search before it opens a result.
 
 ## Notes
 

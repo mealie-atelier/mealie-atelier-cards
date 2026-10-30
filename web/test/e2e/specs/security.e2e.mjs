@@ -33,26 +33,23 @@ test("the CSP blocks inline script injection and the app still runs under it", a
   const context = await openContext(state.browser, { who: "shared" });
   try {
     const page = await openApp(context, baseUrl);
-    const violations = [];
-    await page.exposeFunction("reportViolation", (text) => violations.push(text));
-    await page.evaluate(() => {
-      document.addEventListener("securitypolicyviolation", (e) =>
-        window.reportViolation(e.violatedDirective),
-      );
-    });
-    const injected = await page.evaluate(() => {
-      window.__injected = false;
-      const script = document.createElement("script");
-      script.textContent = "window.__injected = true";
-      document.body.append(script);
-      return window.__injected;
-    });
-    assert.equal(injected, false);
-    await page.waitForTimeout(200);
-    assert.ok(
-      violations.some((v) => v.startsWith("script-src")),
-      `violations: ${violations}`,
+    // The browser reports a blocked script through an event; wait for that event, not for time.
+    const outcome = await page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          document.addEventListener(
+            "securitypolicyviolation",
+            (e) => resolve({ directive: e.violatedDirective, injected: window.__injected }),
+            { once: true },
+          );
+          window.__injected = false;
+          const script = document.createElement("script");
+          script.textContent = "window.__injected = true";
+          document.body.append(script);
+        }),
     );
+    assert.equal(outcome.injected, false, "the injected script never ran");
+    assert.match(outcome.directive, /^script-src/);
     const external = await page.evaluate(async () => {
       try {
         await fetch("https://example.invalid/", { mode: "no-cors" });

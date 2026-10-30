@@ -47,3 +47,32 @@ export async function eventually(check, { timeout = 10000, label = "condition" }
     await new Promise((done) => setTimeout(done, 250));
   }
 }
+
+/** A throwaway recipe made directly in Mealie, so edits never touch the seeded ones. */
+export async function makeRecipe(label, cleanup = []) {
+  const name = uniqueName(label);
+  const slug = await mealie("POST", "/api/recipes", { name });
+  const recipe = await recipeBySlug(slug);
+  cleanup.push(recipe.id);
+  Object.assign(recipe, {
+    description: "Ausgangsbeschreibung",
+    recipeServings: 2,
+    recipeIngredient: [
+      { note: "1 Prise Salz", display: "1 Prise Salz", referenceId: crypto.randomUUID() },
+    ],
+    recipeInstructions: [
+      { id: crypto.randomUUID(), title: "", summary: "", text: "Alles vermengen." },
+    ],
+  });
+  await mealie("PUT", `/api/recipes/${slug}`, recipe);
+  return { name, slug, id: recipe.id };
+}
+
+/** Removes the recipes whose ids were collected by makeRecipe or a test. */
+export async function removeRecipes(ids) {
+  const known = await recipeList();
+  for (const id of ids) {
+    const item = known.find((r) => r.id === id);
+    if (item) await mealie("DELETE", `/api/recipes/${item.slug}`).catch(() => {});
+  }
+}
