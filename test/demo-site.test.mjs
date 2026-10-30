@@ -1265,3 +1265,27 @@ test("the compare hint stays AA readable on the shadowed Oat backdrop in the lig
   const [hi, lo] = [lum(hex), lum(worstBackdrop)].sort((a, b) => b - a);
   assert.ok((hi + 0.05) / (lo + 0.05) >= 4.5);
 });
+
+test("every recipe page sends its own recipe slug to the live demo and the demo reads it", () => {
+  const catalog = JSON.parse(read("demo/data/recipes.json")).recipes;
+  for (const recipe of catalog) {
+    for (const [locale, name] of [
+      ["de", `de/rezepte/${recipe.slug}`],
+      ["en", `en/recipes/${recipe.slugEn}`],
+    ]) {
+      const html = read(join(builds.local, name, "index.html"));
+      const cta = html.slice(html.indexOf('class="wrap recipe-cta"'));
+      assert.match(
+        cta,
+        new RegExp(
+          `class="btn btn-primary" href="[^"]*/${locale}/\\?recipe=${recipe.slug}#live-demo"`,
+        ),
+        `${name} must link to its own recipe in the demo`,
+      );
+    }
+  }
+  const preview = read("demo/preview.html");
+  assert.match(preview, /get\("recipe"\)/);
+  assert.match(preview, /_openRecipe\(wantedSlug\)/);
+  assert.match(preview, /data-action="cook-start"/);
+});

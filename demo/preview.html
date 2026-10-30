@@ -558,6 +558,18 @@
         else if (tries < 120) requestAnimationFrame(() => openToday(tries + 1));
       };
       openToday();
+      // A recipe page links here with ?recipe=<slug>: open that recipe in cooking mode.
+      const wantedSlug = new URLSearchParams(window.location.search).get("recipe");
+      const openWanted = async (tries = 0) => {
+        if (!catalog.recipes.some((item) => item.slug === wantedSlug)) return;
+        if (!card.shadowRoot?.querySelector('[data-action="nav"]')) {
+          if (tries < 120) requestAnimationFrame(() => openWanted(tries + 1));
+          return;
+        }
+        await card._openRecipe(wantedSlug);
+        card.shadowRoot.querySelector('[data-action="cook-start"]')?.click();
+      };
+      if (wantedSlug) openWanted();
     </script>
   </body>
 </html>
