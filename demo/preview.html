@@ -580,10 +580,14 @@
         else if (tries < 120) requestAnimationFrame(() => openToday(tries + 1));
       };
       openToday();
-      // A recipe page links here with ?recipe=<slug>: open that recipe in cooking mode.
-      const wantedSlug = new URLSearchParams(window.location.search).get("recipe");
+      // A recipe page links here with ?recipe=<slug>: open that recipe in cooking mode. The link may
+      // carry the German or the English slug (older shared links use the German one); both resolve
+      // to the canonical German slug that the card opens.
+      const wantedParam = new URLSearchParams(window.location.search).get("recipe");
+      const wantedSlug =
+        catalog.recipes.find((item) => item.slug === wantedParam || item.slugEn === wantedParam)
+          ?.slug ?? null;
       const openWanted = async (tries = 0) => {
-        if (!catalog.recipes.some((item) => item.slug === wantedSlug)) return;
         if (!card.shadowRoot?.querySelector('[data-action="nav"]')) {
           if (tries < 120) requestAnimationFrame(() => openWanted(tries + 1));
           return;

@@ -1596,7 +1596,7 @@ test("every recipe page sends its own recipe slug to the live demo and the demo 
       assert.match(
         cta,
         new RegExp(
-          `class="btn btn-primary" href="[^"]*/${locale}/\\?recipe=${recipe.slug}#live-demo"`,
+          `class="btn btn-primary" href="[^"]*/${locale}/\\?recipe=${locale === "de" ? recipe.slug : recipe.slugEn}#live-demo"`,
         ),
         `${name} must link to its own recipe in the demo`,
       );
@@ -1605,6 +1605,19 @@ test("every recipe page sends its own recipe slug to the live demo and the demo 
   const preview = read("demo/preview.html");
   assert.match(preview, /get\("recipe"\)/);
   assert.match(preview, /_openRecipe\(wantedSlug\)/);
+  // The deep link takes the English slug of an English page and still the German one of old links.
+  assert.match(preview, /item\.slug === wantedParam \|\| item\.slugEn === wantedParam/);
+  const slugs = catalogData.recipes.flatMap((recipe) => [recipe.slug, recipe.slugEn]);
+  const owners = new Map();
+  for (const recipe of catalogData.recipes)
+    for (const slug of [recipe.slug, recipe.slugEn])
+      (assert.equal(owners.get(slug) ?? recipe.id, recipe.id, `${slug} resolves to one recipe`),
+        owners.set(slug, recipe.id));
+  assert.ok(slugs.length > 0);
+  for (const locale of ["de", "en"]) {
+    const data = JSON.parse(read(join(builds.local, "data", `${locale}.json`)));
+    for (const recipe of data.recipes) assert.ok(recipe.slugEn, `${locale} data carries slugEn`);
+  }
   assert.match(preview, /data-action="cook-start"/);
 });
 
@@ -1844,4 +1857,42 @@ test("the English day label reads Forever, not For ever", () => {
   const en = read(join(builds.local, "en", "index.html"));
   assert.match(en, /07 · Forever</);
   assert.doesNotMatch(en, /For ever/);
+});
+
+test("the landing page language switch carries a section map so the other page opens at the same section", () => {
+  for (const [locale, other] of [
+    ["de", "en"],
+    ["en", "de"],
+  ]) {
+    const html = read(join(builds.local, locale, "index.html"));
+    const tags = html.match(
+      new RegExp(`<a [^>]*hreflang="${other}"[^>]*data-section-map="[^"]+"`, "g"),
+    );
+    assert.equal(tags?.length, 3, `${locale} header, menu and footer switch carry the map`);
+    const map = JSON.parse(
+      tags[0].match(/data-section-map="([^"]+)"/)[1].replaceAll("&quot;", '"'),
+    );
+    for (const key of Object.keys(sectionIds[locale])) {
+      assert.equal(map[sectionIds[locale][key]], sectionIds[other][key], `${locale} ${key}`);
+    }
+    assert.doesNotMatch(html, new RegExp(`hreflang="${locale}"[^>]*data-section-map`));
+  }
+  const recipe = read(
+    join(builds.local, "en/recipes", catalogData.recipes[0].slugEn, "index.html"),
+  );
+  assert.doesNotMatch(recipe, /data-section-map/, "recipe pages switch to the matching recipe");
+  const script = read("demo/site.js");
+  assert.match(script, /addEventListener\("hashchange", syncLanguageHash\)/);
+  assert.match(script, /link\.hash = target \? `#\$\{target\}` : ""/);
+});
+
+test("the design system documents the cooking timer order the card renders", () => {
+  const docs = read("docs/DESIGN_SYSTEM.md");
+  assert.doesNotMatch(docs, /Put running timers before timer creation/);
+  assert.match(docs, /start form first and the running timer cards directly below it/);
+  const dialogs = read("src/components/dialogs.js");
+  assert.ok(
+    dialogs.indexOf("cook-timer-compose") < dialogs.indexOf('class="cook-timers"'),
+    "the start form renders before the running timers",
+  );
 });
