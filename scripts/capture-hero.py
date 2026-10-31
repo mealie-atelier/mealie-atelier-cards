@@ -45,13 +45,13 @@ WEBP_QUALITY = 82
 # The tablet carries a dish photo, so its 1600w file would pass the 163 KB budget at 82. 78 keeps it under.
 TABLET_QUALITY = 78
 PHONE_WIDTHS = [400, 700, 1179]
-# 1180 x 900: the dialog is 810 px high. With the running timer of the shot the step column is a little taller than
-# that, so the product (bar pinned to the dialog edge, the column scrolls) would show the Back and Next bar over the
-# footnote at rest. For the shot the bar keeps its place in the flow (see TABLET_BAR_FLOW): the footnote stands above
-# it, and the clip ends under the footnote, a little before the bar. The gate below checks that nothing inside the
-# clip is cut and the footnote clears the bar.
-# This is why the tablet is 2096 x 1546 (aspect 1.356) and not the 1.424 of an iPad Air frame: at 820 high the
-# footnote and the end of the step text would be cut. The CSS stage aspect (100 / 76) follows this picture.
+# 1180 x 900: the dialog is 810 px high and the step column with the running timer of the shot is a little taller than
+# that, so it scrolls and the Back and Next bar is pinned over its lower end at rest (product layout, nothing is
+# restyled for the shot). The shot is taken with the column scrolled to its end, as a cook who has read down to the
+# footnote sees it: the footnote then stands above the bar. The clip ends under the footnote, a little before that
+# bar, and the gate below checks that nothing inside the clip is cut and the footnote clears the bar.
+# The picture is 2096 x 1470 (aspect 1.426, close to the 1.424 of an iPad Air frame). The CSS stage aspect (100 / 71)
+# follows this picture.
 TABLET_VIEWPORT = {"width": 1180, "height": 900}
 FOOT_MARGIN = 5  # CSS px between the footnote and the lower clip edge
 # Viewport heights tried for the phone (CSS px, 393 wide, status bar drawn by the page not counted), the one
@@ -78,18 +78,16 @@ FILL = (
 )
 # Capture only: the dialog is framed by the CSS device, so its own corners and border are removed.
 MODAL_FLAT = ".modal{border-radius:0!important;border:0!important;box-shadow:none!important}"
-# Capture only: the bar keeps its place at the end of the step column (it may leave the dialog edge) instead of
-# pinning itself over the footnote at rest.
-TABLET_BAR_FLOW = ".modal:has(.cook-layout) .cook-actions{bottom:-400px!important}"
 # Capture only: the screen is framed by the CSS device, so the card draws no border line of its own. Its
 # `overflow: hidden` would make the card the scroll container of the sticky tab rail, so the rail would scroll
 # away inside the fixed capture box. Without it the rail sticks to the box, as it sticks to the page on a phone.
 CARD_FLAT = ".atelier{border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}"
-# The phone tab rail fades 12 px at each end (corners.css, the snap position of a tab is that same 12 px), the
-# outer 10 px are practically clear.
-# Nothing of the rail is restyled for the capture: only its scroll position is chosen, see RAIL_JS.
+# The phone tab rail fades 12 px at the start (corners.css, the snap position of a tab is that same 12 px) and at
+# the end from where the last whole tab ends (at least 12 px, --nav-fade). Nothing of the rail is restyled for the
+# capture: only its scroll position is chosen, see RAIL_JS.
 RAIL_FADE = 12
-RAIL_CLEAR = 10
+# The tab the rail has to show whole next to the active one (the renamed family view).
+RAIL_NEED = {"en": "Cook together", "de": "Gemeinsam kochen"}
 
 CUT_JS = """(card, opts) => {
   // opts.sel: element that frames the shot (default the viewport); opts.top / opts.bottom: shot edges inside it.
@@ -158,13 +156,12 @@ ROWS_JS = """(card, gap) => {
   };
 }"""
 
-RAIL_JS = """(card, [fade, clear]) => {
-  // Only the scroll position of the real rail is chosen. A tab is whole when it sits in the opaque part
-  // [fade, width - fade]. Every other tab must keep its icon and label inside a fully clear end (the
-  // outer `clear` px), so no half label shows at either edge. At the right end the product moves the fade
-  // so that it hides the first tab that straddles the end (--nav-cut); the check afterwards reads that
-  // value from the real rail and holds the tabs to it. Among the positions that satisfy this and
-  // keep the active tab whole, the one with the most even gaps left and right is taken.
+RAIL_JS = """(card, [fade, need]) => {
+  // Only the scroll position of the real rail is chosen. The product fades the rail 12 px at the start and, at the
+  // end, from where the last whole tab ends (--nav-fade, at least 12 px), so a tab at the end only ever sits inside
+  // the fade. A tab is whole when its icon and label sit in the opaque part. A position is taken when no tab straddles
+  // the edge of the opaque part, the active tab and the tab named `need` are whole and at least three tabs are whole.
+  // Among those the one with the most even gaps left and right wins.
   const rail = card.shadowRoot.querySelector('.sidebar .nav');
   const base = rail.getBoundingClientRect();
   const W = rail.clientWidth;
@@ -175,15 +172,21 @@ RAIL_JS = """(card, [fade, clear]) => {
   });
   const max = rail.scrollWidth - rail.clientWidth;
   const evaluate = (s) => {
+    const fadeL = s > 1 ? fade : 0;
+    let fadeR = 0;
+    if (s < max - 1) {
+      let last = 0;
+      for (const t of tabs) { const r = t.left + t.width - s; if (r <= W + 0.5 && r > last) last = r; }
+      fadeR = Math.max(fade, Math.ceil(W - last));
+    }
     const whole = [];
     for (const [i, t] of tabs.entries()) {
-      const l = t.left - s, r = l + t.width;
-      if (l >= fade - 0.5 && r <= W - fade + 0.5) { whole.push(i); continue; }
-      const cl = l + t.pad, cr = r - t.pad;
-      // Right of the whole tabs the product fade hides what straddles the end; only the left end is held here.
-      if (cl < W / 2 && cr > clear + 0.5) return null;
+      const cl = t.left - s + t.pad, cr = t.left + t.width - s - t.pad;
+      if (cl >= fadeL - 0.5 && cr <= W - fadeR + 0.5) { whole.push(i); continue; }
+      const straddlesLeft = cl < fadeL - 0.5 && cr > fadeL + 0.5, straddlesRight = cl < W - fadeR - 0.5 && cr > W - fadeR + 0.5;
+      if (straddlesLeft || straddlesRight) return null;
     }
-    if (!whole.length || !whole.some((i) => tabs[i].active)) return null;
+    if (whole.length < 3 || !whole.some((i) => tabs[i].active) || !whole.some((i) => tabs[i].text === need)) return null;
     const first = tabs[whole[0]], last = tabs[whole[whole.length - 1]];
     const gapL = first.left - s, gapR = W - (last.left + last.width - s);
     return { whole: whole.map((i) => tabs[i].text), gapL, gapR, skew: Math.abs(gapL - gapR) };
@@ -208,23 +211,29 @@ RAIL_JS = """(card, [fade, clear]) => {
   return best;
 }"""
 
-RAIL_CHECK_JS = """(card, [fade, clear]) => {
+RAIL_CHECK_JS = """(card, [fade]) => {
+  // Read from the real rail after the product has set its fade: the end fade is --nav-fade wide.
   const rail = card.shadowRoot.querySelector('.sidebar .nav');
   const r = rail.getBoundingClientRect();
+  const max = rail.scrollWidth - rail.clientWidth;
+  const fadeL = rail.scrollLeft > 1 ? fade : 0;
+  const fadeR = rail.scrollLeft < max - 1 ? Math.max(fade, parseFloat(rail.style.getPropertyValue('--nav-fade')) || 0) : 0;
   const tabs = [...rail.children].map((b) => {
     const pad = parseFloat(getComputedStyle(b).paddingLeft);
     const box = b.getBoundingClientRect();
-    return { text: b.textContent.trim(), box, content: { left: box.left + pad, right: box.right - pad }, active: b.classList.contains('active') };
+    return { text: b.textContent.trim(), box, content: { left: box.left + pad - r.left, right: box.right - pad - r.left }, active: b.classList.contains('active') };
   });
-  const whole = (t) => t.box.left >= r.left + fade - 0.5 && t.box.right <= r.right - fade + 0.5;
-  // Cut: content that reaches into the visible part (beyond the clear end) without the tab being whole.
-  // The right end is as clear as the product fade makes it (--nav-cut, the width it hides from the edge).
-  const hidden = Math.max(clear, parseFloat(rail.style.getPropertyValue('--nav-cut')) || 0);
-  const cut = tabs.filter((t) => !whole(t) && t.content.right > r.left + clear + 0.5 && t.content.left < r.right - hidden - 0.5).map((t) => t.text);
+  const whole = (t) => t.content.left >= fadeL - 0.5 && t.content.right <= r.width - fadeR + 0.5;
+  // Cut: content that straddles the edge of the opaque part, so half a label would show at full strength.
+  const edge = (t, x) => t.content.left < x - 0.5 && t.content.right > x + 0.5;
+  const cut = tabs.filter((t) => !whole(t) && (edge(t, fadeL) || edge(t, r.width - fadeR))).map((t) => t.text);
   const shown = tabs.filter(whole);
   const active = tabs.find((t) => t.active);
   return {
     scrollLeft: rail.scrollLeft,
+    fadeRight: fadeR,
+    // The next tab starts inside the end fade: the rail does not look as if it ended.
+    peek: fadeR === 0 || tabs.some((t) => !whole(t) && t.content.left > r.width - fadeR - 0.5 && t.content.left < r.width - 4),
     cut,
     activeWhole: whole(active),
     shown: shown.map((t) => t.text),
@@ -290,7 +299,7 @@ def check_language(loc, text):
 def capture_tablet(browser, loc):
     t = TEXT[loc]
     ctx, page, card = open_page(browser, loc, TABLET_VIEWPORT, 2, False, f"?recipe={RECIPE}#live-demo")
-    card.evaluate("c => { const s = document.createElement('style'); s.textContent = %s; c.shadowRoot.appendChild(s); }" % json.dumps(MODAL_FLAT + TABLET_BAR_FLOW))
+    card.evaluate("c => { const s = document.createElement('style'); s.textContent = %s; c.shadowRoot.appendChild(s); }" % json.dumps(MODAL_FLAT))
     # Pin the page clock (it also follows real time while Playwright works) so the timer runs only
     # on the 32 seconds advanced below.
     page.clock.pause_at(datetime.datetime.fromtimestamp(page.evaluate("Date.now()") / 1000 + 2))
@@ -299,8 +308,8 @@ def capture_tablet(browser, loc):
     card.locator("[data-action='timer-start']").first.click()
     blur_everything(page, card)
     page.clock.run_for(32_000)
-    # Filling the timer fields scrolled the step column towards them: the shot shows it from its top.
-    card.evaluate("c => c.shadowRoot.querySelectorAll('.cook-content, [role=dialog]').forEach((e) => { e.scrollTop = 0; })")
+    # The shot shows the step column scrolled to its end, down to the footnote above the pinned bar.
+    card.evaluate("c => c.shadowRoot.querySelectorAll('.cook-content, [role=dialog]').forEach((e) => { e.scrollTop = e.scrollHeight; })")
     page.clock.run_for(300)
     dial = card.locator(".cook-timer-dial").first.inner_text().strip()
     counter = card.locator("[role=dialog]").first.inner_text()
@@ -385,13 +394,16 @@ def capture_phone(browser, loc):
             break
     assert placed, "no viewport height shows the whole list between the tab rail and the lower edge"
     page.clock.run_for(400)
-    rail_move = card.evaluate(RAIL_JS, [RAIL_FADE, RAIL_CLEAR])
+    rail_move = card.evaluate(RAIL_JS, [RAIL_FADE, RAIL_NEED[loc]])
     assert not rail_move.get("failed"), f"no scroll position keeps the rail clean at both ends: {rail_move}"
     page.clock.run_for(800)
-    rail = card.evaluate(RAIL_CHECK_JS, [RAIL_FADE, RAIL_CLEAR])
+    rail = card.evaluate(RAIL_CHECK_JS, [RAIL_FADE])
     assert not rail["cut"] and rail["activeWhole"], f"tab rail has a cut label: {rail}"
-    assert abs(rail["gapLeft"] - rail["gapRight"]) <= 40, f"tab rail is lopsided: {rail}"
-    stale = [x for x in rail["labels"] if STALE_VIEW_NAMES[loc].search(x)]
+    # The end gap is the fade, in which the start of the next tab shows: it may be wider than the start gap.
+    assert (rail["peek"] or rail["gapRight"] <= 24) and abs(rail["gapLeft"] - rail["gapRight"]) <= 70, f"tab rail is lopsided or looks like it ends: {rail}"
+    assert RAIL_NEED[loc] in rail["shown"], f"{loc} tab rail does not show {RAIL_NEED[loc]!r} whole: {rail}"
+    assert len(rail["shown"]) >= 3, f"{loc} tab rail shows fewer than three whole tabs: {rail}"
+    stale = [x for x in rail["shown"] if STALE_VIEW_NAMES[loc].search(x)]
     assert not stale, f"{loc} tab rail shows stale view names (rebuild the demo with npm run build:demo): {stale}"
     visible = card.evaluate(
         "c => [...c.shadowRoot.querySelectorAll('*')].filter((e) => e.tagName !== 'STYLE' && (e.tagName === 'SELECT' || [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) && e.getBoundingClientRect().top >= 0 && e.getBoundingClientRect().bottom <= innerHeight).map((e) => e.tagName === 'SELECT' ? e.selectedOptions[0].textContent.trim() : e.textContent.trim()).join(' | ')"
@@ -426,7 +438,7 @@ def capture_phone(browser, loc):
         "tickedShown": rows["tickedShown"],
         "allRowsShown": rows["allShown"],
         "tickedNames": rows["tickedNames"],
-        "rail": {k: rail[k] for k in ("cut", "activeWhole", "shown", "labels", "gapLeft", "gapRight")},
+        "rail": {k: rail[k] for k in ("cut", "activeWhole", "shown", "labels", "fadeRight", "peek", "gapLeft", "gapRight")},
         "cut": cut,
         "statusColour": "#%02x%02x%02x" % top[0],
     }

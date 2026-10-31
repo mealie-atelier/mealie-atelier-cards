@@ -983,7 +983,13 @@ test("hero captures: what the run measured is what was published", () => {
     assert.deepEqual(phone.cut, [], `${locale} phone has no cut text`);
     assert.deepEqual(phone.rail.cut, [], `${locale} tab rail has no cut tab`);
     assert.ok(phone.rail.activeWhole, `${locale} active tab is whole`);
-    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 40, `${locale} rail is even`);
+    // The end gap is the fade, in which the start of the next tab shows: it may be wider than the start gap.
+    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 70, `${locale} rail is even`);
+    assert.ok(
+      phone.rail.peek || phone.rail.gapRight <= 24,
+      `${locale} rail does not look as if it ended`,
+    );
+    assert.ok(phone.rail.shown.length >= 3, `${locale} rail shows at least three whole tabs`);
     assert.equal(phone.statusColour, statusBg, `${locale} status bar joins the capture`);
     assert.match(
       phone.tickedNames.join(" "),
@@ -1040,7 +1046,9 @@ test("hero captures: no stale view name in the measured tab rail labels", () => 
       `${locale} tab rail shows a stale view name`,
     );
   }
-  assert.ok(report.de["hero-phone-shopping"].rail.labels.includes("Gemeinsam kochen"));
+  // The renamed view is on the picture itself: whole, in the opaque part of the rail, not only in the list of labels.
+  assert.ok(report.de["hero-phone-shopping"].rail.shown.includes("Gemeinsam kochen"));
+  assert.ok(report.en["hero-phone-shopping"].rail.shown.includes("Cook together"));
 });
 
 test(

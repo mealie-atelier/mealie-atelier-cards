@@ -9,9 +9,9 @@
         "height": 900
       },
       "files": {
-        "800": "705a06e48689458c97a26591c5a9f5e7139e54012edf5b025fdf44c49b7be4dd",
-        "1200": "332fa3e75d34a4bf6fd30d40bde4583202d3f5066f721275352557949e9dab05",
-        "1600": "2431eb34cf6065a8f281fa001b16ce5117c49ee9bf39668fdc0e091096cec4af"
+        "800": "4dcb830dde272010c5074c53fc1f931285bde8a67990f0125ddd3ce7807e08cc",
+        "1200": "65ed2decaa4b8dffca17018733198fef997f87935e51b306f721854e0b7f1e66",
+        "1600": "2b1f422a6182bbc32d5ebd6280055b6c832f9807edfc1d0ff9a8b6552d152db0"
       }
     },
     "hero-phone-shopping": {
@@ -45,6 +45,8 @@
           "Kochbuch",
           "Verwalten"
         ],
+        "fadeRight": 17,
+        "peek": false,
         "gapLeft": 12,
         "gapRight": 16
       },
@@ -67,9 +69,9 @@
         "height": 900
       },
       "files": {
-        "800": "5e99b1841d1a6767ed8c3b1b9f3da0555ae3141a7243a1cda6e564238c29bfd5",
-        "1200": "725356c3f8a3ea87f7f0cdced900029dc1cc647785ecc2028ec4b0c03684274a",
-        "1600": "347a57353b09d86ca086b29d66b4fcf09d07e6a04f4d04ee78242f0ebaeb905d"
+        "800": "d74f1d0674155498919296c72a994f06e582b1472fb02f9bc01d1ff7da354819",
+        "1200": "10dc83ebe623eb7451d71f886feed20352f739d31901f9935ab7d7cb63bb955f",
+        "1600": "25e16ff20515f934f6238b01182faf91ed934e376161ea33422d8eaa5bc83ba9"
       }
     },
     "hero-phone-shopping": {
@@ -87,10 +89,9 @@
         "cut": [],
         "activeWhole": true,
         "shown": [
-          "Recipes",
-          "Meal plan",
-          "Pantry",
-          "Shopping"
+          "Shopping",
+          "Cook together",
+          "Cookbook"
         ],
         "labels": [
           "Overview",
@@ -104,15 +105,17 @@
           "Cookbook",
           "Manage"
         ],
+        "fadeRight": 67,
+        "peek": true,
         "gapLeft": 12,
-        "gapRight": 37
+        "gapRight": 66
       },
       "cut": [],
       "statusColour": "#111613",
       "files": {
-        "400": "7ba0714b942bdecdb46402569f66f492b7475a98a00a4b08420bdab2671a7a51",
-        "700": "b3e8fe9a35e68cef347f8032fa011a75075e2a9f16595c208c91189910c34328",
-        "1179": "070fcd99bbb669ae4ae88db1d87b91e6e7e5d8955c2cb79ef8cf93a61ad89435"
+        "400": "221050c7fb3595e51cf4e15ac35cdf03af8fb91f037236195a7e77958b43b812",
+        "700": "e864c95966830ba9bbc0a51388b6b3d5f6f47cf11e52881b250cb18e11817cd7",
+        "1179": "2dd9f64cf766c5ba62b666fb1f51f044be2187fba0a6b197294252ffb2c6d146"
       }
     }
   }
