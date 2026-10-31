@@ -11,7 +11,7 @@ test("detail step rows keep the toggle in its own button and the text outside an
   assert.match(row, /<button class="step-number step-toggle"[^>]*aria-pressed=/);
   assert.match(row, /<div class="step /);
   assert.doesNotMatch(row, /<button class="step /);
-  assert.match(row, /step-text">\$\{linkify\(instructionText\(step\)\)\}/);
+  assert.match(row, /step-text">\$\{inlineMarkdown\(instructionText\(step\)\)\}/);
 });
 
 function click(card, target) {

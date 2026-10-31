@@ -36,7 +36,7 @@ export const viewMethods = {
     return `<div class="statline">${this._stat(this._loadFailed === true || failedParts.has("recipes") ? "—" : (total ?? "—"), this.t("count"), "book", "recipes")}${this._stat(failedParts.has("mealplan") ? "—" : scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(failedParts.has("shopping") ? "—" : open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
   },
   _recipeTools() {
-    return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
+    return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage && !this._loadFailed && !this._failedParts?.has("recipes") ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
   },
   _recipes(limit = 24) {
     const recipes = asArray(this._data.recipes?.items);
@@ -58,7 +58,7 @@ export const viewMethods = {
       })
       .join(
         "",
-      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
+      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && (this._loadFailed || this._failedParts?.has("recipes")) ? `<div class="notice load-failed" role="status">${icon("book")} ${esc(this.t("offline"))}</div>` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
     const page = this._data.recipes || {};
@@ -117,19 +117,23 @@ export const viewMethods = {
   _week() {
     const all = asArray(this._data.mealplan);
     const today = dateYmd(new Date());
-    return `<div class="week-grid">${Array.from({ length: 7 }, (_, i) => {
-      const day = addDays(this._weekStart, i),
-        ymd = dateYmd(day),
-        todays = this._sortMeals(all.filter((m) => m.date === ymd));
-      return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
+    const mealplanFailed = this._failedParts?.has("mealplan") === true;
+    return `${mealplanFailed ? `<div class="notice load-failed" role="status">${icon("calendar")} ${esc(this.t("offline"))}</div>` : ""}<div class="week-grid">${Array.from(
+      { length: 7 },
+      (_, i) => {
+        const day = addDays(this._weekStart, i),
+          ymd = dateYmd(day),
+          todays = this._sortMeals(all.filter((m) => m.date === ymd));
+        return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
       ${todays
         .map((meal) => {
           const photo = recipeImage(meal.recipe || {});
           return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
-      ${todays.length === 0 && !this._failedParts?.has("mealplan") ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
-    }).join("")}</div>`;
+      ${todays.length === 0 && !this._failedParts?.has("mealplan") ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write && !mealplanFailed ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
+      },
+    ).join("")}</div>`;
   },
   /** Item text without the quantity Mealie already folds into `display`; a unitless quantity of 1 shows no "1 " prefix. */
   _shoppingLabel(item) {
@@ -258,23 +262,26 @@ export const viewMethods = {
     const open = this._offlineItems(asArray(this._data.shopping?.items)).filter(
       (x) => String(x.shoppingListId) === selected && !x.checked,
     );
+    const shopFailed = this._failedParts?.has("shopping") === true;
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
     ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}, "", true) ? `<div class="meal-photo">${recipeImage(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : this._failedParts?.has("mealplan") ? "" : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
-    <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${esc(this.tp("openItems", open.length))}</h3>
+    <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${shopFailed ? "—" : esc(this.tp("openItems", open.length))}</h3>
     ${
-      open.length
-        ? open
-            .slice(0, 6)
-            .map(
-              (x) =>
-                `<div class="mini-shopping"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" role="checkbox" aria-checked="false" aria-label="${esc(String(x.id).startsWith("local-") ? this.t("offlineWaiting") : String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + this._shoppingLabel(x))}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(x.id)) ? 'disabled aria-disabled="true"' : ""}>${icon("check", 14)}</button><span class="mini-shopping-name">${esc(this._shoppingLabel(x))}</span></div>`,
-            )
-            .join("")
-        : this._failedParts?.has("shopping")
-          ? ""
-          : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`
+      shopFailed
+        ? `<div class="notice load-failed" role="status">${icon("cart", 16)} ${esc(this.t("offline"))}</div>`
+        : open.length
+          ? open
+              .slice(0, 6)
+              .map(
+                (x) =>
+                  `<div class="mini-shopping"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" role="checkbox" aria-checked="false" aria-label="${esc(String(x.id).startsWith("local-") ? this.t("offlineWaiting") : String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + this._shoppingLabel(x))}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(x.id)) ? 'disabled aria-disabled="true"' : ""}>${icon("check", 14)}</button><span class="mini-shopping-name">${esc(this._shoppingLabel(x))}</span></div>`,
+              )
+              .join("")
+          : this._failedParts?.has("shopping")
+            ? ""
+            : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`
     }
     <div class="form-actions"><button class="btn" data-action="nav" data-value="shopping">${esc(this.t("toShopping"))} ${icon("arrow", 14)}</button></div></div></div>`;
   },

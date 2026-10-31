@@ -3041,8 +3041,8 @@ class MealieAtelierCard extends HTMLElement {
             name: tidy(values.name, 120),
             description: values.description || "",
           };
-          if (values.servings !== "" && Number(values.servings) > 0)
-            payload.servings = Number(values.servings);
+          const servings = Number(values.servings);
+          if (Number.isFinite(servings) && servings > 0) payload.servings = servings;
           if (values.replace_instructions)
             payload.instructions = Array.from(form.querySelectorAll("[data-step-text]"), (el) => ({
               id: el.closest("[data-editor-step]")?.dataset.stepId || "",

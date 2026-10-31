@@ -28,6 +28,7 @@ const EDITOR_KIND_KEYS = {
   image: "editorKindImage",
   step_image: "editorKindStepImage",
   restore: "editorKindRestore",
+  basics_instructions: "editorSummaryBasicsInstructions",
 };
 const EDITOR_UPLOAD_MAX = 10 * 1024 * 1024;
 const EDITOR_UPLOAD_CHUNK = 256 * 1024;
@@ -243,7 +244,7 @@ export const recipeEditorMethods = {
 
   /* ---------- markup ---------- */
   _editorPhotoSection() {
-    return `<section class="editor-card ed-card"><div class="eyebrow">00 / ${esc(this.t("editorPhoto"))}</div><h3>${esc(this.t("editorPhoto"))}</h3>
+    return `<section class="editor-card ed-card"><div class="eyebrow">${esc(this.t("editorPhoto"))}</div>
       <div data-editor-photo>${this._editorPhotoHtml()}</div>
       <input type="file" hidden tabindex="-1" data-ed-file accept="image/jpeg,image/png,image/webp"></section>`;
   },
@@ -414,6 +415,13 @@ export const recipeEditorMethods = {
     if (item.kind === "ingredients" && ingredients !== null)
       return this.tp("editorSummaryIngredients", ingredients);
     if (item.kind === "instructions" && steps !== null) return this.tp("editorSummarySteps", steps);
+    if (item.kind === "restore" && ingredients !== null && steps !== null)
+      return this.tp("editorSummaryIngredientsAndSteps", ingredients, {
+        steps: this.tp("editorSummarySteps", steps),
+      });
+    if (item.kind === "step_image" && steps !== null) return this.tp("editorSummarySteps", steps);
+    if (item.kind === "basics_instructions" && steps !== null)
+      return this.tp("editorSummarySteps", steps);
     if (item.kind === "image") return this.t("editorSummaryImage");
     if (item.kind === "basics") return this.t("editorSummaryBasics");
     return item.summary || "";

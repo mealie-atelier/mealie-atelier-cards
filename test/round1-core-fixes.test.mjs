@@ -61,7 +61,9 @@ test("a network failure on load shows the translated offline text and marks the 
   await card._refresh();
   assert.equal(card._error, card.t("offline"));
   assert.equal(card._loadFailed, true);
-  assert.doesNotMatch(card._recipes(), /notice/);
+  // The failure is announced, and the misleading empty-library text stays hidden.
+  assert.match(card._recipes(), /load-failed/);
+  assert.doesNotMatch(card._recipes(), new RegExp(card.t("noRecipes")));
 });
 
 test("command results use a translated label and singular forms", () => {

@@ -1,3 +1,39 @@
+/**
+ * Safe inline Markdown for recipe text: escapes first, then renders **bold**, *italic*, _italic_,
+ * [text](http(s) url) and bare http(s) URLs. Nothing but http(s) links and strong/em tags is ever emitted.
+ */
+function inlineMarkdown(text, links = true) {
+  const raw = String(text ?? "");
+  const pattern =
+    /\[([^\]\n]+)\]\((https?:\/\/[^\s()<>"']+)\)|\*\*([^*\n]+?)\*\*|(?<![\w*])\*([^*\s][^*\n]*?)\*(?![\w*])|(?<!\w)_([^_\s][^_\n]*?)_(?!\w)|https?:\/\/[^\s<>"']+/g;
+  const link = (url, label) =>
+    `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  let out = "",
+    last = 0;
+  for (const m of raw.matchAll(pattern)) {
+    out += esc(raw.slice(last, m.index));
+    last = m.index + m[0].length;
+    if (m[2] !== undefined) {
+      out += links ? link(m[2], inlineMarkdown(m[1], false)) : esc(m[0]);
+    } else if (m[3] !== undefined) out += `<strong>${inlineMarkdown(m[3], links)}</strong>`;
+    else if (m[4] !== undefined || m[5] !== undefined)
+      out += `<em>${inlineMarkdown(m[4] ?? m[5], links)}</em>`;
+    else {
+      const url = m[0].replace(/[.,;:!?)\]]+$/, "");
+      last = m.index + url.length;
+      out += links ? link(url, esc(url)) : esc(url);
+    }
+  }
+  return out + esc(raw.slice(last));
+}
+/** Cuts at the last whitespace before the limit and appends an ellipsis only when text was shortened. */
+function shortenAtWord(text, limit = 110) {
+  const value = String(text ?? "").trim();
+  if (value.length <= limit) return value;
+  const head = value.slice(0, limit);
+  const cut = head.search(/\s+\S*$/);
+  return `${(cut > 0 ? head.slice(0, cut) : head).trimEnd()}\u2026`;
+}
 /** Render modal workflows and their accessible dialog content. */
 export const dialogMethods = {
   _modalHtml() {
@@ -96,7 +132,7 @@ export const dialogMethods = {
         }))
         .filter((note) => note.text || note.title);
       const notesHtml = noteBlocks.length
-        ? `<section class="recipe-notes"><h3>${esc(this.t("uiRecipeNotes"))}</h3>${noteBlocks.map((note) => `<div class="recipe-note">${note.title ? `<strong>${esc(note.title)}</strong>` : ""}<p>${linkify(note.text)}</p></div>`).join("")}</section>`
+        ? `<section class="recipe-notes"><h3>${esc(this.t("uiRecipeNotes"))}</h3>${noteBlocks.map((note) => `<div class="recipe-note">${note.title ? `<strong>${esc(note.title)}</strong>` : ""}<p>${inlineMarkdown(note.text)}</p></div>`).join("")}</section>`
         : "";
       const stepRows = steps
         .map((step, i) => {
@@ -115,11 +151,11 @@ export const dialogMethods = {
                 `<img class="step-photo" src="${esc(src)}" alt="${this.t("uiRecipeStepImageAlt", { step: i + 1 })}" loading="lazy" decoding="async">`,
             )
             .join("");
-          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${linkify(summary)}</strong>` : ""}<span class="step-text">${linkify(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
+          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${inlineMarkdown(summary)}</strong>` : ""}<span class="step-text">${inlineMarkdown(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
         })
         .join("");
       size = "large";
-      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${linkify(recipe.description || "")}</p>
+      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${inlineMarkdown(recipe.description || "")}</p>
         <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
         <div class="toolbar recipe-actions"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn" data-action="nutrition-open">${icon("leaf", 16)} ${esc(this.t("nutrition"))}</button>`}<button class="btn" data-action="journal-open">${icon("book", 16)} ${esc(this.t("journal"))}</button><button class="btn" data-action="print-recipe">${icon("print", 16)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button><button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button>` : ""}${this._permissions.can_manage ? `<button class="btn" data-action="edit-form">${icon("edit", 16)} ${esc(this.t("edit"))}</button>` : ""}</div>
         ${(() => {
@@ -176,7 +212,7 @@ export const dialogMethods = {
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
-        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2>${linkify(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${linkify(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
+        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${!stepSummary && stepBody.length > 140 ? ' class="cook-stage--long"' : ""}>${inlineMarkdown(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">
           <header class="cook-timer-header"><span class="cook-timer-mark" aria-hidden="true">${icon("clock", 16)}</span><div><span class="cook-timer-kicker">${this.t("uiATELIERKITCHENTIMER")}</span><strong>${this.t("uiKeepEverythingInRhythm")}</strong></div><span class="cook-timer-count">${this._timers.filter((timer) => !timer.done).length} ${this.t("uiactive")}</span></header>
           <p class="cook-sr-only" role="status" aria-live="polite" aria-atomic="true" data-timer-announce>${esc(this._timerAnnouncement || "")}</p><div class="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}" ${this._timerError ? 'aria-invalid="true" aria-describedby="cook-timer-err"' : ""}></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div>${this._timerError ? `<p class="cook-timer-error" role="alert" id="cook-timer-err">${esc(this._timerError)}</p>` : ""}</div>
@@ -255,7 +291,7 @@ export const dialogMethods = {
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("editorNameAndDescription"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
           <label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" value="${esc(rec.name)}" placeholder="${esc(this.t("name"))}"></label>
           <div class="editor-columns"><label class="field"><span>${esc(this.t("description"))}</span><textarea name="description" rows="3" maxlength="2000" placeholder="${this.t("uiWhatMakesThisSpecial")}">${esc(rec.description)}</textarea></label>
-          <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="1" max="100" step="1" name="servings" value="${Number(rec.recipeServings) > 0 ? Math.max(1, Number(rec.recipeServings)) : ""}"><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
+          <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="0" step="any" name="servings" value="${Number(rec.recipeServings) > 0 ? Number(rec.recipeServings) : ""}"><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
         ${this._editorIngredientsSection()}
         <section class="editor-card"><div class="eyebrow">03 / ${this.t("dialogStepByStep")}</div><h3>${esc(this.t("instructions"))}</h3>
           <p class="editor-sub">${this.t("uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled")}</p>
@@ -264,8 +300,8 @@ export const dialogMethods = {
           <button type="button" class="editor-add-step" data-action="step-add">+ ${this.t("uiAddAStep")}</button>
           <p class="editing-hint">${this.t("uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected")}</p></section>
         ${this._editorHistorySection()}
-        <section class="editor-card editor-card--steps"><div class="editor-footer"><small>${this.t("uiChangesAreSentToMealieOnlyWhenYouSave")}</small>
-          <button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></section>
+        <div class="editor-footer"><small>${this.t("uiChangesAreSentToMealieOnlyWhenYouSave")}</small>
+          <button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div>
         </form></div>`;
     }
     if (this._modal === "create-list")
@@ -330,7 +366,7 @@ export const dialogMethods = {
       size = "large";
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">${esc(this.t("printStudioEyebrow"))}</div>
       <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
-      <div class="print-setup"><div><div class="eyebrow">01 / ${esc(this.t("uiPrintStyle"))}</div>
+      <div class="print-setup"><div><div class="eyebrow print-section-heading">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
         ["editorial", this.t("uiPrintEditorial"), this.t("uiPrintEditorialDescription")],
         ["compact", this.t("uiPrintCompact"), this.t("uiPrintCompactDescription")],
@@ -349,7 +385,7 @@ export const dialogMethods = {
       <label class="editor-check"><input type="checkbox" data-input="print-notes" ${d.print_notes !== false ? "checked" : ""}> ${esc(this.t("uiPrintIncludeNotes"))}</label>
       <button class="btn primary print-submit" type="button" data-action="print-now">${icon("print", 17)} ${esc(this.t("uiPrintOpenPreview"))}</button>
       <p class="print-guide">${esc(this.t("uiPrintGuide"))}</p></div>
-      <div><div class="eyebrow">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
+      <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
         <h3>${esc(name || this.t("uiYourRecipe"))}</h3><p>${esc(this.t("uiPrintPreviewDescription"))}</p><div class="paper-line"></div><div class="paper-cols">
           <div class="paper-col"><div class="paper-label">${esc(this.t("uiPrintIngredientsItems"))}</div>${
             paperIngredients
@@ -362,7 +398,7 @@ export const dialogMethods = {
               .slice(0, 5)
               .map(
                 (x, i) =>
-                  `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(String(x).slice(0, 110))}</div>`,
+                  `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
               )
               .join("") || '<div class="paper-preview-row">–</div>'
           }</div></div>
@@ -372,7 +408,7 @@ export const dialogMethods = {
       const d = this._design;
       const theme = this._resolvedTheme(d.theme);
       content = `<div class="modal-content"><div class="eyebrow">${esc(this.t("designSystemEyebrow"))}</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
-        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${esc(this.t("light"))}</button></div></div>
         <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map(
           (value) => {
             // The light theme paints the default accent herb green, so that swatch must look and read herb green.
