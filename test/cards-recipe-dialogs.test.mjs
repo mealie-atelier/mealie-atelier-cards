@@ -68,7 +68,7 @@ test("cook heading renders Markdown and long untitled steps get the long class",
   assert.match(titled, /<h2>Sum<\/h2><p class="cook-step-detail">/);
 });
 
-test("edit form leaves servings empty and unconstrained for a recipe without servings", () => {
+test("edit form leaves servings empty for a recipe without servings", () => {
   const c = card("de");
   const html = open(c, "edit", detail({ recipeServings: 0 }));
   const input = html.match(/<input[^>]*name="servings"[^>]*>/)[0];
@@ -76,7 +76,7 @@ test("edit form leaves servings empty and unconstrained for a recipe without ser
   assert.match(input, /value=""/);
   assert.doesNotMatch(input, /required/);
   assert.match(input, /step="any"/);
-  assert.doesNotMatch(input, /max=/);
+  assert.match(input, /max="100"/);
 });
 
 test("edit form footer has no card wrapper and the photo section has no 00 prefix or repeated heading", () => {
@@ -172,22 +172,19 @@ test("stylesheet defines the long cook heading and print heading classes", () =>
 
 test("edit save omits servings when the field is empty", () => {
   const src = readFileSync(new URL("../src/card-core.template.js", import.meta.url), "utf8");
-  assert.match(
-    src,
-    /if \(Number\.isFinite\(servings\) && servings > 0\) payload\.servings = servings/,
-  );
+  assert.match(src, /\.\.\.\(servingsChanged \? \{ servings \} : \{\}\)/);
   assert.doesNotMatch(src, /Math\.round\(Number\(values\.servings\)\)/);
   assert.doesNotMatch(src, /servings: Number\(values\.servings\)/);
 });
 
-test("edit form prefills fractional and large servings without blocking attributes", () => {
+test("edit form prefills fractional and large servings and keeps the form unblocked", () => {
   const c = card("de");
   for (const n of [2.5, 250]) {
     const html = open(c, "edit", detail({ recipeServings: n }));
     const input = html.match(/<input[^>]*name="servings"[^>]*>/)[0];
     assert.match(input, new RegExp(`value="${n}"`));
     assert.match(input, /step="any"/);
-    assert.doesNotMatch(input, /max=/);
+    assert.match(input, /max="100"/);
     assert.doesNotMatch(input, /step="1"/);
   }
 });

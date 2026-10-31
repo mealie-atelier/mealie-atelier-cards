@@ -293,12 +293,12 @@ export const dialogMethods = {
         <div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogRecipeStudio")}</div><h2>${this.t("uiEditRecipe")}</h2><p class="editor-context">${esc(rec.name)}</p>
         <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div>
         <div class="editor-stamp">${icon("edit", 28)}</div></div>
-        <form data-form="edit" class="editor-form">
+        <form data-form="edit" class="editor-form" novalidate>
         ${this._editorPhotoSection()}
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("editorNameAndDescription"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
           <label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" value="${esc(rec.name)}" placeholder="${esc(this.t("name"))}"></label>
           <div class="editor-columns"><label class="field"><span>${esc(this.t("description"))}</span><textarea name="description" rows="3" maxlength="2000" placeholder="${this.t("uiWhatMakesThisSpecial")}">${esc(rec.description)}</textarea></label>
-          <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="0" step="any" name="servings" value="${Number(rec.recipeServings) > 0 ? Number(rec.recipeServings) : ""}"><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
+          <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="0" max="100" step="any" name="servings" value="${Number(rec.recipeServings) > 0 ? Number(rec.recipeServings) : ""}"><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
         ${this._editorIngredientsSection()}
         <section class="editor-card"><div class="eyebrow">03 / ${this.t("dialogStepByStep")}</div><h3>${esc(this.t("instructions"))}</h3>
           <p class="editor-sub">${this.t("uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled")}</p>

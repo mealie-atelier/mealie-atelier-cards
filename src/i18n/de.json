@@ -991,6 +991,7 @@
   "editorPhoto": "Foto",
   "editorPhotoNone": "Dieses Rezept hat noch kein Foto.",
   "editorNameTooLong": "Der Name darf höchstens 120 Zeichen lang sein. Bitte kürze ihn.",
+  "editorServingsInvalid": "Die Portionen müssen größer als 0 und höchstens 100 sein.",
   "editorPhotoHint": "JPEG, PNG oder WebP, bis zu {size} MB.",
   "editorPhotoReplace": "Foto ersetzen",
   "editorPhotoAdd": "Foto hinzufügen",

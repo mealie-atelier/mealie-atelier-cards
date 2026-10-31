@@ -161,10 +161,9 @@ test("the backdrop click on a dirty editor keeps it open when the user cancels",
   assert.equal(card._modal, "edit");
 });
 
-test("recipe update omits servings when the field is empty or zero", async () => {
+test("recipe update omits servings when the field is empty", async () => {
   for (const [servings, expected] of [
     ["", undefined],
-    ["0", undefined],
     ["4", 4],
   ]) {
     const cards = loadCards({

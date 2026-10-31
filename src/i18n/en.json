@@ -995,6 +995,7 @@
   "editorPhoto": "Photo",
   "editorPhotoNone": "This recipe has no photo yet.",
   "editorNameTooLong": "The name can have at most 120 characters. Please shorten it.",
+  "editorServingsInvalid": "Servings must be more than 0 and at most 100.",
   "editorPhotoHint": "JPEG, PNG or WebP, up to {size} MB.",
   "editorPhotoReplace": "Replace photo",
   "editorPhotoAdd": "Add photo",

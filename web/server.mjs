@@ -704,7 +704,13 @@ async function mutate(action, payload, req) {
         changes.description = payload.description;
       }
       if ("servings" in payload) {
-        if (!Number.isInteger(payload.servings) || payload.servings < 1 || payload.servings > 100)
+        const servings = payload.servings;
+        if (
+          typeof servings !== "number" ||
+          !Number.isFinite(servings) ||
+          servings <= 0 ||
+          servings > 100
+        )
           throw bad("Invalid servings");
         changes.recipeServings = payload.servings;
       }

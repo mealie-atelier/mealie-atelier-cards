@@ -755,3 +755,23 @@ test("nutrition calculate gives a missing serving count its own code", async () 
     assert.equal(res.body.code, "recipe_servings_invalid");
   });
 });
+
+test("recipe_update accepts fractional servings and rejects values outside 0 to 100", async () => {
+  await withApp({}, async ({ app, state }) => {
+    const ok = await app.api("mutate", {
+      action: "recipe_update",
+      payload: { slug: "gnocchi", servings: 2.5 },
+    });
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.equal(state.patches.at(-1).recipeServings, 2.5);
+    const before = state.patches.length;
+    for (const servings of [0, -1, 101, true, NaN, "3", null]) {
+      const res = await app.api("mutate", {
+        action: "recipe_update",
+        payload: { slug: "gnocchi", servings },
+      });
+      assert.equal(res.status, 400, String(servings));
+    }
+    assert.equal(state.patches.length, before);
+  });
+});

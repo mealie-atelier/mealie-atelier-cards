@@ -54,3 +54,39 @@ test("the photo button shows a plus when there is no photo and a pencil with one
   const src = readFileSync(new URL("../src/components/recipe-editor.js", import.meta.url), "utf8");
   assert.match(src, /icon\(image \? "edit" : "plus", 15\)/);
 });
+
+test("servings are not sent when the saved value is unchanged, even outside the limits", async () => {
+  const card = makeCard(loadCards({ globals: { FormData: FakeFormData } }));
+  card._detail = { slug: "big", name: "Big", recipeServings: 150 };
+  const sent = [];
+  card._mutate = async (action, payload) => {
+    sent.push({ action, payload });
+    return true;
+  };
+  card._flash = () => {};
+  const form = {
+    dataset: { form: "edit" },
+    querySelectorAll: () => [],
+    querySelector: () => ({ disabled: false }),
+  };
+  formValues = { name: "Big", description: "New text", servings: "150" };
+  await card._handleSubmit({ target: { closest: () => form }, preventDefault() {} });
+  assert.equal(sent.length, 1);
+  assert.equal("servings" in sent[0].payload, false);
+  formValues = { name: "Big", description: "x", servings: "" };
+  await card._handleSubmit({ target: { closest: () => form }, preventDefault() {} });
+  assert.equal("servings" in sent[1].payload, false, "an empty field means no change");
+});
+
+test("changed servings above 100 or at most 0 show a toast and skip the mutation", async () => {
+  for (const bad of ["150", "0", "-1"]) {
+    const { sent, flashes } = await submitEdit({ name: LONG, description: "", servings: bad });
+    assert.equal(sent.length, 0, bad);
+    assert.match(flashes[0], /Servings must be more than 0 and at most 100/, bad);
+  }
+});
+
+test("changed fractional servings within the limits are sent", async () => {
+  const { sent } = await submitEdit({ name: LONG, description: "", servings: "100" });
+  assert.equal(sent[0].payload.servings, 100);
+});

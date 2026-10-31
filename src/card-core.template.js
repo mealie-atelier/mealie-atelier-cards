@@ -3108,13 +3108,24 @@ class MealieAtelierCard extends HTMLElement {
             this._flash(this.t("editorNameTooLong"), "error");
             break;
           }
+          // Servings are sent only when the user changed them: a saved value outside the limits
+          // (Mealie stores a float) must never block an edit of something else.
+          const rawServings = String(values.servings ?? "").trim();
+          const servings = rawServings === "" ? NaN : Number(rawServings);
+          const savedServings = Number(this._detail.recipeServings);
+          const servingsChanged = Number.isFinite(servings)
+            ? servings !== savedServings
+            : rawServings !== "";
+          if (servingsChanged && !(Number.isFinite(servings) && servings > 0 && servings <= 100)) {
+            this._flash(this.t("editorServingsInvalid"), "error");
+            break;
+          }
           const payload = {
             slug: this._detail.slug,
             ...(nameChanged ? { name } : {}),
             description: values.description || "",
+            ...(servingsChanged ? { servings } : {}),
           };
-          const servings = Number(values.servings);
-          if (Number.isFinite(servings) && servings > 0) payload.servings = servings;
           if (values.replace_instructions)
             payload.instructions = Array.from(form.querySelectorAll("[data-step-text]"), (el) => ({
               id: el.closest("[data-editor-step]")?.dataset.stepId || "",
