@@ -81,6 +81,7 @@ Object.assign(MealieAtelierCard.prototype, {
           );
         }
         if (this._cookIndex !== cookBefore && this._readSpeaking) this._stopReading();
+        const stepMoved = this._cookIndex !== cookBefore;
         // The displayed step must always match the internal one, even when the revision is unchanged.
         if (
           !silent ||
@@ -89,6 +90,8 @@ Object.assign(MealieAtelierCard.prototype, {
             !this.shadowRoot.activeElement?.matches?.("input,textarea,select"))
         )
           this._render();
+        // A step moved by another device opens at the top, like the local buttons.
+        if (stepMoved) this._resetCookScroll();
       }
     } catch (error) {
       this._studioError = error?.message || this.t("studioConnectionFailed");
@@ -131,6 +134,16 @@ Object.assign(MealieAtelierCard.prototype, {
       await this._recoverPermissions(error);
       return false;
     }
+  },
+  /** Voice next/back: same effects as the cook-next/cook-back buttons (render, scroll, shared step). */
+  _voiceStep(delta) {
+    const last = Math.max(0, asArray(this._detail?.recipeInstructions).length - 1);
+    this._cookIndex = Math.min(last, Math.max(0, this._cookIndex + delta));
+    this._render();
+    this._resetCookScroll();
+    const session = this._studio?.family?.session;
+    if (session && session.slug === this._detail?.slug && this._permissions?.can_write)
+      return this._studioSyncStep(session.id, this._cookIndex);
   },
   /**
    * Send the shared cooking step. Quick clicks are sent one after another and only the newest
@@ -1385,7 +1398,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           return;
         }
         const utterance = new SpeechSynthesisUtterance(step);
-        utterance.lang = this.t(this._locale === "de" ? "studioSpeechDe" : "studioSpeechEn");
+        utterance.lang = this.t(this._language === "de" ? "studioSpeechDe" : "studioSpeechEn");
         utterance.rate = 0.91;
         const stop = () => {
           if (!this._readSpeaking) return;
@@ -1399,16 +1412,16 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         utterance.onend = stop;
         utterance.onerror = stop;
         speechSynthesis.speak(utterance);
-      } else this._flash(this.t("studioReadUnsupported"));
+      } else this._flash(this.t("studioReadUnsupported"), "error");
       return;
     }
     if (action === "studio-voice-command") {
       const API = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!API) {
-        this._flash(this.t("studioVoiceUnsupported"));
+        this._flash(this.t("studioVoiceUnsupported"), "error");
         return;
       }
-      const isGerman = this._locale === "de";
+      const isGerman = this._language === "de";
       const recognizer = new API();
       recognizer.lang = this.t(isGerman ? "studioSpeechDe" : "studioSpeechEn");
       recognizer.interimResults = false;
@@ -1419,13 +1432,10 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         );
         if (isGerman ? /weiter|nächster/.test(speech) : /next|forward|continue/.test(speech)) {
           this._stopReading();
-          this._cookIndex = Math.min(
-            asArray(this._detail?.recipeInstructions).length - 1,
-            this._cookIndex + 1,
-          );
+          this._voiceStep(1);
         } else if (isGerman ? /zurück/.test(speech) : /back|previous/.test(speech)) {
           this._stopReading();
-          this._cookIndex = Math.max(0, this._cookIndex - 1);
+          this._voiceStep(-1);
         } else if (isGerman ? /vorlesen|lesen/.test(speech) : /read|read aloud/.test(speech)) {
           const b = this.shadowRoot.querySelector('[data-action="studio-read-step"]');
           b?.click();
@@ -1450,7 +1460,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             u.lang = this.t(isGerman ? "studioSpeechDe" : "studioSpeechEn");
             speechSynthesis.speak(u);
           }
-        } else this._flash(this.t("studioVoiceUnknown", { command: speech }));
+        } else this._flash(this.t("studioVoiceUnknown", { command: speech }), "error");
         this._render();
       };
       const stopListening = () => {
@@ -1464,13 +1474,13 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       };
       recognizer.onend = stopListening;
       recognizer.onerror = () => {
-        this._flash(this.t("studioMicrophoneError"));
+        this._flash(this.t("studioMicrophoneError"), "error");
         stopListening();
       };
       try {
         recognizer.start();
       } catch {
-        this._flash(this.t("studioSpeechStartFailed"));
+        this._flash(this.t("studioSpeechStartFailed"), "error");
       }
       return;
     }

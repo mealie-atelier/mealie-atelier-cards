@@ -111,25 +111,45 @@ const AtelierStudio = (() => {
   /** Leading quantity of a row: mixed number, fraction, unicode fraction or decimal. */
   function leadingQuantity(raw) {
     const glyphs = Object.keys(UNICODE_FRACTIONS).join("");
-    let m = raw.match(new RegExp(`^(\\s*)(\\d+)?\\s?([${glyphs}])(\\s+.*)$`));
+    let m = raw.match(new RegExp(`^(\\s*)(\\d+)?\\s?([${glyphs}])(\\s+.*)?$`));
     if (m) {
       const [n, d] = UNICODE_FRACTIONS[m[3]];
-      return { lead: m[1], value: Number(m[2] || 0) + n / d, style: "glyph", rest: m[4] };
+      return { lead: m[1], value: Number(m[2] || 0) + n / d, style: "glyph", rest: m[4] || "" };
     }
-    m = raw.match(/^(\s*)(\d+)\s+(\d+)\/(\d+)(\s+.*)$/);
+    m = raw.match(/^(\s*)(\d+)\s+(\d+)\/(\d+)(\s+.*)?$/);
     if (m && Number(m[4]) > 0)
       return {
         lead: m[1],
         value: Number(m[2]) + Number(m[3]) / Number(m[4]),
         style: "fraction",
-        rest: m[5],
+        rest: m[5] || "",
       };
-    m = raw.match(/^(\s*)(\d+)\/(\d+)(\s+.*)$/);
+    m = raw.match(/^(\s*)(\d+)\/(\d+)(\s+.*)?$/);
     if (m && Number(m[3]) > 0)
-      return { lead: m[1], value: Number(m[2]) / Number(m[3]), style: "fraction", rest: m[4] };
-    m = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
+      return {
+        lead: m[1],
+        value: Number(m[2]) / Number(m[3]),
+        style: "fraction",
+        rest: m[4] || "",
+      };
+    // "1.000 g" and "1,500 g" group thousands: a dot or comma followed by exactly three digits.
+    m = raw.match(/^(\s*)([1-9]\d{0,2}(?:[.,]\d{3})+)(\s+.*)?$/);
     if (m)
-      return { lead: m[1], value: Number(m[2].replace(",", ".")), style: "decimal", rest: m[3] };
+      return {
+        lead: m[1],
+        value: Number(m[2].replace(/[.,]/g, "")),
+        style: "decimal",
+        rest: m[3] || "",
+      };
+    // A unit may sit directly on the number ("200g Butter"); "2x" stays a pack count.
+    m = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)((?![x×])[a-zA-Zµ]+(?:\s+.*)?|\s+.*)?$/);
+    if (m)
+      return {
+        lead: m[1],
+        value: Number(m[2].replace(",", ".")),
+        style: "decimal",
+        rest: m[3] || "",
+      };
     return null;
   }
   /** A fraction text like "2 1/4" when the value is a clean eighth/third, else null. */
