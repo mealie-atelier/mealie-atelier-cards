@@ -71,7 +71,8 @@ Object.assign(MealieAtelierCard.prototype, {
           this._modal === "cook" &&
           this._detail &&
           !this._cookStepSync &&
-          v.family?.session?.slug === this._detail.slug
+          v.family?.session?.slug === this._detail.slug &&
+          !this._cookSessionDone(v.family.session, v.journal)
         ) {
           const steps = asArray(this._detail.recipeInstructions);
           this._cookIndex = Math.min(
@@ -156,6 +157,20 @@ Object.assign(MealieAtelierCard.prototype, {
         if (failed) await this._studioRefresh();
       })();
     return this._cookStepSync;
+  },
+  /**
+   * A shared session that sits on the last step of its recipe after the cooking was finished is
+   * done, even when the session_end write failed or this user may not write. The journal stamp
+   * (`lastCooked`) is not older than the session start, or this device finished that session.
+   */
+  _cookSessionDone(session, journal = this._studio?.journal) {
+    if (!session || this._detail?.slug !== session.slug) return false;
+    const last = Math.max(0, asArray(this._detail.recipeInstructions).length - 1);
+    if (!(Number(session.step) >= last)) return false;
+    if (this._cookDoneSessions?.has(session.id)) return true;
+    const finished = Date.parse(journal?.[session.slug]?.lastCooked);
+    const started = Date.parse(session.started);
+    return Number.isFinite(finished) && (!Number.isFinite(started) || finished >= started);
   },
   /** Step count of the shared session's recipe, or null while it is not known yet. */
   _sessionStepTotal(session) {
@@ -1532,9 +1547,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       // Joining a running shared session: open at the shared step instead of step 1.
       const steps = asArray(this._detail.recipeInstructions);
       const last = Math.max(0, steps.length - 1);
-      // Done ends the session (cook-finish), so a running one is always joined at its shared step.
-      this._cookIndex = Math.min(Math.max(0, Number(active.step) || 0), last);
-      this._render();
+      if (this._cookSessionDone(active)) {
+        // A finished recipe starts again at step 1, also when the session could not be ended.
+        this._cookIndex = 0;
+        this._render();
+        if (this._permissions.can_write && !this._kidView) await this._studioSyncStep(active.id, 0);
+      } else {
+        this._cookIndex = Math.min(Math.max(0, Number(active.step) || 0), last);
+        this._render();
+      }
     }
     if (this._permissions.can_write && !existed && (!active || replace))
       await this._studioWrite("session_start", { slug, name, replace_existing: replace });
@@ -1557,6 +1578,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       previous = this._studio?.journal?.[slug] || {},
       shared = this._studio?.family?.session;
     await _atOriginalClick.call(this, event);
+    if (shared?.slug === slug) (this._cookDoneSessions ||= new Set()).add(shared.id);
     // Done ends the shared session this recipe owns, so the next start begins at step 1.
     if (shared?.slug === slug && this._permissions.can_write && !this._kidView)
       await this._studioWrite("session_end", { session_id: shared.id });
