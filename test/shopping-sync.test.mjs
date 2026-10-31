@@ -352,6 +352,7 @@ test("invalid numbers show inline while typing, disable preview and save, and ne
   assert.match(html, /Enter a whole number between 5 and 600\./);
   assert.match(html, /data-action="sync-preview" disabled/);
   assert.match(html, /data-value="only" disabled/);
+  input(env.card, { input: "sync-watch" }, { checked: true });
   input(env.card, { input: "sync-poll" }, { value: "abc" });
   assert.match(markup(env.cards), /Enter a whole number between 1 and 60\./);
   await click(env.card, { action: "sync-preview" });
@@ -405,6 +406,7 @@ test("pending, preview total and poll hint use singular wording for one", async 
   await click(env.card, { action: "sync-open" });
   await click(env.card, { action: "sync-setup-open", value: "" });
   input(env.card, { input: "sync-destination" }, { value: "todo.bring" });
+  input(env.card, { input: "sync-watch" }, { checked: true });
   input(env.card, { input: "sync-poll" }, { value: "1" });
   assert.match(markup(env.cards), /appear after up to 1 minute\./);
   env.calls.length = 0;
@@ -1155,7 +1157,7 @@ test("destination labels use friendly platform names and drop a repeated platfor
   await click(env.card, { action: "sync-setup-open", value: "" });
   const html = markup(env.cards);
   assert.match(html, />Shopping list<\/option>/);
-  assert.match(html, />Home · Local todo<\/option>/);
+  assert.match(html, />Home · Local To-do<\/option>/);
   assert.doesNotMatch(html, /shopping_list|local_todo/);
 });
 
@@ -1274,7 +1276,7 @@ test("a rule named after its route still shows the platform that the title does 
   const named = (name) => withRule({ name });
   assert.match(
     card._syncRouteHtml(named("Weekly groceries → Home"), { platform: "local_todo" }, "Home"),
-    /<p class="sync-route">Local todo<\/p>/,
+    /<p class="sync-route">Local To-do<\/p>/,
   );
   assert.equal(card._syncRouteHtml(named("Weekly groceries → Home"), {}, "Home"), "");
   assert.match(
@@ -1283,7 +1285,7 @@ test("a rule named after its route still shows the platform that the title does 
   );
   assert.match(
     card._syncRouteHtml(named("Groceries"), { platform: "local_todo" }, "Home"),
-    /Weekly groceries → Home · Local todo/,
+    /Weekly groceries → Home · Local To-do/,
   );
 });
 
