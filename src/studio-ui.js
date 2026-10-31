@@ -291,6 +291,7 @@ Object.assign(MealieAtelierCard.prototype, {
     confirmLabel = "",
     initialValue = "",
     secondaryLabel = "",
+    cancelLabel = "",
     focusCancel = false,
   } = {}) {
     return new Promise((resolve) => {
@@ -303,7 +304,7 @@ Object.assign(MealieAtelierCard.prototype, {
         kind === "prompt"
           ? `<label class="at-prompt-label">${esc(this.t("studioDialogPromptLabel"))}<input type="text" class="at-prompt-input" maxlength="160" value="${esc(initialValue)}" placeholder="${esc(this.t("studioDialogPromptPlaceholder"))}" required></label>`
           : "";
-      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(this.t("studioCancel"))}</button>`}${secondaryLabel && kind !== "info" ? `<button class="btn" type="submit" value="secondary">${esc(secondaryLabel)}</button>` : ""}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
+      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(cancelLabel || this.t("studioCancel"))}</button>`}${secondaryLabel && kind !== "info" ? `<button class="btn" type="submit" value="secondary">${esc(secondaryLabel)}</button>` : ""}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
       const previous = this.shadowRoot.activeElement;
       const surface = this.shadowRoot.querySelector(".atelier");
       if (surface) {

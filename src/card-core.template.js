@@ -495,6 +495,14 @@ class MealieAtelierCard extends HTMLElement {
       navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || "";
     return /mac|iphone|ipad|ipod/i.test(platform);
   }
+  /** True on touch-only devices, where a keyboard shortcut hint means nothing. */
+  get _touchOnly() {
+    try {
+      return Boolean(window.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches);
+    } catch {
+      return false;
+    }
+  }
   get _shortcutLabel() {
     return this._isApplePlatform ? "⌘K" : "Ctrl+K";
   }
@@ -1034,7 +1042,11 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   _topbar() {
-    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
+    const touch = this._touchOnly;
+    const quickLabel = touch
+      ? this.t("uiOpenQuickActionsNoShortcut")
+      : this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel });
+    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${esc(quickLabel)}" aria-label="${esc(quickLabel)}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span>${touch ? "" : `<span class="shortcut">${this._shortcutLabel}</span>`}</button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
   }
   _intro(title, sub, eyebrow) {
     return AtelierUI.pageHeader({
@@ -1055,6 +1067,13 @@ class MealieAtelierCard extends HTMLElement {
     return row.replace(/<\/div>$/, `${this._editorStepPhotos(id)}</div>`);
     // END feature B
   }
+  /** Grows every step textarea to its content so no line is cut off. */
+  _autosizeSteps(root = this.shadowRoot) {
+    for (const ta of root?.querySelectorAll?.("[data-step-text]") || []) {
+      ta.style.height = "auto";
+      if (ta.scrollHeight) ta.style.height = `${ta.scrollHeight}px`;
+    }
+  }
   _renumberSteps() {
     this.shadowRoot.querySelectorAll("[data-editor-step]").forEach((element, index) => {
       const count = element.querySelector(".step-count");
@@ -1062,6 +1081,7 @@ class MealieAtelierCard extends HTMLElement {
       if (count) count.textContent = String(index + 1);
       if (textarea) textarea.setAttribute("aria-label", `${this.t("uiStep")} ${index + 1}`);
     });
+    this._autosizeSteps();
   }
   _persistJournal() {
     try {
@@ -1293,7 +1313,7 @@ class MealieAtelierCard extends HTMLElement {
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
-      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
+      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
@@ -1338,6 +1358,7 @@ class MealieAtelierCard extends HTMLElement {
       }
     // After the scroll position is back: the strip is judged on the real geometry, never on the old state.
     this._watchModalBar();
+    if (this._modal === "edit") this._autosizeSteps();
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
@@ -1524,11 +1545,79 @@ class MealieAtelierCard extends HTMLElement {
       dy = event.clientY - this._cookGesture.y;
     this._cookGesture = null;
     if (Math.abs(dx) < 65 || Math.abs(dy) > 65) return;
+    this._cookStepBy(dx < 0 ? 1 : -1);
+  }
+  /** Moves the cooking step through the same path as the Next and Back buttons. */
+  _cookStepBy(delta) {
     const count = asArray(this._detail?.recipeInstructions).length;
-    this._cookIndex = Math.max(
-      0,
-      Math.min(Math.max(0, count - 1), this._cookIndex + (dx < 0 ? 1 : -1)),
-    );
+    const next = Math.max(0, Math.min(Math.max(0, count - 1), this._cookIndex + delta));
+    if (next === this._cookIndex) return;
+    const button = { dataset: { action: delta > 0 ? "cook-next" : "cook-back" } };
+    return this._handleClick({ target: { closest: () => button }, preventDefault() {} });
+  }
+  /** A new step opens at its top: scroll back to 0 and re-judge the modal bar. */
+  _resetCookScroll() {
+    for (const selector of [".modal", ".cook-content"]) {
+      const el = this.shadowRoot?.querySelector?.(selector);
+      if (el) el.scrollTop = 0;
+    }
+    this._watchModalBar?.();
+  }
+  /** Draft of the recipe editor differs from what was loaded. */
+  _editDraftDirty() {
+    const form = this.shadowRoot?.querySelector?.('form[data-form="edit"]');
+    const rec = this._detail;
+    if (!form || !rec) return false;
+    const field = (name) => form.querySelector?.(`[name="${name}"]`)?.value;
+    const name = field("name"),
+      description = field("description"),
+      servings = field("servings");
+    if (name !== undefined && String(name) !== String(rec.name ?? "")) return true;
+    if (description !== undefined && String(description) !== String(rec.description ?? ""))
+      return true;
+    if (servings !== undefined) {
+      const saved = Number(rec.recipeServings) > 0 ? Math.max(1, Number(rec.recipeServings)) : "";
+      if (String(servings).trim() !== String(saved)) return true;
+    }
+    const clean = (list) => list.map((t) => String(t).trim()).filter(Boolean);
+    const now = clean(Array.from(form.querySelectorAll("[data-step-text]"), (el) => el.value));
+    const before = clean(asArray(rec.recipeInstructions).map(instructionText));
+    if (now.length !== before.length || now.some((t, i) => t !== before[i])) return true;
+    if (this._ed?.base) {
+      const diff = this._editorDiff();
+      if (diff.changed || diff.added || diff.removed) return true;
+    }
+    return false;
+  }
+  /** One close path for Escape, the close button and the backdrop. */
+  _requestCloseModal() {
+    if (this._modal === "edit" && this._editDraftDirty()) {
+      if (this._discardAsk) return this._discardAsk;
+      this._discardAsk = Promise.resolve(
+        this._atelierDialog({
+          title: this.t("editorDiscardConfirmTitle"),
+          body: this.t("editorDiscardConfirmBody"),
+          confirmLabel: this.t("editorDiscardConfirmDiscard"),
+          cancelLabel: this.t("editorDiscardConfirmKeep"),
+          focusCancel: true,
+        }),
+      )
+        .then((discard) => {
+          if (discard === true && this._modal === "edit") this._closeModalNow();
+        })
+        .finally(() => {
+          this._discardAsk = null;
+        });
+      return this._discardAsk;
+    }
+    this._closeModalNow();
+  }
+  _closeModalNow() {
+    if (this._modal === "command") {
+      clearTimeout(this._commandSearchTimer);
+      this._commandSearchSeq++;
+    }
+    this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
     this._render();
   }
   _handleKeyDown(event) {
@@ -1580,12 +1669,7 @@ class MealieAtelierCard extends HTMLElement {
       return;
     if (event.key === "Escape" && this._modal) {
       event.preventDefault();
-      if (this._modal === "command") {
-        clearTimeout(this._commandSearchTimer);
-        this._commandSearchSeq++;
-      }
-      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
-      this._render();
+      this._requestCloseModal();
       return;
     }
     if (this._modal === "command" && ["ArrowDown", "ArrowUp", "Enter"].includes(event.key)) {
@@ -1618,12 +1702,7 @@ class MealieAtelierCard extends HTMLElement {
       (event.key === "ArrowRight" || event.key === "ArrowLeft")
     ) {
       event.preventDefault();
-      const n = asArray(this._detail?.recipeInstructions).length;
-      this._cookIndex = Math.max(
-        0,
-        Math.min(n - 1, this._cookIndex + (event.key === "ArrowRight" ? 1 : -1)),
-      );
-      this._render();
+      this._cookStepBy(event.key === "ArrowRight" ? 1 : -1);
       return;
     }
     if (event.key === "Tab" && this._modal) {
@@ -2377,12 +2456,7 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "close-modal" || action === "backdrop") {
-      if (this._modal === "command") {
-        clearTimeout(this._commandSearchTimer);
-        this._commandSearchSeq++;
-      }
-      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
-      this._render();
+      await this._requestCloseModal();
       return;
     }
     if (action === "design") {
@@ -2482,11 +2556,13 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "cook-next") {
       this._cookIndex++;
       this._render();
+      this._resetCookScroll();
       return;
     }
     if (action === "cook-back") {
       this._cookIndex = Math.max(0, this._cookIndex - 1);
       this._render();
+      this._resetCookScroll();
       return;
     }
     if (action === "cook-finish") {
@@ -2595,6 +2671,8 @@ class MealieAtelierCard extends HTMLElement {
     input?.removeAttribute?.("aria-describedby");
   }
   _handleInput(event) {
+    if (event.target?.matches?.("[data-step-text]"))
+      this._autosizeSteps({ querySelectorAll: () => [event.target] });
     if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     // BEGIN feature B: recipe editor inputs
     if (this._editorInput(event)) return;
@@ -2962,8 +3040,9 @@ class MealieAtelierCard extends HTMLElement {
             slug: this._detail.slug,
             name: tidy(values.name, 120),
             description: values.description || "",
-            servings: Number(values.servings),
           };
+          if (values.servings !== "" && Number(values.servings) > 0)
+            payload.servings = Number(values.servings);
           if (values.replace_instructions)
             payload.instructions = Array.from(form.querySelectorAll("[data-step-text]"), (el) => ({
               id: el.closest("[data-editor-step]")?.dataset.stepId || "",
