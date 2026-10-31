@@ -31,7 +31,6 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 - Web app: Smart Shopping Sync to Bring! without Home Assistant. It implements the Bridge sync contract (preview, confirmed first batch, exactly-once delivery, duplicate skip, after-add and watch triggers, move mode, pause, resume, retry and resolve) against Bring! lists, and the existing sync dialog of the cards configures it.
 - Web app: an administrator connects the Bring! account in the sync dialog (**Bring! account**, German: Bring!-Konto). The password is used for one login; only the session tokens and the account's e-mail address (shown masked, in full to administrators so that signing in again needs only the password) are stored in the data directory with file mode 600. `BRING_EMAIL` and `BRING_PASSWORD` stay available for headless setups and are never persisted.
-
 - Product page and docs: a feature block "Bring! ohne Home Assistant" (German and English) with real captures of the connected account from the web app against a fake Bring! server and a fictional account, a rewritten Bring! setup section in `web/README.md` and a capture script (`scripts/capture-bring-showcase.py`).
 
 ### Changed
@@ -181,7 +180,6 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Docs: the manual install describes the UI resource route and the HA 2026.11 Marketplace (Add from link, GitHub login), the card picker needs the By card tab, an Uninstall section was added, the config table lists `kiosk_mode`, and the install and documentation lists wrap on phones.
 - Web app: `.env.example` no longer enables read-only mode and the user name `home` by default, drops the removed experimental flag and uses the published Mealie port 9925 in its example; the web README corrects the CSP, VAPID, proxy and contents notes.
 - The phone week toolbar buttons now really reach 44px, the install dialog "Later" button keeps its visible text as accessible name, and the iOS install step 1 reads as an action.
-
 - The web app install dialog translates its "Later" button and no longer claims that only Safari can install on iPhone; the install button, week toolbar, Kochinspo choices and credit link reach 44px touch targets.
 - The web app manifest and browser theme color match the shell colors, and the static page text uses no dashes as punctuation.
 - The sidebar and print brand lines are localized, the iOS install steps no longer repeat Share, offline conflict counts use proper singular and plural, and the sync status reads "wird synchronisiert".
