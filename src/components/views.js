@@ -305,7 +305,7 @@ export const viewMethods = {
       return `${this._intro(this.t("greeting"), this.t("greetingSub"), this.t("eyebrow"))}${this._hero()}${this._stats()}
       <section class="section"><div class="heading"><div><h2>${esc(this.t("collections"))}</h2>${this._libraryEmpty() ? "" : `<p>${esc(this.t("recipesSub"))}</p>`}</div><button class="btn plain" data-action="nav" data-value="recipes">${esc(this.t("all"))} ${icon("arrow", 14)}</button></div>${this._recipes(6)}</section>
       <section class="section"><div class="heading"><div><h2>${esc(this.t("week"))}</h2></div><button class="btn plain" data-action="nav" data-value="mealplan">${esc(this.t("mealplan"))} ${icon("arrow", 14)}</button></div>${this._week()}</section>
-      <section class="section"><div class="heading"><h2>${esc(this.t("list"))}</h2><button class="btn plain icon-only" data-action="nav" data-value="shopping" aria-label="${esc(this.t("toShopping"))}" title="${esc(this.t("toShopping"))}">${icon("arrow", 14)}</button></div>${this._shopping()}</section>`;
+      <section class="section"><div class="heading"><h2>${esc(this.t("list"))}</h2><button class="btn plain" data-action="nav" data-value="shopping">${esc(this.t("shopping"))} ${icon("arrow", 14)}</button></div>${this._shopping()}</section>`;
     if (view === "today") return this._today();
     if (view === "recipes")
       return `${this._intro(this.t("collections"), this.t("recipesSub"), this.t("eyebrow"))}${this._recipeTools()}${this._recipes()}${this._pagination()}`;

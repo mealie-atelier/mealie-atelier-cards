@@ -96,6 +96,10 @@
 .atelier .sync-panel .sync-fieldset + .editor-columns {
   margin-block-start: var(--ds-space-4, 16px);
 }
+/* A validation error makes one field taller; the other must not stretch and push its input down. */
+.atelier .sync-panel .editor-columns {
+  align-items: start;
+}
 /* The fieldset gap spaces its rows; a check row adds no margin of its own on top. */
 .atelier .sync-fieldset > .editor-check {
   margin-block-end: 0;

@@ -1,4 +1,5 @@
 /** Mealie Atelier companion web: zero-dependency, private-by-default Mealie proxy. Node 22+. */
+import { syncedYield } from "./recipe-yield.mjs";
 import { createServer } from "node:http";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -713,6 +714,12 @@ async function mutate(action, payload, req) {
         )
           throw bad("Invalid servings");
         changes.recipeServings = payload.servings;
+        // A yield text that states the old serving count follows the new one.
+        const current = await mealie("GET", `/api/recipes/${identifier(payload.slug)}`);
+        Object.assign(
+          changes,
+          syncedYield(Number(current?.recipeServings), servings, current?.recipeYield),
+        );
       }
       if ("instructions" in payload) {
         if (!Array.isArray(payload.instructions) || payload.instructions.length > 60)

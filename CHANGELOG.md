@@ -8,6 +8,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Shopping sync dialog: a validation error under the wait field no longer pushes the check interval input down; both inputs share one top edge.
+- Dashboard: the shopping section link reads "Einkaufsliste" or "Shopping" with an arrow like the two links above it, instead of a bare arrow.
+- Bring! dialog with credentials from the server environment: when Bring! refuses them, only the instruction to fix `.env` and restart is shown, no sign-in form that contradicts it. The web README says the same.
+- Web app: changing the servings of a recipe also updates a yield text that states the old count ("1,5 Portionen" becomes "2,5 Portionen") and the yield quantity; other yield texts stay.
 - Reduced motion: transitions are switched off instead of shortened to a fraction of a millisecond, so elements no longer flash at the wrong size for a frame when a layout restyles.
 - Cooking mode: the timer panel and the Back, To recipe and Next bar are on screen for every step length at every size from 641px of height up (a very long step used to push them below the fold). Only the step text scrolls, inside a bounded area between the progress bar and the controls, and the timer panel gets more compact on phones and short screens. Starting read aloud or voice control no longer widens the button or moves the tools row and the timer panel.
 - Recipe editor toasts (for example after restoring a version) show above the dialog instead of behind it. Ingredient ranges written with words ("1 bis 2 Zehen", "1 to 2 cloves") scale on both ends.
