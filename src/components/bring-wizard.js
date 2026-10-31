@@ -566,10 +566,10 @@ export const bringWizardMethods = {
       ? `<dl class="bw-facts">${facts.map(([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>`
       : "";
     let action = "";
-    const disconnectHtml = () =>
+    const disconnectHtml = (showError = true) =>
       bring.confirm
         ? `<div class="notice bw-confirm" role="alert"><span>${esc(this.t("syncBringDisconnectConfirm"))}</span></div><div class="form-actions bw-nav"><button class="btn ghost" data-action="sync-bring-disconnect-cancel">${esc(this.t("syncCancel"))}</button><button class="btn danger" data-action="sync-bring-disconnect"${bring.busy ? " disabled" : ""}>${esc(this.t("syncBringDisconnectYes"))}</button></div>`
-        : `${bring.error ? `<div class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(bring.error)}</span></div>` : ""}<div class="form-actions"><button class="btn" data-action="sync-bring-disconnect-ask">${esc(this.t("syncBringDisconnect"))}</button></div>`;
+        : `${bring.error && showError ? `<div class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(bring.error)}</span></div>` : ""}<div class="form-actions"><button class="btn" data-action="sync-bring-disconnect-ask">${esc(this.t("syncBringDisconnect"))}</button></div>`;
     if (reauth && editable) {
       // Without a rule there is nothing to keep, so the text must not promise it.
       const key = caps.bringEnv
@@ -581,7 +581,7 @@ export const bringWizardMethods = {
           : "bwReauthTextNoRules";
       action = `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
       // The privacy line promises a disconnect, so the way to do it sits right there (not with env credentials).
-      if (!caps.bringEnv) action += disconnectHtml();
+      if (!caps.bringEnv) action += disconnectHtml(false);
     } else if (!editable)
       // The read-only notice is the banner at the top of the dialog; saying it twice is noise.
       action = caps.readOnly
@@ -589,7 +589,7 @@ export const bringWizardMethods = {
         : `<p class="sync-muted" role="note">${esc(this.t("syncBringAdminOnly"))}</p>`;
     else action = disconnectHtml();
     const warn = reauth || attention;
-    return `<section class="editor-card bw-account is-${warn ? "warn" : "ok"}" aria-labelledby="bw-account-title"><div class="bw-account-head"><h3 id="bw-account-title">${esc(this.t("syncBringTitle"))}</h3><span class="bw-pill">${icon(warn ? "bolt" : "check", 13)} ${esc(this.t(stateKey))}</span></div>${list}${action}</section>`;
+    return `<section class="editor-card bw-account is-${warn || unreachable ? "warn" : "ok"}" aria-labelledby="bw-account-title"><div class="bw-account-head"><h3 id="bw-account-title">${esc(this.t("syncBringTitle"))}</h3><span class="bw-pill">${icon(warn || unreachable ? "bolt" : "check", 13)} ${esc(this.t(stateKey))}</span></div>${list}${action}</section>`;
   },
 
   // ---- events -------------------------------------------------------------------------------

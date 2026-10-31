@@ -1121,6 +1121,7 @@
   "errSyncDestinationUnsupportedWeb": "Choose a Bring! list of the connected account.",
   "errBringAuth": "Bring! refused the e-mail address or the password. Check both and try again, or reset the password in the Bring! app.",
   "errBringCredentials": "Enter the e-mail address and the password of your Bring! account.",
+  "errBringEmailInvalid": "Enter a valid e-mail address, for example name@example.com.",
   "errBringError": "Bring! refused the request.",
   "errBringNetwork": "Bring! is not reachable right now. Try again in a few minutes. If it keeps failing, check the internet connection of your server.",
   "errBringRateLimit": "Bring! is limiting requests right now. Wait a few minutes, then try again.",

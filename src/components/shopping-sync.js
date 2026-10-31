@@ -2,6 +2,8 @@
 // Bring! answered, but not with a verdict on the credentials: trying again later may work as is.
 const BRING_TRANSIENT_CODES = ["bring_network", "bring_rate_limit"];
 // The e-mail address or the password is what Bring! (or the form) objects to.
+// Same shape the server accepts (connectBring in web/server.mjs).
+const BRING_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+$/;
 const BRING_CREDENTIAL_CODES = ["bring_auth", "bring_credentials"];
 // Normalised names Home Assistant gives its built-in todo list, by server language.
 const SHOPPING_LIST_NAMES = ["shoppinglist", "einkaufsliste"];
@@ -386,7 +388,7 @@ export const shoppingSyncMethods = {
     const note = this._bwCanConnect()
       ? ""
       : this.t(caps.readOnly ? "syncReadOnly" : "syncBringAdminOnly");
-    return `<section class="editor-card sync-bring"><h3>${esc(this.t("syncBringTitle"))}</h3>${note ? `<p class="sync-muted" role="note">${esc(note)}</p>` : ""}<p class="sync-muted">${esc(this.t("syncBringPrivacy"))}</p></section>`;
+    return `<section class="editor-card sync-bring"><h3>${esc(this.t("syncBringTitle"))}</h3>${note ? `<p class="sync-muted" role="note">${esc(note)}</p>` : ""}${caps.readOnly ? "" : `<p class="sync-muted">${esc(this.t("syncBringPrivacy"))}</p>`}</section>`;
   },
   _syncBringHandleInput(el) {
     const type = el.dataset?.input || "";
@@ -411,6 +413,15 @@ export const shoppingSyncMethods = {
         this.shadowRoot?.querySelector?.(
           `[data-input="sync-bring-${email ? "password" : "email"}"]`,
         ),
+      );
+      return;
+    }
+    if (!BRING_EMAIL_PATTERN.test(email)) {
+      bring.error = this.t("errBringEmailInvalid");
+      bring.errorKind = "credentials";
+      this._render();
+      this._focusAfterRender(() =>
+        this.shadowRoot?.querySelector?.('[data-input="sync-bring-email"]'),
       );
       return;
     }

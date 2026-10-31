@@ -119,7 +119,7 @@ test("a plain Bring! outage shows a neutral unreachable state, not the attention
   const html = card._bwAccountHtml(card._syncCaps());
   assert.match(html, /Unreachable/);
   assert.doesNotMatch(html, /Needs a look/);
-  assert.match(html, /bw-account is-ok/);
+  assert.doesNotMatch(html, /bw-account is-ok/);
   const failed = wizardCard({
     rules: [{ id: "r1", source_list_id: "l1", last_run: { ...run, outcome: "failed" } }],
   });
