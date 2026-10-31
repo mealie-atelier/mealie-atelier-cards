@@ -235,9 +235,6 @@
   .atelier .studio-actions > .btn:only-child {
     flex-grow: 0;
   }
-  .atelier .studio-form .studio-inline {
-    align-items: flex-start;
-  }
   .atelier .studio-plan-row {
     grid-template-columns: 65px minmax(0, 1fr);
   }

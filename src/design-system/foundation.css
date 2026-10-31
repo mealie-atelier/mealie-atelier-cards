@@ -566,16 +566,16 @@ ha-card {
   place-items: center;
   overflow: hidden;
   position: relative;
-  background: linear-gradient(120deg, #415b50, #6e7b59);
+  background: linear-gradient(120deg, #415b50, #66734f);
 }
 .atelier .tile-image.tint1 {
-  background: linear-gradient(115deg, #7b625d, #b2806c);
+  background: linear-gradient(115deg, #7b625d, #8a5f4d);
 }
 .atelier .tile-image.tint2 {
-  background: linear-gradient(115deg, #556273, #86939c);
+  background: linear-gradient(115deg, #556273, #5f6d78);
 }
 .atelier .tile-image.tint3 {
-  background: linear-gradient(115deg, #5b6f54, #b0aa76);
+  background: linear-gradient(115deg, #5b6f54, #76744a);
 }
 .atelier .tile-image img {
   height: 100%;

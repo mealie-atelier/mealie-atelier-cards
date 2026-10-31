@@ -1,6 +1,7 @@
 /* Mealie Atelier Design System / v1.0 foundations.
    All screens and cards inherit the same semantic tokens. No device-specific pixels in components. */
 :host {
+  font-feature-settings: "lnum";
   container: atelier-card / inline-size;
   --ds-space-0: 0;
   --ds-space-1: 4px;

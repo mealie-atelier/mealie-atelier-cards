@@ -139,6 +139,20 @@
   margin-block: 0;
   align-self: center;
 }
+/* Buttons that share a wrapped row grow to the tallest label instead of floating at content height. */
+.atelier :is(.form-actions, .studio-actions, .at-dialog-actions) > :is(.btn, .icon-btn) {
+  align-self: stretch;
+}
+/* The form grid gap already spaces the last field from its action row, so margins must not stack on top of it. */
+.atelier .editor-card .editor-form > .field,
+.atelier
+  :is(.editor-form, .studio-form, .modal form)
+  > .field:has(+ :is(.form-actions, .studio-actions)) {
+  margin-block-end: 0;
+}
+.atelier :is(.editor-form, .studio-form, .modal form) > :is(.form-actions, .studio-actions) {
+  margin-block: 0;
+}
 .atelier :is(.btn, .icon-btn) :is(svg, img) {
   position: relative;
   inset: auto;
