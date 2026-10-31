@@ -12240,6 +12240,10 @@ ha-card {
 .atelier .sync-panel .sync-fieldset + .editor-columns {
   margin-block-start: var(--ds-space-4, 16px);
 }
+/* A validation error makes one field taller; the other must not stretch and push its input down. */
+.atelier .sync-panel .editor-columns {
+  align-items: start;
+}
 /* The fieldset gap spaces its rows; a check row adds no margin of its own on top. */
 .atelier .sync-fieldset > .editor-check {
   margin-block-end: 0;
@@ -17035,7 +17039,7 @@ const viewMethods = {
       return `${this._intro(this.t("greeting"), this.t("greetingSub"), this.t("eyebrow"))}${this._hero()}${this._stats()}
       <section class="section"><div class="heading"><div><h2>${esc(this.t("collections"))}</h2>${this._libraryEmpty() ? "" : `<p>${esc(this.t("recipesSub"))}</p>`}</div><button class="btn plain" data-action="nav" data-value="recipes">${esc(this.t("all"))} ${icon("arrow", 14)}</button></div>${this._recipes(6)}</section>
       <section class="section"><div class="heading"><div><h2>${esc(this.t("week"))}</h2></div><button class="btn plain" data-action="nav" data-value="mealplan">${esc(this.t("mealplan"))} ${icon("arrow", 14)}</button></div>${this._week()}</section>
-      <section class="section"><div class="heading"><h2>${esc(this.t("list"))}</h2><button class="btn plain icon-only" data-action="nav" data-value="shopping" aria-label="${esc(this.t("toShopping"))}" title="${esc(this.t("toShopping"))}">${icon("arrow", 14)}</button></div>${this._shopping()}</section>`;
+      <section class="section"><div class="heading"><h2>${esc(this.t("list"))}</h2><button class="btn plain" data-action="nav" data-value="shopping">${esc(this.t("shopping"))} ${icon("arrow", 14)}</button></div>${this._shopping()}</section>`;
     if (view === "today") return this._today();
     if (view === "recipes")
       return `${this._intro(this.t("collections"), this.t("recipesSub"), this.t("eyebrow"))}${this._recipeTools()}${this._recipes()}${this._pagination()}`;
@@ -20826,7 +20830,10 @@ const bringWizardMethods = {
         : rules.length
           ? "bwReauthText"
           : "bwReauthTextNoRules";
-      action = `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
+      // With env credentials the .env file is the only place to fix them, so no sign-in form competes with the text.
+      action = caps.bringEnv
+        ? `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}`
+        : `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
       // The privacy line promises a disconnect, so the way to do it sits right there (not with env credentials).
       if (!caps.bringEnv) action += disconnectHtml(false);
     } else if (!editable)
