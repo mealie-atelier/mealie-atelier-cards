@@ -249,6 +249,9 @@ export const viewMethods = {
     const selected = this._activeList || String(lists[0]?.id || "");
     const filtered = all.filter((i) => String(i.shoppingListId) === selected);
     const done = filtered.filter((i) => i.checked).length;
+    if (!lists.length && !filtered.length && this._failedParts?.has("shopping")) {
+      return `<div class="shopping-card"><div class="notice load-failed" role="status">${icon("cart")} ${esc(this.t("offline"))}</div></div>`;
+    }
     return `<div class="shopping-card"><div class="toolbar shopping-toolbar">${this._syncEntryButton()}${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}${this._permissions.can_write && lists.length && this._shoppingClearable(filtered) ? `<button class="btn tiny" data-action="shopping-clear-form">${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
       ${this._offlineBar()}<div class="shopping-list">${this._shoppingRows(filtered)}
       ${!filtered.length && !this._failedParts?.has("shopping") ? `<div class="notice">${icon("cart")} ${esc(lists.length ? this.t("noShopping") : this.t("addListFirst"))}</div>` : ""}</div>
