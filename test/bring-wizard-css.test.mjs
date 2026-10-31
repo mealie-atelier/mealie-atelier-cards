@@ -51,12 +51,12 @@ test("More options is a text disclosure and its panel has no frame of its own", 
   assert.match(rule(".atelier .bw-more"), /border-block-start:\s*1px solid/);
 });
 
-test("the scrolling sync panel has bottom padding, the close strip is gone and the phone wizard fills the dialog", () => {
+test("the scrolling sync panel has bottom padding, the close strip stays with its title and the phone wizard fills the dialog", () => {
   assert.match(
     rule(".atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard)"),
     /padding-block-end:\s*var\(--bw-pad\)/,
   );
-  assert.match(rule(".atelier .modal.modal.sync-modal > .modal-close::before"), /display:\s*none/);
+  assert.doesNotMatch(css, /sync-modal > \.modal-close::before/);
   assert.match(css, /\.sync-modal:has\(> \.bw-wizard\)\s*\{[^}]*display:\s*flex/);
   assert.match(css, /\.bw-wizard \.bw-panel > \.bw-nav,[^{]*\{[^}]*margin-block-start:\s*auto/);
 });
@@ -71,4 +71,11 @@ test("the last sync card keeps a bottom margin and the phone disconnect link sta
       /sync-bring-disconnect-ask"\]:is\(:hover, :active, :focus-visible\)[^{]*\{([^}]*)\}/,
     )?.[1] || "";
   assert.match(hover, /background:\s*transparent/);
+});
+
+test("in the phone wizard column the close button and the header strip never shrink", () => {
+  assert.match(
+    css,
+    /\.sync-modal:has\(> \.bw-wizard\) > :is\(\.modal-close, \.modal-bar-title\)\s*\{[^}]*flex:\s*none/,
+  );
 });

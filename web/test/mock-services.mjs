@@ -15,6 +15,22 @@ const json = (res, status, body) => {
   res.writeHead(status, { "Content-Type": "application/json" });
   res.end(JSON.stringify(body));
 };
+// MOCK_RICH_RECIPE=1 gives the recipe the length of a real one, so the recipe dialog scrolls past its heading in
+// desktop windows as well (the browser check of the dialog strip needs that).
+const rich = process.env.MOCK_RICH_RECIPE === "1";
+const richSteps = rich
+  ? Array.from({ length: 8 }, (_, n) => ({
+      text: `Schritt ${n + 2}: die Zutaten vorsichtig verrühren, ruhen lassen und danach in einer Pfanne goldbraun ausbacken.`,
+    }))
+  : [];
+const richIngredients = rich
+  ? Array.from({ length: 10 }, (_, n) => ({
+      id: `r${n + 2}`,
+      originalText: `${n + 1} EL Zutat ${n + 2}`,
+    }))
+  : [];
+const richDescription =
+  "Ein langes Rezept für die Familie, das nach dem Einkauf am Wochenende in Ruhe gekocht wird und auch am nächsten Tag noch schmeckt. Die Beschreibung ist absichtlich länger, damit der Dialog auch in einem Desktopfenster scrollt.";
 const server = createServer(async (req, res) => {
   const path = new URL(req.url, "http://localhost").pathname;
   if (path.startsWith("/api/services/notify/")) {
@@ -40,8 +56,9 @@ const server = createServer(async (req, res) => {
       slug: "testgericht",
       name: "Testgericht",
       recipeServings: 2,
-      recipeInstructions: [{ text: "Kochen" }],
-      recipeIngredient: [{ id: "r1", originalText: "Tomaten" }],
+      recipeInstructions: [{ text: "Kochen" }, ...richSteps],
+      recipeIngredient: [{ id: "r1", originalText: "Tomaten" }, ...richIngredients],
+      ...(rich ? { description: richDescription } : {}),
     });
   if (path === "/api/households/mealplans") return json(res, 200, []);
   if (path === "/api/households/shopping/lists")

@@ -406,13 +406,7 @@
   background: var(--at-surface);
   border-bottom: 1px solid var(--at-line);
   opacity: 0;
-  transition: opacity var(--ds-motion-fast) linear;
   pointer-events: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .atelier .modal > .modal-close::before {
-    transition: none;
-  }
 }
 /* The strip is a child of the button's stacking context and would paint over the button's own background. So the
    button paints its tile on ::after (later in tree order, same layer) and keeps its own background transparent. */

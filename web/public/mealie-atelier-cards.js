@@ -10005,6 +10005,9 @@ ha-card {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: 0;
+    /* A scrolling column starts at its top edge: centred, a column taller than its box spills above the top, where the
+       topline, the progress bar and the keep-awake toggle can no longer be scrolled to. */
+    justify-content: flex-start;
   }
   .atelier .modal.large:has(.cook-layout) .cook-controls {
     /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
@@ -10052,6 +10055,9 @@ ha-card {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: 0;
+    /* A scrolling column starts at its top edge: centred, a column taller than its box spills above the top, where the
+       topline, the progress bar and the keep-awake toggle can no longer be scrolled to. */
+    justify-content: flex-start;
   }
   .atelier .modal.large:has(.cook-layout) .cook-controls {
     /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
@@ -11310,13 +11316,7 @@ ha-card {
   background: var(--at-surface);
   border-bottom: 1px solid var(--at-line);
   opacity: 0;
-  transition: opacity var(--ds-motion-fast) linear;
   pointer-events: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .atelier .modal > .modal-close::before {
-    transition: none;
-  }
 }
 /* The strip is a child of the button's stacking context and would paint over the button's own background. So the
    button paints its tile on ::after (later in tree order, same layer) and keeps its own background transparent. */
@@ -12372,6 +12372,11 @@ ha-card {
     display: flex;
     flex-direction: column;
   }
+  /* In the column the close button and the header strip must keep their size when the step is taller than the dialog:
+     the strip clips its text, so it could shrink to nothing while its negative margin still pulls the heading up. */
+  .atelier .modal.sync-modal:has(> .bw-wizard) > :is(.modal-close, .modal-bar-title) {
+    flex: none;
+  }
   .atelier .modal.sync-modal > .bw-wizard {
     display: flex;
     flex-direction: column;
@@ -12419,12 +12424,6 @@ ha-card {
 /* Padding alone is lost at the end of the scroll, so the last card carries the gap as a margin too. */
 .atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child {
   margin-block-end: var(--bw-pad);
-}
-
-/* The shared close strip would stay behind as an empty header band once the dialog scrolls; here the
-   close button floats on its own and the content scrolls past it. */
-.atelier .modal.modal.sync-modal > .modal-close::before {
-  display: none;
 }
 
 /* Phone: the account card is compact (label and value on one row, disconnect as a text link) so the
@@ -12728,19 +12727,16 @@ ha-card {
   color: var(--at-ink);
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--ds-motion-fast) linear;
 }
+/* A dialog that is a flex column (the cook dialog, the Bring! wizard) must not squeeze the button or the strip title:
+   the title clips its text, so it would shrink to nothing while its negative margin still pulls the content up. */
+.atelier .modal > :is(.modal-close, .modal-bar-title) {
+  flex: none;
+}
+/* No transition on the title or on the strip behind it: both switch in the same frame in every path (scroll,
+   re-render, step change), so the title never shows without its strip or the other way round. */
 .atelier .modal.bar-on > .modal-bar-title {
   opacity: 1;
-}
-/* A re-render swaps the dialog subtree: the strip must not fade again while it keeps its state. */
-.atelier .modal.modal-stable > .modal-bar-title {
-  transition: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .atelier .modal > .modal-bar-title {
-    transition: none;
-  }
 }
 @container atelier-card (max-width: 420px) {
   .atelier .modal > .modal-bar-title {
@@ -12751,6 +12747,43 @@ ha-card {
   .atelier .modal > .modal-bar-title {
     display: none;
   }
+}
+
+/* Every heading and eyebrow in a dialog keeps clear of the close button (its inset, its width and a gap), at every width,
+   so a long title wraps or hyphenates (the card sets lang on its root) instead of running under the tile. */
+.atelier .modal {
+  --at-close-reserve: calc(20px + 48px + 12px);
+}
+@container atelier-card (max-width: 420px) {
+  .atelier .modal {
+    --at-close-reserve: calc(20px + 44px + 12px);
+  }
+}
+/* Only the dialog's own title block: the heading that can scroll under the tile before the strip takes over, and the
+   eyebrow above it. Headings further down (card headings, cook steps) and centred screens keep their full width. */
+.atelier
+  .modal
+  :is(
+    .modal-content > :is(h1, h2, .eyebrow),
+    .bw-panel > .bw-head > .bw-title,
+    .setup-kicker,
+    .setup-step-title
+  ) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-end: var(--at-close-reserve);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* The editor lead already keeps 64px clear on its right (foundation.css), so its title block only needs what is left
+   of the reserve; the full reserve on top of it made short German titles hyphenate with room to spare. */
+.atelier .modal .editor-lead > div > :is(h2, .eyebrow) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-end: max(0px, var(--at-close-reserve) - 64px);
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 /* Fields side by side or stacked in a column share one rhythm: the grid gap alone spaces them. */
@@ -12833,7 +12866,8 @@ ha-card {
 @media (orientation: landscape) and (min-height: 701px) and (max-height: 900px) {
   .atelier .modal:has(.cook-layout) .cook-content {
     gap: 6px;
-    padding-top: 12px;
+    /* The column scrolls from its top edge here, so the topline keeps a calm inset instead of touching the dialog edge. */
+    padding-top: 26px;
     padding-bottom: 12px;
   }
   .atelier .modal:has(.cook-layout) .cook-stage {
@@ -12843,7 +12877,6 @@ ha-card {
 @media (orientation: landscape) and (min-height: 701px) and (max-height: 800px) {
   .atelier .modal:has(.cook-layout) .cook-content {
     gap: 3px;
-    padding-top: 6px;
     padding-bottom: 4px;
   }
   .atelier .modal:has(.cook-layout) .cook-stage h2 {
@@ -13432,7 +13465,7 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   disconnectedCallback() {
-    this._modalBarObserver?.disconnect();
+    this._unwatchModalBar();
     // BEGIN feature H: offline queue listener
     this._offlineDetach();
     // END feature H
@@ -14241,12 +14274,15 @@ class MealieAtelierCard extends HTMLElement {
     ];
     // The grid can appear without a view change (skeleton to data, or the "today" button).
     const gridBefore = Boolean(this.shadowRoot.querySelector(".week-grid"));
+    // A newly opened dialog (a different one) starts at the top; only a re-render of the same dialog keeps its scroll.
     const scrolls = viewChanged
       ? []
-      : scrollClasses.map((selector) => {
-          const el = this.shadowRoot.querySelector(selector);
-          return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
-        });
+      : scrollClasses
+          .filter((selector) => !(modalChanged && selector === ".modal"))
+          .map((selector) => {
+            const el = this.shadowRoot.querySelector(selector);
+            return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
+          });
     // The swapped rail starts without the trailing space of the old one: carry it over before the
     // scroll position is restored, or a rail resting at its end is clamped onto a cut tab.
     const navEndPad =
@@ -14267,7 +14303,7 @@ class MealieAtelierCard extends HTMLElement {
           .replace('class="modal-backdrop"', 'class="modal-backdrop modal-stable"')
           .replace(
             'class="modal ',
-            `class="modal modal-stable${this.shadowRoot.querySelector(".modal")?.classList.contains("bar-on") ? " bar-on" : ""} `,
+            `class="modal modal-stable${this._carriesBarOn() ? " bar-on" : ""} `,
           );
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
@@ -14303,7 +14339,6 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
-    this._watchModalBar();
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -14316,6 +14351,8 @@ class MealieAtelierCard extends HTMLElement {
           el.scrollLeft = snap.left;
         }
       }
+    // After the scroll position is back: the strip is judged on the real geometry, never on the old state.
+    this._watchModalBar();
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
@@ -14386,28 +14423,78 @@ class MealieAtelierCard extends HTMLElement {
    * The sticky header strip of a dialog switches on in one step, when the dialog heading has scrolled under it:
    * the strip becomes opaque with its border and names the dialog by the heading's own text. No scroll-linked alpha.
    */
-  _watchModalBar() {
+  _carriesBarOn() {
+    const modal = this.shadowRoot.querySelector(".modal");
+    return Boolean(modal?.classList.contains("bar-on") && modal.scrollTop > 0);
+  }
+  /** Bottom edge of el inside the scrolled content of root, from offsets (unaffected by transforms). */
+  _layoutBottom(el, root) {
+    let top = 0;
+    for (let n = el; n && n !== root; n = n.offsetParent) {
+      if (typeof n.offsetTop !== "number") return null;
+      top += n.offsetTop;
+      if (!n.offsetParent) return null;
+    }
+    return typeof el.offsetHeight === "number" ? top + el.offsetHeight : null;
+  }
+  /** Drops the observer and the listeners of the previous dialog element (the cook dialog keeps its element). */
+  _unwatchModalBar() {
     this._modalBarObserver?.disconnect();
     this._modalBarObserver = null;
+    for (const { el, type, fn } of this._modalBarListeners || [])
+      el.removeEventListener?.(type, fn);
+    this._modalBarListeners = [];
+  }
+  _watchModalBar() {
+    this._unwatchModalBar();
     const modal = this.shadowRoot.querySelector(".modal");
     const strip = modal?.querySelector(":scope > .modal-bar-title");
     const heading = modal?.querySelector("h2");
     if (!modal || !strip || !heading) return;
     strip.textContent = heading.textContent.trim();
+    // The strip takes over once the first piece of content has scrolled under it. That is the heading, except in the
+    // cook dialog, whose progress bar sits above the step heading and would otherwise peek out at the dialog's top edge.
+    const anchor = modal.querySelector("[data-bar-anchor]") || heading;
     if (typeof IntersectionObserver === "undefined") return;
     // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
     const edge = 20 + (strip.offsetHeight || 48);
+    // One judge for every trigger: the layout position of the heading (offsets, unaffected by the dialog's
+    // entrance transform, whole pixels, so one pixel of rounding slack). The observer is only a trigger when the
+    // layout cannot be read; then its entry decides.
+    const settle = (entry) => {
+      const bottom = this._layoutBottom(anchor, modal);
+      // An anchor other than the heading (the cook progress bar) must never switch the strip on at scroll 0, where
+      // short laptop windows lay it inside the strip band: nothing has scrolled under the strip yet.
+      const under =
+        bottom !== null
+          ? bottom - (modal.scrollTop || 0) < edge - 1 &&
+            (anchor === heading || modal.scrollTop > 0)
+          : Boolean(
+              entry &&
+                !entry.isIntersecting &&
+                entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge,
+            );
+      if (bottom !== null || entry) modal.classList.toggle("bar-on", under);
+    };
     this._modalBarObserver = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[entries.length - 1];
-        const under =
-          !entry.isIntersecting &&
-          entry.boundingClientRect.bottom <= (entry.rootBounds?.top ?? 0) + edge;
-        modal.classList.toggle("bar-on", under);
-      },
+      (entries) => settle(entries[entries.length - 1]),
       { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
     );
-    this._modalBarObserver.observe(heading);
+    this._modalBarObserver.observe(anchor);
+    // Decide now (the observer reports asynchronously), and again when the entrance animation is over, so a
+    // dialog or step that starts at scroll 0 never keeps a stale strip.
+    settle();
+    // The observer alone is not a reliable trigger: a heading that already sits inside the strip band at scroll 0
+    // (phones) never crosses the observed edge again. So scrolling and the end of the entrance animation decide too.
+    const again = () => settle();
+    this._modalBarListeners = [];
+    for (const [type, options] of [
+      ["scroll", { passive: true }],
+      ["animationend", undefined],
+    ]) {
+      modal.addEventListener?.(type, again, options);
+      this._modalBarListeners.push({ el: modal, type, fn: again });
+    }
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */
   _opensTouchKeyboard(el) {
@@ -16501,7 +16588,7 @@ const dialogMethods = {
       size = "large";
       content = `<div class="cook-layout"><div class="cook-visual">${recipeImage(this._detail, "cook-visual-image")}<div class="cook-brand">${esc(this._detail.name)}</div></div>
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
-        <div class="cook-track" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
+        <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
         <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2>${linkify(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${linkify(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">
@@ -19830,7 +19917,7 @@ const recipePickerMethods = {
     </div>`;
   },
   /** Sync aria state and option highlighting from `state` ({id, open, active, items}). */
-  _comboboxPaint(state) {
+  _comboboxPaint(state, { reveal = false } = {}) {
     const root = this.shadowRoot;
     const input = root.querySelector(`[data-combobox="${state.id}"]`);
     const panel = root.querySelector(`[data-combobox-panel="${state.id}"]`);
@@ -19845,7 +19932,16 @@ const recipePickerMethods = {
       const on = valid && i === state.active;
       option.setAttribute("aria-selected", String(on));
       option.toggleAttribute("data-active", on);
-      if (on) option.scrollIntoView?.({ block: "nearest" });
+      if (!on) return;
+      // Only a key press in the field may scroll the dialog around the list. A list that opens by itself (the
+      // plan dialog preselects its first recipe) keeps the dialog at its top and scrolls just the list.
+      if (reveal) option.scrollIntoView?.({ block: "nearest" });
+      else if (list.scrollHeight > list.clientHeight) {
+        const o = option.getBoundingClientRect();
+        const l = list.getBoundingClientRect();
+        if (o.top < l.top) list.scrollTop -= l.top - o.top;
+        else if (o.bottom > l.bottom) list.scrollTop += o.bottom - l.bottom;
+      }
     });
   },
   /**
@@ -19859,7 +19955,7 @@ const recipePickerMethods = {
       state.open = true;
       state.active = Math.max(0, Math.min(last, index));
       event.preventDefault();
-      this._comboboxPaint(state);
+      this._comboboxPaint(state, { reveal: true });
       return true;
     };
     const more = () => {

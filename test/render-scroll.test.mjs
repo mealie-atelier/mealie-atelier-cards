@@ -502,21 +502,32 @@ test("a re-render keeps the dialog header strip on, so no frame paints it transp
   card._render();
   assert.doesNotMatch(cards.document.markup, /bar-on/);
   const open = card.shadowRoot.querySelector;
-  card.shadowRoot.querySelector = (sel) =>
+  const modalAt = (scrollTop) => (sel) =>
     sel === ".modal"
-      ? { classList: { contains: (name) => name === "bar-on" }, querySelector: () => null }
+      ? {
+          scrollTop,
+          classList: { contains: (name) => name === "bar-on" },
+          querySelector: () => null,
+        }
       : open(sel);
+  card.shadowRoot.querySelector = modalAt(120);
   card._render();
   assert.match(cards.document.markup, /class="modal modal-stable bar-on /);
+  // A dialog or wizard step that sits at scroll 0 must not inherit a stale strip.
+  card.shadowRoot.querySelector = modalAt(0);
+  card._render();
+  assert.doesNotMatch(cards.document.markup, /bar-on/);
   card.shadowRoot.querySelector = open;
   card._render();
   assert.doesNotMatch(cards.document.markup, /bar-on/);
 });
 
-test("the header strip does not fade again when a stable dialog is re-rendered", () => {
-  const css = readFileSync(
-    new URL("../src/design-system/mobile-forms.css", import.meta.url),
-    "utf8",
-  );
-  assert.match(css, /\.atelier \.modal\.modal-stable > \.modal-bar-title \{\s*transition: none;/);
+test("the header strip and its title never fade, so a re-render cannot show one without the other", () => {
+  for (const file of ["mobile-forms.css", "control-refinement.css"]) {
+    const css = readFileSync(new URL(`../src/design-system/${file}`, import.meta.url), "utf8");
+    for (const [, selector, body] of css.matchAll(
+      /([^{}]*(?:modal-bar-title|modal-close::before)[^{}]*)\{([^}]*)\}/g,
+    ))
+      assert.doesNotMatch(body, /transition/, `${file}: ${selector.trim()}`);
+  }
 });

@@ -1650,6 +1650,9 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: 0;
+    /* A scrolling column starts at its top edge: centred, a column taller than its box spills above the top, where the
+       topline, the progress bar and the keep-awake toggle can no longer be scrolled to. */
+    justify-content: flex-start;
   }
   .atelier .modal.large:has(.cook-layout) .cook-controls {
     /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
@@ -1697,6 +1700,9 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: 0;
+    /* A scrolling column starts at its top edge: centred, a column taller than its box spills above the top, where the
+       topline, the progress bar and the keep-awake toggle can no longer be scrolled to. */
+    justify-content: flex-start;
   }
   .atelier .modal.large:has(.cook-layout) .cook-controls {
     /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */

@@ -33,7 +33,7 @@ export const recipePickerMethods = {
     </div>`;
   },
   /** Sync aria state and option highlighting from `state` ({id, open, active, items}). */
-  _comboboxPaint(state) {
+  _comboboxPaint(state, { reveal = false } = {}) {
     const root = this.shadowRoot;
     const input = root.querySelector(`[data-combobox="${state.id}"]`);
     const panel = root.querySelector(`[data-combobox-panel="${state.id}"]`);
@@ -48,7 +48,16 @@ export const recipePickerMethods = {
       const on = valid && i === state.active;
       option.setAttribute("aria-selected", String(on));
       option.toggleAttribute("data-active", on);
-      if (on) option.scrollIntoView?.({ block: "nearest" });
+      if (!on) return;
+      // Only a key press in the field may scroll the dialog around the list. A list that opens by itself (the
+      // plan dialog preselects its first recipe) keeps the dialog at its top and scrolls just the list.
+      if (reveal) option.scrollIntoView?.({ block: "nearest" });
+      else if (list.scrollHeight > list.clientHeight) {
+        const o = option.getBoundingClientRect();
+        const l = list.getBoundingClientRect();
+        if (o.top < l.top) list.scrollTop -= l.top - o.top;
+        else if (o.bottom > l.bottom) list.scrollTop += o.bottom - l.bottom;
+      }
     });
   },
   /**
@@ -62,7 +71,7 @@ export const recipePickerMethods = {
       state.open = true;
       state.active = Math.max(0, Math.min(last, index));
       event.preventDefault();
-      this._comboboxPaint(state);
+      this._comboboxPaint(state, { reveal: true });
       return true;
     };
     const more = () => {

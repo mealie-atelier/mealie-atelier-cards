@@ -565,6 +565,11 @@
     display: flex;
     flex-direction: column;
   }
+  /* In the column the close button and the header strip must keep their size when the step is taller than the dialog:
+     the strip clips its text, so it could shrink to nothing while its negative margin still pulls the heading up. */
+  .atelier .modal.sync-modal:has(> .bw-wizard) > :is(.modal-close, .modal-bar-title) {
+    flex: none;
+  }
   .atelier .modal.sync-modal > .bw-wizard {
     display: flex;
     flex-direction: column;
@@ -612,12 +617,6 @@
 /* Padding alone is lost at the end of the scroll, so the last card carries the gap as a margin too. */
 .atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child {
   margin-block-end: var(--bw-pad);
-}
-
-/* The shared close strip would stay behind as an empty header band once the dialog scrolls; here the
-   close button floats on its own and the content scrolls past it. */
-.atelier .modal.modal.sync-modal > .modal-close::before {
-  display: none;
 }
 
 /* Phone: the account card is compact (label and value on one row, disconnect as a text link) so the
