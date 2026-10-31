@@ -994,6 +994,7 @@
   "editorKindRestore": "Restore",
   "editorPhoto": "Photo",
   "editorPhotoNone": "This recipe has no photo yet.",
+  "editorNameTooLong": "The name can have at most 120 characters. Please shorten it.",
   "editorPhotoHint": "JPEG, PNG or WebP, up to {size} MB.",
   "editorPhotoReplace": "Replace photo",
   "editorPhotoAdd": "Add photo",

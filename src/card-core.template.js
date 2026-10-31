@@ -3101,9 +3101,16 @@ class MealieAtelierCard extends HTMLElement {
         break;
       case "edit":
         if (this._detail && tidy(values.name)) {
+          // The name is sent only when the user changed it: an existing longer name must never be cut.
+          const name = String(values.name || "").trim();
+          const nameChanged = name !== String(this._detail.name || "").trim();
+          if (nameChanged && name.length > 120) {
+            this._flash(this.t("editorNameTooLong"), "error");
+            break;
+          }
           const payload = {
             slug: this._detail.slug,
-            name: tidy(values.name, 120),
+            ...(nameChanged ? { name } : {}),
             description: values.description || "",
           };
           const servings = Number(values.servings);

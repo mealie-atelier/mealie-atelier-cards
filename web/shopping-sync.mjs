@@ -379,7 +379,9 @@ export class BringDestination {
           spec: row.spec,
         })),
       ];
-    } catch {
+    } catch (error) {
+      // A 404 means the list is gone: drop the cached lists so the next describe() sees that.
+      if (error instanceof BringRequestError && error.status === 404) this.forget();
       return null;
     }
   }
@@ -887,6 +889,12 @@ export class SyncManager {
     );
     const options = this.options(destination);
     const destinationItems = await this.destination.items(entityId);
+    if (destinationItems === null) {
+      // A deleted list answers 404 and its cache entry was dropped: report it as gone right away.
+      const again = await this.describe(entityId, rule.destination_name);
+      if (!again.available && again.reason === "missing")
+        return this.finish(rule, trigger, batchId, "destination_missing", counts);
+    }
     if (destinationItems !== null) {
       const { settled, confirmed } = this.reconcile(ruleId, destinationItems);
       if (settled) this.audit(ruleId, trigger, settled, "reconciled");

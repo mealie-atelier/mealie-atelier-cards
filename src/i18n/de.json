@@ -990,6 +990,7 @@
   "editorKindRestore": "Wiederherstellung",
   "editorPhoto": "Foto",
   "editorPhotoNone": "Dieses Rezept hat noch kein Foto.",
+  "editorNameTooLong": "Der Name darf höchstens 120 Zeichen lang sein. Bitte kürze ihn.",
   "editorPhotoHint": "JPEG, PNG oder WebP, bis zu {size} MB.",
   "editorPhotoReplace": "Foto ersetzen",
   "editorPhotoAdd": "Foto hinzufügen",
