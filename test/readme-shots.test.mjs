@@ -34,8 +34,8 @@ test("docs use American spelling and the English Bring! label", () => {
   assert.doesNotMatch(log, /cancell|unlabell|recognis/i);
   assert.match(log, /\*\*Bring! account\*\*, German: Bring!-Konto/);
   const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
-  assert.match(readme, /2026\.10 and older, turn on \*\*Advanced mode\*\*/);
+  // Home Assistant removed Advanced mode in 2026.6; the Resources menu needs no switch.
+  assert.doesNotMatch(readme, /Advanced mode/);
   const faq = readFileSync(new URL("../docs/FAQ.md", import.meta.url), "utf8");
-  assert.match(faq, /2026\.10 and older, turn on \*\*Advanced mode\*\*/);
-  assert.doesNotMatch(faq, /Resources\*\* \(Advanced mode\)/);
+  assert.doesNotMatch(faq, /Advanced mode/);
 });

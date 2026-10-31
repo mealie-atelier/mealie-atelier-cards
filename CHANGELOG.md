@@ -22,7 +22,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Copy: German and English wording is consistent across cards, Bridge and docs ("Nur-Lesen-Modus", "API-Schlüssel", "Gemeinsam kochen" / "Cook together", "Print Studio"), the quick access placeholder fits on phones, touch devices see no keyboard shortcut hint, and a missing connection no longer claims read-only mode.
 - Print and cooking dialogs: the weekly plan print preview has its own column headings and the landscape hint, fractional servings use the decimal comma in German (also in the scaled yield), and a long step summary shrinks the cooking heading. German sync copy says "Artikel" throughout, the quick access hint and placeholder read clearly on phones, and the editor note names Home Assistant's built-in Mealie integration.
 - Product page: American English recipes and copy, the install routes for the Marketplace and HACS, "das Mealie-Token", and American date and currency formats.
-- Docs: web README contents, fake Bring! server instructions for Docker, `ATELIER_SYNC_LANGUAGE`, Advanced mode only on Home Assistant 2026.10 and older, and American spelling in the changelog. Unused demo food images were removed.
+- Docs: web README contents, fake Bring! server instructions for Docker, `ATELIER_SYNC_LANGUAGE`, no Advanced mode step (Home Assistant removed it in 2026.6), and American spelling in the changelog. Unused demo food images were removed.
 
 ## [0.12.0] - 2026-10-31
 
