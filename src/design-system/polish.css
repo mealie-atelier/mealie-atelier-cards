@@ -2618,3 +2618,8 @@
 .atelier .modal-content.atelier-editor:has(.editor-footer) {
   padding-bottom: 0;
 }
+
+/* A progress bar cut by the scrolled step column's top edge would read as a stray tab; it hides until back in view. */
+.atelier .modal:has(.cook-layout) .cook-track.is-cut {
+  visibility: hidden;
+}

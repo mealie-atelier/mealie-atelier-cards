@@ -11057,6 +11057,11 @@ ha-card {
   padding-bottom: 0;
 }
 
+/* A progress bar cut by the scrolled step column's top edge would read as a stray tab; it hides until back in view. */
+.atelier .modal:has(.cook-layout) .cook-track.is-cut {
+  visibility: hidden;
+}
+
 /* Atelier Control Refinement 0.9.5: single geometric contract.
    Loaded last, scoped to Atelier, preserving colors, surfaces and typography. */
 :host {
@@ -14778,6 +14783,20 @@ class MealieAtelierCard extends HTMLElement {
     ]) {
       modal.addEventListener?.(type, again, options);
       this._modalBarListeners.push({ el: modal, type, fn: again });
+    }
+    // The cook dialog scrolls its step column, not the dialog: once the progress bar slides under the column's top
+    // edge, a cut sliver of it would show there as a stray tab, so it hides until it is fully back in view.
+    const column = modal.querySelector(".cook-content");
+    const track = column?.querySelector(".cook-track");
+    if (column && track) {
+      const peek = () =>
+        track.classList.toggle(
+          "is-cut",
+          track.getBoundingClientRect().top < column.getBoundingClientRect().top - 0.5,
+        );
+      column.addEventListener?.("scroll", peek, { passive: true });
+      this._modalBarListeners.push({ el: column, type: "scroll", fn: peek });
+      peek();
     }
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */

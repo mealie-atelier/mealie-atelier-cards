@@ -335,3 +335,13 @@ test("a control that takes focus under the pinned cooking bar is scrolled up unt
     assert.equal(scroller.scrollTop, 38);
   }
 });
+
+test("the cook progress bar hides while the scrolled step column cuts it", () => {
+  assert.match(css("polish.css"), /\.cook-track\.is-cut \{\s*visibility: hidden;/);
+  const core = readFileSync(new URL("../src/card-core.template.js", import.meta.url), "utf8");
+  assert.match(core, /track\.classList\.toggle\(\s*"is-cut",/);
+  assert.match(
+    core,
+    /this\._modalBarListeners\.push\(\{ el: column, type: "scroll", fn: peek \}\)/,
+  );
+});
