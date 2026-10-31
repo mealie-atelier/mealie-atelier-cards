@@ -524,7 +524,10 @@ export const recipeEditorMethods = {
       root.querySelector(".toast")?.remove();
       const template = document.createElement("template");
       template.innerHTML = `<div class="toast${kind === "error" ? " toast-error" : ""}" role="${kind === "error" ? "alert" : "status"}" aria-live="${kind === "error" ? "assertive" : "polite"}">${icon(kind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>`;
-      root.appendChild(template.content.firstElementChild);
+      const toast = template.content.firstElementChild;
+      root.appendChild(toast);
+      // Appended by hand, so lift it above the dialog's top layer like a rendered toast.
+      this._raiseModal(toast);
     }
     clearTimeout(this._toastTimer);
     this._toastTimer = setTimeout(

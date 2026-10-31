@@ -196,8 +196,10 @@ const AtelierStudio = (() => {
       Number(n.toFixed(2)).toLocaleString(locale === "en" ? "en-US" : "de-DE", {
         maximumFractionDigits: 2,
       });
-    // A range such as "2-3" or "2–3" scales on both ends and keeps its separator.
-    const range = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s*[-–]\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
+    // A range such as "2-3", "2–3" or "1 bis 2" scales on both ends and keeps its separator.
+    const range = raw.match(
+      /^(\s*)(\d+(?:[.,]\d+)?)(\s*[-–]\s*|\s+(?:bis|to)\s+)(\d+(?:[.,]\d+)?)(\s+.*)$/,
+    );
     if (range) {
       const low = Number(range[2].replace(",", ".")),
         high = Number(range[4].replace(",", "."));
