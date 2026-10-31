@@ -860,6 +860,10 @@ ${this._syncRouteHtml(rule, destination, destName)}
       debounce_seconds: rule?.debounce_seconds ?? 30,
       poll_minutes: Math.round((rule?.poll_interval_seconds ?? 120) / 60),
       duplicate_policy: rule?.duplicate_policy || "skip_exact",
+      // Label for a stored destination that is not offered right now (unavailable entity).
+      originalDestinationName: rule
+        ? this._syncRuleDestName(rule) || rule.destination_entity_id || ""
+        : "",
       original: rule
         ? { source: rule.source_list_id, destination: rule.destination_entity_id }
         : null,
@@ -930,6 +934,16 @@ ${this._syncRouteHtml(rule, destination, destName)}
           `<option value="${esc(e.entity_id)}" ${e.entity_id === d.destination_entity_id ? "selected" : ""}>${esc(this._syncDestinationLabel(e.name, e.platform))}</option>`,
       )
       .join("");
+    // A stored destination that is not offered right now (unavailable todo entity) stays selected,
+    // so the rule keeps its target and can be saved unchanged.
+    const storedMissing =
+      d.destinationsLoaded &&
+      d.destination_entity_id &&
+      d.original?.destination === d.destination_entity_id &&
+      !destination;
+    const missingOption = storedMissing
+      ? `<option value="${esc(d.destination_entity_id)}" selected>${esc(this.t("syncDestinationUnavailableOption", { name: d.originalDestinationName || d.destination_entity_id }))}</option>`
+      : "";
     const previewMarkup = d.previewBusy
       ? `<p>${esc(this.t("loading"))}</p>`
       : d.preview
@@ -962,7 +976,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         ${
           d.destinationsLoaded && !d.destinations.length
             ? `<p class="notice" role="status">${icon("leaf", 16)} ${esc(this.t("syncNoDestinations"))}</p>`
-            : `<label class="field"><span class="sync-sr">${esc(destinationTitle)}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${destinationOptions}</select></label>`
+            : `<label class="field"><span class="sync-sr">${esc(destinationTitle)}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${missingOption}${destinationOptions}</select></label>`
         }
         <p class="sync-capability" role="status" aria-live="polite">${destination ? `${icon(destination.supports?.description ? "check" : "close", 15)} ${esc(this.t("syncSupportsNotes", { answer: this.t(destination.supports?.description ? "syncYes" : "syncNo") }))}` : ""}</p></section>
       <section class="editor-card"><div class="eyebrow">03 / ${esc(this.t("syncStepMode").toUpperCase())}</div>

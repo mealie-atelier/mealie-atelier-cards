@@ -1011,10 +1011,12 @@ const AtelierStudio = (() => {
   }
   // Swap texts and the warning are translation keys; the UI resolves them per locale.
   // Each entry: translation key plus the German and English words that name the ingredient.
+  // An optional third list names words that must not match (butter is not buttermilk).
   // A word matches a whole token, or the start of a token when it has four or more letters.
   const swaps = [
     ["studioSwapCream", ["sahne", "cream"]],
-    ["studioSwapButter", ["butter"]],
+    ["studioSwapButtermilk", ["buttermilch", "buttermilk"]],
+    ["studioSwapButter", ["butter"], ["buttermilch", "buttermilk"]],
     ["studioSwapEgg", ["ei", "eier", "egg", "eggs", "eigelb", "eiweiss", "eiweiß"]],
     ["studioSwapMilk", ["milch", "milk"]],
     ["studioSwapMushroom", ["champignon", "champignons", "mushroom", "mushrooms"]],
@@ -1029,9 +1031,11 @@ const AtelierStudio = (() => {
       .filter(Boolean)
       .map((original) => ({ original, word: clean(original) }));
     const result = [];
-    for (const [to, names] of swaps) {
-      const hit = tokens.find((t) =>
-        names.some((k) => t.word === k || (k.length >= 4 && t.word.startsWith(k))),
+    for (const [to, names, except = []] of swaps) {
+      const hit = tokens.find(
+        (t) =>
+          !except.some((x) => t.word.startsWith(x)) &&
+          names.some((k) => t.word === k || (k.length >= 4 && t.word.startsWith(k))),
       );
       // "from" is the word the user typed, so the English UI never shows a German match key.
       if (hit) result.push({ from: hit.original, to, warning: "studioSwapWarning" });
