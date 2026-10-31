@@ -7,6 +7,8 @@ For every locale and every width below, with and without reduced motion:
   - the devices keep the readable sizes of the concept, nothing scrolls sideways, the phone stays clear of
     the right 70 percent of the tablet (where the step text and the timer are)
   - no layout shift (PerformanceObserver) and the entrance timings of the concept
+  - with reduced motion no CSS transition runs anywhere on the page: a transition, however short, paints
+    the old value of a style change for one frame, which showed up as an intermittent layout shift
 Optionally writes a screenshot of the hero per run: --shots <folder>.
 
 Usage (after `npm run build:demo`):
@@ -31,7 +33,11 @@ TABLET_FILES = [800, 1200, 1600]
 PHONE_FILES = [400, 700, 1179]
 
 SHIFT_JS = """() => {
-  window.__shift = 0; window.__lcp = null;
+  window.__shift = 0; window.__lcp = null; window.__transitions = [];
+  addEventListener('transitionrun', (e) => {
+    const t = e.target;
+    window.__transitions.push((t.tagName || '') + (typeof t.className === 'string' && t.className ? '.' + t.className.trim().split(/\\s+/).join('.') : '') + (e.pseudoElement || '') + ' ' + e.propertyName);
+  }, true);
   new PerformanceObserver((list) => {
     for (const e of list.getEntries()) if (!e.hadRecentInput) window.__shift += e.value;
   }).observe({ type: 'layout-shift', buffered: true });
@@ -61,7 +67,7 @@ MEASURE_JS = """() => {
     scrollW: document.documentElement.scrollWidth, innerW: innerWidth,
     reveal: document.documentElement.classList.contains('reveal-ready'),
     entered: document.querySelector('.hero-stage').classList.contains('in'),
-    shift: window.__shift, lcp: window.__lcp,
+    shift: window.__shift, lcp: window.__lcp, transitions: window.__transitions,
   };
 }"""
 
@@ -71,8 +77,13 @@ def serve(site):
         def log_message(self, *args):
             pass
 
-    server = ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Handler, directory=str(site)))
-    server.request_queue_size = 128
+    # The listen backlog is read in the constructor (server_activate), so it has to be a class attribute:
+    # set on the instance afterwards it stays at 5, and a page that opens many connections at once gets
+    # some of them reset (net::ERR_CONNECTION_RESET), which failed the "failed requests" check at random.
+    class Server(ThreadingHTTPServer):
+        request_queue_size = 128
+
+    server = Server(("127.0.0.1", 0), functools.partial(Handler, directory=str(site)))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server
 
@@ -143,6 +154,7 @@ def run_one(browser, port, loc, width, height, dpr, reduced, shots, errors):
         if reduced:
             check(label + " final state at once", m["phoneStyle"]["opacity"] == "1" and m["tabletStyle"]["opacity"] == "1", m)
             check(label + " no transition", not m["reveal"] and float(m["phoneStyle"]["transition"].split("s")[0]) < 0.01, m["phoneStyle"])
+            check(label + " no transition ran", not m["transitions"], sorted(set(m["transitions"]))[:12])
         elif not phone_only:
             check(label + " entrance ran", m["reveal"] and m["entered"] and m["phoneStyle"]["opacity"] == "1" and m["tabletStyle"]["opacity"] == "1", m)
             check(label + " phone delay 140ms", m["phoneStyle"]["transition"] == "0.7s, 0.9s 0.14s, 0.14s", m["phoneStyle"])

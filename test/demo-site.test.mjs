@@ -1071,6 +1071,28 @@ test(
   },
 );
 
+// A near-zero transition duration still runs a transition for every style change (the property list
+// defaults to "all"), and its first frame paints the old value: with reduced motion that was a layout
+// shift of the hero devices whenever Chrome restyled the stage. scripts/check-hero.py asserts at runtime
+// that no transition runs with reduced motion.
+test("reduced motion turns transitions off instead of shortening them", () => {
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  const reduced = css
+    .split("@media (prefers-reduced-motion: reduce)")
+    .slice(1)
+    .map((block) => block.slice(0, block.indexOf("\n}")));
+  assert.ok(reduced.some((block) => /\*::after \{\s*transition: none !important;/.test(block)));
+  for (const block of reduced) assert.doesNotMatch(block, /transition-duration:\s*0?\.0\d*m?s/);
+});
+
+// socketserver calls listen() in the constructor: a backlog set on the instance afterwards is ignored
+// (it stays at 5) and the browser's parallel connections get reset now and then.
+test("hero render check: the local server listens with a real backlog", () => {
+  const script = read(new URL("../scripts/check-hero.py", import.meta.url));
+  assert.match(script, /class \w+\(ThreadingHTTPServer\):\n\s+request_queue_size = 128/);
+  assert.doesNotMatch(script, /\bserver\.request_queue_size\s*=/);
+});
+
 test("hero captures: tablet and phone exist in both locales with every listed width", () => {
   const manifest = JSON.parse(read(new URL("../demo/showcase/manifest.json", import.meta.url)));
   for (const locale of ["de", "en"]) {

@@ -3617,10 +3617,14 @@ details[open] .chev {
   html {
     scroll-behavior: auto;
   }
+  /* No transitions at all, not a near-zero duration: transition-property is "all" by default, so a
+     0.01ms duration turns every style change into a transition that paints the old value for one
+     frame. Chrome restyles the hero stage (a size container) once its size is known, and that frame
+     showed the devices without padding and with the wrong text size: a real layout shift. */
   *,
   *::before,
   *::after {
-    transition-duration: 0.01ms !important;
+    transition: none !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
