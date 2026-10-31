@@ -140,7 +140,7 @@
         "en": [
           "800 g potato gnocchi",
           "500 g cherry tomatoes",
-          "200 g passata",
+          "200 g strained tomatoes",
           "1 garlic clove, sliced",
           "2 tbsp olive oil",
           "1 pinch dried oregano",
@@ -171,12 +171,12 @@
           {
             "title": "Make the tomato sauce",
             "summary": "Let the cherry tomatoes burst",
-            "text": "Heat the olive oil in a wide pan and soften the garlic briefly. Halve the cherry tomatoes, add them and cook for 5 minutes until they collapse. Stir in the passata and oregano, season and simmer uncovered for 8 minutes."
+            "text": "Heat the olive oil in a wide pan and soften the garlic briefly. Halve the cherry tomatoes, add them and cook for 5 minutes until they collapse. Stir in the strained tomatoes and oregano, season and simmer uncovered for 8 minutes."
           },
           {
             "title": "Cook the gnocchi",
             "summary": "Poach briefly in salted water",
-            "text": "Cook the gnocchi in gently boiling salted water according to the packet. As soon as they float, lift them straight into the sauce with a slotted spoon."
+            "text": "Cook the gnocchi in gently boiling salted water according to the package. As soon as they float, lift them straight into the sauce with a slotted spoon."
           },
           {
             "title": "Serve with mozzarella",
@@ -438,7 +438,7 @@
           "190 ml lukewarm water",
           "3 g dried yeast",
           "1 tsp salt",
-          "150 g passata",
+          "150 g strained tomatoes",
           "150 g mozzarella",
           "60 g wafer-thin sliced ham",
           "8 small mushrooms, halved",
@@ -472,7 +472,7 @@
           {
             "title": "Prepare the toppings",
             "summary": "Preheat the oven and tray thoroughly",
-            "text": "Heat the oven with an inverted baking tray at its highest setting for at least 30 minutes. Season the passata with olive oil and a pinch of salt. Drain the mozzarella well."
+            "text": "Heat the oven with an inverted baking tray at its highest setting for at least 30 minutes. Season the strained tomatoes with olive oil and a pinch of salt. Drain the mozzarella well."
           },
           {
             "title": "Bake the pizza",
@@ -562,12 +562,12 @@
           {
             "title": "Cook the penne",
             "summary": "Boil until al dente",
-            "text": "Cook the penne in plenty of salted water according to the packet until al dente, then drain."
+            "text": "Cook the penne in plenty of salted water according to the package until al dente, then drain."
           },
           {
             "title": "Crisp the bacon",
             "summary": "Fry until crisp and break it up",
-            "text": "Meanwhile fry the bacon in a large dry pan until crisp, drain on kitchen paper and break into small pieces. Quarter the artichoke hearts."
+            "text": "Meanwhile fry the bacon in a large dry pan until crisp, drain on paper towels and break into small pieces. Quarter the artichoke hearts."
           },
           {
             "title": "Toss and serve",
@@ -625,7 +625,7 @@
           "1 Prise Salz"
         ],
         "en": [
-          "250 g plain flour",
+          "250 g all-purpose flour",
           "2 tbsp sugar",
           "2 tsp baking powder",
           "1 egg",
@@ -694,7 +694,7 @@
       },
       "description": {
         "de": "Kartoffeln und Karotten garen in einer milden gelben Kokossauce. Dazu gibt es Basmatireis, geröstete Erdnüsse, frischen Koriander und Limette.",
-        "en": "Potatoes and carrots simmer in a mild yellow coconut sauce. Serve with basmati rice, roasted peanuts, fresh coriander and lime."
+        "en": "Potatoes and carrots simmer in a mild yellow coconut sauce. Serve with basmati rice, roasted peanuts, fresh cilantro and lime."
       },
       "category": {
         "de": "Curry",
@@ -734,7 +734,7 @@
           "400 ml coconut milk",
           "50 g roasted peanuts",
           "2 limes",
-          "1 handful coriander",
+          "1 handful cilantro",
           "1 pinch of salt"
         ]
       },
@@ -760,7 +760,7 @@
           {
             "title": "Cook the rice",
             "summary": "Start the basmati rice",
-            "text": "Rinse the rice in cold water and bring to the boil with 375 ml water and a pinch of salt. Cover and cook over low heat for 12 minutes, then rest for 5 minutes."
+            "text": "Rinse the rice in cold water and bring to a boil with 375 ml water and a pinch of salt. Cover and cook over low heat for 12 minutes, then rest for 5 minutes."
           },
           {
             "title": "Make the curry",
@@ -769,8 +769,8 @@
           },
           {
             "title": "Serve",
-            "summary": "Finish with peanuts, coriander and lime",
-            "text": "Roughly chop the coriander. Spoon the rice into bowls, set the curry on top and scatter over the peanuts and coriander. Serve with lime wedges."
+            "summary": "Finish with peanuts, cilantro and lime",
+            "text": "Roughly chop the cilantro. Spoon the rice into bowls, set the curry on top and scatter over the peanuts and cilantro. Serve with lime wedges."
           }
         ]
       },
@@ -778,7 +778,7 @@
         "file": "../photos/kokos-curry-mit-kartoffeln-und-karotten.webp",
         "alt": {
           "de": "Kokos-Curry mit Kartoffeln, Karotten und Erdnüssen auf Basmatireis in einer dunklen Schale, mit Koriander und zwei Limettenspalten, auf hellem Untergrund",
-          "en": "Coconut curry with potatoes, carrots and peanuts on basmati rice in a dark bowl, topped with coriander and two lime wedges, on a light surface"
+          "en": "Coconut curry with potatoes, carrots and peanuts on basmati rice in a dark bowl, topped with cilantro and two lime wedges, on a light surface"
         },
         "photographer": "Filipp Romanovski",
         "photographerUrl": "https://unsplash.com/@filipp_roman_photography?utm_source=mealie_atelier&utm_medium=referral",
@@ -795,7 +795,7 @@
       },
       "description": {
         "de": "Zarte Wan Tans mit Hackfleischfüllung in einer klaren, goldenen Hühnerbrühe, dazu Pak Choi, Frühlingszwiebeln und knusprig gerösteter Knoblauch. Die Teigtaschen lassen sich gut auf Vorrat falten und einfrieren.",
-        "en": "Silky pork wontons in a clear, golden chicken broth with bok choy, spring onions and crisp fried garlic. The wontons are easy to fold ahead and freeze."
+        "en": "Silky pork wontons in a clear, golden chicken broth with bok choy, scallions and crisp fried garlic. The wontons are easy to fold ahead and freeze."
       },
       "category": {
         "de": "Suppe",
@@ -823,14 +823,14 @@
           "2 EL neutrales Öl"
         ],
         "en": [
-          "250 g minced pork",
+          "250 g ground pork",
           "1 piece fresh ginger (about 2 cm), finely grated",
           "2 tbsp light soy sauce",
           "1 tsp sesame oil",
           "24 wonton wrappers",
           "1.2 l chicken stock",
           "2 small heads bok choy",
-          "3 spring onions, thinly sliced",
+          "3 scallions, thinly sliced",
           "3 garlic cloves, finely chopped",
           "2 tbsp neutral oil"
         ]
@@ -857,17 +857,17 @@
           {
             "title": "Fill the wontons",
             "summary": "Mix the filling, fold the wontons",
-            "text": "Mix the pork with the ginger, 1 tbsp soy sauce, the sesame oil and a third of the spring onions. Place a teaspoon of filling on each wrapper, moisten the edges, fold into a triangle and press the corners together."
+            "text": "Mix the pork with the ginger, 1 tbsp soy sauce, the sesame oil and a third of the scallions. Place a teaspoon of filling on each wrapper, moisten the edges, fold into a triangle and press the corners together."
           },
           {
             "title": "Fry the garlic",
             "summary": "Fry until golden and crisp",
-            "text": "Heat the oil in a small pan and fry the garlic, stirring, for 1–2 minutes until golden. Drain on kitchen paper."
+            "text": "Heat the oil in a small pan and fry the garlic, stirring, for 1–2 minutes until golden. Drain on paper towels."
           },
           {
             "title": "Cook the soup",
             "summary": "Poach the wontons and bok choy in the broth",
-            "text": "Bring the stock to the boil with the remaining soy sauce. Quarter the bok choy lengthways. Slide the wontons into the gently simmering broth and cook for 4–5 minutes, adding the bok choy for the last 2 minutes. Ladle into bowls and top with the spring onions and fried garlic."
+            "text": "Bring the stock to a boil with the remaining soy sauce. Quarter the bok choy lengthwise. Slide the wontons into the gently simmering broth and cook for 4–5 minutes, adding the bok choy for the last 2 minutes. Ladle into bowls and top with the scallions and fried garlic."
           }
         ]
       },
@@ -875,7 +875,7 @@
         "file": "../photos/wan-tan-suppe-mit-pak-choi.webp",
         "alt": {
           "de": "Wan Tans mit Pak Choi, Frühlingszwiebeln und geröstetem Knoblauch in klarer Brühe in einer weißen Schale auf einem hellen Tisch, quer darüber helle Essstäbchen",
-          "en": "Wontons with bok choy, spring onions and fried garlic in clear broth in a white bowl on a pale table, with pale chopsticks across it"
+          "en": "Wontons with bok choy, scallions and fried garlic in clear broth in a white bowl on a pale table, with pale chopsticks across it"
         },
         "photographer": "K Soma",
         "photographerUrl": "https://unsplash.com/@ksoma?utm_source=mealie_atelier&utm_medium=referral",

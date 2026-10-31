@@ -41,7 +41,7 @@ function heroStage(ctx) {
     "hero-phone-shopping",
     t(
       "Einkaufsliste auf dem Smartphone: die Liste Wocheneinkauf für die Gnocchi. Noch zu kaufen: Kartoffelgnocchi, passierte Tomaten, Knoblauch, Oregano, Mozzarella, Basilikum und Salz. Schon abgehakt: Kirschtomaten und Olivenöl.",
-      "Shopping list on a phone: the list Weekly shop for the gnocchi. Still to buy: potato gnocchi, passata, garlic, oregano, mozzarella, basil and salt. Already ticked off: cherry tomatoes and olive oil.",
+      "Shopping list on a phone: the list Weekly shop for the gnocchi. Still to buy: potato gnocchi, strained tomatoes, garlic, oregano, mozzarella, basil and salt. Already ticked off: cherry tomatoes and olive oil.",
     ),
     PHONE_SIZES,
     { eager: true },
@@ -60,9 +60,9 @@ function hero(ctx) {
 
 function facts(ctx) {
   const t = translator(ctx.locale);
-  const fact = (value, text, delay, suffix = "") =>
-    `<div class="fact rv${delay}"><b><span data-count="${value}">${value}</span>${suffix}</b><span>${text}</span></div>`;
-  return `<section class="facts" aria-label="${t("Mealie Atelier in Zahlen", "Mealie Atelier in numbers")}"><div class="wrap facts-row">${fact(10, t("Ansichten in einer Karte, von Heute bis Kochbuch", "views in one card, from Today to Cookbook"), "")}${fact(2, t("Wege: Home Assistant oder eigene Web-App", "routes: Home Assistant or a web app of its own"), " d1")}${fact(3, t("Rollen in der Web-App: admin, writer, reader", "roles in the web app: admin, writer, reader"), " d2")}${fact(2, t("Sprachen: komplett auf Deutsch und Englisch", "languages: fully in English and German"), " d3")}${fact(0, t("Kostenlos, ohne Abo, ohne Cloud", "Free, no subscription, no cloud"), " d3", "<small>€</small>")}</div></section>`;
+  const fact = (value, text, delay, suffix = "", prefix = "") =>
+    `<div class="fact rv${delay}"><b>${prefix}<span data-count="${value}">${value}</span>${suffix}</b><span>${text}</span></div>`;
+  return `<section class="facts" aria-label="${t("Mealie Atelier in Zahlen", "Mealie Atelier in numbers")}"><div class="wrap facts-row">${fact(10, t("Ansichten in einer Karte, von Heute bis Kochbuch", "views in one card, from Today to Cookbook"), "")}${fact(2, t("Wege: Home Assistant oder eigene Web-App", "routes: Home Assistant or a web app of its own"), " d1")}${fact(3, t("Rollen in der Web-App: admin, writer, reader", "roles in the web app: admin, writer, reader"), " d2")}${fact(2, t("Sprachen: komplett auf Deutsch und Englisch", "languages: fully in English and German"), " d3")}${fact(0, t("Kostenlos, ohne Abo, ohne Cloud", "Free, no subscription, no cloud"), " d3", ctx.locale === "en" ? "" : "<small>€</small>", ctx.locale === "en" ? "<small>€</small>" : "")}</div></section>`;
 }
 
 function food(ctx) {

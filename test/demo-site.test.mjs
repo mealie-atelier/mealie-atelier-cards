@@ -114,8 +114,14 @@ test("both landing pages carry every product section and the live card", () => {
 test("landing pages state the install route and setup facts correctly", () => {
   const de = landing(builds.local, "de");
   const en = landing(builds.local, "en");
-  assert.match(de, /über HACS als benutzerdefiniertes Repository/);
-  assert.match(en, /through HACS as a custom repository/);
+  assert.match(
+    de,
+    /„Add from link“ \(ab Home Assistant 2026\.11\) oder in HACS als benutzerdefiniertes Repository/,
+  );
+  assert.match(
+    en,
+    /“Add from link” \(Home Assistant 2026\.11 and newer\) or in HACS as a custom repository/,
+  );
   for (const html of [de, en]) {
     assert.match(html, /ATELIER_PASSWORD=/);
     assert.match(html, /MEALIE_API_TOKEN=/);
@@ -2085,4 +2091,21 @@ test("the changelog keeps every release heading in the Keep a Changelog form", (
       heading,
       /^## (\[(Unreleased|\d+\.\d+\.\d+)\]( - \d{4}-\d{2}-\d{2})?|Developer previews .*)$/,
     );
+});
+
+test("copy fixes: American English recipes and dates, neuter Token, role header, euro prefix", () => {
+  const de = landing(builds.local, "de");
+  const en = landing(builds.local, "en");
+  assert.match(en, /<th scope="col">Can<\/th>/);
+  assert.match(en, /Wednesday, October 28/);
+  assert.match(en, /<b><small>€<\/small><span data-count="0">0<\/span><\/b>/);
+  assert.match(de, /<span data-count="0">0<\/span><small>€<\/small>/);
+  assert.doesNotMatch(de, /[Dd]er Mealie-Token|Der Token|Nur-Lese-Modus/);
+  assert.match(de, /Das Mealie-Token bleibt auf dem Server/);
+  assert.doesNotMatch(en, /passata/i, "English landing page uses American wording");
+  const recipes = read(new URL("../demo/data/recipes.json", import.meta.url));
+  assert.doesNotMatch(
+    recipes,
+    /coriander|spring onion|minced pork|plain flour|passata|the packet|kitchen paper|lengthways|to the boil/,
+  );
 });

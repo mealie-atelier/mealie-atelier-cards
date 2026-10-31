@@ -35,7 +35,7 @@ function catalog(locale) {
 
 test("demo recipe search finds ingredient matches, not only titles", () => {
   const { recipes, details } = catalog("en");
-  const matches = searchDemoRecipes(recipes, details, "minced pork");
+  const matches = searchDemoRecipes(recipes, details, "ground pork");
   assert.deepEqual(
     matches.map((recipe) => recipe.slug),
     ["wan-tan-suppe-mit-pak-choi"],
