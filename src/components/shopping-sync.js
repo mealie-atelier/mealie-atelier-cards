@@ -187,15 +187,15 @@ export const shoppingSyncMethods = {
       ? this.tp("syncAuditEntry", entry.count ?? 0, values)
       : this.t("syncAuditEntryFailed", values);
   },
+  // Display name of a rule's destination. An unavailable or removed list has no name, and the raw
+  // entity id is never shown: the result is empty then and callers fall back to the stored rule name.
+  _syncRuleDestName(rule) {
+    const destination = rule.destination || {};
+    return this._syncDestinationName(destination.name, destination.platform);
+  },
   // Title of a rule as the cards show it, so history lines and the review can name the rule.
   _syncRuleLabel(rule) {
-    const destination = rule.destination || {};
-    return this._syncRuleTitle(
-      rule,
-      destination,
-      this._syncDestinationName(destination.name, destination.platform) ||
-        rule.destination_entity_id,
-    );
+    return this._syncRuleTitle(rule, rule.destination || {}, this._syncRuleDestName(rule));
   },
   _syncOutcomeIcon(outcome, counts = {}) {
     const good = ["sent", "nothing_to_send", "reconciled"].includes(outcome);
@@ -537,9 +537,7 @@ export const shoppingSyncMethods = {
   _syncGoneHtml(rule, caps) {
     if (!this._syncBringGone(rule, caps)) return "";
     const destination = rule.destination || {};
-    const name =
-      this._syncDestinationName(destination.name, destination.platform) ||
-      rule.destination_entity_id;
+    const name = this._syncRuleDestName(rule) || this.t("syncOutcomeDestinationMissingBring");
     const pick =
       caps.admin && this._bwCanConnect()
         ? `<button type="button" class="btn tiny primary" data-action="sync-bw-pick-list" data-value="${esc(rule.id)}">${icon("edit", 14)} ${esc(this.t("bwPickList"))}</button>`
@@ -551,6 +549,7 @@ export const shoppingSyncMethods = {
   _syncRuleTitle(rule, destination, destName) {
     const prefix = `${rule.source_list_name} → `;
     const name = String(rule.name || "");
+    if (!destName) return rule.name;
     const plain = (v) =>
       String(v)
         .toLowerCase()
@@ -571,6 +570,8 @@ export const shoppingSyncMethods = {
       this._syncDestinationLabel(destName, destination.platform) !== destName
         ? this._syncPlatformLabel(destination.platform)
         : "";
+    // Without a known destination name the title (the stored rule name) is all there is.
+    if (!destName) return "";
     const route = `${rule.source_list_name} → ${destName}`;
     if (this._syncRuleTitle(rule, destination, destName) === route)
       return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
@@ -583,9 +584,7 @@ export const shoppingSyncMethods = {
     const counts = rule.counts || {};
     const issues = this._syncIssues(rule);
     const destination = rule.destination || {};
-    const destName =
-      this._syncDestinationName(destination.name, destination.platform) ||
-      rule.destination_entity_id;
+    const destName = this._syncRuleDestName(rule);
     const mode = rule.mode === "move" ? "Move" : "Copy";
     const state = !rule.activated ? "NotActivated" : rule.paused ? "Paused" : "Active";
     const stateIcon = state === "Active" ? icon("check", 15) : icon("clock", 15);
@@ -610,16 +609,25 @@ export const shoppingSyncMethods = {
       (destination.reason === "unreachable" || last?.outcome === "destination_unavailable");
     // The Mealie list this rule reads from was deleted: nothing can run until the rule is edited or removed.
     const sourceMissing = rule.source_missing === true || last?.outcome === "source_missing";
+    // The destination list was removed from Home Assistant: the same dead end, announced once with its way out.
+    const destinationMissing = !bringGone && last?.outcome === "destination_missing";
+    // A rule that cannot run offers Edit first, and its notice already states the status.
+    const stuck = sourceMissing || destinationMissing;
     const problems = [
       sourceMissing ? this.t("errSyncSourceGone") : "",
+      destinationMissing
+        ? [destName, this.t("syncOutcomeDestinationMissing")].filter(Boolean).join(": ")
+        : "",
       bringAuth
         ? this.t("bwSessionExpired")
         : bringUnreachable
           ? open
             ? this.tp("bwUnreachable", open, { count: open })
             : this.t("bwUnreachableNone")
-          : !caps.bringSetup && destination.available === false
-            ? this.tp("syncErrorDestinationUnavailable", open, { destination: destName })
+          : !caps.bringSetup && !destinationMissing && destination.available === false
+            ? this.tp("syncErrorDestinationUnavailable", open, {
+                destination: destName || this._syncPlatformLabel(destination.platform) || rule.name,
+              })
             : "",
       last?.outcome === "source_unavailable" ? this.t("syncErrorSourceUnavailable") : "",
     ].filter(Boolean);
@@ -628,10 +636,10 @@ export const shoppingSyncMethods = {
         ? `<button class="btn tiny primary" data-action="sync-first-batch" data-value="${id}">${icon("arrow", 14)} ${esc(this._syncBringT("syncFirstBatch"))}</button>`
         : "",
       // The way out of a deleted list lives in the banner at the top, not repeated here.
-      rule.activated && !bringGone
+      rule.activated && !bringGone && !stuck
         ? write("sync-run", `${icon("refresh", 14)} ${esc(this.t("syncRunNow"))}`, "primary")
         : "",
-      rule.activated
+      rule.activated && !stuck
         ? write(
             rule.paused ? "sync-resume" : "sync-pause",
             esc(this.t(rule.paused ? "syncResume" : "syncPause")),
@@ -644,7 +652,7 @@ export const shoppingSyncMethods = {
         ? `<button class="btn tiny" data-action="sync-review" data-value="${id}">${esc(this.t("syncReview"))}</button>`
         : "",
       caps.admin
-        ? `<button class="btn tiny" data-action="sync-setup-open" data-value="${id}">${icon("edit", 14)} ${esc(this.t("edit"))}</button>`
+        ? `<button class="btn tiny${stuck ? " primary" : ""}" data-action="sync-setup-open" data-value="${id}">${icon("edit", 14)} ${esc(this.t("edit"))}</button>`
         : "",
       caps.admin
         ? `<button class="btn tiny danger" data-action="sync-delete" data-value="${id}">${esc(this.t("syncDelete"))}</button>`
@@ -662,14 +670,17 @@ ${this._syncRouteHtml(rule, destination, destName)}
           this.t("bwFactMode"),
           `${esc(this.t(`syncMode${mode}`))} <small class="sync-muted">${esc(this._syncBringT(`syncMode${mode}Hint`))}</small>`,
         ],
-        [
-          this.t("syncFactStatus"),
-          bringGone
-            ? `${icon("bolt", 15)} ${esc(this.t("bwStatusListGone"))}`
-            : sourceMissing
-              ? `${icon("bolt", 15)} ${esc(this.t("syncOutcomeSourceMissing"))}`
-              : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
-        ],
+        // A notice that already says what is wrong replaces the status and the matching last run.
+        stuck
+          ? null
+          : [
+              this.t("syncFactStatus"),
+              bringGone
+                ? `${icon("bolt", 15)} ${esc(this.t("bwStatusListGone"))}`
+                : sourceMissing
+                  ? `${icon("bolt", 15)} ${esc(this.t("syncOutcomeSourceMissing"))}`
+                  : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
+            ],
         [
           this.t("bwFactPending"),
           esc(
@@ -678,13 +689,16 @@ ${this._syncRouteHtml(rule, destination, destName)}
               : this.t("syncPendingNone"),
           ),
         ],
-        [
-          this._syncBringT("syncFactLastRun"),
-          last
-            ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRunValue", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}`
-            : esc(this._syncBringT("syncNeverRun")),
-        ],
+        stuck && ["source_missing", "destination_missing"].includes(last?.outcome)
+          ? null
+          : [
+              this._syncBringT("syncFactLastRun"),
+              last
+                ? `${this._syncOutcomeIcon(last.outcome, counts)} ${esc(this.t("syncLastRunValue", { time: this._syncRelative(last.at), result: this._syncOutcomeText(last.outcome, counts) }))}`
+                : esc(this._syncBringT("syncNeverRun")),
+            ],
       ]
+        .filter(Boolean)
         .map(
           ([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${value}</dd></div>`,
         )
@@ -773,6 +787,9 @@ ${this._syncRouteHtml(rule, destination, destName)}
     if (!whole(draft.debounce_seconds, 5, 600)) errors.debounce = { min: 5, max: 600 };
     // The poll interval only applies while watching, and its field is hidden otherwise.
     if (draft.watch && !whole(draft.poll_minutes, 1, 60)) errors.poll = { min: 1, max: 60 };
+    // A rule whose source list was deleted keeps the stale id until a free list is chosen.
+    if (!asArray(draft.free).some((l) => String(l.id) === String(draft.source_list_id)))
+      errors.source = true;
     return errors;
   },
   // With firstBatch the dialog is the review of a rule that was saved without sending: the preview runs on its own.
@@ -789,14 +806,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       firstBatch: firstBatch && !!rule && rule.activated !== true,
       expected_revision: rule?.revision,
       activated: rule?.activated === true,
-      name: rule
-        ? this._syncRuleTitle(
-            rule,
-            rule.destination || {},
-            this._syncDestinationName(rule.destination?.name, rule.destination?.platform) ||
-              rule.destination_entity_id,
-          )
-        : "",
+      name: rule ? this._syncRuleLabel(rule) : "",
       source_list_id: rule?.source_list_id || String(free[0]?.id || ""),
       destination_entity_id: rule?.destination_entity_id || "",
       mode: rule?.mode || "copy",
@@ -859,12 +869,16 @@ ${this._syncRouteHtml(rule, destination, destName)}
       `<label class="sync-radio-card"><input type="radio" name="sync-${group}" value="${value}" data-input="sync-${group}-${value}" ${d[field] === value ? "checked" : ""}><span><strong>${esc(label)}</strong>${hint ? `<small>${esc(hint)}</small>` : ""}</span></label>`;
     const number = (field, key, labelKey, errorKey) =>
       `<label class="field"><span>${esc(this.t(labelKey))}</span><input type="text" inputmode="numeric" data-input="sync-${key}" value="${esc(d[field])}" ${errors[errorKey] ? `aria-invalid="true" aria-describedby="sync-${key}-error"` : ""}>${errors[errorKey] ? `<span id="sync-${key}-error" class="sync-field-error" role="alert">${esc(this.t("syncInvalidNumber", errors[errorKey]))}</span>` : ""}</label>`;
-    const sourceOptions = d.free
+    const sourceOptions = `${
+      d.source_list_id && !d.free.some((l) => String(l.id) === d.source_list_id)
+        ? `<option value="" disabled selected>${esc(this.t("selectList"))}</option>`
+        : ""
+    }${d.free
       .map(
         (l) =>
           `<option value="${esc(l.id)}" ${String(l.id) === d.source_list_id ? "selected" : ""}>${esc(l.name)}</option>`,
       )
-      .join("");
+      .join("")}`;
     const destinationOptions = d.destinations
       .map(
         (e) =>
@@ -874,7 +888,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     const previewMarkup = d.previewBusy
       ? `<p>${esc(this.t("loading"))}</p>`
       : d.preview
-        ? `${d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
+        ? `${lines.length && d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
             lines.length
               ? `<p>${esc(this.tp(this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal", d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><div><strong>${esc(String(l.title || "").trim() || this.t("syncItemUntitled"))}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</div><div><span class="sync-record-state">${icon(["send", "merge"].includes(l.action) ? "arrow" : "close", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></div></li>`).join("")}</ul>`
               : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
@@ -883,10 +897,12 @@ ${this._syncRouteHtml(rule, destination, destName)}
     // The real count is only known once a preview has run, so until then the label stays neutral.
     const confirmLabel =
       destination && d.preview && !d.previewBusy
-        ? this.tp("syncConfirmSend", sendCount, {
-            source: sourceName,
-            destination: this._syncDestinationName(destination.name, destination.platform),
-          })
+        ? sendCount === 0
+          ? this.t("save")
+          : this.tp("syncConfirmSend", sendCount, {
+              source: sourceName,
+              destination: this._syncDestinationName(destination.name, destination.platform),
+            })
         : this.t("syncConfirmSendNeutral");
     return `<div class="modal-content sync-panel atelier-editor">${this._syncLead(d.firstBatch ? this._syncBringT("syncFirstBatch") : this.t(d.rule_id ? "syncEditRule" : "syncSetup"))}
       ${d.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(d.error)}</span></div>` : ""}
@@ -922,7 +938,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         <div class="form-actions">${
           d.activated
             ? `<button class="btn primary" data-action="sync-save" data-value="changes"${blocked ? " disabled" : ""}>${icon("check", 14)} ${esc(this.t("syncSaveChanges"))}</button>`
-            : `<button class="btn primary" data-action="sync-save" data-value="send"${blocked || !d.preview ? " disabled" : ""}>${icon("arrow", 14)} ${esc(confirmLabel)}</button><button class="btn" data-action="sync-save" data-value="only"${blocked ? " disabled" : ""}>${esc(this.t("syncSaveOnly"))}</button>`
+            : `<button class="btn primary" data-action="sync-save" data-value="send"${blocked || !d.preview ? " disabled" : ""}>${icon("arrow", 14)} ${esc(confirmLabel)}</button>${d.preview && !d.previewBusy && sendCount === 0 ? "" : `<button class="btn" data-action="sync-save" data-value="only"${blocked ? " disabled" : ""}>${esc(this.t("syncSaveOnly"))}</button>`}`
         }<button class="btn ghost" data-action="sync-setup-cancel">${esc(this.t("syncCancel"))}</button></div></section></div>`;
   },
 

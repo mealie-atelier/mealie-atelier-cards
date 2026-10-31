@@ -92,6 +92,10 @@
   padding: 0;
   border: 0;
 }
+/* The delay field follows the trigger checkboxes and needs air above its label. */
+.atelier .sync-panel .sync-fieldset + .editor-columns {
+  margin-block-start: var(--ds-space-4, 16px);
+}
 /* The fieldset gap spaces its rows; a check row adds no margin of its own on top. */
 .atelier .sync-fieldset > .editor-check {
   margin-block-end: 0;
