@@ -191,6 +191,17 @@ export const shoppingSyncMethods = {
   // entity id is never shown: the result is empty then and callers fall back to the stored rule name.
   _syncRuleDestName(rule) {
     const destination = rule.destination || {};
+    const name = String(destination.name || "");
+    const ids = [destination.entity_id, rule.destination_entity_id].filter(Boolean);
+    // The bridge sends the entity id as the name when the entity has no state (disabled or removed
+    // entry). The rule name was built as "source → destination" when the rule was saved, so its
+    // suffix still holds the friendly name.
+    if (name && ids.includes(name)) {
+      const prefix = `${rule.source_list_name} → `;
+      const stored = String(rule.name || "");
+      const suffix = stored.startsWith(prefix) ? stored.slice(prefix.length).trim() : "";
+      return suffix && !ids.includes(suffix) ? suffix : "";
+    }
     return this._syncDestinationName(destination.name, destination.platform);
   },
   // Title of a rule as the cards show it, so history lines and the review can name the rule.
@@ -441,6 +452,26 @@ export const shoppingSyncMethods = {
       // The lists of the account that was connected before are not the new account's lists.
       wizard.listsState = "idle";
       wizard.lists = [];
+      // Rules that are still saved continue with the new connection: the wizard would only walk
+      // through creating a second rule, so the dialog shows them instead.
+      let saved = false;
+      try {
+        const state = await this._ws("sync_state");
+        sync.state = state;
+        sync.raw = JSON.stringify(state || {});
+        saved = asArray(state?.rules).length > 0;
+      } catch {
+        /* Without a status the wizard continues as for a first connection. */
+      }
+      if (saved && sync.wizard === wizard) {
+        sync.wizard = null;
+        this._modal = "sync";
+        sync.result = this.t("syncRulesContinue");
+        sync.resultQuiet = false;
+        sync.resultIcon = "";
+        this._render();
+        return;
+      }
       this._bwGo(2);
       await this._syncLoad({ quiet: true });
       return;
@@ -502,7 +533,7 @@ export const shoppingSyncMethods = {
       : "";
     const body = rules.length
       ? rules.map((rule) => this._syncRuleHtml(rule, caps)).join("")
-      : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
+      : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(!caps.admin || !caps.write ? "syncNoRulesReadOnly" : caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
       ${rules.map((rule) => this._syncGoneHtml(rule, caps)).join("")}
@@ -532,6 +563,12 @@ export const shoppingSyncMethods = {
   _syncBringGone(rule, caps = this._syncCaps()) {
     const destination = rule.destination || {};
     return caps.bringSetup && destination.available === false && destination.reason === "missing";
+  },
+  // Nothing pending is not "0 items remain open": the count sentence is skipped then.
+  _syncDestinationUnavailableText(open, destination) {
+    return open
+      ? this.tp("syncErrorDestinationUnavailable", open, { destination })
+      : this.t("syncErrorDestinationUnavailableNone", { destination });
   },
   // The one place that says a Bring! list is gone, with the way out right in it.
   _syncGoneHtml(rule, caps) {
@@ -573,7 +610,11 @@ export const shoppingSyncMethods = {
     // Without a known destination name the title (the stored rule name) is all there is.
     if (!destName) return "";
     const route = `${rule.source_list_name} → ${destName}`;
-    if (this._syncRuleTitle(rule, destination, destName) === route)
+    const plain = (v) =>
+      String(v)
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]/gu, "");
+    if (plain(this._syncRuleTitle(rule, destination, destName)) === plain(route))
       return platform ? `<p class="sync-route">${esc(platform)}</p>` : "";
     // The same notation as the destination picker: "name · platform".
     const label = platform ? this._syncDestinationLabel(destName, destination.platform) : destName;
@@ -616,7 +657,10 @@ export const shoppingSyncMethods = {
     const problems = [
       sourceMissing ? this.t("errSyncSourceGone") : "",
       destinationMissing
-        ? [destName, this.t("syncOutcomeDestinationMissing")].filter(Boolean).join(": ")
+        ? [
+            [destName, this.t("syncOutcomeDestinationMissing")].filter(Boolean).join(": "),
+            this.t("syncDestinationMissingHint"),
+          ].join(". ")
         : "",
       bringAuth
         ? this.t("bwSessionExpired")
@@ -625,9 +669,10 @@ export const shoppingSyncMethods = {
             ? this.tp("bwUnreachable", open, { count: open })
             : this.t("bwUnreachableNone")
           : !caps.bringSetup && !destinationMissing && destination.available === false
-            ? this.tp("syncErrorDestinationUnavailable", open, {
-                destination: destName || this._syncPlatformLabel(destination.platform) || rule.name,
-              })
+            ? this._syncDestinationUnavailableText(
+                open,
+                destName || this._syncPlatformLabel(destination.platform) || rule.name,
+              )
             : "",
       last?.outcome === "source_unavailable" ? this.t("syncErrorSourceUnavailable") : "",
     ].filter(Boolean);
@@ -1115,7 +1160,15 @@ ${this._syncRouteHtml(rule, destination, destName)}
     try {
       await this._ws("sync_resolve", { rule_id: ruleId, record_key: recordKey, action });
     } catch (err) {
-      failure = this._errorText(err);
+      // The bridge answers a resend of a removed or ticked off item with a rule-level code:
+      // the texts for that item name the item, not the Mealie list.
+      const itemKey =
+        action === "resend"
+          ? { sync_source_gone: "errSyncItemGone", sync_source_checked: "errSyncItemChecked" }[
+              err?.code
+            ]
+          : "";
+      failure = itemKey ? this.t(itemKey) : this._errorText(err);
       this._syncRefetchStatus(err);
     }
     sync.busy = false;

@@ -107,7 +107,7 @@ test("resending an item that left Mealie keeps the translated error visible", as
   });
   await click(e.card, { action: "sync-open" });
   await click(e.card, { action: "sync-resend", value: "k1", rule: "r1" });
-  assert.match(e.html(), /no longer exists\. Choose another source list/);
+  assert.match(e.html(), /This item no longer exists in Mealie, so it cannot be sent again/);
   assert.doesNotMatch(e.html(), /english bridge text/);
 });
 

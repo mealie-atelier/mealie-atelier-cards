@@ -501,7 +501,8 @@ export const bringWizardMethods = {
         ][w.step];
     const fix = Boolean(w.fixRule) && !w.done;
     // An account that is already signed in needs neither the connect title nor the sign-in step.
-    const add = w.addRule === true && !w.done && w.step >= 2;
+    // The success screen of an added rule keeps that mode: no connect title and no sign-in stepper.
+    const add = w.addRule === true && (w.done || w.step >= 2);
     const title = fix ? "syncTitle" : add ? "syncAddRule" : "bwTitle";
     return `<div class="modal-content sync-panel bw-wizard">${this._syncLead(this.t(title))}${fix || add ? "" : this._bwProgressHtml(w)}<section class="editor-card bw-panel" aria-busy="${w.saving || w.previewBusy || this._syncData().bring.busy ? "true" : "false"}">${body}</section></div>`;
   },
@@ -559,7 +560,10 @@ export const bringWizardMethods = {
     if (reauth && editable)
       action = `<p class="bw-text">${esc(this.t(caps.bringEnv ? "bwReauthTextEnv" : "bwReauthText"))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
     else if (!editable)
-      action = `<p class="sync-muted" role="note">${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncBringAdminOnly"))}</p>`;
+      // The read-only notice is the banner at the top of the dialog; saying it twice is noise.
+      action = caps.readOnly
+        ? ""
+        : `<p class="sync-muted" role="note">${esc(this.t("syncBringAdminOnly"))}</p>`;
     else if (bring.confirm)
       action = `<div class="notice bw-confirm" role="alert"><span>${esc(this.t("syncBringDisconnectConfirm"))}</span></div><div class="form-actions bw-nav"><button class="btn ghost" data-action="sync-bring-disconnect-cancel">${esc(this.t("syncCancel"))}</button><button class="btn danger" data-action="sync-bring-disconnect"${bring.busy ? " disabled" : ""}>${esc(this.t("syncBringDisconnectYes"))}</button></div>`;
     else

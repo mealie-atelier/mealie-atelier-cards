@@ -91,7 +91,10 @@ test("a removed destination list gets its own notice and no run or pause button"
   const html = e.html();
   assert.doesNotMatch(html, /todo\.e2e_gone/);
   assert.doesNotMatch(html, / is unavailable\./);
-  assert.match(html, /role="alert"><svg[\s\S]*?<span>Destination list missing<\/span>/);
+  assert.match(
+    html,
+    /role="alert"><svg[\s\S]*?<span>Destination list missing\. Edit the rule[^<]*<\/span>/,
+  );
   assert.doesNotMatch(html, /data-action="sync-run"/);
   assert.doesNotMatch(html, /data-action="sync-pause"/);
   assert.match(html, /class="btn tiny primary" data-action="sync-setup-open"/);

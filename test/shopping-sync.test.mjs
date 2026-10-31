@@ -695,7 +695,7 @@ test("web app: the wizard walks sign-in, lists, preview and the confirmed first 
   const preview = env.calls.find((c) => c.name === "sync_preview");
   assert.equal(preview.message.rule.destination_entity_id, "bring:b");
   assert.equal(preview.message.rule.duplicate_policy, "skip_exact");
-  assert.match(markup(env.cards), /This item goes to your Bring! list &quot;Einkauf&quot;\./);
+  assert.match(markup(env.cards), /This item goes to your Bring! list “Einkauf”\./);
   assert.match(markup(env.cards), /1 item is skipped\./);
   assert.doesNotMatch(markup(env.cards), /0 skipped|0 failed|Sent: 0/);
   await click(env.card, { action: "sync-bw-next" });
@@ -705,7 +705,7 @@ test("web app: the wizard walks sign-in, lists, preview and the confirmed first 
   const run = env.calls.find((c) => c.name === "sync_run");
   assert.equal(run.message.confirm_first_batch, true);
   assert.match(markup(env.cards), /All set/);
-  assert.match(markup(env.cards), /1 item is now on &quot;Einkauf&quot;\./);
+  assert.match(markup(env.cards), /1 item is now on “Einkauf”\./);
   assert.doesNotMatch(markup(env.cards), /bw-stepline/, "the heading is the only All set");
   assert.doesNotMatch(
     markup(env.cards),
@@ -818,7 +818,7 @@ test("web app: a Bring! list that is gone tells how to choose another", async ()
   });
   await openStatus(env, [rule]);
   const html = markup(env.cards);
-  assert.match(html, /The Bring! list &quot;Bring&quot; no longer exists\./);
+  assert.match(html, /The Bring! list “Bring” no longer exists\./);
   assert.doesNotMatch(html, /unreachable|cannot be reached/);
   assert.match(html, /data-action="sync-bw-pick-list" data-value="r1"/);
 });
@@ -1046,15 +1046,12 @@ test("web app: wizard copy quotes list names, hides zero counters and hints at t
   assert.match(html, /id="bw-more-panel"/);
   await click(env.card, { action: "sync-bw-next" });
   html = markup(env.cards);
-  assert.match(
-    html,
-    /This item goes to your Bring! list &quot;Einkauf&quot;\. Nothing is sent yet\./,
-  );
+  assert.match(html, /This item goes to your Bring! list “Einkauf”\. Nothing is sent yet\./);
   assert.doesNotMatch(html, /\b0 (skipped|failed|to send)/);
   env.card._hass.language = "de";
   env.card._render();
   html = markup(env.cards);
-  assert.match(html, /Dieser Eintrag geht an deine Bring!-Liste „Einkauf“\./);
+  assert.match(html, /Dieser Artikel geht an deine Bring!-Liste „Einkauf“\./);
 });
 
 test("Home Assistant never shows the Bring! connection", async () => {
