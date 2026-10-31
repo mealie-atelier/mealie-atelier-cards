@@ -2424,13 +2424,39 @@ html.js .live-frame:not([data-ready])::after {
   padding-bottom: 8%;
 }
 .bring-visual .browser {
-  width: 86%;
+  width: 72%;
 }
 .bring-visual .phone {
   position: absolute;
   right: 0;
   bottom: 0;
   width: 27%;
+  padding: clamp(3px, 0.45vw, 6px);
+  border-radius: clamp(18px, 2.2vw, 30px);
+}
+.bring-visual .phone img {
+  display: block;
+  border-radius: clamp(14px, 1.7vw, 24px);
+  object-fit: contain;
+  object-position: top left;
+}
+@media (max-width: 640px) {
+  .bring-visual {
+    padding-bottom: 0;
+  }
+  .bring-visual .browser {
+    width: 100%;
+  }
+  .bring-visual .phone {
+    position: relative;
+    width: min(62%, 240px);
+    margin: 18px auto 0;
+    padding: 6px;
+    border-radius: 28px;
+  }
+  .bring-visual .phone img {
+    border-radius: 22px;
+  }
 }
 @media (max-width: 980px) {
   .solo-grid,
