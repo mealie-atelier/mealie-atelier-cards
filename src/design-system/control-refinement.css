@@ -407,6 +407,215 @@
   }
 }
 
+/* The cooking dialog is one bounded box at every size from 641px of height up: a fixed height flex column whose
+   layout fills it, the step column inside the layout, and inside the column three parts. The head (counter,
+   progress bar) and the controls (timer panel, Back and Next bar) keep their natural height and are never
+   scrolled away; only the step text between them scrolls. So the bar and the timer panel are on screen for every
+   step length, and the DOM and Tab order stay untouched. Below 641px of height the dialog keeps the older
+   scrolling behavior, there the panel cannot fit next to the text at all. */
+@media (min-height: 641px) {
+  .atelier .modal.large:has(.cook-layout) {
+    display: flex;
+    flex-direction: column;
+    height: min(90dvh, 940px);
+    max-height: calc(100dvh - 16px);
+    overflow: hidden;
+  }
+  .atelier .modal.large:has(.cook-layout) > .cook-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-visual {
+    min-height: 0;
+  }
+  /* A narrow card, or a phone in portrait, stacks the photo band over the step column: the band keeps its own
+     height and the column takes the rest. */
+  @container atelier-card (max-width: 760px) {
+    @media (orientation: portrait), (min-height: 701px) {
+      .atelier .modal.large:has(.cook-layout) > .cook-layout {
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+      .atelier .modal.large:has(.cook-layout) .cook-visual {
+        height: 210px;
+        min-height: 210px;
+      }
+    }
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-bottom: 0;
+    /* Only a column that cannot hold even the shortest text next to the controls scrolls as a whole. */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    justify-content: flex-start;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-content > * {
+    order: 0;
+    flex-shrink: 0;
+  }
+  /* The step text is the one part that gives way: it shrinks to what is left and scrolls inside itself, down to a
+     few lines. "safe center" keeps the first line reachable once it scrolls. */
+  .atelier .modal.large:has(.cook-layout) .cook-content > .cook-stage {
+    flex: 0 1 auto;
+    min-height: min(7.5rem, 100%);
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    justify-content: safe center;
+  }
+  /* A step photo keeps its size and scrolls with the text instead of squashing. */
+  .atelier .modal.large:has(.cook-layout) .cook-content > .cook-stage > * {
+    flex-shrink: 0;
+  }
+  /* The controls are a real box below the text, on the bottom edge when the step is short. */
+  .atelier .modal.large:has(.cook-layout) .cook-content > .cook-controls {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    gap: inherit;
+    margin-block-start: auto;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-controls > * {
+    order: 0;
+    flex-shrink: 0;
+  }
+  /* Many running timers never push the bar off the dialog: the list scrolls inside the panel. */
+  .atelier .modal.large:has(.cook-layout) .cook-timers {
+    max-height: 124px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-actions {
+    position: static;
+    margin: 0;
+    padding: 4px 0 max(16px, env(safe-area-inset-bottom));
+    background: none;
+    border-top: 0;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-footnote {
+    padding-bottom: 0;
+  }
+}
+
+/* Compact timer panel: on a phone or a screen up to 860px high the panel, the text and the bar only fit together
+   when the panel gives up its extras. The tools sit in one row, the timer form in two, and the tagline, the idle
+   hint and the footnote go. The timer list keeps about one card and a half in view and scrolls beyond that. */
+@media (min-height: 641px) and ((max-height: 860px) or (max-width: 460px)) {
+  @container atelier-card (max-width: 760px) {
+    .atelier .modal.large:has(.cook-layout) .cook-visual {
+      height: 96px;
+      min-height: 96px;
+    }
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-content {
+    gap: 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-utility {
+    gap: 8px;
+    padding: 10px;
+  }
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools {
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 36px;
+    padding-inline: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools .btn svg {
+    display: none;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-header strong,
+  .atelier .modal.large:has(.cook-layout) .cook-footnote,
+  .atelier .modal.large:has(.cook-layout) .cook-timers:has(> .cook-timers-empty) {
+    display: none;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-compose {
+    gap: 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-fields {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-start {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timers {
+    max-height: 84px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-content > .cook-stage {
+    min-height: min(6rem, 100%);
+  }
+}
+
+/* Compact timer panel: on a phone or a screen up to 860px high the panel, the text and the bar only fit together
+   when the panel gives up its extras. The tools sit in one row, the timer form in two, and the tagline, the idle
+   hint and the footnote go. The timer list keeps about one card and a half in view and scrolls beyond that. */
+@media (min-height: 641px) and ((max-height: 860px) or (max-width: 460px)) {
+  @container atelier-card (max-width: 760px) {
+    .atelier .modal.large:has(.cook-layout) .cook-visual {
+      height: 96px;
+      min-height: 96px;
+    }
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-content {
+    gap: 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-utility {
+    gap: 8px;
+    padding: 10px;
+  }
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools {
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-bottom: 0;
+  }
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 36px;
+    padding-inline: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools .btn svg {
+    display: none;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-header strong,
+  .atelier .modal.large:has(.cook-layout) .cook-footnote,
+  .atelier .modal.large:has(.cook-layout) .cook-timers:has(> .cook-timers-empty) {
+    display: none;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-compose {
+    gap: 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-fields {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-start {
+    min-height: 44px;
+    padding-inline: 12px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timers {
+    max-height: 84px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-content > .cook-stage {
+    min-height: min(6rem, 100%);
+  }
+}
+
 /* The close button follows the scroll instead of leaving with the hero, inset like the old absolute one. */
 .atelier .modal > .modal-close {
   --at-close-size: 48px;

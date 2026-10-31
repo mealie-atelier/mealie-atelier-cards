@@ -356,6 +356,18 @@
 .atelier .studio-cook-tools .btn {
   font-size: 11px;
 }
+/* Idle and active label in one grid cell: the button keeps the width of the longer one, so the tools row and the
+   timer panel below it do not move when read aloud or voice control starts. */
+.atelier .studio-tool-label {
+  display: inline-grid;
+}
+.atelier .studio-tool-label > .studio-tool-text {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+}
+.atelier .studio-tool-label > .studio-tool-text[data-reserve] {
+  visibility: hidden;
+}
 .atelier .studio-shared-note {
   font-size: 10px;
   color: var(--ds-brand-text);
