@@ -303,6 +303,8 @@ def capture_tablet(browser, loc):
     # Pin the page clock (it also follows real time while Playwright works) so the timer runs only
     # on the 32 seconds advanced below.
     page.clock.pause_at(datetime.datetime.fromtimestamp(page.evaluate("Date.now()") / 1000 + 2))
+    # The timer form is folded behind its button: open it like a cook does.
+    card.locator("[data-action='timer-compose-toggle']").first.click()
     card.locator("[data-timer-minutes]").first.fill("8")
     card.locator("[data-timer-label]").first.fill(t["label"])
     card.locator("[data-action='timer-start']").first.click()

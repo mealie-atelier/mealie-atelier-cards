@@ -86,7 +86,7 @@ test("on narrow cards the cooking bar is one compact row on a solid ground", () 
   assert.ok(start >= 0, "narrow cooking bar rule exists");
   const block = refinement.slice(start, refinement.indexOf("\n}\n", start));
   assert.match(block, /display:\s*grid/);
-  assert.match(block, /grid-template-columns:\s*minmax\(0, 1fr\) auto minmax\(0, 1\.3fr\)/);
+  assert.match(block, /grid-template-columns:\s*auto auto minmax\(max-content, 1fr\)/);
   assert.match(block, /background:\s*var\(--at-surface\)/);
   assert.match(block, /\.btn\.primary \{\s*grid-column:\s*auto/);
 });

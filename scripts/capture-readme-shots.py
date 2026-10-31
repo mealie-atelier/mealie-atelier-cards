@@ -33,6 +33,9 @@ cs.TITLES["en"] = ["Kitchen", "Recipes", "Meal plan", "Shopping", "Discover"]
 from playwright.sync_api import sync_playwright  # noqa: E402
 
 OUT = ROOT / "assets" / "screens"
+# The rig mounts the bundle of the sibling checkout. CARDS_BUNDLE serves this checkout's build instead (route
+# interception), so a shot always shows the bundle of the tree it is captured from.
+BUNDLE = Path(os.environ.get("CARDS_BUNDLE", ROOT / "dist" / "mealie-atelier-cards.js"))
 # Rendered larger than the published 1440 x 960 (same aspect) so tall views fit whole, then downscaled.
 DESKTOP = {"width": int(os.environ.get("W", 1650)), "height": int(os.environ.get("H", 1100))}
 # Rendered 425 px wide (a large phone) so the first five app menu entries fit without a cut one at the edge,
@@ -59,6 +62,10 @@ def context(browser, theme: str, viewport: dict, phone: bool):
     )
     # Every shot is taken at the same time of day, so the overview greets the same way on phone and desktop.
     ctx.clock.set_fixed_time(datetime.now().replace(hour=9, minute=0, second=0, microsecond=0))
+    ctx.route(
+        "**/mealie-atelier-cards.js*",
+        lambda route: route.fulfill(path=str(BUNDLE), content_type="text/javascript"),
+    )
     return ctx
 
 
@@ -340,8 +347,19 @@ def scroll_until_clean(page) -> None:
     raise SystemExit("no phone page scroll with a clean bottom edge")
 
 
+# The bounded cooking dialog (a fixed height box from 641 px of height up) has nothing to scroll: the step text sits in
+# its own stage. The dialog is whole when it does not scroll and the whole step text shows (no fade at the stage end).
+COOK_WHOLE = """m => {
+  const stage = m.querySelector('.cook-stage');
+  return m.scrollHeight <= m.clientHeight + 1 && !!stage && stage.scrollHeight <= stage.clientHeight + 1;
+}"""
+
+
 def scroll_cook_dialog(page, fit_viewport: bool = False) -> None:
-    """Scroll the cooking dialog (natural size) the fewest pixels that leave nothing cut at an edge.
+    """Show the cooking dialog whole, or scroll it (natural size) the fewest pixels that leave nothing cut at an edge.
+
+    The bounded layout shows the whole step without scrolling; the scroll search below is for a dialog that still
+    scrolls (a viewport under 641 px of height).
 
     Neither a tool or timer card under the step bar nor a half line of step text under the pinned title strip
     (the sticky close button draws it) may be sliced by the scroll position. On a phone the last scroll position
@@ -358,6 +376,10 @@ def scroll_cook_dialog(page, fit_viewport: bool = False) -> None:
         if height is not None:
             page.set_viewport_size({"width": round(height * PHONE["width"] / PHONE["height"]), "height": height})
             page.wait_for_timeout(180)
+        if modal.evaluate(COOK_WHOLE):
+            print("cooking dialog fits whole, viewport height", height)
+            page.wait_for_timeout(400)
+            return
         top = modal.evaluate(find, [CUTS, 800])
         if top >= 0:
             print("cooking dialog scroll", top, "viewport height", height)

@@ -30,6 +30,12 @@ test("the step text is the only part of the cooking column that scrolls, the con
   assert.match(stage, /flex:\s*0 1 auto/);
   assert.match(stage, /min-height:\s*min\(/);
   assert.match(stage, /overflow:\s*hidden auto/);
+  // The scroll cue: a bottom fade while there is more below, a drawn thin scrollbar.
+  assert.match(
+    flat,
+    /\.cook-stage\.has-more \{[^}]*mask-image:\s*linear-gradient\(to bottom, #000 calc\(100% - 28px\), transparent\)/,
+  );
+  assert.match(flat, /\.cook-stage::-webkit-scrollbar \{ width: 6px; \}/);
   assert.match(stage, /justify-content:\s*safe center/);
   const controls = flat.match(/\.cook-content > \.cook-controls \{([^}]*)\}/)?.[1];
   assert.ok(controls, "the controls are a real box");
@@ -228,4 +234,51 @@ test("the stacked labels share one grid cell and the reserved one is invisible",
   assert.match(text, /grid-area:\s*1\s*\/\s*1/);
   const hidden = rules(kitchen, "[data-reserve]")[0];
   assert.match(hidden, /visibility:\s*hidden/);
+});
+
+test("the tools row and the timer panel shrink to the dialog and the tools read at 12px", () => {
+  const flat = refinement.replace(/\s+/g, " ");
+  assert.match(
+    flat,
+    /:is\( \.cook-content, \.cook-controls, \.cook-utility, \.cook-timer-header, \.cook-timer-compose, \.cook-timer-fields, \.cook-timers, \.cook-timer-card \) \{ min-width: 0; max-width: 100%; \}/,
+  );
+  assert.match(flat, /\.cook-utility \{ grid-template-columns: minmax\(0, 1fr\); \}/);
+  assert.match(flat, /\.studio-cook-tools \{ flex-wrap: wrap; max-width: 100%; \}/);
+  assert.match(flat, /\.studio-cook-tools \.btn \{ font-size: 12px; \}/);
+  // The compact panel no longer forces one nowrap row at 10px.
+  assert.doesNotMatch(flat, /font-size: 10px; white-space: nowrap/);
+  assert.doesNotMatch(flat, /\.studio-cook-tools \{ flex-wrap: nowrap/);
+  // The sync chip takes a row of its own on phones.
+  assert.match(
+    flat,
+    /max-width: 460px\) \{ \.atelier \.modal:has\(\.cook-layout\) \.studio-shared-note \{ flex: 0 0 100%; \}/,
+  );
+});
+
+test("the timer form folds behind its button and the compact block exists once", () => {
+  const flat = refinement.replace(/\s+/g, " ");
+  assert.equal(flat.split("(max-height: 860px) or (max-width: 900px)").length - 1, 1);
+  assert.match(
+    flat,
+    /\.cook-utility:not\(\[data-composing\]\) \.cook-timer-compose \{ display: none; \}/,
+  );
+});
+
+test("the timer toggle opens the form, keeps its state over a render and folds after a start", () => {
+  const card = toolsCard({ hass: { language: "en" } });
+  card._hass = { language: "en", callWS: async () => ({}) };
+  const closed = card._modalHtml();
+  assert.match(
+    closed,
+    /<button type="button" class="cook-timer-toggle" data-action="timer-compose-toggle" aria-expanded="false" aria-controls="cook-timer-compose">Set a timer<\/button>/,
+  );
+  assert.doesNotMatch(closed, /data-composing/);
+  assert.match(closed, /<div class="cook-timer-compose" id="cook-timer-compose">/);
+  card._timerComposeOpen = true;
+  const open = card._modalHtml();
+  assert.match(open, /<section class="cook-utility"[^>]* data-composing>/);
+  assert.match(open, /aria-expanded="true"/);
+  const german = toolsCard({ hass: { language: "de" } });
+  german._hass = { language: "de", callWS: async () => ({}) };
+  assert.match(german._modalHtml(), />Timer stellen<\/button>/);
 });

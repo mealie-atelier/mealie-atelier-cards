@@ -1491,6 +1491,8 @@ class MealieAtelierCard extends HTMLElement {
   _unwatchModalBar() {
     this._modalBarObserver?.disconnect();
     this._modalBarObserver = null;
+    this._cookStageObserver?.disconnect();
+    this._cookStageObserver = null;
     for (const { el, type, fn } of this._modalBarListeners || [])
       el.removeEventListener?.(type, fn);
     this._modalBarListeners = [];
@@ -1558,6 +1560,25 @@ class MealieAtelierCard extends HTMLElement {
       column.addEventListener?.("scroll", peek, { passive: true });
       this._modalBarListeners.push({ el: column, type: "scroll", fn: peek });
       peek();
+    }
+    // The step text scrolls inside its stage: a fade at the bottom edge says there is more below, and the fade is
+    // gone once the end is in view. The stage also keeps a thin visible scrollbar (see control-refinement.css).
+    const stage = column?.querySelector(".cook-stage");
+    if (stage) {
+      const more = () =>
+        stage.classList.toggle(
+          "has-more",
+          stage.scrollHeight - stage.scrollTop - stage.clientHeight > 1,
+        );
+      stage.addEventListener?.("scroll", more, { passive: true });
+      this._modalBarListeners.push({ el: stage, type: "scroll", fn: more });
+      more();
+      requestAnimationFrame?.(more);
+      document.fonts?.ready?.then(more);
+      if (typeof ResizeObserver === "function") {
+        this._cookStageObserver = new ResizeObserver(more);
+        this._cookStageObserver.observe(stage);
+      }
     }
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */
@@ -2283,6 +2304,16 @@ class MealieAtelierCard extends HTMLElement {
       this._render();
       return;
     }
+    if (action === "timer-compose-toggle") {
+      // Phones and short screens keep the timer form behind this button so the step text gets the room.
+      this._timerComposeOpen = !this._timerComposeOpen;
+      const panel = el.closest(".cook-utility");
+      panel?.toggleAttribute?.("data-composing", this._timerComposeOpen);
+      el.setAttribute("aria-expanded", this._timerComposeOpen ? "true" : "false");
+      if (this._timerComposeOpen)
+        panel?.querySelector?.("[data-timer-minutes]")?.focus?.({ preventScroll: true });
+      return;
+    }
     if (action === "timer-start") {
       const input = this.shadowRoot.querySelector("[data-timer-minutes]");
       const rawMinutes = input?.value;
@@ -2336,6 +2367,7 @@ class MealieAtelierCard extends HTMLElement {
         // The timer always runs locally; background delivery is best effort.
         this._timers.push(timer);
         this._persistTimers();
+        this._timerComposeOpen = false;
         this._render();
         this._announceTimer(timer);
         if (armError) {
