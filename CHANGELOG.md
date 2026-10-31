@@ -4,9 +4,22 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-31
+
 ### Fixed
 
-- Dialogs whose buttons sit alone in a card (clear ticked items) no longer show an empty band above the buttons, and the photo number badge on photoless tiles keeps 4.5:1 contrast in light mode.
+- Cooking mode: arrow keys and swipes move the shared session like the Back and Next buttons, so the step no longer snaps back. Every step change opens at the top, a finished recipe starts again at step 1, long step text without a title no longer becomes the heading, and the header keeps clear of the close button at laptop heights and in tablet landscape.
+- Cooking studio: alternative ingredients match whole words and are translated (rice no longer suggests flax egg), serving scaling handles mixed numbers and fractions and formats amounts in the UI language, shared timers show a finished state in one format, and voice command and read aloud show when they are listening or speaking.
+- Recipe editor: fractional and large servings save, a recipe without servings no longer gets 2, unsaved changes ask before they are discarded, step fields grow with their text, and the version history names restored steps and combined edits in the UI language.
+- Recipes: steps and notes render inline Markdown (bold, italic, links) instead of raw characters, the print preview cuts text at a word with an ellipsis, and views that failed to load say so instead of showing an empty week, "0 open items" or a "New recipe" button.
+- Week plan: recipe names get enough room on laptops with the sidebar and on iPad landscape (four plus three days per row) and break only with a hyphen.
+- Smart Shopping Sync: a rule whose Mealie list was deleted says so, "Send again" keeps its error and starts a run, the history names the rule and the partial outcome, the add-rule button explains the five-rule limit, an unreachable destination shows its name and the real number of waiting items, and rows of changed items show the old and the current text.
+- Bring! in the web app: items left after an outage or an expired session are sent again automatically, the account card offers sign-in again when the session expires, an empty first list activates the rule, the wizard hides Mealie lists that already have a rule, "Last delivery" counts only real deliveries, a quantity of 1 is not sent as detail text, wrong `BRING_EMAIL`/`BRING_PASSWORD` values are reported at start, and the dialog no longer talks about Home Assistant.
+- Web app: the PWA manifest follows the UI language, `HEAD /` answers like `GET`, the sign-in lockout counts seconds, and Bring! item text follows the app language unless `ATELIER_SYNC_LANGUAGE` is set.
+- Layout: long recipe names wrap in the edit, nutrition and print dialogs and in the cooking header on phones, dialog titles balance instead of breaking mid-word, checkbox rows line up, paired buttons share one height, dialogs whose buttons sit alone in a card lose the empty band above them, photoless tiles and their number badge reach 4.5:1 contrast, setup presets line up on dark themes, and numerals use lining figures.
+- Copy: German and English wording is consistent across cards, Bridge and docs ("Nur-Lesen-Modus", "API-Schlüssel", "Gemeinsam kochen" / "Cook together", "Print Studio"), the quick access placeholder fits on phones, touch devices see no keyboard shortcut hint, and a missing connection no longer claims read-only mode.
+- Product page: American English recipes and copy, the install routes for the Marketplace and HACS, "das Mealie-Token", and American date and currency formats.
+- Docs: web README contents, fake Bring! server instructions for Docker, `ATELIER_SYNC_LANGUAGE`, Advanced mode only on Home Assistant 2026.10 and older, and American spelling in the changelog. Unused demo food images were removed.
 
 ## [0.12.0] - 2026-10-31
 
@@ -438,7 +451,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/mealie-atelier/mealie-atelier-cards/releases/tag/v0.10.0
