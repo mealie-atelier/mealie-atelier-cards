@@ -37,6 +37,7 @@
     "test": "node --test test/*.test.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:browser": "uv run --with playwright python web/test/dialog-actions-browser.py chromium && uv run --with playwright python web/test/dialog-actions-browser.py webkit",
     "test:web": "node --test web/test/*.test.mjs",
     "test:e2e": "node web/test/e2e/run.mjs"
   },

@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Dialogs whose buttons sit alone in a card (clear ticked items) no longer show an empty band above the buttons, and the photo number badge on photoless tiles keeps 4.5:1 contrast in light mode.
+
 ## [0.12.0] - 2026-10-31
 
 ### Added
