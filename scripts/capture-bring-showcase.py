@@ -148,7 +148,7 @@ def main():
                             api("POST", "/api/households/shopping/items", {"shoppingListId": created["id"], "note": note, "quantity": 1})
                     for kind, viewport, name, widths in (
                         ("wide", {"width": 900, "height": 940}, "app-bring-connected", [900, 1800]),
-                        ("phone", {"width": 360, "height": 780}, "app-bring-phone", [360, 720]),
+                        ("phone", {"width": 360, "height": 954 if lang == "de" else 926}, "app-bring-phone", [360, 720]),
                     ):
                         control({"resetLists": True})
                         control({"addList": spec["shop"]})
