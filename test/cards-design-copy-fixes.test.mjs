@@ -299,12 +299,9 @@ test("German copy keeps one address, one term per concept and complete sentences
   assert.doesNotMatch(de.editorRunSetupWizard, /Wizard/);
   assert.match(de.uiUsdaKeyMissingWeb, /^USDA-API-Schlüssel/);
   assert.match(de.uiFoodsMatched, /zugeordnet/);
-  for (const key of [
-    "uieGLemonPastaWithSpinach",
-    "uieGWeeklyGroceries",
-    "uiSearchConversionExample",
-  ])
+  for (const key of ["uieGLemonPastaWithSpinach", "uieGWeeklyGroceries"])
     assert.match(de[key], /^z\. B\. /, key);
+  assert.match(de.uiSearchConversionExample, /^Umrechnen, z\. B\. /);
 });
 
 test("copy uses one spelling per concept in both locales", () => {

@@ -36,6 +36,10 @@ function shortenAtWord(text, limit = 110) {
 }
 /** Render modal workflows and their accessible dialog content. */
 export const dialogMethods = {
+  /** Locale aware number text (same rule as the unit conversion output), so 2.5 reads 2,5 in German. */
+  _localeNumber(value) {
+    return new Intl.NumberFormat(this._language, { maximumFractionDigits: 3 }).format(value);
+  },
   _modalHtml() {
     if (!this._modal) return "";
     const closing = `<button class="icon-btn modal-close" data-action="close-modal" title="${esc(this.t("close"))}" aria-label="${esc(this.t("close"))}">${icon("close")}</button>`;
@@ -97,15 +101,17 @@ export const dialogMethods = {
           : recipe.recipeYield;
       const baseYield =
         Number(recipe.recipeServings) > 0
-          ? `${recipe.recipeServings} ${this.tp("uiServing", Number(recipe.recipeServings))}`
+          ? `${this._localeNumber(recipe.recipeServings)} ${this.tp("uiServing", Number(recipe.recipeServings))}`
           : yieldText;
       const scaledYield =
-        discoverTarget && servingBase ? `${discoverTarget} ${servingWord}` : baseYield || "—";
+        discoverTarget && servingBase
+          ? `${this._localeNumber(discoverTarget)} ${servingWord}`
+          : baseYield || "—";
       const scaleNote =
         discoverTarget && servingBase && discoverTarget !== servingBase
           ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", {
-              target: discoverTarget,
-              base: servingBase,
+              target: this._localeNumber(discoverTarget),
+              base: this._localeNumber(servingBase),
               targetUnit: this.tp("uiServing", discoverTarget),
               baseUnit: this.tp("uiServing", servingBase),
             })}</p>`
@@ -199,11 +205,12 @@ export const dialogMethods = {
       const stepSummary =
         typeof current === "object" && current ? String(current.summary || "") : "";
       const stepBody = instructionText(current || this.t("done"));
+      const headingText = stepSummary || stepBody;
       const stepPhoto = instructionImages(current)[0];
       const cookServings = AtelierStudio.recipeServings(this._detail);
       const cookYield =
         Number(this._detail.recipeServings) > 0
-          ? `${cookServings} ${this.tp("uiServing", cookServings)}`
+          ? `${this._localeNumber(cookServings)} ${this.tp("uiServing", cookServings)}`
           : this._detail.recipeYieldQuantity && this._detail.recipeYield
             ? `${this._detail.recipeYieldQuantity} ${this._detail.recipeYield}`
             : this._detail.recipeYield || "";
@@ -212,7 +219,7 @@ export const dialogMethods = {
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
-        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${!stepSummary && stepBody.length > 140 ? ` class="cook-stage--long${stepBody.length > 320 ? " cook-stage--xlong" : ""}"` : ""}>${inlineMarkdown(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
+        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${headingText.length > 140 ? ` class="cook-stage--long${headingText.length > 320 ? " cook-stage--xlong" : ""}"` : ""}>${inlineMarkdown(headingText)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">
           <header class="cook-timer-header"><span class="cook-timer-mark" aria-hidden="true">${icon("clock", 16)}</span><div><span class="cook-timer-kicker">${this.t("uiATELIERKITCHENTIMER")}</span><strong>${this.t("uiKeepEverythingInRhythm")}</strong></div><span class="cook-timer-count">${this._timers.filter((timer) => !timer.done).length} ${this.t("uiactive")}</span></header>
           <p class="cook-sr-only" role="status" aria-live="polite" aria-atomic="true" data-timer-announce>${esc(this._timerAnnouncement || "")}</p><div class="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}" ${this._timerError ? 'aria-invalid="true" aria-describedby="cook-timer-err"' : ""}></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div>${this._timerError ? `<p class="cook-timer-error" role="alert" id="cook-timer-err">${esc(this._timerError)}</p>` : ""}</div>
@@ -384,16 +391,16 @@ export const dialogMethods = {
       ${this._printKind !== "mealplan" ? `<label class="editor-check"><input type="checkbox" data-input="print-checkboxes" ${d.print_checkboxes !== false ? "checked" : ""}> ${esc(this.t("uiPrintIncludeCheckboxes"))}</label>` : ""}
       <label class="editor-check"><input type="checkbox" data-input="print-notes" ${d.print_notes !== false ? "checked" : ""}> ${esc(this.t("uiPrintIncludeNotes"))}</label>
       <button class="btn primary print-submit" type="button" data-action="print-now">${icon("print", 17)} ${esc(this.t("uiPrintOpenPreview"))}</button>
-      <p class="print-guide">${esc(this.t("uiPrintGuide"))}</p></div>
+      <p class="print-guide">${esc(this.t("uiPrintGuide"))}${this._printKind === "mealplan" ? ` ${esc(this.t("uiPrintGuideLandscape"))}` : ""}</p></div>
       <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
         <h3>${esc(name || this.t("uiYourRecipe"))}</h3><p>${esc(this.t("uiPrintPreviewDescription"))}</p><div class="paper-line"></div><div class="paper-cols">
-          <div class="paper-col"><div class="paper-label">${esc(this.t("uiPrintIngredientsItems"))}</div>${
+          <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintDayMeal") : this.t("uiPrintIngredientsItems"))}</div>${
             paperIngredients
               .slice(0, 7)
               .map((x) => `<div class="paper-preview-row">${esc(x)}</div>`)
               .join("") || '<div class="paper-preview-row">–</div>'
           }</div>
-          <div class="paper-col"><div class="paper-label">${esc(this.t("uiPrintPreparationNotes"))}</div>${
+          <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintNotesOnly") : this.t("uiPrintPreparationNotes"))}</div>${
             paperMethod
               .slice(0, 5)
               .map(

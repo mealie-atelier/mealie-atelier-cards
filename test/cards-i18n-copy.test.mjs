@@ -9,7 +9,7 @@ const en = locale("en");
 
 test("the quick access placeholder is short enough for a 390px phone field", () => {
   // About 249px of content width at 16px; the old text measured over 315px.
-  assert.equal(de.uiSearchRecipesIngredientsOrViews, "Rezepte, Zutaten, Ansichten …");
+  assert.equal(de.uiSearchRecipesIngredientsOrViews, "Rezepte, Zutaten …");
   assert.ok(de.uiSearchRecipesIngredientsOrViews.length <= 32);
   assert.ok(en.uiSearchRecipesIngredientsOrViews.length <= 32);
 });
