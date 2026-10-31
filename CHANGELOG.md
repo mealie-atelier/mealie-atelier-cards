@@ -9,7 +9,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Added
 
 - Web app: Smart Shopping Sync to Bring! without Home Assistant. It implements the Bridge sync contract (preview, confirmed first batch, exactly-once delivery, duplicate skip, after-add and watch triggers, move mode, pause, resume, retry and resolve) against Bring! lists, and the existing sync dialog of the cards configures it.
-- Web app: an administrator connects the Bring! account in the sync dialog (**Bring!-Konto**). The password is used for one login; only the session tokens and the account's e-mail address (shown masked, in full to administrators so that signing in again needs only the password) are stored in the data directory with file mode 600. `BRING_EMAIL` and `BRING_PASSWORD` stay available for headless setups and are never persisted.
+- Web app: an administrator connects the Bring! account in the sync dialog (**Bring! account**, German: Bring!-Konto). The password is used for one login; only the session tokens and the account's e-mail address (shown masked, in full to administrators so that signing in again needs only the password) are stored in the data directory with file mode 600. `BRING_EMAIL` and `BRING_PASSWORD` stay available for headless setups and are never persisted.
 
 - Product page and docs: a feature block "Bring! ohne Home Assistant" (German and English) with real captures of the connected account from the web app against a fake Bring! server and a fictional account, a rewritten Bring! setup section in `web/README.md` and a capture script (`scripts/capture-bring-showcase.py`).
 
@@ -32,7 +32,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Demo site: the 404 page swaps its header, footer and language switch to the language of the URL below `/en/` or `/de/` and marks it as current. On any other path it stays neutral, German first with English beside it.
 - Install docs: the FAQ names where the Marketplace is (**Settings → Marketplace**, route `/marketplace/browse`).
 - README screenshots: the recipe dialog shot ends between two rows instead of slicing a step card, and the phone cooking shot shows the tools panel and the timer clear of the Back and Next bar.
-- Cooking mode: Enter in the timer fields starts the timer, and Enter in a prompt dialog (such as "Alternative Zutat") confirms it instead of cancelling.
+- Cooking mode: Enter in the timer fields starts the timer, and Enter in a prompt dialog (such as "Alternative Zutat") confirms it instead of canceling.
 - Cooking mode: a shared timer is shown as a timer card with a running or finished label and a remove button.
 - Shared cooking: the family view stops at the recipe's last step and shows "Schritt x von y".
 - Recipe search without a match says so (naming the search) instead of reading like an empty library, and the German empty text is "Keine Rezepte gefunden."
@@ -111,7 +111,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - German UI: sidebar, menu label, Print Studio and Design Studio headings and the print masthead are translated. Week and shopping prints no longer ask "How was it last time?" and the print credit link matches the sheet colors. The week range uses an en dash.
 - The start-view hint now says that only the overview keeps the navigation.
 - Shopping: quantity shown once, open items grouped by label with ticked items at the bottom, one print button per view, tidy toolbar on phones; Today items use a checkbox; footer credit link has a 44px touch target; English copy polished.
-- Shopping: items with a unit keep their amount ("1 kg Mehl"), unlabelled and ticked items get their own headings, a single toolbar button no longer stretches across the row.
+- Shopping: items with a unit keep their amount ("1 kg Mehl"), unlabeled and ticked items get their own headings, a single toolbar button no longer stretches across the row.
 - The week view scrolls to today when the dashboard data arrives or you press the today button, and the plan dialog stays open after removing one of several entries. The German category filter label is plural like the tag label.
 - The week plan shows every entry of a day sorted by meal type, labels side, snack, dessert and drink in the UI language, and the plan dialog can plan all seven meal types.
 - Tapping a note in the week plan opens the plan dialog for that day, and its remove buttons name the entry and meal type.
@@ -197,7 +197,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Focused card types open their own view. `type: custom:mealie-atelier-today` (and every other focused type) without a `mode` showed the complete kitchen; the type now sets its start view, and an explicit `mode` still wins.
 - The visual editor preview no longer shows `extra keys not allowed` once a Bridge connection is picked: the status request is sent without `entry_id`.
 - Home Assistant's card picker lists the ten card types with German names and descriptions in a German Home Assistant.
-- Kochinspo recognises meat and fish anywhere in German compound words (Hähnchenbrust, Rinderhackfleisch, Lammschulter, Miesmuscheln, Seelachs). "Mit Fleisch" and "Mit Fisch" found nothing, and vegetarian or vegan suggestions could include a chicken soup. Look-alikes stay vegetarian (Fleischtomaten, Kürbisfleisch, Hühnereier, Parmesanrinde, Austernpilze, Steakpfeffer, Hirschhornsalz, tamarind), anything marked vegan or vegetarian never counts as meat, plant drinks and plant cream no longer block vegan suggestions, and eggs inside compounds (Wachteleier, Eiernudeln) do. Every option of a line counts ("Gemüse- oder Hühnerbrühe" is not vegetarian), a plant label only counts for the product as written and not for an alternative after "oder" or "vegan:", and named cheeses and dairy (Feta, Ricotta, Schmand, Ghee, Skyr) as well as vegetarian Parmesan or protein quark are not vegan.
+- Kochinspo recognizes meat and fish anywhere in German compound words (Hähnchenbrust, Rinderhackfleisch, Lammschulter, Miesmuscheln, Seelachs). "Mit Fleisch" and "Mit Fisch" found nothing, and vegetarian or vegan suggestions could include a chicken soup. Look-alikes stay vegetarian (Fleischtomaten, Kürbisfleisch, Hühnereier, Parmesanrinde, Austernpilze, Steakpfeffer, Hirschhornsalz, tamarind), anything marked vegan or vegetarian never counts as meat, plant drinks and plant cream no longer block vegan suggestions, and eggs inside compounds (Wachteleier, Eiernudeln) do. Every option of a line counts ("Gemüse- oder Hühnerbrühe" is not vegetarian), a plant label only counts for the product as written and not for an alternative after "oder" or "vegan:", and named cheeses and dairy (Feta, Ricotta, Schmand, Ghee, Skyr) as well as vegetarian Parmesan or protein quark are not vegan.
 - Safari and other WebKit browsers no longer jump the page down by the card's height after a tap that re-renders the card (Kochinspo choices, settings, ticks). The Kochinspo wizard scrolls back up only when its top has left the screen.
 - The corner style in the design settings shows the active option when no radius was set.
 - The Kochinspo time step always shows a selected limit. The default of 40 minutes matched none of the choices, so nothing was marked; a saved limit now selects the next choice up.
@@ -249,7 +249,7 @@ First release prepared for the Home Assistant Marketplace (HA 2026.11), with HAC
 
 ### Fixed
 
-- Security: timers in the standalone app now belong to the person who created them. Listing shows only your own timers and cancelling needs the owner or an admin, also when a shared cooking session is ended (admins see all; timers stored without an owner are admin only). The timer limit counts only active timers, with at most 20 per account.
+- Security: timers in the standalone app now belong to the person who created them. Listing shows only your own timers and canceling needs the owner or an admin, also when a shared cooking session is ended (admins see all; timers stored without an owner are admin only). The timer limit counts only active timers, with at most 20 per account.
 - Security: `journal_set` now needs the write level in the standalone app, because the journal is one shared object that a reader could overwrite. The app reports `features.shared_journal`, so the cards hide journal actions from readers there.
 - Sign-in throttle behind a reverse proxy: the server logs a one-time warning when a private address sends `X-Forwarded-For` while `ATELIER_TRUSTED_PROXIES` is empty, because all users would then share one throttle counter.
 - Recipe and cook dialogs open above the Home Assistant sidebar instead of being partly covered by it.

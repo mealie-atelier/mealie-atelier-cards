@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const script = readFileSync(new URL("../scripts/capture-readme-shots.py", import.meta.url), "utf8");
@@ -21,4 +21,21 @@ test("the phone cooking shot scrolls the tools and timer clear of the step bar",
   const cook = main.slice(main.indexOf('if step == "cook":', main.indexOf("PHONE, True")));
   assert.match(cook.slice(0, 200), /start_cooking\(page\)\s+scroll_cook_dialog\(page\)/);
   assert.match(block("scroll_cook_dialog"), /eval\(cuts\)\(m, false\) === 0/);
+});
+
+test("unused stale screenshots and uncredited food images are gone", () => {
+  assert.ok(!script.includes("dashboard-dark"));
+  assert.ok(!existsSync(new URL("../assets/screens/dashboard-dark.webp", import.meta.url)));
+  assert.ok(!existsSync(new URL("../demo/food", import.meta.url)));
+});
+
+test("docs use American spelling and the English Bring! label", () => {
+  const log = readFileSync(new URL("../CHANGELOG.md", import.meta.url), "utf8");
+  assert.doesNotMatch(log, /cancell|unlabell|recognis/i);
+  assert.match(log, /\*\*Bring! account\*\*, German: Bring!-Konto/);
+  const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+  assert.match(readme, /2026\.10 and older, turn on \*\*Advanced mode\*\*/);
+  const faq = readFileSync(new URL("../docs/FAQ.md", import.meta.url), "utf8");
+  assert.match(faq, /2026\.10 and older, turn on \*\*Advanced mode\*\*/);
+  assert.doesNotMatch(faq, /Resources\*\* \(Advanced mode\)/);
 });

@@ -341,7 +341,6 @@ def main() -> None:
     tmp = Path(sys.argv[0]).resolve().parent / ".shot.png"
     desktop = [
         ("dashboard-light", "light", "dashboard", None),
-        ("dashboard-dark", "dark", "dashboard", None),
         ("recipes-dark", "dark", "recipes", None),
         ("mealplan-light", "light", "mealplan", None),
         ("shopping-dark", "dark", "shopping", None),

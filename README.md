@@ -79,7 +79,7 @@ Step-by-step guides in German: [setup](https://alles-automatisch.de/lernen/meali
 
 ### Manual install on UI-managed dashboards
 
-Turn on **Advanced mode** in your user profile, open **Settings → Dashboards**, choose the three dots → **Resources**, add `/local/community/mealie-atelier-cards/mealie-atelier-cards.js` as a **JavaScript module** and hard-reload the browser. A `lovelace: resources:` block in `configuration.yaml` is ignored on UI-managed dashboards.
+Open **Settings → Dashboards**, choose the three dots → **Resources** (on Home Assistant 2026.10 and older, turn on **Advanced mode** in your user profile first), add `/local/community/mealie-atelier-cards/mealie-atelier-cards.js` as a **JavaScript module** and hard-reload the browser. A `lovelace: resources:` block in `configuration.yaml` is ignored on UI-managed dashboards.
 
 <a id="yaml-resource"></a>
 
