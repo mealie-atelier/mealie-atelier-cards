@@ -2197,6 +2197,14 @@ class MealieAtelierCard extends HTMLElement {
       );
     }
   }
+  /** True for mouse and trackpad input, where focusing a field does not raise an on-screen keyboard. */
+  _finePointer() {
+    return (
+      typeof globalThis.matchMedia === "function" &&
+      globalThis.matchMedia("(pointer: fine)")?.matches === true
+    );
+  }
+
   async _handleClick(event) {
     const el = event.target?.closest?.("[data-action]");
     if (!el) return;
@@ -2310,7 +2318,9 @@ class MealieAtelierCard extends HTMLElement {
       const panel = el.closest(".cook-utility");
       panel?.toggleAttribute?.("data-composing", this._timerComposeOpen);
       el.setAttribute("aria-expanded", this._timerComposeOpen ? "true" : "false");
-      if (this._timerComposeOpen)
+      // Only keyboard and mouse users get the field focused. On touch devices it would raise the
+      // on-screen keyboard over the steps, so focus stays on the toggle.
+      if (this._timerComposeOpen && this._finePointer())
         panel?.querySelector?.("[data-timer-minutes]")?.focus?.({ preventScroll: true });
       return;
     }
@@ -2398,7 +2408,8 @@ class MealieAtelierCard extends HTMLElement {
       if (input && [5, 10, 15].includes(minutes)) {
         input.value = String(minutes);
         this._clearTimerError();
-        input.focus({ preventScroll: true });
+        // A tapped preset already fills the field, so touch devices keep the keyboard closed.
+        if (this._finePointer()) input.focus({ preventScroll: true });
       }
       return;
     }

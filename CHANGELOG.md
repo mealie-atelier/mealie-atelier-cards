@@ -8,6 +8,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Cooking mode: "Timer stellen" no longer focuses the minutes field on touch devices, so the on-screen keyboard stays down. Mouse and keyboard users still get the focus.
+- Cooking mode: a shared timer is shown once and counted once in the active badge, not again as a local timer from its notification alarm.
 - Shopping sync dialog: a validation error under the wait field no longer pushes the check interval input down; both inputs share one top edge.
 - Dashboard: the shopping section link reads "Einkaufsliste" or "Shopping" with an arrow like the two links above it, instead of a bare arrow.
 - Bring! dialog with credentials from the server environment: when Bring! refuses them, only the instruction to fix `.env` and restart is shown, no sign-in form that contradicts it. The web README says the same.

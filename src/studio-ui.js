@@ -893,8 +893,13 @@ MealieAtelierCard.prototype._refresh = async function () {
   await this._studioRefresh();
   try {
     const payload = await this._ws("alarms");
-    const remote = (payload?.alarms || []).filter((x) =>
-      ["scheduled", "retry", "sending"].includes(x.status),
+    // The Bridge arms an alarm under each shared timer's id for notifications. The shared card already
+    // shows that timer, so the alarm must not come back as a second local card.
+    const sharedIds = new Set(
+      (this._studio?.family?.session?.timers || []).map((timer) => String(timer.id)),
+    );
+    const remote = (payload?.alarms || []).filter(
+      (x) => ["scheduled", "retry", "sending"].includes(x.status) && !sharedIds.has(String(x.id)),
     );
     const local = this._timers.filter((x) => !x.serverArmed);
     const previous = new Map(this._timers.map((timer) => [String(timer.id), timer]));
@@ -1004,7 +1009,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
       // The badge counts the shared timers that still run next to the local ones.
       html = html.replace(
         /(<span class="cook-timer-count">)(\d+)/,
-        (_m, open, n) => `${open}${Number(n) + sharedRunningCount(session)}`,
+        (_m, open) => `${open}${activeTimerCount(this._timers, session)}`,
       );
     }
   }
@@ -1027,17 +1032,23 @@ MealieAtelierCard.prototype._modalHtml = function () {
   return html;
 };
 /** Shared timers of the session that still run. */
-function sharedRunningCount(session, now = Date.now()) {
-  return (session?.timers || []).filter((x) => x.deadline > now).length;
+/** Active timers in the cook badge, counting every timer id once (local plus shared). */
+function activeTimerCount(timers, session, now = Date.now()) {
+  const ids = new Set();
+  for (const timer of timers || []) if (!timer.done) ids.add(String(timer.id));
+  for (const timer of session?.timers || []) if (timer.deadline > now) ids.add(String(timer.id));
+  return ids.size;
 }
 MealieAtelierCard.prototype._tickTimers = function () {
   _atOriginalTick.call(this);
   const badge = this.shadowRoot.querySelector(".cook-timer-count");
   if (badge && this._modal === "cook") {
     const session = this._studio?.family?.session;
-    const shared = session?.slug === this._detail?.slug ? sharedRunningCount(session) : 0;
-    const local = this._timers.filter((timer) => !timer.done).length;
-    badge.textContent = `${local + shared} ${this.t("uiactive")}`;
+    const count = activeTimerCount(
+      this._timers,
+      session?.slug === this._detail?.slug ? session : null,
+    );
+    badge.textContent = `${count} ${this.t("uiactive")}`;
   }
   for (const span of this.shadowRoot.querySelectorAll("[data-shared-timer]")) {
     const timer = this._studio?.family?.session?.timers.find(
