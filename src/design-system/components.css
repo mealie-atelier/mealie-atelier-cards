@@ -565,7 +565,8 @@
   min-height: 44px !important;
   padding: var(--ds-space-2) var(--ds-space-3) !important;
   border-radius: var(--ds-radius-sm) !important;
-  font-size: var(--ds-font-xs) !important;
+  /* 16px keeps iOS Safari from zooming the page when a field gets focus. */
+  font-size: 16px !important;
 }
 .atelier .cook-timer-fields input[data-timer-minutes] {
   font-variant-numeric: tabular-nums;
@@ -700,4 +701,44 @@
 }
 .atelier .editor-footer {
   margin-block-start: var(--ds-space-4);
+}
+
+/* Print preview of the meal plan: a day row never wraps, so the day column and the writing rows stay level. */
+.atelier .print-paper .paper-preview-row.paper-day-row {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.atelier .print-paper .paper-preview-row.paper-day-row b {
+  margin-inline-end: 4px;
+}
+/* Step editor on narrow screens: the text box takes the full row, the step buttons sit in a row beneath it. */
+@container atelier-card (max-width: 480px) {
+  .atelier .editor-steps .editor-step {
+    grid-template-columns: 23px minmax(0, 1fr);
+  }
+  .atelier .editor-steps .editor-step .step-buttons {
+    grid-column: 2;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  .atelier .editor-steps .editor-step .step-buttons button {
+    width: 44px;
+  }
+  .atelier .editor-steps .editor-step textarea[data-step-text] {
+    min-height: 64px;
+  }
+}
+/* Get ingredients form: the labels stay on one line, the action row wraps instead. */
+.atelier [data-form="recipe-to-list"] .form-actions .btn {
+  white-space: nowrap;
+}
+@container atelier-card (max-width: 480px) {
+  .atelier [data-form="recipe-to-list"] .form-actions {
+    flex-wrap: wrap;
+  }
+  .atelier [data-form="recipe-to-list"] .form-actions .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
 }

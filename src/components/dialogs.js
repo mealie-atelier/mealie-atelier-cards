@@ -358,18 +358,23 @@ export const dialogMethods = {
             ? asArray(this._data.shopping?.items)
                 .filter((x) => String(x.shoppingListId) === String(this._activeList))
                 .map((x) => x.display || x.note || x.food?.name || "")
-            : Array.from({ length: 7 }, (_, i) =>
-                dayString(this._locale, addDays(this._weekStart, i), {
-                  weekday: "short",
-                  day: "numeric",
-                }),
-              );
+            : Array.from({ length: 7 }, (_, i) => {
+                const day = addDays(this._weekStart, i);
+                const meals = asArray(this._data.mealplan)
+                  .filter((m) => m.date === dateYmd(day))
+                  .map(mealName)
+                  .filter(Boolean);
+                return {
+                  day: dayString(this._locale, day, { weekday: "short", day: "numeric" }),
+                  meals: meals.join(", "),
+                };
+              });
       const paperMethod =
         this._printKind === "recipe"
           ? asArray(this._detail?.recipeInstructions).map((x) => plainMarkdown(instructionText(x)))
           : this._printKind === "shopping"
             ? ["", ""]
-            : asArray(this._data.mealplan).map(mealName);
+            : [];
       size = "large";
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">${esc(this.t("printStudioEyebrow"))}</div>
       <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
@@ -395,19 +400,33 @@ export const dialogMethods = {
       <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
         <h3>${esc(name || this.t("uiYourRecipe"))}</h3><p>${esc(this.t("uiPrintPreviewDescription"))}</p><div class="paper-line"></div><div class="paper-cols">
           <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintDayMeal") : this.t("uiPrintIngredientsItems"))}</div>${
-            paperIngredients
-              .slice(0, 7)
-              .map((x) => `<div class="paper-preview-row">${esc(x)}</div>`)
-              .join("") || '<div class="paper-preview-row">–</div>'
+            this._printKind === "mealplan"
+              ? paperIngredients
+                  .map(
+                    (x) =>
+                      `<div class="paper-preview-row paper-day-row"><b>${esc(x.day)}</b> ${esc(x.meals)}</div>`,
+                  )
+                  .join("")
+              : paperIngredients
+                  .slice(0, 7)
+                  .map((x) => `<div class="paper-preview-row">${esc(x)}</div>`)
+                  .join("") || '<div class="paper-preview-row">–</div>'
           }</div>
           <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintNotesOnly") : this.t("uiPrintPreparationNotes"))}</div>${
-            paperMethod
-              .slice(0, 5)
-              .map(
-                (x, i) =>
-                  `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
-              )
-              .join("") || '<div class="paper-preview-row">–</div>'
+            this._printKind === "mealplan"
+              ? paperIngredients
+                  .map(
+                    () =>
+                      '<div class="paper-preview-row paper-day-row paper-write-row">&nbsp;</div>',
+                  )
+                  .join("")
+              : paperMethod
+                  .slice(0, 5)
+                  .map(
+                    (x, i) =>
+                      `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
+                  )
+                  .join("") || '<div class="paper-preview-row">–</div>'
           }</div></div>
           <div class="paper-foot">${esc(this.t("uiPrintDesignedForPaper"))}</div></div></div></div></div>`;
     }

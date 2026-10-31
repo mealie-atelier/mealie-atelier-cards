@@ -979,10 +979,9 @@ MealieAtelierCard.prototype._modalHtml = function () {
         (open) => `${open}${session.timers.map((x) => this._sharedTimerCard(x, session)).join("")}`,
       );
       // The badge counts the shared timers that still run next to the local ones.
-      const sharedRunning = session.timers.filter((x) => x.deadline > Date.now()).length;
       html = html.replace(
         /(<span class="cook-timer-count">)(\d+)/,
-        (_m, open, n) => `${open}${Number(n) + sharedRunning}`,
+        (_m, open, n) => `${open}${Number(n) + sharedRunningCount(session)}`,
       );
     }
   }
@@ -1004,8 +1003,19 @@ MealieAtelierCard.prototype._modalHtml = function () {
   }
   return html;
 };
+/** Shared timers of the session that still run. */
+function sharedRunningCount(session, now = Date.now()) {
+  return (session?.timers || []).filter((x) => x.deadline > now).length;
+}
 MealieAtelierCard.prototype._tickTimers = function () {
   _atOriginalTick.call(this);
+  const badge = this.shadowRoot.querySelector(".cook-timer-count");
+  if (badge && this._modal === "cook") {
+    const session = this._studio?.family?.session;
+    const shared = session?.slug === this._detail?.slug ? sharedRunningCount(session) : 0;
+    const local = this._timers.filter((timer) => !timer.done).length;
+    badge.textContent = `${local + shared} ${this.t("uiactive")}`;
+  }
   for (const span of this.shadowRoot.querySelectorAll("[data-shared-timer]")) {
     const timer = this._studio?.family?.session?.timers.find(
       (x) => x.id === span.dataset.sharedTimer,
