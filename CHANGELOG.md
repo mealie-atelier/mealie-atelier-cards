@@ -8,6 +8,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Reduced motion: transitions are switched off instead of shortened to a fraction of a millisecond, so elements no longer flash at the wrong size for a frame when a layout restyles.
 - Cooking mode: the timer panel and the Back, To recipe and Next bar are on screen for every step length at every size from 641px of height up (a very long step used to push them below the fold). Only the step text scrolls, inside a bounded area between the progress bar and the controls, and the timer panel gets more compact on phones and short screens. Starting read aloud or voice control no longer widens the button or moves the tools row and the timer panel.
 - Recipe editor toasts (for example after restoring a version) show above the dialog instead of behind it. Ingredient ranges written with words ("1 bis 2 Zehen", "1 to 2 cloves") scale on both ends.
 - Recipe edit dialog: the sticky save bar runs flush with the dialog edges at every width and no longer carries its own bottom radius. The cooking step eyebrow hyphenates a very long word like the heading below it.

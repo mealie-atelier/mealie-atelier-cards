@@ -245,7 +245,7 @@
   .atelier .ds-page * {
     scroll-behavior: auto !important;
     animation-duration: var(--ds-motion-reduced) !important;
-    transition-duration: var(--ds-motion-reduced) !important;
+    transition: none !important;
   }
 }
 

@@ -363,7 +363,14 @@ test("the photo slot and the controls below keep their place when a step gains a
     await wait(40);
     samples.push(measure());
   }
-  await wait(300);
+  // The swap starts once the new photo has decoded (a fallback fires after 1.5 s) and then cross-fades:
+  // poll for the exact end state instead of a fixed window, so a busy machine cannot cut it short.
+  for (let i = 0; i < 300; i++) {
+    const photos = card.shadowRoot.querySelectorAll(".cook-step-photo");
+    if (photos.length === 1 && photos[0].getAttribute("src") === "./food/b.webp") break;
+    await wait(10);
+  }
+  await wait(50);
   result = { before, sync, samples, after: measure(), photos: card.shadowRoot.querySelectorAll(".cook-step-photo").length, src: q(".cook-step-photo")?.getAttribute("src") };
 `,
       { width },

@@ -1243,7 +1243,7 @@
   .atelier *::before,
   .atelier *::after {
     animation-duration: var(--ds-motion-reduced) !important;
-    transition-duration: var(--ds-motion-reduced) !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }

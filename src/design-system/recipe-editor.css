@@ -267,6 +267,6 @@
 @media (prefers-reduced-motion: reduce) {
   .atelier .ed-progress-bar,
   .atelier .ed-option {
-    transition-duration: var(--ds-motion-reduced);
+    transition: none !important;
   }
 }

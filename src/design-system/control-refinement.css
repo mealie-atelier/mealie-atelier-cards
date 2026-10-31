@@ -129,7 +129,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .atelier :is(.btn, .icon-btn, select) {
-    transition-duration: var(--ds-motion-reduced);
+    transition: none !important;
   }
 }
 /* Consistent vertical rhythm and icon alignment for grouped actions. */
