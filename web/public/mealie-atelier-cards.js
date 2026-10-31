@@ -12711,6 +12711,11 @@ ha-card {
   pointer-events: none;
   opacity: 0;
 }
+/* A dialog that is a flex column (the cook dialog, the Bring! wizard) must not squeeze the button or the strip title:
+   the title clips its text, so it would shrink to nothing while its negative margin still pulls the content up. */
+.atelier .modal > :is(.modal-close, .modal-bar-title) {
+  flex: none;
+}
 /* No transition on the title or on the strip behind it: both switch in the same frame in every path (scroll,
    re-render, step change), so the title never shows without its strip or the other way round. */
 .atelier .modal.bar-on > .modal-bar-title {
@@ -12725,6 +12730,24 @@ ha-card {
   .atelier .modal > .modal-bar-title {
     display: none;
   }
+}
+
+/* Every heading and eyebrow in a dialog keeps clear of the close button (its inset, its width and a gap), at every width,
+   so a long title wraps or hyphenates (the card sets lang on its root) instead of running under the tile. */
+.atelier .modal {
+  --at-close-reserve: calc(20px + 48px + 12px);
+}
+@container atelier-card (max-width: 420px) {
+  .atelier .modal {
+    --at-close-reserve: calc(20px + 44px + 12px);
+  }
+}
+.atelier .modal :is(h1, h2, h3, h4, .eyebrow) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-end: var(--at-close-reserve);
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 /* Fields side by side or stacked in a column share one rhythm: the grid gap alone spaces them. */
@@ -14341,6 +14364,9 @@ class MealieAtelierCard extends HTMLElement {
     const heading = modal?.querySelector("h2");
     if (!modal || !strip || !heading) return;
     strip.textContent = heading.textContent.trim();
+    // The strip takes over once the first piece of content has scrolled under it. That is the heading, except in the
+    // cook dialog, whose progress bar sits above the step heading and would otherwise peek out at the dialog's top edge.
+    const anchor = modal.querySelector("[data-bar-anchor]") || heading;
     if (typeof IntersectionObserver === "undefined") return;
     // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
     const edge = 20 + (strip.offsetHeight || 48);
@@ -14348,10 +14374,13 @@ class MealieAtelierCard extends HTMLElement {
     // entrance transform, whole pixels, so one pixel of rounding slack). The observer is only a trigger when the
     // layout cannot be read; then its entry decides.
     const settle = (entry) => {
-      const bottom = this._layoutBottom(heading, modal);
+      const bottom = this._layoutBottom(anchor, modal);
+      // An anchor other than the heading (the cook progress bar) must never switch the strip on at scroll 0, where
+      // short laptop windows lay it inside the strip band: nothing has scrolled under the strip yet.
       const under =
         bottom !== null
-          ? bottom - (modal.scrollTop || 0) < edge - 1
+          ? bottom - (modal.scrollTop || 0) < edge - 1 &&
+            (anchor === heading || modal.scrollTop > 0)
           : Boolean(
               entry &&
                 !entry.isIntersecting &&
@@ -14363,7 +14392,7 @@ class MealieAtelierCard extends HTMLElement {
       (entries) => settle(entries[entries.length - 1]),
       { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
     );
-    this._modalBarObserver.observe(heading);
+    this._modalBarObserver.observe(anchor);
     // Decide now (the observer reports asynchronously), and again when the entrance animation is over, so a
     // dialog or step that starts at scroll 0 never keeps a stale strip.
     settle();
@@ -16471,7 +16500,7 @@ const dialogMethods = {
       size = "large";
       content = `<div class="cook-layout"><div class="cook-visual">${recipeImage(this._detail, "cook-visual-image")}<div class="cook-brand">${esc(this._detail.name)}</div></div>
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
-        <div class="cook-track" role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
+        <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
         <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2>${linkify(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${linkify(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">

@@ -1391,6 +1391,9 @@ class MealieAtelierCard extends HTMLElement {
     const heading = modal?.querySelector("h2");
     if (!modal || !strip || !heading) return;
     strip.textContent = heading.textContent.trim();
+    // The strip takes over once the first piece of content has scrolled under it. That is the heading, except in the
+    // cook dialog, whose progress bar sits above the step heading and would otherwise peek out at the dialog's top edge.
+    const anchor = modal.querySelector("[data-bar-anchor]") || heading;
     if (typeof IntersectionObserver === "undefined") return;
     // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
     const edge = 20 + (strip.offsetHeight || 48);
@@ -1398,10 +1401,13 @@ class MealieAtelierCard extends HTMLElement {
     // entrance transform, whole pixels, so one pixel of rounding slack). The observer is only a trigger when the
     // layout cannot be read; then its entry decides.
     const settle = (entry) => {
-      const bottom = this._layoutBottom(heading, modal);
+      const bottom = this._layoutBottom(anchor, modal);
+      // An anchor other than the heading (the cook progress bar) must never switch the strip on at scroll 0, where
+      // short laptop windows lay it inside the strip band: nothing has scrolled under the strip yet.
       const under =
         bottom !== null
-          ? bottom - (modal.scrollTop || 0) < edge - 1
+          ? bottom - (modal.scrollTop || 0) < edge - 1 &&
+            (anchor === heading || modal.scrollTop > 0)
           : Boolean(
               entry &&
                 !entry.isIntersecting &&
@@ -1413,7 +1419,7 @@ class MealieAtelierCard extends HTMLElement {
       (entries) => settle(entries[entries.length - 1]),
       { root: modal, rootMargin: `-${edge}px 0px 0px 0px`, threshold: 0 },
     );
-    this._modalBarObserver.observe(heading);
+    this._modalBarObserver.observe(anchor);
     // Decide now (the observer reports asynchronously), and again when the entrance animation is over, so a
     // dialog or step that starts at scroll 0 never keeps a stale strip.
     settle();

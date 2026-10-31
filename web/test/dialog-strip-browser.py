@@ -45,7 +45,38 @@ STATE = """(() => {
   if (!modal) return null;
   const title = modal.querySelector(":scope > .modal-bar-title");
   const close = modal.querySelector(":scope > .modal-close");
-  if (!title || !close) return { modal: true, noStrip: true, scrollTop: Math.round(modal.scrollTop), barOn: modal.classList.contains("bar-on") };
+  // Heading and eyebrow text must never run under the close tile (text boxes, not the full-width block boxes).
+  const collisions = [];
+  if (close) {
+    const t = close.getBoundingClientRect();
+    for (const el of modal.querySelectorAll("h1, h2, h3, h4, .eyebrow, .modal-eyebrow")) {
+      if (title && title.contains(el)) continue;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      for (const r of range.getClientRects()) {
+        if (r.width < 1 || r.height < 1) continue;
+        if (r.left < t.right - 0.5 && r.right > t.left + 0.5 && r.top < t.bottom - 0.5 && r.bottom > t.top + 0.5) {
+          collisions.push(el.tagName.toLowerCase() + "." + el.className + ":" + el.textContent.trim().slice(0, 24));
+          break;
+        }
+      }
+    }
+  }
+  // A thin coloured element (a progress bar) cut by the dialog's top edge shows as a stray tab: while the strip is off,
+  // nothing like that may be visible there.
+  const clipped = [];
+  {
+    const top = modal.getBoundingClientRect().top;
+    for (const el of modal.querySelectorAll("*")) {
+      if (close && close.contains(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.height < 1 || r.height > 12 || r.width < 8) continue;
+      if (r.top < top + 0.5 && r.bottom > top + 0.5 && getComputedStyle(el).backgroundColor !== "rgba(0, 0, 0, 0)" && getComputedStyle(el).visibility === "visible") {
+        clipped.push(el.tagName.toLowerCase() + "." + el.className);
+      }
+    }
+  }
+  if (!title || !close) return { modal: true, noStrip: true, collisions, clipped, scrollTop: Math.round(modal.scrollTop), barOn: modal.classList.contains("bar-on") };
   const mr = modal.getBoundingClientRect();
   const tr = title.getBoundingClientRect();
   const cs = getComputedStyle(close);
@@ -71,13 +102,50 @@ STATE = """(() => {
   const onTop = closeOnTop && above(title, tr.left + 40, tr.top + tr.height / 2);
   title.style.pointerEvents = keep;
   const sticky = getComputedStyle(title).position === "sticky" && cs.position === "sticky";
-  const h2 = modal.querySelector("h2");
-  return { modal: true, scrollable: /^(auto|scroll)$/.test(getComputedStyle(modal).overflowY), scrollTop: Math.round(modal.scrollTop), barOn: modal.classList.contains("bar-on"), stripShown, stripOpaque, titleShown, titleOpaque,
+  // The strip takes over when the first content under it has scrolled away: the heading, or the cook progress bar.
+  const h2 = modal.querySelector("[data-bar-anchor]") || modal.querySelector("h2");
+  return { modal: true, collisions, clipped, scrollable: /^(auto|scroll)$/.test(getComputedStyle(modal).overflowY), scrollTop: Math.round(modal.scrollTop), barOn: modal.classList.contains("bar-on"), stripShown, stripOpaque, titleShown, titleOpaque,
     stripTop: Math.round(tr.top - mr.top), onTop, sticky,
     closeShown: cs.display !== "none" && cs.visibility !== "hidden" && +cs.opacity > 0.5 && close.getBoundingClientRect().width > 8,
-    h: h2 ? h2.textContent.trim().slice(0, 30) : null, topmost: seen, headingBottom: h2 ? Math.round(h2.getBoundingClientRect().bottom - mr.top) : null, barEdge: 20 + title.offsetHeight, mh: Math.round(mr.height) };
+    h: h2 ? h2.textContent.trim().slice(0, 30) : null, hasHeading: !!modal.querySelector("h2"), topmost: seen, headingBottom: h2 ? Math.round(h2.getBoundingClientRect().bottom - mr.top) : null, barEdge: 20 + title.offsetHeight, mh: Math.round(mr.height) };
 })()"""
 SAMPLER = "() => { window.__frames = []; window.__go = true; const tick = () => { if (!window.__go) return; window.__frames.push(" + STATE + "); requestAnimationFrame(tick); }; requestAnimationFrame(tick); }"
+
+# The same measurement with every heading and eyebrow of the open dialog set to a long German compound word plus a
+# long phrase (the worst case a translation or a recipe name can produce), then restored. With lift, the dialog is first
+# scrolled until its first heading sits at the top (the state of the screenshot where the title ran under the tile),
+# and only text that reaches below the header strip counts, because text wholly under the strip is hidden by design.
+STRESS = """((lift) => {
+  const card = [...document.querySelectorAll("*")].find((e) => e.shadowRoot?.querySelector(".atelier"));
+  const modal = card.shadowRoot.querySelector(".modal");
+  const close = modal && modal.querySelector(":scope > .modal-close");
+  if (!close) return null;
+  const long = "Donaudampfschifffahrtsgesellschaftskapitänsmützenhalter und Buttermilchpfannkuchen mit Beerenkompott";
+  const els = [...modal.querySelectorAll("h1, h2, h3, h4, .eyebrow")].filter((el) => !el.children.length && !el.closest(".modal-bar-title"));
+  const saved = els.map((el) => el.textContent);
+  const scrollBefore = modal.scrollTop;
+  const first = modal.querySelector("h2");
+  if (lift && first) modal.scrollTop += first.getBoundingClientRect().top - modal.getBoundingClientRect().top - 8;
+  els.forEach((el) => { el.textContent = long; });
+  const t = close.getBoundingClientRect();
+  const stripEdge = modal.getBoundingClientRect().top + 20 + (modal.querySelector(":scope > .modal-bar-title")?.offsetHeight || 48);
+  const out = [];
+  els.forEach((el) => {
+    if (lift && el.getBoundingClientRect().bottom <= stripEdge) return;
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    for (const r of range.getClientRects()) {
+      if (r.width < 1 || r.height < 1) continue;
+      if (r.left < t.right - 0.5 && r.right > t.left + 0.5 && r.top < t.bottom - 0.5 && r.bottom > t.top + 0.5) {
+        out.push(el.tagName.toLowerCase() + "." + el.className);
+        break;
+      }
+    }
+  });
+  els.forEach((el, i) => { el.textContent = saved[i]; });
+  modal.scrollTop = scrollBefore;
+  return { checked: els.length, out };
+})"""
 
 problems = []
 checked = [0]
@@ -91,6 +159,10 @@ def judge(label, s, expect_top=False):
     if not s:
         problems.append(f"{label}: no dialog")
         return
+    if s["collisions"] and not s.get("barOn"):
+        problems.append(f"{label}: heading or eyebrow runs under the close button ({s['collisions']})")
+    if s["clipped"] and not s.get("barOn"):
+        problems.append(f"{label}: a thin element is cut by the dialog top edge and shows as a stray tab ({s['clipped']})")
     if s.get("noStrip"):
         return
     if not s["scrollable"]:
@@ -118,16 +190,70 @@ def judge(label, s, expect_top=False):
         problems.append(f"{label}: new dialog not at scroll 0 with strip off ({json.dumps(s)})")
 
 
-mock, mport = launch(["node", "test/mock-services.mjs"])
+def sync_rule_editor(page, tag, settle, scroll, state, shoot, close, stress):
+    """Creates a rule through the Bring! wizard (the first window of a server does it, later ones find it), then opens
+    the real rule editor ("Bearbeiten") and checks it at the top and scrolled."""
+    close()
+    page.locator('[data-action="nav"]', has_text="Einkauf").first.click()
+    page.locator(".shopping-toolbar").wait_for()
+    settle(900)
+    if not page.locator('[data-action="sync-open"]').count():
+        page.locator("button.bw-entry").first.click()
+        settle(700)
+        page.fill('[data-input="sync-bring-email"]', "cook@example.test")
+        page.fill('[data-input="sync-bring-password"]', "fixture-bring-password")
+        page.locator('.bw-form button[type="submit"]').first.click()
+        page.locator('[data-input="sync-bw-bring"]').first.wait_for(timeout=15000)
+        settle(300)
+        page.locator(".bw-choice").first.click()
+        for _ in range(3):
+            page.locator('[data-action="sync-bw-next"]:not([disabled])').first.click(timeout=15000)
+            settle(900)
+        page.locator('[data-action="sync-bw-save"], [data-action="sync-bw-send"]').first.click()
+        settle(1500)
+        close()
+    page.locator('[data-action="sync-open"]').first.click()
+    settle(700)
+    edit = page.locator('.modal [data-action="sync-setup-open"][data-value]:not([data-value=""])')
+    if not edit.count():
+        problems.append(f"{tag}: no sync rule to edit after the wizard")
+        close()
+        return
+    edit.first.click()
+    settle(1200)
+    st = state()
+    if not st or "sync-setup" not in (page.evaluate("() => {" + CARD + " return card._modal; }") or ""):
+        problems.append(f"{tag}: Bearbeiten did not open the sync rule editor")
+        close()
+        return
+    judge(f"{tag} sync rule editor top", st, expect_top=True)
+    stress(f"{tag} sync rule editor top")
+    shoot("sync-rule-editor-top")
+    room = page.evaluate("() => {" + CARD + " const m = card.shadowRoot.querySelector('.modal'); return m.scrollHeight - m.clientHeight; }")
+    if not st["scrollable"] or room < 150:
+        problems.append(f"{tag}: sync rule editor does not scroll here (room {room})")
+    else:
+        for y in (200, min(900, room)):
+            scroll(y)
+            judge(f"{tag} sync rule editor scrolled {y}", state())
+            shoot(f"sync-rule-editor-scrolled-{y}")
+    close()
+
+
+mock, mport = launch(["node", "test/mock-services.mjs"], {**os.environ, "MOCK_RICH_RECIPE": "1"})
+bring, bport = launch(["node", "test/support/fake-bring-server.mjs", "0"])
 env = {**os.environ, "MEALIE_URL": f"http://127.0.0.1:{mport}", "MEALIE_API_TOKEN": "LOCAL_TEST_TOKEN",
        "ATELIER_USERNAME": "atelier", "ATELIER_PASSWORD": "test-pass-strip-1", "PORT": "0", "HOST": "127.0.0.1",
-       "ATELIER_DATA_DIR": tempfile.mkdtemp(prefix="strip-browser-")}
+       "ATELIER_DATA_DIR": tempfile.mkdtemp(prefix="strip-browser-"), "BRING_EMAIL": "", "BRING_PASSWORD": "",
+       "BRING_API_BASE": f"http://127.0.0.1:{bport}", "BRING_API_KEY": "fixture-api-key"}
 web = None
 try:
     web, wport = launch(["node", "server.mjs"], env)
     with sync_playwright() as play:
         browser = getattr(play, browser_name).launch()
-        for width, height in [(int(w), 520) for w in os.environ.get('WIDTHS', '390,1440').split(',')]:
+        # Phone: a short portrait window. Desktop: a window just above the landscape hero layouts of
+        # polish.css (max-height 700px), where the dialog does not scroll and the strip has nothing to do.
+        for width, height in [(int(w), 520 if int(w) < 600 else 720) for w in os.environ.get('WIDTHS', '390,1440').split(',')]:
             phone = width < 600
             ctx = browser.new_context(http_credentials={"username": "atelier", "password": "test-pass-strip-1"}, locale="de-DE",
                                       viewport={"width": width, "height": height}, is_mobile=phone, has_touch=phone,
@@ -157,6 +283,40 @@ try:
                     if f:
                         judge(f"{label} frame {i}", f, expect_top=False)
 
+            def stress(label):
+                # At scroll 0, and with the first heading lifted to the top of the dialog.
+                for lift in (False, True):
+                    checked[0] += 1
+                    st = state()
+                    if not st or (not lift and st["scrollTop"] != 0) or (lift and not st.get("scrollable")):
+                        continue
+                    r = page.evaluate(STRESS, lift)
+                    if r and r["out"]:
+                        problems.append(f"{label}{' lifted' if lift else ''}: long heading or eyebrow runs under the close button ({r['out']})")
+
+            def sweep(label):
+                """Scrolls the open dialog in small steps and reports every position where a thin element peeks out of its top edge."""
+                checked[0] += 1
+                found = page.evaluate("""async (state) => {
+                  const card = [...document.querySelectorAll("*")].find((e) => e.shadowRoot?.querySelector(".atelier"));
+                  const modal = card.shadowRoot.querySelector(".modal");
+                  const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+                  const read = new Function("return " + state);
+                  const room = modal.scrollHeight - modal.clientHeight;
+                  const out = [];
+                  for (let y = 0; y <= room; y += Math.max(1, Math.floor(room / 80))) {
+                    modal.scrollTop = y;
+                    await frame();
+                    const s = read();
+                    if (s && s.clipped.length && !s.barOn) out.push(y + ":" + s.clipped.join(","));
+                  }
+                  modal.scrollTop = 0;
+                  await frame();
+                  return out;
+                }""", STATE)
+                if found:
+                    problems.append(f"{label}: a thin element peeks out of the dialog top edge while scrolling at {found[:3]}")
+
             def close():
                 for _ in range(3):
                     if page.locator(".modal > .modal-close").count():
@@ -170,10 +330,12 @@ try:
             page.locator(".recipe-tile").first.click()
             settle(700)
             judge(f"{tag} recipe top", state(), expect_top=True)
+            stress(f"{tag} recipe top")
             shoot("recipe-top")
             room = page.evaluate("() => {" + CARD + " const m = card.shadowRoot.querySelector('.modal'); return m.scrollHeight - m.clientHeight; }")
             if not state()["scrollable"]:
                 room = 0
+                problems.append(f"{tag}: recipe dialog does not scroll in a {width}x{height} window, so the strip is not exercised there")
             elif room < 40:
                 problems.append(f"{tag}: recipe dialog does not scroll in a {height}px window, test cannot reach the scrolled state")
             # Scroll through the whole range with the per-frame sampler running.
@@ -184,6 +346,15 @@ try:
             scroll(min(200, room))
             judge(f"{tag} recipe scrolled", state())
             shoot("recipe-scrolled")
+            # Far enough that the heading is under the strip: the strip must be on, named and opaque (a desktop window included).
+            if room > 400:
+                scroll(min(500, room))
+                deep = state()
+                judge(f"{tag} recipe deep", deep)
+                if not deep["barOn"] or not deep["titleShown"]:
+                    problems.append(f"{tag}: recipe heading scrolled under the strip but the strip is off ({json.dumps(deep)})")
+                shoot("recipe-deep")
+                scroll(min(200, room))
             # A re-render of the same dialog keeps the scroll position and keeps strip and title in step, frame by frame.
             before = state()["scrollTop"]
             page.evaluate(SAMPLER)
@@ -195,7 +366,7 @@ try:
             if abs(after["scrollTop"] - before) > 2:
                 problems.append(f"{tag}: re-render of the same dialog lost its scroll ({before} to {after['scrollTop']})")
             # Different dialogs opened by clicking from the scrolled recipe start at the top with the strip off.
-            for action in ("plan-form", "edit-form", "journal-open", "recipe-to-list-form"):
+            for action in ("plan-form", "edit-form", "journal-open", "recipe-to-list-form", "cook-start"):
                 btn = page.locator(f'.modal [data-action="{action}"]')
                 if not btn.count():
                     continue
@@ -207,7 +378,9 @@ try:
                 settle(700)
                 frames(f"{tag} {action} frames")
                 judge(f"{tag} {action} settled", state(), expect_top=True)
+                stress(f"{tag} {action} top")
                 shoot(f"{action}-top")
+                sweep(f"{tag} {action} sweep")
                 r = page.evaluate("() => {" + CARD + " const m = card.shadowRoot.querySelector('.modal'); return m.scrollHeight - m.clientHeight; }")
                 if r > 40:
                     scroll(min(200, r))
@@ -216,9 +389,11 @@ try:
                 close()
                 page.locator(".recipe-tile").first.click()
                 settle(700)
+            sync_rule_editor(page, tag, settle, scroll, state, shoot, close, stress)
             ctx.close()
         browser.close()
 finally:
+    bring.terminate()
     if web:
         web.terminate()
     mock.terminate()

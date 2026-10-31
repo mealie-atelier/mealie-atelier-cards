@@ -95,6 +95,11 @@
   pointer-events: none;
   opacity: 0;
 }
+/* A dialog that is a flex column (the cook dialog, the Bring! wizard) must not squeeze the button or the strip title:
+   the title clips its text, so it would shrink to nothing while its negative margin still pulls the content up. */
+.atelier .modal > :is(.modal-close, .modal-bar-title) {
+  flex: none;
+}
 /* No transition on the title or on the strip behind it: both switch in the same frame in every path (scroll,
    re-render, step change), so the title never shows without its strip or the other way round. */
 .atelier .modal.bar-on > .modal-bar-title {
@@ -109,6 +114,24 @@
   .atelier .modal > .modal-bar-title {
     display: none;
   }
+}
+
+/* Every heading and eyebrow in a dialog keeps clear of the close button (its inset, its width and a gap), at every width,
+   so a long title wraps or hyphenates (the card sets lang on its root) instead of running under the tile. */
+.atelier .modal {
+  --at-close-reserve: calc(20px + 48px + 12px);
+}
+@container atelier-card (max-width: 420px) {
+  .atelier .modal {
+    --at-close-reserve: calc(20px + 44px + 12px);
+  }
+}
+.atelier .modal :is(h1, h2, h3, h4, .eyebrow) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-end: var(--at-close-reserve);
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 /* Fields side by side or stacked in a column share one rhythm: the grid gap alone spaces them. */
