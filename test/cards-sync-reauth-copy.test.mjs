@@ -112,3 +112,16 @@ test("the week plan feature shot is produced by the showcase script with a match
     assert.equal(entry.height, Math.round(((bottom - top) * 1600) / 960));
   }
 });
+
+test("the sign-in again state offers disconnect unless credentials come from the environment", () => {
+  for (const env of [false, true]) {
+    const card = make({ env, rules: [rule] });
+    const html = card._bwAccountHtml(caps(card));
+    assert.equal(html.includes("sync-bring-disconnect-ask"), !env, `env=${env}`);
+  }
+  const card = make({ rules: [rule] });
+  card._syncData().bring.confirm = true;
+  const html = card._bwAccountHtml(caps(card));
+  assert.match(html, /sync-bring-disconnect"/);
+  assert.match(html, /bw-login|type="password"/);
+});

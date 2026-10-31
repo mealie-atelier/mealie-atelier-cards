@@ -520,6 +520,8 @@ export const bringWizardMethods = {
     // Only a run that went well counts as a delivery; a failed run must not say "just now".
     // A later failed run does not undo an earlier delivery, so the history counts as well.
     const healthy = ["sent", "nothing_to_send", "reconciled"];
+    // A plain Bring! outage heals by itself, so it is neither healthy nor something to look at.
+    const outage = "destination_unavailable";
     // A run that found nothing to send delivered nothing, so it does not move "last delivery".
     const delivered = (entry) =>
       ["sent", "partial", "reconciled"].includes(entry?.outcome) && Number(entry.count) > 0;
@@ -535,14 +537,21 @@ export const bringWizardMethods = {
     const listGone = rules.some((rule) => this._syncBringGone(rule, caps));
     const attention =
       connected &&
-      (listGone || rules.some((rule) => rule.last_run && !healthy.includes(rule.last_run.outcome)));
+      (listGone ||
+        rules.some(
+          (rule) => rule.last_run && ![...healthy, outage].includes(rule.last_run.outcome),
+        ));
+    const unreachable =
+      connected && !attention && rules.some((rule) => rule.last_run?.outcome === outage);
     const stateKey = reauth
       ? "bwStateReauth"
       : listGone
         ? "bwStateListGone"
         : attention
           ? "bwStateAttention"
-          : "bwStateConnected";
+          : unreachable
+            ? "bwStateUnreachable"
+            : "bwStateConnected";
     // The list and what waits are on the rule card; the account only says who and when. The sign-in
     // form shows the address itself while signing in again.
     const facts = reauth
@@ -557,6 +566,10 @@ export const bringWizardMethods = {
       ? `<dl class="bw-facts">${facts.map(([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>`
       : "";
     let action = "";
+    const disconnectHtml = () =>
+      bring.confirm
+        ? `<div class="notice bw-confirm" role="alert"><span>${esc(this.t("syncBringDisconnectConfirm"))}</span></div><div class="form-actions bw-nav"><button class="btn ghost" data-action="sync-bring-disconnect-cancel">${esc(this.t("syncCancel"))}</button><button class="btn danger" data-action="sync-bring-disconnect"${bring.busy ? " disabled" : ""}>${esc(this.t("syncBringDisconnectYes"))}</button></div>`
+        : `${bring.error ? `<div class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(bring.error)}</span></div>` : ""}<div class="form-actions"><button class="btn" data-action="sync-bring-disconnect-ask">${esc(this.t("syncBringDisconnect"))}</button></div>`;
     if (reauth && editable) {
       // Without a rule there is nothing to keep, so the text must not promise it.
       const key = caps.bringEnv
@@ -567,15 +580,14 @@ export const bringWizardMethods = {
           ? "bwReauthText"
           : "bwReauthTextNoRules";
       action = `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
+      // The privacy line promises a disconnect, so the way to do it sits right there (not with env credentials).
+      if (!caps.bringEnv) action += disconnectHtml();
     } else if (!editable)
       // The read-only notice is the banner at the top of the dialog; saying it twice is noise.
       action = caps.readOnly
         ? ""
         : `<p class="sync-muted" role="note">${esc(this.t("syncBringAdminOnly"))}</p>`;
-    else if (bring.confirm)
-      action = `<div class="notice bw-confirm" role="alert"><span>${esc(this.t("syncBringDisconnectConfirm"))}</span></div><div class="form-actions bw-nav"><button class="btn ghost" data-action="sync-bring-disconnect-cancel">${esc(this.t("syncCancel"))}</button><button class="btn danger" data-action="sync-bring-disconnect"${bring.busy ? " disabled" : ""}>${esc(this.t("syncBringDisconnectYes"))}</button></div>`;
-    else
-      action = `${bring.error ? `<div class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(bring.error)}</span></div>` : ""}<div class="form-actions"><button class="btn" data-action="sync-bring-disconnect-ask">${esc(this.t("syncBringDisconnect"))}</button></div>`;
+    else action = disconnectHtml();
     const warn = reauth || attention;
     return `<section class="editor-card bw-account is-${warn ? "warn" : "ok"}" aria-labelledby="bw-account-title"><div class="bw-account-head"><h3 id="bw-account-title">${esc(this.t("syncBringTitle"))}</h3><span class="bw-pill">${icon(warn ? "bolt" : "check", 13)} ${esc(this.t(stateKey))}</span></div>${list}${action}</section>`;
   },

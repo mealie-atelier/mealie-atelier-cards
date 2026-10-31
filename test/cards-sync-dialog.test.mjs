@@ -307,3 +307,32 @@ test("web app: users who cannot connect get the dialog button, not 'Connect to B
 test("the sync notice icon does not shrink", () => {
   assert.match(css, /\.atelier \.sync-explain svg\s*\{[^}]*flex:\s*0 0 auto/);
 });
+
+test("read-only notices for a missing source or destination never mention choosing or deleting", async () => {
+  const at = new Date().toISOString();
+  for (const [outcome, patch, keep, drop] of [
+    [
+      "source_missing",
+      { source_missing: true },
+      /administrator has to change the rule/,
+      /Choose another|delete the rule/,
+    ],
+    [
+      "destination_missing",
+      {},
+      /administrator has to change the rule/,
+      /Edit the rule|pick another/,
+    ],
+  ]) {
+    const e = env({ rules: [rule({ ...patch, last_run: { at, outcome } })] });
+    e.card._status.entries[0].read_only = true;
+    await click(e.card, { action: "sync-open" });
+    assert.match(e.html(), keep, outcome);
+    assert.doesNotMatch(e.html(), drop, outcome);
+  }
+  const writable = env({
+    rules: [rule({ source_missing: true, last_run: { at, outcome: "source_missing" } })],
+  });
+  await click(writable.card, { action: "sync-open" });
+  assert.match(writable.html(), /Choose another source list or delete the rule/);
+});

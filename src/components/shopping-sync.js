@@ -658,12 +658,14 @@ export const shoppingSyncMethods = {
     const destinationMissing = !bringGone && last?.outcome === "destination_missing";
     // A rule that cannot run offers Edit first, and its notice already states the status.
     const stuck = sourceMissing || destinationMissing;
+    // Without write access there is no Edit or Delete button, so the notice must not tell to use them.
+    const locked = caps.readOnly || !caps.write;
     const problems = [
-      sourceMissing ? this.t("errSyncSourceGone") : "",
+      sourceMissing ? this.t(locked ? "errSyncSourceGoneReadOnly" : "errSyncSourceGone") : "",
       destinationMissing
         ? [
             [destName, this.t("syncOutcomeDestinationMissing")].filter(Boolean).join(": "),
-            this.t("syncDestinationMissingHint"),
+            this.t(locked ? "syncDestinationMissingHintReadOnly" : "syncDestinationMissingHint"),
           ].join(". ")
         : "",
       bringAuth

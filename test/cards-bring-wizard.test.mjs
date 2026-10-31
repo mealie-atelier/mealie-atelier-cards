@@ -112,3 +112,16 @@ test("adding a rule to a connected account is titled for that and has no sign-in
   assert.match(html, /<h2 id="sync-title">Connect to Bring!<\/h2>/);
   assert.match(html, /bw-progress/);
 });
+
+test("a plain Bring! outage shows a neutral unreachable state, not the attention badge", () => {
+  const run = { at: minutesAgo(1), outcome: "destination_unavailable", count: 0 };
+  const card = wizardCard({ rules: [{ id: "r1", source_list_id: "l1", last_run: run }] });
+  const html = card._bwAccountHtml(card._syncCaps());
+  assert.match(html, /Unreachable/);
+  assert.doesNotMatch(html, /Needs a look/);
+  assert.match(html, /bw-account is-ok/);
+  const failed = wizardCard({
+    rules: [{ id: "r1", source_list_id: "l1", last_run: { ...run, outcome: "failed" } }],
+  });
+  assert.match(failed._bwAccountHtml(failed._syncCaps()), /Needs a look/);
+});
