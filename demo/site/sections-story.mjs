@@ -166,7 +166,7 @@ function everyday(ctx) {
           "Druckstudio für Rezepte, Listen und Wochenplan",
           "Print studio for recipes, lists and the meal plan",
         ),
-        t("Editorial, Kompakt oder tintensparend", "Editorial, compact or ink saver"),
+        t("Editorial, Kompakt oder Tintensparend", "Editorial, compact or ink saver"),
       ],
       visual: scene(ctx, "phone", "app-phone-cookbook", alt.cookbook),
     },

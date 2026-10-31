@@ -167,3 +167,32 @@ test("scaling keeps leading-zero decimals with three decimals", () => {
   assert.equal(s("0.125 l"), "0,25 l");
   assert.equal(s("0,250 kg"), "0,5 kg");
 });
+
+test("scaleIngredient scales each alternative around oder and or", () => {
+  assert.equal(Studio.scaleIngredient("2 Eier oder 1 Banane", 6, 3, "de"), "4 Eier oder 2 Banane");
+  assert.equal(Studio.scaleIngredient("2 eggs or 1 banana", 4, 2, "en"), "4 eggs or 2 banana");
+  assert.equal(
+    Studio.scaleIngredient("1/2 Tasse Milch ODER 1 EL Öl", 4, 2, "de"),
+    "1 Tasse Milch ODER 2 EL Öl",
+  );
+});
+
+test("scaleIngredient keeps a parenthesized pack size fixed", () => {
+  assert.equal(
+    Studio.scaleIngredient("1 Dose (400 g) Tomaten", 6, 3, "de"),
+    "2 Dose (400 g) Tomaten",
+  );
+  assert.equal(
+    Studio.scaleIngredient("1 can (14 oz) tomatoes or 2 fresh (200 g)", 4, 2, "en"),
+    "2 can (14 oz) tomatoes or 4 fresh (200 g)",
+  );
+});
+
+test("scaleIngredient leaves unchanged lines and words containing oder untouched", () => {
+  assert.equal(Studio.scaleIngredient("2 Eier oder 1 Banane", 3, 3, "de"), "2 Eier oder 1 Banane");
+  assert.equal(Studio.scaleIngredient("2 Eier", 4, 2, "de"), "4 Eier");
+  assert.equal(
+    Studio.scaleIngredient("1 Prise Salz oder Pfeffer", 4, 2, "de"),
+    "2 Prise Salz oder Pfeffer",
+  );
+});
