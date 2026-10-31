@@ -120,8 +120,8 @@ test("the Mealie address errors name MEALIE_URL only in the web app", () => {
     for (const [language, web, expected] of [
       ["de", true, /MEALIE_URL/],
       ["en", true, /MEALIE_URL/],
-      ["de", false, /Integrationsoptionen/],
-      ["en", false, /integration options/],
+      ["de", false, /Optionen der Mealie Atelier Bridge/],
+      ["en", false, /Mealie Atelier Bridge options/],
     ]) {
       const card = makeCard(loadCards(), {
         hass: { language, atelierOfflineHost: web, callWS: async () => ({}) },
@@ -142,8 +142,8 @@ test("the USDA key missing text names the .env file in the web app and the integ
   for (const [language, web, expected] of [
     ["de", true, /USDA_FDC_API_KEY/],
     ["en", true, /USDA_FDC_API_KEY/],
-    ["de", false, /Integrationsoptionen/],
-    ["en", false, /integration options/],
+    ["de", false, /Optionen der Mealie Atelier Bridge/],
+    ["en", false, /Mealie Atelier Bridge options/],
   ]) {
     const card = makeCard(loadCards(), {
       hass: { language, atelierOfflineHost: web, callWS: async () => ({}) },
@@ -230,7 +230,7 @@ test("copy uses one term per setting, one Bridge name and the neuter Token", () 
     assert.ok(i18n(lang).errMealieForbidden, `${lang} errMealieForbidden`);
     assert.ok(i18n(lang).errMealieNotFound, `${lang} errMealieNotFound`);
   }
-  assert.doesNotMatch(JSON.stringify(de), /API-Schlüssel/);
+  assert.doesNotMatch(JSON.stringify(de), /API-Key/);
   assert.match(de.uiNoWriteGrant, /Home-Assistant-Nutzer/);
   assert.equal(i18n("en").editorFoodPhotographyCrop, i18n("en").uiPhotoCrop);
 });
@@ -297,7 +297,7 @@ test("German copy keeps one address, one term per concept and complete sentences
   assert.equal(de.studioAICheck, "Mit KI prüfen");
   assert.doesNotMatch(de.studioDeviceInvalid, /Entity/);
   assert.doesNotMatch(de.editorRunSetupWizard, /Wizard/);
-  assert.match(de.uiUsdaKeyMissingWeb, /^USDA-API-Key/);
+  assert.match(de.uiUsdaKeyMissingWeb, /^USDA-API-Schlüssel/);
   assert.match(de.uiFoodsMatched, /zugeordnet/);
   for (const key of [
     "uieGLemonPastaWithSpinach",
@@ -524,9 +524,14 @@ test("nutrition keeps the specific reason for a bare invalid_request and transla
       "de",
       "invalid_request",
       "USDA FoodData Central API key is not configured",
-      /kein USDA-API-Key eingerichtet/,
+      /kein USDA-API-Schlüssel eingerichtet/,
     ],
-    ["de", "invalid_request", "USDA API key is not configured", /kein USDA-API-Key eingerichtet/],
+    [
+      "de",
+      "invalid_request",
+      "USDA API key is not configured",
+      /kein USDA-API-Schlüssel eingerichtet/,
+    ],
     ["de", "invalid_request", "Ingredient 2: choose a USDA food", /Wähle für jede Zutat/],
     [
       "de",

@@ -70,7 +70,7 @@ test("without an AI key the review explains it and sends nothing", async () => {
   await click(card, "studio-ai-audit");
   assert.equal(calls.dialogs.length, 0);
   assert.equal(calls.ws.length, 0);
-  assert.match(calls.flashed.join(), /KI-API-Key/);
+  assert.match(calls.flashed.join(), /KI-API-Schlüssel/);
 });
 
 test("the review button follows the ai_enabled flag", () => {
@@ -105,7 +105,7 @@ test("the substitute helper sends the card language and skips the server without
   await click(t.card, "studio-replacement");
   assert.equal(t.calls.ws.length, 0);
   assert.match(t.card._aiSwap, /Keine geprüfte lokale Alternative gefunden\. KI ist optional/);
-  assert.equal((t.card._aiSwap.match(/API-Key/g) || []).length, 1);
+  assert.equal((t.card._aiSwap.match(/API-Schlüssel/g) || []).length, 1);
 });
 
 test("an older Bridge without AI state gets no language key", async () => {
@@ -193,9 +193,9 @@ test("the nutrition header is titled and counts servings by plural in both langu
 });
 
 test("the missing USDA key hint matches where the key is set", () => {
-  assert.match(nutritionHtml("en"), /integration options/);
-  assert.match(nutritionHtml("de"), /Integrationsoptionen/);
-  assert.match(nutritionHtml("de"), /USDA-API-Key fehlt/);
+  assert.match(nutritionHtml("en"), /Mealie Atelier Bridge options/);
+  assert.match(nutritionHtml("de"), /Optionen der Mealie Atelier Bridge/);
+  assert.match(nutritionHtml("de"), /USDA-API-Schlüssel fehlt/);
   const web = nutritionHtml("en", { web: true });
   assert.match(web, /USDA_FDC_API_KEY in the server’s \.env file/);
   assert.doesNotMatch(web, /settings/i);

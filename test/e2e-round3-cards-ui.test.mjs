@@ -137,14 +137,14 @@ const css = (name) =>
 const locale = (name) =>
   JSON.parse(readFileSync(new URL(`../src/i18n/${name}.json`, import.meta.url), "utf8"));
 
-test("the helper mode has one name per language across button, tag and footnote", () => {
+test("the helper mode has one name per language across button and footnote, and the tag names the person", () => {
   for (const [language, name] of [
     ["en", "Helper view"],
     ["de", "Helferansicht"],
   ]) {
     const texts = locale(language);
     assert.equal(texts.familyHelperMode, name);
-    assert.equal(texts.familyHelper, name);
+    assert.equal(texts.familyHelper, language === "en" ? "Child" : "Kind");
     assert.ok(texts.familySafety.includes(language === "en" ? name.toLowerCase() : name));
     assert.ok(
       !/child view|Kinderansicht|Helfermodus|Helper mode|Simple helper/.test(JSON.stringify(texts)),
