@@ -26,7 +26,7 @@ The Home Assistant integration is maintained in the separate [`mealie-atelier-br
 From the repository root:
 
 ```sh
-npx --yes prettier@3.5.3 --write "**/*.{js,mjs,cjs,css,json,jsonc,html,yaml,yml}" "!**/dist/**" "!**/public/mealie-atelier-cards.js"
+npx prettier --write "**/*.{js,mjs,cjs,css,json,jsonc,html,yaml,yml}" "!**/dist/**" "!**/public/mealie-atelier-cards.js"
 ```
 
 Run package checks:

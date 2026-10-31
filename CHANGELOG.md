@@ -243,7 +243,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - The corner style (square, small, large) now shapes recipe tiles, panels, dialogs, day cards, metric tiles and inputs, not only three rules. The default look is unchanged.
 - The visual editor names the accent colors (Salbeigrün, Aprikose and so on, in German and English) with a color swatch beside the select instead of raw hex values.
 - The suggested card titles in Home Assistant's card picker follow the Home Assistant language (German or English, English fallback) instead of always being English.
-- The visual editor no longer shows the first option when a stored value is not a preset (for example `language: fr`, `columns: 9`, `theme: purple`): the stored value is shown as a selected, labelled extra option and kept on save.
+- The visual editor no longer shows the first option when a stored value is not a preset (for example `language: fr`, `columns: 9`, `theme: purple`): the stored value is shown as a selected, labeled extra option and kept on save.
 - The data connection select always lists the built-in Home Assistant Mealie option; without a Mealie integration it is disabled with a one-line hint.
 
 ### Changed
