@@ -398,10 +398,14 @@ test("the new photo cross-fades over the old one and instantly with reduced moti
   card._cookIndex = 3;
   card._render();
   const now = [...card.shadowRoot.querySelectorAll(".cook-step-photo")].map((i) => i.getAttribute("src"));
+  // The fade starts once the new photo has decoded, which can take a while on a busy machine:
+  // watch until the swap is complete instead of a fixed window.
   let overlap = 0;
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 300; i++) {
     await wait(10);
-    overlap = Math.max(overlap, card.shadowRoot.querySelectorAll(".cook-step-photo").length);
+    const photos = card.shadowRoot.querySelectorAll(".cook-step-photo");
+    overlap = Math.max(overlap, photos.length);
+    if (photos.length === 1 && photos[0].getAttribute("src") === "./food/b.webp" && !oldImg.isConnected) break;
   }
   await wait(600);
   const figure = q(".cook-step-figure");
