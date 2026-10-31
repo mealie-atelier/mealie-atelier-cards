@@ -168,3 +168,11 @@
 .atelier .editor-columns > .field {
   margin: 0;
 }
+
+/* The cooking notes dialog title keeps the full close tile clearance like every other dialog title, so on a phone it
+   is set a little smaller: "Meine Kochnotizen" then fits one line instead of wrapping beside the tile. */
+@container atelier-card (max-width: 420px) {
+  .atelier .modal .modal-content.journal-studio > h2 {
+    font-size: 29px;
+  }
+}

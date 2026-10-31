@@ -100,6 +100,12 @@ const AtelierStudio = (() => {
     "⅔": [2, 3],
     "¼": [1, 4],
     "¾": [3, 4],
+    "⅕": [1, 5],
+    "⅖": [2, 5],
+    "⅗": [3, 5],
+    "⅘": [4, 5],
+    "⅙": [1, 6],
+    "⅚": [5, 6],
     "⅛": [1, 8],
     "⅜": [3, 8],
     "⅝": [5, 8],
@@ -157,7 +163,7 @@ const AtelierStudio = (() => {
     const whole = Math.floor(value + 1e-9);
     const frac = value - whole;
     if (frac < 0.01) return String(whole);
-    for (const d of [2, 3, 4, 8]) {
+    for (const d of [2, 3, 4, 5, 6, 8]) {
       const n = Math.round(frac * d);
       if (n > 0 && n < d && Math.abs(frac - n / d) < 0.01) {
         // Reduce, so 2/4 reads as 1/2.

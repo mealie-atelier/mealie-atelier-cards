@@ -796,3 +796,10 @@ test("the kid-friendly bonus applies to German and English family tags", () => {
   const [other] = Studio.suggest([withTag("b", "schnell")], { kidFriendly: true });
   assert.ok(!other.reasons.some((reason) => reason.key === "studioReasonFamilyFriendly"));
 });
+
+test("fifth and sixth unicode fractions scale like their neighbours", () => {
+  assert.equal(Studio.scaleIngredient("⅕ Tasse Zucker", 4, 2), "⅖ Tasse Zucker");
+  assert.equal(Studio.scaleIngredient("⅙ Tasse Mehl", 6, 2), "½ Tasse Mehl");
+  assert.equal(Studio.scaleIngredient("⅖ Tasse Milch", 4, 2), "⅘ Tasse Milch");
+  assert.equal(Studio.scaleIngredient("1⅗ Tassen Wasser", 2, 2), "1⅗ Tassen Wasser");
+});

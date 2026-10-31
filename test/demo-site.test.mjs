@@ -360,7 +360,7 @@ test("landing pages carry the links, social tags and JSON-LD", () => {
 
 test("every page shares the designed footer in its own language without photo credits", () => {
   const made = {
-    de: /Mit <span class="heart"[^>]*>♥<\/span> gemacht von/,
+    de: /Mit <span class="heart"[^>]*>♥<\/span> von/,
     en: /Made with <span class="heart"[^>]*>♥<\/span> by/,
   };
   const pages = contentPages(builds.local);

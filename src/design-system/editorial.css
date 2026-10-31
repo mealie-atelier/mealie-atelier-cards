@@ -1264,6 +1264,9 @@
   letter-spacing: -1.7px;
   font-weight: 500;
 }
+.atelier .journal-studio > h2 + p {
+  margin-top: 14px;
+}
 .atelier .nutri-header {
   background: linear-gradient(120deg, rgba(157, 203, 178, 0.2), rgba(157, 203, 178, 0.035));
   border: 1px solid var(--at-line);
