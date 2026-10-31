@@ -428,3 +428,41 @@ test("a different dialog opens at scroll 0, the same dialog keeps its scroll on 
   card._render();
   assert.deepEqual(writes, []);
 });
+
+test("only a dialog's title block reserves room for the close button, not every heading", () => {
+  const rule = css.match(
+    /\.atelier\s+\.modal\s+:is\(([\s\S]*?)\)\s*\{[^}]*padding-inline-end:\s*var\(--at-close-reserve\)/,
+  );
+  assert.ok(rule, "the reserve rule exists");
+  const targets = rule[1].replace(/\s+/g, " ");
+  for (const wanted of [
+    ".modal-content > :is(h1, h2, .eyebrow)",
+    ".editor-lead > div > :is(h2, .eyebrow)",
+    ".bw-panel > .bw-head > .bw-title",
+  ])
+    assert.ok(targets.includes(wanted), wanted);
+  // Not the broad selector that also reached cook steps, card headings and the centred Bring! done screen.
+  assert.doesNotMatch(css, /\.atelier \.modal :is\(h1, h2, h3, h4, \.eyebrow\)/);
+});
+
+test("a scrolling cook step column starts at its top edge instead of being centred", () => {
+  const polish = readFileSync(new URL("../src/design-system/polish.css", import.meta.url), "utf8");
+  const blocks = polish
+    .split(/\n(?=@media)/)
+    .filter(
+      (b) => /overflow-y:\s*auto/.test(b) && /\.cook-content\s*\{[^}]*overflow-y:\s*auto/.test(b),
+    );
+  assert.ok(
+    blocks.length >= 2,
+    "the 701-1000px landscape and the tall portrait cook layouts scroll their column",
+  );
+  for (const block of blocks.filter((b) =>
+    /min-height: 701px\) and \(max-height: 1000px|min-width: 761px\) and \(min-height: 681px/.test(
+      b,
+    ),
+  ))
+    assert.match(
+      block.match(/\.cook-content\s*\{[^}]*overflow-y:\s*auto[^}]*\}/)[0],
+      /justify-content:\s*flex-start/,
+    );
+});

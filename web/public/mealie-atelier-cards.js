@@ -10005,6 +10005,9 @@ ha-card {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: 0;
+    /* A scrolling column starts at its top edge: centred, a column taller than its box spills above the top, where the
+       topline, the progress bar and the keep-awake toggle can no longer be scrolled to. */
+    justify-content: flex-start;
   }
   .atelier .modal.large:has(.cook-layout) .cook-controls {
     /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
@@ -10052,6 +10055,9 @@ ha-card {
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: 0;
+    /* A scrolling column starts at its top edge: centred, a column taller than its box spills above the top, where the
+       topline, the progress bar and the keep-awake toggle can no longer be scrolled to. */
+    justify-content: flex-start;
   }
   .atelier .modal.large:has(.cook-layout) .cook-controls {
     /* A real box instead of display: contents: Safari does not pin a sticky bar whose parent has no box. */
@@ -12742,7 +12748,17 @@ ha-card {
     --at-close-reserve: calc(20px + 44px + 12px);
   }
 }
-.atelier .modal :is(h1, h2, h3, h4, .eyebrow) {
+/* Only the dialog's own title block: the heading that can scroll under the tile before the strip takes over, and the
+   eyebrow above it. Headings further down (card headings, cook steps) and centred screens keep their full width. */
+.atelier
+  .modal
+  :is(
+    .modal-content > :is(h1, h2, .eyebrow),
+    .editor-lead > div > :is(h2, .eyebrow),
+    .bw-panel > .bw-head > .bw-title,
+    .setup-kicker,
+    .setup-step-title
+  ) {
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: var(--at-close-reserve);
