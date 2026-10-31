@@ -58,6 +58,13 @@ export class RecipeBackups {
       user_name: s.user_name,
       kind: s.kind,
       summary: s.summary,
+      // Structured counts let the cards localize the summary; `summary` stays an English fallback.
+      ingredient_count: Array.isArray(s.fields?.recipeIngredient)
+        ? s.fields.recipeIngredient.length
+        : null,
+      step_count: Array.isArray(s.fields?.recipeInstructions)
+        ? s.fields.recipeInstructions.length
+        : null,
       has_image: Boolean(s.image_file),
     }));
   }

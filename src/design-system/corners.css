@@ -86,7 +86,7 @@
     gap: 3px;
     padding-bottom: 4px;
   }
-  .atelier .modal:has(.cook-layout) .cook-stage h2 {
+  .atelier .modal:has(.cook-layout) .cook-stage h2:not(.cook-stage--long) {
     font-size: clamp(24px, 3vw, 30px);
   }
 }

@@ -332,10 +332,17 @@ test("ingredients_save snapshots before the PATCH, then verifies and returns the
       "backup_id",
       "created_at",
       "has_image",
+      "ingredient_count",
       "kind",
+      "step_count",
       "summary",
       "user_name",
     ]);
+    // The counts come from the snapshot itself, so the cards can localize the summary.
+    assert.equal(listed.body.backups[0].ingredient_count, snapshot.fields.recipeIngredient.length);
+    assert.equal(listed.body.backups[0].step_count, snapshot.fields.recipeInstructions.length);
+    assert.equal(typeof listed.body.backups[0].ingredient_count, "number");
+    assert.equal(typeof listed.body.backups[0].step_count, "number");
   });
 });
 

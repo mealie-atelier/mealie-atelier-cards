@@ -115,7 +115,7 @@ function buildPrintDocument(
       ? instructions
           .map(
             (row, i) =>
-              `<div class="method-row"><span class="method-index">${String(i + 1).padStart(2, "0")}</span><p>${esc(instructionText(row))}</p></div>`,
+              `<div class="method-row"><span class="method-index">${String(i + 1).padStart(2, "0")}</span><p>${esc(plainMarkdown(instructionText(row)))}</p></div>`,
           )
           .join("")
       : `<p class="quiet">${esc(words.empty)}</p>`;

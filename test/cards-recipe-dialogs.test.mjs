@@ -58,6 +58,8 @@ test("cook heading renders Markdown and long untitled steps get the long class",
   assert.match(short, /<h2><strong>Stir<\/strong> well<\/h2>/);
   const long = open(c, "cook", detail({ recipeInstructions: [{ text: "word ".repeat(40) }] }));
   assert.match(long, /<h2 class="cook-stage--long">/);
+  const veryLong = open(c, "cook", detail({ recipeInstructions: [{ text: "word ".repeat(70) }] }));
+  assert.match(veryLong, /<h2 class="cook-stage--long cook-stage--xlong">/);
   const titled = open(
     c,
     "cook",
@@ -154,6 +156,17 @@ test("failed mealplan hides the plus buttons and failed recipes hide New recipe"
 test("stylesheet defines the long cook heading and print heading classes", () => {
   const css = readFileSync(new URL("../src/design-system/components.css", import.meta.url), "utf8");
   assert.match(css, /\.cook-stage--long\s*\{[^}]*font-size[^}]*hyphens:\s*auto/);
+  assert.match(css, /\.cook-stage--xlong\s*\{[^}]*font-size/);
+  const corners = readFileSync(
+    new URL("../src/design-system/corners.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(corners, /\.cook-stage h2:not\(\.cook-stage--long\)\s*\{/);
+  assert.doesNotMatch(
+    corners,
+    /\.cook-stage h2\s*\{/,
+    "no unscoped cook h2 size rule may override the long variants",
+  );
   assert.match(css, /\.print-section-heading\s*\{[^}]*margin/);
 });
 
@@ -177,4 +190,29 @@ test("edit form prefills fractional and large servings without blocking attribut
     assert.doesNotMatch(input, /max=/);
     assert.doesNotMatch(input, /step="1"/);
   }
+});
+
+test("print document and paper preview drop Markdown markers", () => {
+  const text = "Add **a link** [My Link](https://demo.mealie.io) and _soft_";
+  const c = card("en");
+  c._printKind = "recipe";
+  const html = open(c, "print", detail({ recipeInstructions: [{ text }] }));
+  assert.match(html, /<b>1\.<\/b> Add a link My Link \(https:\/\/demo\.mealie\.io\) and soft</);
+  let written = "";
+  const popup = {
+    document: {
+      open() {},
+      write: (html) => (written = html),
+      close() {},
+      getElementById: () => null,
+    },
+    focus() {},
+  };
+  const printing = loadCards({ window: { open: () => popup } });
+  const p = makeCard(printing, { hass: { language: "en", callWS: async () => ({}) } });
+  p._detail = detail({ recipeInstructions: [{ text }] });
+  p._printKind = "recipe";
+  p._data = { recipes: { items: [] }, mealplan: [], shopping: { lists: [], items: [] } };
+  p._print();
+  assert.match(written, /<p>Add a link My Link \(https:\/\/demo\.mealie\.io\) and soft<\/p>/);
 });

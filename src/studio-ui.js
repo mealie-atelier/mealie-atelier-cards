@@ -861,7 +861,7 @@ Object.assign(MealieAtelierCard.prototype, {
           )
             .map(
               (x, j) =>
-                `<p class="method"><b>${String(j + 1).padStart(2, "0")}</b>${esc(instructionText(x))}</p>`,
+                `<p class="method"><b>${String(j + 1).padStart(2, "0")}</b>${esc(plainMarkdown(instructionText(x)))}</p>`,
             )
             .join("")}</section></div></article>`,
       )

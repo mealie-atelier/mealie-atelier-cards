@@ -202,6 +202,14 @@ function linkify(text) {
 function instructionText(row) {
   return typeof row === "string" ? row : row?.text || "";
 }
+/** Plain text for print and paper previews: drops the Markdown markers, keeps link targets as "label (url)". */
+function plainMarkdown(text) {
+  return String(text ?? "")
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s()<>"']+)\)/g, "$1 ($2)")
+    .replace(/\*\*([^*\n]+?)\*\*/g, "$1")
+    .replace(/(?<![\w*])\*([^*\s][^*\n]*?)\*(?![\w*])/g, "$1")
+    .replace(/(?<!\w)_([^_\s][^_\n]*?)_(?!\w)/g, "$1");
+}
 function instructionImages(row) {
   return asArray(row?.imageUrls).map(imageOk).filter(Boolean);
 }

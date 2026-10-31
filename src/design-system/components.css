@@ -681,10 +681,15 @@
   padding: 2px 8px;
 }
 .atelier .cook-stage h2.cook-stage--long {
-  font-size: clamp(22px, 4.2vw, 32px);
+  font-size: clamp(20px, 3.4vw, 28px);
   line-height: 1.3;
   hyphens: auto;
   overflow-wrap: anywhere;
+}
+/* A paragraph of 320 characters or more must not push the timers and buttons off the screen. */
+.atelier .cook-stage h2.cook-stage--long.cook-stage--xlong {
+  font-size: clamp(17px, 2.4vw, 21px);
+  line-height: 1.4;
 }
 .atelier .print-section-heading {
   margin-block: 0 var(--ds-space-3);
