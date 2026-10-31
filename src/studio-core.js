@@ -75,15 +75,13 @@ const AtelierStudio = (() => {
     if (!parts.length) return null;
     return parts.reduce((sum, part) => sum + part.value * unitFactor(part.unit), 0);
   }
-  function formatTime(value, locale = "de") {
-    if (typeof value === "number")
-      return Number.isFinite(value) && value > 0
-        ? `${value} ${locale === "de" ? "Min." : "min"}`
-        : "";
+  // The unit is the same lowercase "min" in every language.
+  function formatTime(value) {
+    if (typeof value === "number") return Number.isFinite(value) && value > 0 ? `${value} min` : "";
     const text = String(value ?? "")
       .trim()
       .replace(/\s+/g, " ");
-    return /^\d+(?:[.,]\d+)?$/.test(text) ? `${text} ${locale === "de" ? "Min." : "min"}` : text;
+    return /^\d+(?:[.,]\d+)?$/.test(text) ? `${text} min` : text;
   }
   function recipeServings(recipe) {
     const known = Number(recipe?.recipeServings);
@@ -96,7 +94,63 @@ const AtelierStudio = (() => {
       ? count
       : null;
   }
-  function scaleIngredient(row, targetServings, baseServings) {
+  const UNICODE_FRACTIONS = {
+    "½": [1, 2],
+    "⅓": [1, 3],
+    "⅔": [2, 3],
+    "¼": [1, 4],
+    "¾": [3, 4],
+    "⅛": [1, 8],
+    "⅜": [3, 8],
+    "⅝": [5, 8],
+    "⅞": [7, 8],
+  };
+  const GLYPH_BY_FRACTION = Object.fromEntries(
+    Object.entries(UNICODE_FRACTIONS).map(([glyph, [n, d]]) => [`${n}/${d}`, glyph]),
+  );
+  /** Leading quantity of a row: mixed number, fraction, unicode fraction or decimal. */
+  function leadingQuantity(raw) {
+    const glyphs = Object.keys(UNICODE_FRACTIONS).join("");
+    let m = raw.match(new RegExp(`^(\\s*)(\\d+)?\\s?([${glyphs}])(\\s+.*)$`));
+    if (m) {
+      const [n, d] = UNICODE_FRACTIONS[m[3]];
+      return { lead: m[1], value: Number(m[2] || 0) + n / d, style: "glyph", rest: m[4] };
+    }
+    m = raw.match(/^(\s*)(\d+)\s+(\d+)\/(\d+)(\s+.*)$/);
+    if (m && Number(m[4]) > 0)
+      return {
+        lead: m[1],
+        value: Number(m[2]) + Number(m[3]) / Number(m[4]),
+        style: "fraction",
+        rest: m[5],
+      };
+    m = raw.match(/^(\s*)(\d+)\/(\d+)(\s+.*)$/);
+    if (m && Number(m[3]) > 0)
+      return { lead: m[1], value: Number(m[2]) / Number(m[3]), style: "fraction", rest: m[4] };
+    m = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
+    if (m)
+      return { lead: m[1], value: Number(m[2].replace(",", ".")), style: "decimal", rest: m[3] };
+    return null;
+  }
+  /** A fraction text like "2 1/4" when the value is a clean eighth/third, else null. */
+  function formatFraction(value, glyph) {
+    const whole = Math.floor(value + 1e-9);
+    const frac = value - whole;
+    if (frac < 0.01) return String(whole);
+    for (const d of [2, 3, 4, 8]) {
+      const n = Math.round(frac * d);
+      if (n > 0 && n < d && Math.abs(frac - n / d) < 0.01) {
+        // Reduce, so 2/4 reads as 1/2.
+        const div = [8, 4, 2].find((x) => n % x === 0 && d % x === 0) || 1;
+        const key = `${n / div}/${d / div}`;
+        const part = glyph && GLYPH_BY_FRACTION[key] ? GLYPH_BY_FRACTION[key] : key;
+        if (!whole) return part;
+        return glyph && GLYPH_BY_FRACTION[key] ? `${whole}${part}` : `${whole} ${part}`;
+      }
+    }
+    return null;
+  }
+  function scaleIngredient(row, targetServings, baseServings, locale = "de") {
     const raw = typeof row === "string" ? row : ingredient(row),
       target = Number(targetServings),
       base = Number(baseServings);
@@ -109,11 +163,17 @@ const AtelierStudio = (() => {
       target === base
     )
       return raw;
-    const match = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
-    if (!match) return raw;
-    const amount = (Number(match[2].replace(",", ".")) * target) / base;
-    const scaled = Number(amount.toFixed(2)).toLocaleString("de-DE", { maximumFractionDigits: 2 });
-    return `${match[1]}${scaled}${match[3]}`;
+    const q = leadingQuantity(raw);
+    if (!q) return raw;
+    // "1 x 400 g" is a pack count, not an amount: scaling it would give "1,5 x 400 g".
+    if (/^\s+[x×]\s*\d/i.test(q.rest)) return raw;
+    const amount = (q.value * target) / base;
+    let scaled = q.style === "decimal" ? null : formatFraction(amount, q.style === "glyph");
+    if (scaled === null)
+      scaled = Number(amount.toFixed(2)).toLocaleString(locale === "en" ? "en-US" : "de-DE", {
+        maximumFractionDigits: 2,
+      });
+    return `${q.lead}${scaled}${q.rest}`;
   }
   // Treat a pantry match as a verified quantity claim, not just a shared word.
   // Mealie has both structured foods/units and legacy display-only ingredients.
@@ -940,26 +1000,33 @@ const AtelierStudio = (() => {
     };
   }
   // Swap texts and the warning are translation keys; the UI resolves them per locale.
+  // Each entry: translation key plus the German and English words that name the ingredient.
+  // A word matches a whole token, or the start of a token when it has four or more letters.
   const swaps = [
-    ["sahne", "studioSwapCream"],
-    ["butter", "studioSwapButter"],
-    ["ei", "studioSwapEgg"],
-    ["milch", "studioSwapMilk"],
-    ["champignon", "studioSwapMushroom"],
-    ["quark", "studioSwapQuark"],
-    ["parmesan", "studioSwapParmesan"],
-    ["mehl", "studioSwapFlour"],
-    ["zucker", "studioSwapSugar"],
+    ["studioSwapCream", ["sahne", "cream"]],
+    ["studioSwapButter", ["butter"]],
+    ["studioSwapEgg", ["ei", "eier", "egg", "eggs", "eigelb", "eiweiss", "eiweiß"]],
+    ["studioSwapMilk", ["milch", "milk"]],
+    ["studioSwapMushroom", ["champignon", "champignons", "mushroom", "mushrooms"]],
+    ["studioSwapQuark", ["quark"]],
+    ["studioSwapParmesan", ["parmesan"]],
+    ["studioSwapFlour", ["mehl", "flour"]],
+    ["studioSwapSugar", ["zucker", "sugar"]],
   ];
   function substitutions(ingredientName) {
-    const v = clean(ingredientName);
-    return swaps
-      .filter(([k]) => v.includes(k))
-      .map(([from, to]) => ({
-        from,
-        to,
-        warning: "studioSwapWarning",
-      }));
+    const tokens = String(ingredientName ?? "")
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter(Boolean)
+      .map((original) => ({ original, word: clean(original) }));
+    const result = [];
+    for (const [to, names] of swaps) {
+      const hit = tokens.find((t) =>
+        names.some((k) => t.word === k || (k.length >= 4 && t.word.startsWith(k))),
+      );
+      // "from" is the word the user typed, so the English UI never shows a German match key.
+      if (hit) result.push({ from: hit.original, to, warning: "studioSwapWarning" });
+    }
+    return result;
   }
   function safeHelperTasks(recipe) {
     const steps = recipe.recipeInstructions || [];

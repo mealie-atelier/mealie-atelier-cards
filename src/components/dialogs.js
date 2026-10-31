@@ -151,7 +151,7 @@ export const dialogMethods = {
             : ""
         }
         ${labelLine("uiRecipeCategories", categoryNames)}${labelLine("uiRecipeTags", tagNames)}${sourceLine}
-        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase) : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
+        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase, this._language === "de" ? "de" : "en") : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
         <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div>${notesHtml}</div>`;
     }
     if (this._modal === "cook" && this._detail) {

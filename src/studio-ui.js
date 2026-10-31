@@ -662,7 +662,7 @@ Object.assign(MealieAtelierCard.prototype, {
      ${
        session
          ? `<p class="studio-step-badge">${this.t("familyStep", { step: sharedStep + 1, total: stepTotal || "?", date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next" ${stepTotal && sharedStep >= stepTotal - 1 ? "disabled" : ""}>${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
-     <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${esc(Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000)))} ${this.t("studioMinutesShort")}</b>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
+     <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row${x.deadline <= Date.now() ? " is-done" : ""}"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${sharedTimerText(x)}</b><small class="cook-timer-status" data-shared-timer-status>${x.deadline <= Date.now() ? this.t("uiREADY") : this.t("uiRUNNING")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
      ${!kid && this._permissions.can_write ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
      <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-task-remove" data-id="${esc(t.id)}" aria-label="${esc(this.t("studioRemove"))}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
      ${!kid && this._permissions.can_manage && people.length ? `<form class="studio-form" data-form="studio-task"><label>${this.t("familyTask")}<input name="text" maxlength="300" required placeholder="${this.t("familyTaskPlaceholder")}"></label><label>${this.t("familyAssign")}<select name="memberId">${people.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label><label class="studio-inline"><input type="checkbox" name="adultApproved"><span>${this.t("familyApproval")}</span></label><button class="btn" type="submit">${this.t("familyAssignTask")}</button></form>` : ""}
@@ -953,7 +953,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
   if (this._modal === "cook" && this._detail) {
     const session = this._studio?.family?.session;
     const connected = session?.slug === this._detail.slug;
-    const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${icon("refresh", 14)} ${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
+    const voice = `<div class="studio-cook-tools"><button class="btn${this._readSpeaking ? " is-active" : ""}" data-action="studio-read-step" aria-pressed="${this._readSpeaking ? "true" : "false"}">${icon("book", 14)} ${this._readSpeaking ? this.t("studioReadSpeaking") : this.t("studioReadStepLabel")}</button><button class="btn${this._voiceListening ? " is-active" : ""}" data-action="studio-voice-command" aria-pressed="${this._voiceListening ? "true" : "false"}">${icon("spark", 14)} ${this._voiceListening ? this.t("studioVoiceListening") : this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${icon("refresh", 14)} ${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
     html = html.replace(/<section class="cook-utility"[^>]*>/, (open) => open + voice);
     if (connected && session.timers.length) {
       html = html.replace(/<div class="cook-timers-empty">.*?<\/div>/s, "");
@@ -989,7 +989,7 @@ MealieAtelierCard.prototype._tickTimers = function () {
     );
     if (timer) {
       span.textContent = sharedTimerText(timer);
-      const card = span.closest(".cook-timer-card");
+      const card = span.closest(".cook-timer-card, .studio-timer-row");
       if (card) {
         const done = timer.deadline <= Date.now();
         card.classList.toggle("is-done", done);
@@ -1324,10 +1324,28 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       if (!this._detail) return;
       const step = instructionText(asArray(this._detail.recipeInstructions)[this._cookIndex]);
       if ("speechSynthesis" in window) {
+        const wasSpeaking = this._readSpeaking;
         speechSynthesis.cancel();
+        // A second press stops the reading.
+        if (wasSpeaking) {
+          this._readSpeaking = false;
+          this._render();
+          return;
+        }
         const utterance = new SpeechSynthesisUtterance(step);
         utterance.lang = this.t(this._locale === "de" ? "studioSpeechDe" : "studioSpeechEn");
         utterance.rate = 0.91;
+        const stop = () => {
+          if (!this._readSpeaking) return;
+          this._readSpeaking = false;
+          this._render();
+        };
+        utterance.onstart = () => {
+          this._readSpeaking = true;
+          this._render();
+        };
+        utterance.onend = stop;
+        utterance.onerror = stop;
         speechSynthesis.speak(utterance);
       } else this._flash(this.t("studioReadUnsupported"));
       return;
@@ -1361,7 +1379,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           const rows = asArray(this._detail?.recipeIngredient);
           const ask = AtelierStudio.clean(
             speech.replace(
-              /wie viel|wieviel|wie viele|brauche ich|ist|an|how much|how many|do i need|need/g,
+              /\b(?:wie viele?|wieviel|brauche ich|how much|how many|do i need|need)\b/g,
               "",
             ),
           );
@@ -1381,7 +1399,20 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         } else this._flash(this.t("studioVoiceUnknown", { command: speech }));
         this._render();
       };
-      recognizer.onerror = () => this._flash(this.t("studioMicrophoneError"));
+      const stopListening = () => {
+        if (!this._voiceListening) return;
+        this._voiceListening = false;
+        this._render();
+      };
+      recognizer.onstart = () => {
+        this._voiceListening = true;
+        this._render();
+      };
+      recognizer.onend = stopListening;
+      recognizer.onerror = () => {
+        this._flash(this.t("studioMicrophoneError"));
+        stopListening();
+      };
       try {
         recognizer.start();
       } catch {
@@ -1499,10 +1530,9 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (existed && this._modal === "cook") {
       // Joining a running shared session: open at the shared step instead of step 1.
       const steps = asArray(this._detail.recipeInstructions);
-      this._cookIndex = Math.min(
-        Math.max(0, Number(active.step) || 0),
-        Math.max(0, steps.length - 1),
-      );
+      const last = Math.max(0, steps.length - 1);
+      // Done ends the session (cook-finish), so a running one is always joined at its shared step.
+      this._cookIndex = Math.min(Math.max(0, Number(active.step) || 0), last);
       this._render();
     }
     if (this._permissions.can_write && !existed && (!active || replace))
@@ -1523,8 +1553,12 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
   }
   if (action === "cook-finish" && this._detail) {
     const slug = this._detail.slug,
-      previous = this._studio?.journal?.[slug] || {};
+      previous = this._studio?.journal?.[slug] || {},
+      shared = this._studio?.family?.session;
     await _atOriginalClick.call(this, event);
+    // Done ends the shared session this recipe owns, so the next start begins at step 1.
+    if (shared?.slug === slug && this._permissions.can_write && !this._kidView)
+      await this._studioWrite("session_end", { session_id: shared.id });
     if (this._canJournal)
       await this._studioWrite("journal_set", {
         slug,

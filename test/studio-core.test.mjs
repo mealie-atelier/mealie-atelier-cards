@@ -27,11 +27,8 @@ test("ingredient normalization and unit conversions", () => {
   assert.equal(Studio.parseIngredient("250 ml Milch").unit, "ml");
   assert.equal(Studio.scaleIngredient("200 g Mehl", 3, 2), "300 g Mehl");
   assert.equal(Studio.scaleIngredient("1,5 EL Öl", 4, 2), "3 EL Öl");
-  assert.equal(
-    Studio.scaleIngredient("½ Zitrone", 4, 2),
-    "½ Zitrone",
-    "uncertain free-text quantities remain untouched",
-  );
+  assert.equal(Studio.scaleIngredient("½ Zitrone", 4, 2), "1 Zitrone");
+  assert.equal(Studio.scaleIngredient("Salz nach Geschmack", 4, 2), "Salz nach Geschmack");
 });
 test("recommendations prefer recipes using pantry / respecting time / ratings", () => {
   const items = [
@@ -365,7 +362,8 @@ test("localized Mealie durations preserve display text and enforce conservative 
   assert.equal(Studio.durationMinutes("Zeit nach Gefühl"), null);
   assert.equal(Studio.formatTime("25 – 30 Minuten"), "25 – 30 Minuten");
   assert.equal(Studio.formatTime("30", "en"), "30 min");
-  assert.equal(Studio.formatTime(30, "de"), "30 Min.");
+  assert.equal(Studio.formatTime(30, "de"), "30 min");
+  assert.equal(Studio.formatTime("30", "de"), "30 min");
   const ranged = recipe("Range", ["200 g Nudeln"], "25 – 30 Minuten");
   const unknown = recipe("Unknown", ["200 g Reis"], "Zeit nach Gefühl");
   assert.deepEqual(

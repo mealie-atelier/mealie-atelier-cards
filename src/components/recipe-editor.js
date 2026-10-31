@@ -233,10 +233,12 @@ export const recipeEditorMethods = {
     const state = this._ed;
     const value = this._editorParseQuantity(row.quantityText).value;
     if (value === null || !(state.servings >= 1) || state.preview === state.servings) return "";
-    return AtelierStudio.scaleIngredient(`${value} x`, state.preview, state.servings).replace(
-      /\s+x$/,
-      "",
-    );
+    return AtelierStudio.scaleIngredient(
+      `${value} x`,
+      state.preview,
+      state.servings,
+      this._language === "de" ? "de" : "en",
+    ).replace(/\s+x$/, "");
   },
 
   /* ---------- markup ---------- */
