@@ -42,7 +42,10 @@ test("ATELIER_SYNC_LANGUAGE is documented in README, .env.example and compose.ya
 
 test("documented ATELIER_SYNC_LANGUAGE fallback matches server.mjs", () => {
   // Unset, the server follows the language of the last sync request and falls back to English.
-  assert.match(read("server.mjs"), /ATELIER_SYNC_LANGUAGE \|\| syncLocale\.getStore\(\) \|\| lastSyncLocale \|\| "en"/);
+  assert.match(
+    read("server.mjs"),
+    /ATELIER_SYNC_LANGUAGE \|\| syncLocale\.getStore\(\) \|\| lastSyncLocale \|\| "en"/,
+  );
   const row = read("README.md")
     .split("\n")
     .find((l) => l.includes("`ATELIER_SYNC_LANGUAGE`"));

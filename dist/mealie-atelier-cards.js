@@ -753,16 +753,16 @@ ha-card {
   place-items: center;
   overflow: hidden;
   position: relative;
-  background: linear-gradient(120deg, #415b50, #6e7b59);
+  background: linear-gradient(120deg, #415b50, #66734f);
 }
 .atelier .tile-image.tint1 {
-  background: linear-gradient(115deg, #7b625d, #b2806c);
+  background: linear-gradient(115deg, #7b625d, #8a5f4d);
 }
 .atelier .tile-image.tint2 {
-  background: linear-gradient(115deg, #556273, #86939c);
+  background: linear-gradient(115deg, #556273, #5f6d78);
 }
 .atelier .tile-image.tint3 {
-  background: linear-gradient(115deg, #5b6f54, #b0aa76);
+  background: linear-gradient(115deg, #5b6f54, #76744a);
 }
 .atelier .tile-image img {
   height: 100%;
@@ -3373,10 +3373,16 @@ ha-card {
   }
   .atelier .nutri-header {
     padding: 16px;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
   }
   .atelier .nutri-header .nutri-eyebrow {
     font-size: 19px;
+    grid-column: 1 / -1;
+    grid-row: auto;
+    max-width: none;
+  }
+  .atelier .nutri-header :is(strong, span) {
+    text-align: start;
   }
   .atelier .nutri-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5987,10 +5993,16 @@ ha-card {
   }
   .atelier .nutri-header {
     padding: 16px;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
   }
   .atelier .nutri-header .nutri-eyebrow {
     font-size: 19px;
+    grid-column: 1 / -1;
+    grid-row: auto;
+    max-width: none;
+  }
+  .atelier .nutri-header :is(strong, span) {
+    text-align: start;
   }
   .atelier .nutri-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6434,6 +6446,7 @@ ha-card {
 /* Mealie Atelier Design System / v1.0 foundations.
    All screens and cards inherit the same semantic tokens. No device-specific pixels in components. */
 :host {
+  font-feature-settings: "lnum";
   container: atelier-card / inline-size;
   --ds-space-0: 0;
   --ds-space-1: 4px;
@@ -7377,9 +7390,6 @@ ha-card {
   .atelier .studio-actions > .btn:only-child {
     flex-grow: 0;
   }
-  .atelier .studio-form .studio-inline {
-    align-items: flex-start;
-  }
   .atelier .studio-plan-row {
     grid-template-columns: 65px minmax(0, 1fr);
   }
@@ -7824,6 +7834,18 @@ ha-card {
   border: 1px solid var(--at-line);
   border-radius: 999px;
   padding: 2px 8px;
+}
+.atelier .cook-stage h2.cook-stage--long {
+  font-size: clamp(22px, 4.2vw, 32px);
+  line-height: 1.3;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+.atelier .print-section-heading {
+  margin-block: 0 var(--ds-space-3);
+}
+.atelier .editor-footer {
+  margin-block-start: var(--ds-space-4);
 }
 
 /* Control primitives v0.9.1: one visual contract for all interactive states. */
@@ -9612,6 +9634,13 @@ ha-card {
   line-height: 1.25;
   margin: 9px 0 10px;
   text-wrap: balance;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* A flex item keeps min-width: auto, so one unbreakable word would widen the whole lead past the dialog. */
+.atelier .editor-lead > div {
+  min-width: 0;
 }
 .atelier .editor-lead {
   gap: 18px;
@@ -9983,6 +10012,11 @@ ha-card {
   .atelier .modal:has(.cook-layout) .cook-footnote {
     order: 5;
   }
+  /* The dialog never scrolls here, the column does: the close tile floats over it, so the step heading and text keep
+     clear of the tile instead of sliding under it. */
+  .atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
+    padding-inline-end: var(--cook-close-clear);
+  }
 }
 
 /* Laptop screens: the cooking dialog keeps its height, the photo column stays whole and only the
@@ -10032,6 +10066,11 @@ ha-card {
   .atelier .modal:has(.cook-layout) .cook-footnote {
     order: 5;
     padding-bottom: 18px;
+  }
+  /* The dialog never scrolls here, the column does: the close tile floats over it, so the step heading and text keep
+     clear of the tile instead of sliding under it. */
+  .atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
+    padding-inline-end: var(--cook-close-clear);
   }
 }
 
@@ -10872,11 +10911,8 @@ ha-card {
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  hyphenate-limit-chars: 12 5 5;
-  -webkit-hyphenate-limit-before: 5;
-  -webkit-hyphenate-limit-after: 5;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 /* Tablet week strip: seven narrow columns. A smaller name and tighter padding keep long German
    words such as "Hähnchensalat" whole instead of splitting them mid-word. */
@@ -10886,6 +10922,15 @@ ha-card {
   }
   .atelier .week-grid .day-meal-name {
     font-size: 11px;
+  }
+}
+
+/* Wide cards keep a real minimum column width and the grid scrolls sideways instead of squeezing recipe names into
+   55px. Scoped to the card container so the narrow carousel rules in layout.css (760px and below) keep winning. */
+@container atelier-card (min-width: 901px) {
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, minmax(120px, 1fr));
+    overflow-x: auto;
   }
 }
 
@@ -11048,6 +11093,20 @@ ha-card {
   > :is(.btn, .icon-btn) {
   margin-block: 0;
   align-self: center;
+}
+/* Buttons that share a wrapped row grow to the tallest label instead of floating at content height. */
+.atelier :is(.form-actions, .studio-actions, .at-dialog-actions) > :is(.btn, .icon-btn) {
+  align-self: stretch;
+}
+/* The form grid gap already spaces the last field from its action row, so margins must not stack on top of it. */
+.atelier .editor-card .editor-form > .field,
+.atelier
+  :is(.editor-form, .studio-form, .modal form)
+  > .field:has(+ :is(.form-actions, .studio-actions)) {
+  margin-block-end: 0;
+}
+.atelier :is(.editor-form, .studio-form, .modal form) > :is(.form-actions, .studio-actions) {
+  margin-block: 0;
 }
 .atelier :is(.btn, .icon-btn) :is(svg, img) {
   position: relative;
@@ -11674,6 +11733,13 @@ ha-card {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
+}
+.atelier .sync-last svg,
+.atelier .sync-issues svg,
+.atelier .sync-result svg,
+.atelier .sync-capability svg,
+.atelier .sync-explain svg {
+  flex: 0 0 auto;
 }
 .atelier .sync-state {
   display: block;
@@ -12772,8 +12838,18 @@ ha-card {
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: var(--at-close-reserve);
+  /* Whole words stay whole; only a word wider than the line breaks, never an ordinary one. */
+  overflow-wrap: break-word;
+  hyphens: manual;
+  text-wrap: balance;
+}
+
+/* The cooking header title is a plain div over the photo, so it needs its own wrap rule and the close tile clearance. */
+.atelier .modal .cook-visual .cook-brand {
+  box-sizing: border-box;
+  max-width: min(75%, calc(100% - 27px - var(--at-close-reserve)));
   overflow-wrap: anywhere;
-  hyphens: auto;
+  hyphens: manual;
 }
 
 /* The editor lead already keeps 64px clear on its right (foundation.css), so its title block only needs what is left
@@ -12782,8 +12858,9 @@ ha-card {
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: max(0px, var(--at-close-reserve) - 64px);
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  overflow-wrap: break-word;
+  hyphens: manual;
+  text-wrap: balance;
 }
 
 /* Fields side by side or stacked in a column share one rhythm: the grid gap alone spaces them. */
@@ -13510,6 +13587,14 @@ class MealieAtelierCard extends HTMLElement {
       navigator.userAgentData?.platform || navigator.platform || navigator.userAgent || "";
     return /mac|iphone|ipad|ipod/i.test(platform);
   }
+  /** True on touch-only devices, where a keyboard shortcut hint means nothing. */
+  get _touchOnly() {
+    try {
+      return Boolean(window.matchMedia?.("(hover: none) and (pointer: coarse)")?.matches);
+    } catch {
+      return false;
+    }
+  }
   get _shortcutLabel() {
     return this._isApplePlatform ? "⌘K" : "Ctrl+K";
   }
@@ -14049,7 +14134,11 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   _topbar() {
-    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
+    const touch = this._touchOnly;
+    const quickLabel = touch
+      ? this.t("uiOpenQuickActionsNoShortcut")
+      : this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel });
+    return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${esc(quickLabel)}" aria-label="${esc(quickLabel)}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span>${touch ? "" : `<span class="shortcut">${this._shortcutLabel}</span>`}</button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
   }
   _intro(title, sub, eyebrow) {
     return AtelierUI.pageHeader({
@@ -14070,6 +14159,13 @@ class MealieAtelierCard extends HTMLElement {
     return row.replace(/<\/div>$/, `${this._editorStepPhotos(id)}</div>`);
     // END feature B
   }
+  /** Grows every step textarea to its content so no line is cut off. */
+  _autosizeSteps(root = this.shadowRoot) {
+    for (const ta of root?.querySelectorAll?.("[data-step-text]") || []) {
+      ta.style.height = "auto";
+      if (ta.scrollHeight) ta.style.height = `${ta.scrollHeight}px`;
+    }
+  }
   _renumberSteps() {
     this.shadowRoot.querySelectorAll("[data-editor-step]").forEach((element, index) => {
       const count = element.querySelector(".step-count");
@@ -14077,6 +14173,7 @@ class MealieAtelierCard extends HTMLElement {
       if (count) count.textContent = String(index + 1);
       if (textarea) textarea.setAttribute("aria-label", `${this.t("uiStep")} ${index + 1}`);
     });
+    this._autosizeSteps();
   }
   _persistJournal() {
     try {
@@ -14308,7 +14405,7 @@ class MealieAtelierCard extends HTMLElement {
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
-      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
+      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
@@ -14353,6 +14450,7 @@ class MealieAtelierCard extends HTMLElement {
       }
     // After the scroll position is back: the strip is judged on the real geometry, never on the old state.
     this._watchModalBar();
+    if (this._modal === "edit") this._autosizeSteps();
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.
@@ -14539,11 +14637,79 @@ class MealieAtelierCard extends HTMLElement {
       dy = event.clientY - this._cookGesture.y;
     this._cookGesture = null;
     if (Math.abs(dx) < 65 || Math.abs(dy) > 65) return;
+    this._cookStepBy(dx < 0 ? 1 : -1);
+  }
+  /** Moves the cooking step through the same path as the Next and Back buttons. */
+  _cookStepBy(delta) {
     const count = asArray(this._detail?.recipeInstructions).length;
-    this._cookIndex = Math.max(
-      0,
-      Math.min(Math.max(0, count - 1), this._cookIndex + (dx < 0 ? 1 : -1)),
-    );
+    const next = Math.max(0, Math.min(Math.max(0, count - 1), this._cookIndex + delta));
+    if (next === this._cookIndex) return;
+    const button = { dataset: { action: delta > 0 ? "cook-next" : "cook-back" } };
+    return this._handleClick({ target: { closest: () => button }, preventDefault() {} });
+  }
+  /** A new step opens at its top: scroll back to 0 and re-judge the modal bar. */
+  _resetCookScroll() {
+    for (const selector of [".modal", ".cook-content"]) {
+      const el = this.shadowRoot?.querySelector?.(selector);
+      if (el) el.scrollTop = 0;
+    }
+    this._watchModalBar?.();
+  }
+  /** Draft of the recipe editor differs from what was loaded. */
+  _editDraftDirty() {
+    const form = this.shadowRoot?.querySelector?.('form[data-form="edit"]');
+    const rec = this._detail;
+    if (!form || !rec) return false;
+    const field = (name) => form.querySelector?.(`[name="${name}"]`)?.value;
+    const name = field("name"),
+      description = field("description"),
+      servings = field("servings");
+    if (name !== undefined && String(name) !== String(rec.name ?? "")) return true;
+    if (description !== undefined && String(description) !== String(rec.description ?? ""))
+      return true;
+    if (servings !== undefined) {
+      const saved = Number(rec.recipeServings) > 0 ? Math.max(1, Number(rec.recipeServings)) : "";
+      if (String(servings).trim() !== String(saved)) return true;
+    }
+    const clean = (list) => list.map((t) => String(t).trim()).filter(Boolean);
+    const now = clean(Array.from(form.querySelectorAll("[data-step-text]"), (el) => el.value));
+    const before = clean(asArray(rec.recipeInstructions).map(instructionText));
+    if (now.length !== before.length || now.some((t, i) => t !== before[i])) return true;
+    if (this._ed?.base) {
+      const diff = this._editorDiff();
+      if (diff.changed || diff.added || diff.removed) return true;
+    }
+    return false;
+  }
+  /** One close path for Escape, the close button and the backdrop. */
+  _requestCloseModal() {
+    if (this._modal === "edit" && this._editDraftDirty()) {
+      if (this._discardAsk) return this._discardAsk;
+      this._discardAsk = Promise.resolve(
+        this._atelierDialog({
+          title: this.t("editorDiscardConfirmTitle"),
+          body: this.t("editorDiscardConfirmBody"),
+          confirmLabel: this.t("editorDiscardConfirmDiscard"),
+          cancelLabel: this.t("editorDiscardConfirmKeep"),
+          focusCancel: true,
+        }),
+      )
+        .then((discard) => {
+          if (discard === true && this._modal === "edit") this._closeModalNow();
+        })
+        .finally(() => {
+          this._discardAsk = null;
+        });
+      return this._discardAsk;
+    }
+    this._closeModalNow();
+  }
+  _closeModalNow() {
+    if (this._modal === "command") {
+      clearTimeout(this._commandSearchTimer);
+      this._commandSearchSeq++;
+    }
+    this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
     this._render();
   }
   _handleKeyDown(event) {
@@ -14595,12 +14761,7 @@ class MealieAtelierCard extends HTMLElement {
       return;
     if (event.key === "Escape" && this._modal) {
       event.preventDefault();
-      if (this._modal === "command") {
-        clearTimeout(this._commandSearchTimer);
-        this._commandSearchSeq++;
-      }
-      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
-      this._render();
+      this._requestCloseModal();
       return;
     }
     if (this._modal === "command" && ["ArrowDown", "ArrowUp", "Enter"].includes(event.key)) {
@@ -14633,12 +14794,7 @@ class MealieAtelierCard extends HTMLElement {
       (event.key === "ArrowRight" || event.key === "ArrowLeft")
     ) {
       event.preventDefault();
-      const n = asArray(this._detail?.recipeInstructions).length;
-      this._cookIndex = Math.max(
-        0,
-        Math.min(n - 1, this._cookIndex + (event.key === "ArrowRight" ? 1 : -1)),
-      );
-      this._render();
+      this._cookStepBy(event.key === "ArrowRight" ? 1 : -1);
       return;
     }
     if (event.key === "Tab" && this._modal) {
@@ -15392,12 +15548,7 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "close-modal" || action === "backdrop") {
-      if (this._modal === "command") {
-        clearTimeout(this._commandSearchTimer);
-        this._commandSearchSeq++;
-      }
-      this._modal = this._modal === "cook" && this._detail ? "recipe" : null;
-      this._render();
+      await this._requestCloseModal();
       return;
     }
     if (action === "design") {
@@ -15497,11 +15648,13 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "cook-next") {
       this._cookIndex++;
       this._render();
+      this._resetCookScroll();
       return;
     }
     if (action === "cook-back") {
       this._cookIndex = Math.max(0, this._cookIndex - 1);
       this._render();
+      this._resetCookScroll();
       return;
     }
     if (action === "cook-finish") {
@@ -15610,6 +15763,8 @@ class MealieAtelierCard extends HTMLElement {
     input?.removeAttribute?.("aria-describedby");
   }
   _handleInput(event) {
+    if (event.target?.matches?.("[data-step-text]"))
+      this._autosizeSteps({ querySelectorAll: () => [event.target] });
     if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     // BEGIN feature B: recipe editor inputs
     if (this._editorInput(event)) return;
@@ -15977,8 +16132,9 @@ class MealieAtelierCard extends HTMLElement {
             slug: this._detail.slug,
             name: tidy(values.name, 120),
             description: values.description || "",
-            servings: Number(values.servings),
           };
+          const servings = Number(values.servings);
+          if (Number.isFinite(servings) && servings > 0) payload.servings = servings;
           if (values.replace_instructions)
             payload.instructions = Array.from(form.querySelectorAll("[data-step-text]"), (el) => ({
               id: el.closest("[data-editor-step]")?.dataset.stepId || "",
@@ -16032,7 +16188,7 @@ const viewMethods = {
     return `<div class="statline">${this._stat(this._loadFailed === true || failedParts.has("recipes") ? "—" : (total ?? "—"), this.t("count"), "book", "recipes")}${this._stat(failedParts.has("mealplan") ? "—" : scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(failedParts.has("shopping") ? "—" : open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
   },
   _recipeTools() {
-    return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
+    return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage && !this._loadFailed && !this._failedParts?.has("recipes") ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
   },
   _recipes(limit = 24) {
     const recipes = asArray(this._data.recipes?.items);
@@ -16054,7 +16210,7 @@ const viewMethods = {
       })
       .join(
         "",
-      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
+      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && (this._loadFailed || this._failedParts?.has("recipes")) ? `<div class="notice load-failed" role="status">${icon("book")} ${esc(this.t("offline"))}</div>` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
     const page = this._data.recipes || {};
@@ -16113,19 +16269,23 @@ const viewMethods = {
   _week() {
     const all = asArray(this._data.mealplan);
     const today = dateYmd(new Date());
-    return `<div class="week-grid">${Array.from({ length: 7 }, (_, i) => {
-      const day = addDays(this._weekStart, i),
-        ymd = dateYmd(day),
-        todays = this._sortMeals(all.filter((m) => m.date === ymd));
-      return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
+    const mealplanFailed = this._failedParts?.has("mealplan") === true;
+    return `${mealplanFailed ? `<div class="notice load-failed" role="status">${icon("calendar")} ${esc(this.t("offline"))}</div>` : ""}<div class="week-grid">${Array.from(
+      { length: 7 },
+      (_, i) => {
+        const day = addDays(this._weekStart, i),
+          ymd = dateYmd(day),
+          todays = this._sortMeals(all.filter((m) => m.date === ymd));
+        return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
       ${todays
         .map((meal) => {
           const photo = recipeImage(meal.recipe || {});
           return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
-      ${todays.length === 0 && !this._failedParts?.has("mealplan") ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
-    }).join("")}</div>`;
+      ${todays.length === 0 && !this._failedParts?.has("mealplan") ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write && !mealplanFailed ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
+      },
+    ).join("")}</div>`;
   },
   /** Item text without the quantity Mealie already folds into `display`; a unitless quantity of 1 shows no "1 " prefix. */
   _shoppingLabel(item) {
@@ -16254,23 +16414,26 @@ const viewMethods = {
     const open = this._offlineItems(asArray(this._data.shopping?.items)).filter(
       (x) => String(x.shoppingListId) === selected && !x.checked,
     );
+    const shopFailed = this._failedParts?.has("shopping") === true;
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
     ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}, "", true) ? `<div class="meal-photo">${recipeImage(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : this._failedParts?.has("mealplan") ? "" : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
-    <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${esc(this.tp("openItems", open.length))}</h3>
+    <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${shopFailed ? "—" : esc(this.tp("openItems", open.length))}</h3>
     ${
-      open.length
-        ? open
-            .slice(0, 6)
-            .map(
-              (x) =>
-                `<div class="mini-shopping"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" role="checkbox" aria-checked="false" aria-label="${esc(String(x.id).startsWith("local-") ? this.t("offlineWaiting") : String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + this._shoppingLabel(x))}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(x.id)) ? 'disabled aria-disabled="true"' : ""}>${icon("check", 14)}</button><span class="mini-shopping-name">${esc(this._shoppingLabel(x))}</span></div>`,
-            )
-            .join("")
-        : this._failedParts?.has("shopping")
-          ? ""
-          : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`
+      shopFailed
+        ? `<div class="notice load-failed" role="status">${icon("cart", 16)} ${esc(this.t("offline"))}</div>`
+        : open.length
+          ? open
+              .slice(0, 6)
+              .map(
+                (x) =>
+                  `<div class="mini-shopping"><button class="check-ui" data-action="shopping-toggle" data-id="${esc(x.id)}" data-checked="false" role="checkbox" aria-checked="false" aria-label="${esc(String(x.id).startsWith("local-") ? this.t("offlineWaiting") : String(x.id).startsWith("pending-") ? this.t("uiSaving") : this.t("uiMarkComplete") + this._shoppingLabel(x))}" ${!this._permissions.can_write || /^(pending|local)-/.test(String(x.id)) ? 'disabled aria-disabled="true"' : ""}>${icon("check", 14)}</button><span class="mini-shopping-name">${esc(this._shoppingLabel(x))}</span></div>`,
+              )
+              .join("")
+          : this._failedParts?.has("shopping")
+            ? ""
+            : `<div class="notice">${icon("check", 16)} ${esc(this.t("noShopping"))}</div>`
     }
     <div class="form-actions"><button class="btn" data-action="nav" data-value="shopping">${esc(this.t("toShopping"))} ${icon("arrow", 14)}</button></div></div></div>`;
   },
@@ -16412,6 +16575,42 @@ const nutritionJournalMethods = {
   },
 }
 
+/**
+ * Safe inline Markdown for recipe text: escapes first, then renders **bold**, *italic*, _italic_,
+ * [text](http(s) url) and bare http(s) URLs. Nothing but http(s) links and strong/em tags is ever emitted.
+ */
+function inlineMarkdown(text, links = true) {
+  const raw = String(text ?? "");
+  const pattern =
+    /\[([^\]\n]+)\]\((https?:\/\/[^\s()<>"']+)\)|\*\*([^*\n]+?)\*\*|(?<![\w*])\*([^*\s][^*\n]*?)\*(?![\w*])|(?<!\w)_([^_\s][^_\n]*?)_(?!\w)|https?:\/\/[^\s<>"']+/g;
+  const link = (url, label) =>
+    `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+  let out = "",
+    last = 0;
+  for (const m of raw.matchAll(pattern)) {
+    out += esc(raw.slice(last, m.index));
+    last = m.index + m[0].length;
+    if (m[2] !== undefined) {
+      out += links ? link(m[2], inlineMarkdown(m[1], false)) : esc(m[0]);
+    } else if (m[3] !== undefined) out += `<strong>${inlineMarkdown(m[3], links)}</strong>`;
+    else if (m[4] !== undefined || m[5] !== undefined)
+      out += `<em>${inlineMarkdown(m[4] ?? m[5], links)}</em>`;
+    else {
+      const url = m[0].replace(/[.,;:!?)\]]+$/, "");
+      last = m.index + url.length;
+      out += links ? link(url, esc(url)) : esc(url);
+    }
+  }
+  return out + esc(raw.slice(last));
+}
+/** Cuts at the last whitespace before the limit and appends an ellipsis only when text was shortened. */
+function shortenAtWord(text, limit = 110) {
+  const value = String(text ?? "").trim();
+  if (value.length <= limit) return value;
+  const head = value.slice(0, limit);
+  const cut = head.search(/\s+\S*$/);
+  return `${(cut > 0 ? head.slice(0, cut) : head).trimEnd()}\u2026`;
+}
 /** Render modal workflows and their accessible dialog content. */
 const dialogMethods = {
   _modalHtml() {
@@ -16510,7 +16709,7 @@ const dialogMethods = {
         }))
         .filter((note) => note.text || note.title);
       const notesHtml = noteBlocks.length
-        ? `<section class="recipe-notes"><h3>${esc(this.t("uiRecipeNotes"))}</h3>${noteBlocks.map((note) => `<div class="recipe-note">${note.title ? `<strong>${esc(note.title)}</strong>` : ""}<p>${linkify(note.text)}</p></div>`).join("")}</section>`
+        ? `<section class="recipe-notes"><h3>${esc(this.t("uiRecipeNotes"))}</h3>${noteBlocks.map((note) => `<div class="recipe-note">${note.title ? `<strong>${esc(note.title)}</strong>` : ""}<p>${inlineMarkdown(note.text)}</p></div>`).join("")}</section>`
         : "";
       const stepRows = steps
         .map((step, i) => {
@@ -16529,11 +16728,11 @@ const dialogMethods = {
                 `<img class="step-photo" src="${esc(src)}" alt="${this.t("uiRecipeStepImageAlt", { step: i + 1 })}" loading="lazy" decoding="async">`,
             )
             .join("");
-          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${linkify(summary)}</strong>` : ""}<span class="step-text">${linkify(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
+          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${inlineMarkdown(summary)}</strong>` : ""}<span class="step-text">${inlineMarkdown(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
         })
         .join("");
       size = "large";
-      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${linkify(recipe.description || "")}</p>
+      content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${inlineMarkdown(recipe.description || "")}</p>
         <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
         <div class="toolbar recipe-actions"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn" data-action="nutrition-open">${icon("leaf", 16)} ${esc(this.t("nutrition"))}</button>`}<button class="btn" data-action="journal-open">${icon("book", 16)} ${esc(this.t("journal"))}</button><button class="btn" data-action="print-recipe">${icon("print", 16)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button><button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button>` : ""}${this._permissions.can_manage ? `<button class="btn" data-action="edit-form">${icon("edit", 16)} ${esc(this.t("edit"))}</button>` : ""}</div>
         ${(() => {
@@ -16565,7 +16764,7 @@ const dialogMethods = {
             : ""
         }
         ${labelLine("uiRecipeCategories", categoryNames)}${labelLine("uiRecipeTags", tagNames)}${sourceLine}
-        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase) : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
+        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase, this._language === "de" ? "de" : "en") : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
         <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div>${notesHtml}</div>`;
     }
     if (this._modal === "cook" && this._detail) {
@@ -16590,7 +16789,7 @@ const dialogMethods = {
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
-        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2>${linkify(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${linkify(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
+        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${!stepSummary && stepBody.length > 140 ? ' class="cook-stage--long"' : ""}>${inlineMarkdown(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">
           <header class="cook-timer-header"><span class="cook-timer-mark" aria-hidden="true">${icon("clock", 16)}</span><div><span class="cook-timer-kicker">${this.t("uiATELIERKITCHENTIMER")}</span><strong>${this.t("uiKeepEverythingInRhythm")}</strong></div><span class="cook-timer-count">${this._timers.filter((timer) => !timer.done).length} ${this.t("uiactive")}</span></header>
           <p class="cook-sr-only" role="status" aria-live="polite" aria-atomic="true" data-timer-announce>${esc(this._timerAnnouncement || "")}</p><div class="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}" ${this._timerError ? 'aria-invalid="true" aria-describedby="cook-timer-err"' : ""}></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div>${this._timerError ? `<p class="cook-timer-error" role="alert" id="cook-timer-err">${esc(this._timerError)}</p>` : ""}</div>
@@ -16669,7 +16868,7 @@ const dialogMethods = {
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("editorNameAndDescription"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
           <label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" value="${esc(rec.name)}" placeholder="${esc(this.t("name"))}"></label>
           <div class="editor-columns"><label class="field"><span>${esc(this.t("description"))}</span><textarea name="description" rows="3" maxlength="2000" placeholder="${this.t("uiWhatMakesThisSpecial")}">${esc(rec.description)}</textarea></label>
-          <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="1" max="100" step="1" name="servings" value="${Math.max(1, Number(rec.recipeServings) || 2)}" required><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
+          <label class="field"><span>${esc(this.t("servingsNumber"))}</span><input type="number" min="0" step="any" name="servings" value="${Number(rec.recipeServings) > 0 ? Number(rec.recipeServings) : ""}"><span>${this.t("uiShownInRecipesAndPrint")}</span></label></div></section>
         ${this._editorIngredientsSection()}
         <section class="editor-card"><div class="eyebrow">03 / ${this.t("dialogStepByStep")}</div><h3>${esc(this.t("instructions"))}</h3>
           <p class="editor-sub">${this.t("uiEditAddAndReorderStepsReplacementMustBeExplicitlyEnabled")}</p>
@@ -16678,8 +16877,8 @@ const dialogMethods = {
           <button type="button" class="editor-add-step" data-action="step-add">+ ${this.t("uiAddAStep")}</button>
           <p class="editing-hint">${this.t("uiStepsAreReplacedOnSaveIfTheCheckboxIsSelected")}</p></section>
         ${this._editorHistorySection()}
-        <section class="editor-card editor-card--steps"><div class="editor-footer"><small>${this.t("uiChangesAreSentToMealieOnlyWhenYouSave")}</small>
-          <button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div></section>
+        <div class="editor-footer"><small>${this.t("uiChangesAreSentToMealieOnlyWhenYouSave")}</small>
+          <button type="submit" class="btn primary">${icon("check", 14)} ${esc(this.t("save"))}</button></div>
         </form></div>`;
     }
     if (this._modal === "create-list")
@@ -16744,7 +16943,7 @@ const dialogMethods = {
       size = "large";
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">${esc(this.t("printStudioEyebrow"))}</div>
       <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
-      <div class="print-setup"><div><div class="eyebrow">01 / ${esc(this.t("uiPrintStyle"))}</div>
+      <div class="print-setup"><div><div class="eyebrow print-section-heading">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
         ["editorial", this.t("uiPrintEditorial"), this.t("uiPrintEditorialDescription")],
         ["compact", this.t("uiPrintCompact"), this.t("uiPrintCompactDescription")],
@@ -16763,7 +16962,7 @@ const dialogMethods = {
       <label class="editor-check"><input type="checkbox" data-input="print-notes" ${d.print_notes !== false ? "checked" : ""}> ${esc(this.t("uiPrintIncludeNotes"))}</label>
       <button class="btn primary print-submit" type="button" data-action="print-now">${icon("print", 17)} ${esc(this.t("uiPrintOpenPreview"))}</button>
       <p class="print-guide">${esc(this.t("uiPrintGuide"))}</p></div>
-      <div><div class="eyebrow">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
+      <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
         <h3>${esc(name || this.t("uiYourRecipe"))}</h3><p>${esc(this.t("uiPrintPreviewDescription"))}</p><div class="paper-line"></div><div class="paper-cols">
           <div class="paper-col"><div class="paper-label">${esc(this.t("uiPrintIngredientsItems"))}</div>${
             paperIngredients
@@ -16776,7 +16975,7 @@ const dialogMethods = {
               .slice(0, 5)
               .map(
                 (x, i) =>
-                  `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(String(x).slice(0, 110))}</div>`,
+                  `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
               )
               .join("") || '<div class="paper-preview-row">–</div>'
           }</div></div>
@@ -16786,7 +16985,7 @@ const dialogMethods = {
       const d = this._design;
       const theme = this._resolvedTheme(d.theme);
       content = `<div class="modal-content"><div class="eyebrow">${esc(this.t("designSystemEyebrow"))}</div><h2 class="settings-title">${esc(this.t("settings"))}</h2>
-        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${icon("moon", 14)} ${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${icon("sun", 14)} ${esc(this.t("light"))}</button></div></div>
+        <div class="settings-group"><h3>${esc(this.t("theme"))}</h3><div class="range"><button class="range-option" data-action="design" data-field="theme" data-value="auto" aria-pressed="${d.theme === "auto" ? "true" : "false"}">${esc(this.t("themeAuto"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="dark" aria-pressed="${d.theme === "dark" ? "true" : "false"}">${esc(this.t("dark"))}</button><button class="range-option" data-action="design" data-field="theme" data-value="light" aria-pressed="${d.theme === "light" ? "true" : "false"}">${esc(this.t("light"))}</button></div></div>
         <div class="settings-group"><h3>${esc(this.t("accent"))}</h3><div class="swatches">${COLORS.map(
           (value) => {
             // The light theme paints the default accent herb green, so that swatch must look and read herb green.
@@ -16894,6 +17093,7 @@ const EDITOR_KIND_KEYS = {
   image: "editorKindImage",
   step_image: "editorKindStepImage",
   restore: "editorKindRestore",
+  basics_instructions: "editorSummaryBasicsInstructions",
 };
 const EDITOR_UPLOAD_MAX = 10 * 1024 * 1024;
 const EDITOR_UPLOAD_CHUNK = 256 * 1024;
@@ -17099,15 +17299,17 @@ const recipeEditorMethods = {
     const state = this._ed;
     const value = this._editorParseQuantity(row.quantityText).value;
     if (value === null || !(state.servings >= 1) || state.preview === state.servings) return "";
-    return AtelierStudio.scaleIngredient(`${value} x`, state.preview, state.servings).replace(
-      /\s+x$/,
-      "",
-    );
+    return AtelierStudio.scaleIngredient(
+      `${value} x`,
+      state.preview,
+      state.servings,
+      this._language === "de" ? "de" : "en",
+    ).replace(/\s+x$/, "");
   },
 
   /* ---------- markup ---------- */
   _editorPhotoSection() {
-    return `<section class="editor-card ed-card"><div class="eyebrow">00 / ${esc(this.t("editorPhoto"))}</div><h3>${esc(this.t("editorPhoto"))}</h3>
+    return `<section class="editor-card ed-card"><div class="eyebrow">${esc(this.t("editorPhoto"))}</div>
       <div data-editor-photo>${this._editorPhotoHtml()}</div>
       <input type="file" hidden tabindex="-1" data-ed-file accept="image/jpeg,image/png,image/webp"></section>`;
   },
@@ -17278,6 +17480,13 @@ const recipeEditorMethods = {
     if (item.kind === "ingredients" && ingredients !== null)
       return this.tp("editorSummaryIngredients", ingredients);
     if (item.kind === "instructions" && steps !== null) return this.tp("editorSummarySteps", steps);
+    if (item.kind === "restore" && ingredients !== null && steps !== null)
+      return this.tp("editorSummaryIngredientsAndSteps", ingredients, {
+        steps: this.tp("editorSummarySteps", steps),
+      });
+    if (item.kind === "step_image" && steps !== null) return this.tp("editorSummarySteps", steps);
+    if (item.kind === "basics_instructions" && steps !== null)
+      return this.tp("editorSummarySteps", steps);
     if (item.kind === "image") return this.t("editorSummaryImage");
     if (item.kind === "basics") return this.t("editorSummaryBasics");
     return item.summary || "";
@@ -18074,6 +18283,8 @@ const BRING_TRANSIENT_CODES = ["bring_network", "bring_rate_limit"];
 const BRING_CREDENTIAL_CODES = ["bring_auth", "bring_credentials"];
 // Normalised names Home Assistant gives its built-in todo list, by server language.
 const SHOPPING_LIST_NAMES = ["shoppinglist", "einkaufsliste"];
+// The Bridge allows this many sync rules in total.
+const MAX_SYNC_RULES = 5;
 const shoppingSyncMethods = {
   // Sync state lives on one object so closing the modals can drop it in a single place.
   _syncData() {
@@ -18150,8 +18361,8 @@ const shoppingSyncMethods = {
   _syncEntryButton() {
     const caps = this._syncCaps();
     if (!caps.supported && !caps.standalone) return "";
-    // The web app offers the connection right where the shopping list is.
-    if (caps.standalone && caps.bringSetup)
+    // The web app offers the connection right where the shopping list is, but only to users who can connect.
+    if (caps.standalone && caps.bringSetup && this._bwCanConnect())
       return `<button class="btn tiny sync-open bw-entry" data-action="sync-bw-open" aria-haspopup="dialog">${icon("cart", 14)} ${esc(this.t("bwConnectEntry"))}</button>`;
     const issues = caps.supported ? this._syncIssueCount() : 0;
     const badge =
@@ -18180,10 +18391,13 @@ const shoppingSyncMethods = {
   _syncPlatformLabel(platform) {
     const id = String(platform || "").trim();
     if (!id) return "";
-    const known = { bring: "Bring!", shopping_list: this.t("syncPlatformShoppingList") };
-    if (known[id]) return known[id];
-    const words = id.replace(/_/g, " ");
-    return words.charAt(0).toUpperCase() + words.slice(1);
+    const known = {
+      bring: "Bring!",
+      shopping_list: this.t("syncPlatformShoppingList"),
+      local_todo: this.t("syncPlatformLocalTodo"),
+    };
+    // An unknown integration has no translated name: showing its snake_case id would mix languages.
+    return known[id] || "";
   },
   // Home Assistant names its built-in list in the server language ("Shopping list", "Einkaufsliste"), so show it by the UI language.
   _syncDestinationName(name, platform) {
@@ -18227,6 +18441,7 @@ const shoppingSyncMethods = {
       destination_missing: "syncOutcomeDestinationMissing",
       destination_auth: "syncOutcomeDestinationAuth",
       source_unavailable: "syncOutcomeSourceUnavailable",
+      source_missing: "syncOutcomeSourceMissing",
       nothing_to_send: "syncOutcomeNothing",
       reconciled: "syncOutcomeReconciled",
     };
@@ -18238,11 +18453,25 @@ const shoppingSyncMethods = {
   _syncAuditText(entry) {
     const values = {
       time: this._syncRelative(entry.at),
-      result: this._syncOutcomeText(entry.outcome),
+      // The history line is short: the long headline of a partial run would swallow the count.
+      result:
+        entry.outcome === "partial"
+          ? this.t("syncAuditOutcomePartial")
+          : this._syncOutcomeText(entry.outcome),
     };
-    return ["sent", "partial", "nothing_to_send", "reconciled"].includes(entry.outcome)
+    return ["sent", "partial", "reconciled"].includes(entry.outcome)
       ? this.tp("syncAuditEntry", entry.count ?? 0, values)
       : this.t("syncAuditEntryFailed", values);
+  },
+  // Title of a rule as the cards show it, so history lines and the review can name the rule.
+  _syncRuleLabel(rule) {
+    const destination = rule.destination || {};
+    return this._syncRuleTitle(
+      rule,
+      destination,
+      this._syncDestinationName(destination.name, destination.platform) ||
+        rule.destination_entity_id,
+    );
   },
   _syncOutcomeIcon(outcome, counts = {}) {
     const good = ["sent", "nothing_to_send", "reconciled"].includes(outcome);
@@ -18308,6 +18537,7 @@ const shoppingSyncMethods = {
         sync.state = state;
         this._render();
       }
+      this._syncCheckAuth();
     } catch (err) {
       const repeated = sync.loadFailed;
       sync.loading = false;
@@ -18315,6 +18545,34 @@ const shoppingSyncMethods = {
       if (!quiet) sync.error = this._errorText(err);
       if (!quiet || !repeated) this._render();
     }
+  },
+
+  // True when a rule reports an expired Bring! session, which the account card must then offer to renew.
+  _syncAuthLapsed() {
+    return this._syncRules().some(
+      (rule) =>
+        rule.destination?.reason === "auth" || rule.last_run?.outcome === "destination_auth",
+    );
+  },
+  // The account card reads the cached status, the rule cards read the sync state: bring both in line.
+  async _syncRefreshStatus() {
+    try {
+      const status = await this._ws("status");
+      if (!Array.isArray(status?.entries)) return;
+      this._status = status;
+      this._render();
+    } catch {
+      /* The cached status stays; the next poll or action tries again. */
+    }
+  },
+  _syncCheckAuth() {
+    const caps = this._syncCaps();
+    if (!caps.bringSetup || caps.bringState === "reauth" || !this._syncAuthLapsed()) return;
+    const sync = this._syncData();
+    // At most once per 30 s, so a status that stays unchanged cannot turn the poll into a loop.
+    if (Date.now() - (sync.authCheckedAt || 0) < 30000) return;
+    sync.authCheckedAt = Date.now();
+    this._syncRefreshStatus();
   },
 
   // One timer at most: 10 s while the status modal is open, 60 s on the visible Shopping view.
@@ -18500,6 +18758,11 @@ const shoppingSyncMethods = {
     this._render();
   },
 
+  // The web app has no Home Assistant user, so it talks about the account.
+  _syncNeedsWriteText(caps) {
+    if (caps.readOnly) return this.t("syncReadOnly");
+    return this.t(caps.bringSetup ? "syncNeedsWriteWeb" : "syncNeedsWrite");
+  },
   _syncSyncHtml() {
     const sync = this._syncData();
     const caps = this._syncCaps();
@@ -18520,11 +18783,18 @@ const shoppingSyncMethods = {
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
       ${rules.map((rule) => this._syncGoneHtml(rule, caps)).join("")}
       <div class="sync-live" role="status" aria-live="polite">${live}</div>
-      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncNeedsWrite"))}</p>` : ""}
+      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this._syncNeedsWriteText(caps))}</p>` : ""}
       ${this._bwAccountHtml(caps)}
       ${body}
-      ${caps.admin && rules.length < 5 ? `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
-      ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditText(a))}</li>`).join("")}</ul></section>` : ""}</div>`;
+      ${caps.admin && rules.length >= MAX_SYNC_RULES ? `<p class="notice" role="note">${icon("leaf", 16)} ${esc(this.t("errSyncTooManyRules"))}</p>` : ""}
+      ${caps.admin && rules.length < MAX_SYNC_RULES ? `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
+      ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditLine(a, rules))}</li>`).join("")}</ul></section>` : ""}</div>`;
+  },
+  // With several rules a history line names the rule it belongs to.
+  _syncAuditLine(entry, rules) {
+    const text = this._syncAuditText(entry);
+    const rule = rules.length > 1 ? rules.find((r) => r.id === entry.rule_id) : null;
+    return rule ? `${this._syncRuleLabel(rule)} · ${text}` : text;
   },
   _syncLastHealthyAudit(ruleId) {
     const healthy = ["sent", "nothing_to_send", "reconciled"];
@@ -18614,7 +18884,10 @@ const shoppingSyncMethods = {
       !bringGone &&
       !bringAuth &&
       (destination.reason === "unreachable" || last?.outcome === "destination_unavailable");
+    // The Mealie list this rule reads from was deleted: nothing can run until the rule is edited or removed.
+    const sourceMissing = rule.source_missing === true || last?.outcome === "source_missing";
     const problems = [
+      sourceMissing ? this.t("errSyncSourceGone") : "",
       bringAuth
         ? this.t("bwSessionExpired")
         : bringUnreachable
@@ -18669,7 +18942,9 @@ ${this._syncRouteHtml(rule, destination, destName)}
           this.t("syncFactStatus"),
           bringGone
             ? `${icon("bolt", 15)} ${esc(this.t("bwStatusListGone"))}`
-            : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
+            : sourceMissing
+              ? `${icon("bolt", 15)} ${esc(this.t("syncOutcomeSourceMissing"))}`
+              : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
         ],
         [
           this.t("bwFactPending"),
@@ -18713,9 +18988,10 @@ ${this._syncRouteHtml(rule, destination, destName)}
       group(this.t("syncReviewProblems"), problem),
       group(this.t("syncOutboxTitle"), waiting),
     ].join("");
-    return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncReviewTitle"))}
+    const reviewRule = this._syncRules().find((r) => r.id === review.ruleId);
+    return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncReviewTitle"), reviewRule ? this._syncRuleLabel(reviewRule) : "")}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
-      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncNeedsWrite"))}</p>` : ""}
+      ${!caps.write ? `<p class="notice sync-needs-write" role="note">${icon("leaf", 16)} ${esc(this._syncNeedsWriteText(caps))}</p>` : ""}
       <div class="sync-live" role="status" aria-live="polite" aria-busy="${review.loading ? "true" : "false"}">${review.loading ? esc(this.t("loading")) : ""}</div>
       ${parts || (review.loading ? "" : `<section class="editor-card"><div class="notice">${icon("check", 16)} ${esc(this.t("syncReviewEmpty"))}</div></section>`)}
       <div class="form-actions"><button class="btn sync-back" data-action="sync-review-close">${icon("chevron", 14)} ${esc(this.t("syncReviewClose"))}</button></div></div>`;
@@ -18733,9 +19009,16 @@ ${this._syncRouteHtml(rule, destination, destName)}
         ? ""
         : this._syncBringT(`syncLastError_${record.last_error}`)
       : "";
+    // Every row has the same two buttons, so each one names its item.
     const button = (action, label) =>
-      `<button class="btn tiny" data-action="${action}" data-value="${key}" data-rule="${esc(ruleId)}"${caps.write ? "" : ' aria-disabled="true"'}>${esc(label)}</button>`;
-    return `<li class="sync-record"><div><strong>${esc(record.title)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
+      `<button class="btn tiny" data-action="${action}" data-value="${key}" data-rule="${esc(ruleId)}" aria-label="${esc(`${label}: ${record.title}`)}" title="${esc(`${label}: ${record.title}`)}"${caps.write ? "" : ' aria-disabled="true"'}>${esc(label)}</button>`;
+    // After a change in Mealie the bridge may report the current title: show old → new.
+    const current = String(record.current_title ?? "").trim();
+    const shown =
+      record.state === "changed_after_send" && current && current !== record.title
+        ? `${record.title} → ${current}`
+        : record.title;
+    return `<li class="sync-record"><div><strong>${esc(shown)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
   },
 
   _syncDraftRequest(draft) {
@@ -18755,7 +19038,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       mode: draft.mode,
       triggers: { after_atelier_add: draft.after_atelier_add, watch: draft.watch },
       debounce_seconds: Number(draft.debounce_seconds),
-      poll_interval_seconds: Number(draft.poll_minutes) * 60,
+      poll_interval_seconds: (Number(draft.poll_minutes) || 2) * 60,
       duplicate_policy: draft.duplicate_policy,
     };
   },
@@ -18764,7 +19047,8 @@ ${this._syncRouteHtml(rule, destination, destName)}
     const whole = (value, min, max) =>
       /^\d+$/.test(String(value).trim()) && Number(value) >= min && Number(value) <= max;
     if (!whole(draft.debounce_seconds, 5, 600)) errors.debounce = { min: 5, max: 600 };
-    if (!whole(draft.poll_minutes, 1, 60)) errors.poll = { min: 1, max: 60 };
+    // The poll interval only applies while watching, and its field is hidden otherwise.
+    if (draft.watch && !whole(draft.poll_minutes, 1, 60)) errors.poll = { min: 1, max: 60 };
     return errors;
   },
   // With firstBatch the dialog is the review of a rule that was saved without sending: the preview runs on its own.
@@ -18830,6 +19114,9 @@ ${this._syncRouteHtml(rule, destination, destName)}
     const sourceName = lists.find((l) => String(l.id) === d.source_list_id)?.name || "";
     const destination = d.destinations.find((e) => e.entity_id === d.destination_entity_id);
     const errors = this._syncDraftErrors(d);
+    // The web app has no Home Assistant: its destination is the Bring! list.
+    const web = this._syncCaps().bringSetup;
+    const destinationTitle = this.t(web ? "bwBringTitle" : "syncDestination");
     const changed =
       d.original &&
       (d.original.source !== d.source_list_id ||
@@ -18865,7 +19152,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       : d.preview
         ? `${d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
             lines.length
-              ? `<p>${esc(this.tp(this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal", d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><strong>${esc(l.title)}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}<br><span class="sync-record-state">${icon(l.action === "send" ? "arrow" : "clock", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></li>`).join("")}</ul>`
+              ? `<p>${esc(this.tp(this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal", d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><div><strong>${esc(String(l.title || "").trim() || this.t("syncItemUntitled"))}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</div><div><span class="sync-record-state">${icon(["send", "merge"].includes(l.action) ? "arrow" : "close", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></div></li>`).join("")}</ul>`
               : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
           }`
         : "";
@@ -18886,21 +19173,21 @@ ${this._syncRouteHtml(rule, destination, destName)}
             : `<p class="notice" role="status">${icon("cart", 16)} ${esc(this.t(lists.length ? "errSyncSourceTaken" : "addListFirst"))}</p>`
         }
         <label class="field"><span>${esc(this.t("syncRuleName"))}</span><input data-input="sync-name" maxlength="60" value="${esc(d.name)}" placeholder="${esc(this._syncDraftRequest(d).name)}"></label></section>
-      <section class="editor-card"><div class="eyebrow">02 / ${esc(this.t("syncDestination").toUpperCase())}</div>
+      <section class="editor-card"><div class="eyebrow">02 / ${esc(destinationTitle.toUpperCase())}</div>
         ${
           d.destinationsLoaded && !d.destinations.length
             ? `<p class="notice" role="status">${icon("leaf", 16)} ${esc(this.t("syncNoDestinations"))}</p>`
-            : `<label class="field"><span class="sync-sr">${esc(this.t("syncDestination"))}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${destinationOptions}</select></label>`
+            : `<label class="field"><span class="sync-sr">${esc(destinationTitle)}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${destinationOptions}</select></label>`
         }
         <p class="sync-capability" role="status" aria-live="polite">${destination ? `${icon(destination.supports?.description ? "check" : "close", 15)} ${esc(this.t("syncSupportsNotes", { answer: this.t(destination.supports?.description ? "syncYes" : "syncNo") }))}` : ""}</p></section>
       <section class="editor-card"><div class="eyebrow">03 / ${esc(this.t("syncStepMode").toUpperCase())}</div>
         <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepMode"))}</legend>${radio("mode", "mode", "copy", this.t("syncModeCopy"), this.t("syncModeCopyHint"))}${radio("mode", "mode", "move", this.t("syncModeMove"), this._syncBringT("syncModeMoveHint"))}</fieldset></section>
       <section class="editor-card"><div class="eyebrow">04 / ${esc(this.t("syncStepWhen").toUpperCase())}</div>
         <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncStepWhen"))}</legend>
-        <label class="editor-check"><input type="checkbox" data-input="sync-after-add" ${d.after_atelier_add ? "checked" : ""}> ${esc(this.t("syncTriggerAfterAdd"))}</label>
+        <label class="editor-check"><input type="checkbox" data-input="sync-after-add" ${d.after_atelier_add ? "checked" : ""}> ${esc(this.t(web ? "bwAfterAdd" : "syncTriggerAfterAdd"))}</label>
         <label class="editor-check"><input type="checkbox" data-input="sync-watch" ${d.watch ? "checked" : ""}> ${esc(this.t("syncTriggerWatch"))}</label>
-        <p class="editor-sub">${esc(this.tp("syncTriggerWatchHint", Number(d.poll_minutes) || 2, { interval: Number(d.poll_minutes) || 2 }))}</p></fieldset>
-        <div class="editor-columns">${number("debounce_seconds", "debounce", "syncDebounce", "debounce")}${number("poll_minutes", "poll", "syncPollMinutes", "poll")}</div></section>
+        ${d.watch ? `<p class="editor-sub">${esc(this.tp("syncTriggerWatchHint", Number(d.poll_minutes) || 2, { interval: Number(d.poll_minutes) || 2 }))}</p>` : ""}</fieldset>
+        <div class="editor-columns">${number("debounce_seconds", "debounce", "syncDebounce", "debounce")}${d.watch ? number("poll_minutes", "poll", "syncPollMinutes", "poll") : ""}</div></section>
       <section class="editor-card"><div class="eyebrow">05 / ${esc(this.t("syncDuplicates").toUpperCase())}</div>
         <fieldset class="sync-fieldset"><legend class="sync-sr">${esc(this.t("syncDuplicates"))}</legend>${radio("duplicates", "duplicate_policy", "skip_exact", this.t("syncDuplicateSkipExact"))}${radio("duplicates", "duplicate_policy", "skip_exact_merge_same_unit", this.t("syncDuplicateMerge"))}${radio("duplicates", "duplicate_policy", "none", this.t("syncDuplicateNone"))}</fieldset></section>
       <section class="editor-card"><div class="eyebrow">06 / ${esc(this.t("syncPreview").toUpperCase())}</div>
@@ -18927,6 +19214,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       sync.result = "";
       this._modal = caps.supported ? "sync" : "sync-info";
       this._render();
+      // A load that shows a lapsed session also refreshes the status the account card reads.
       if (caps.supported) await this._syncLoad();
       return true;
     }
@@ -19033,6 +19321,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       try {
         sync.state = await this._ws("sync_state");
         sync.raw = JSON.stringify(sync.state || {});
+        this._syncCheckAuth();
       } catch (err) {
         sync.error = sync.error || this._errorText(err);
       }
@@ -19082,18 +19371,25 @@ ${this._syncRouteHtml(rule, destination, destName)}
     if (!ruleId || sync.busy) return;
     sync.busy = true;
     sync.error = "";
+    let failure = "";
     try {
       await this._ws("sync_resolve", { rule_id: ruleId, record_key: recordKey, action });
     } catch (err) {
-      sync.error = this._errorText(err);
+      failure = this._errorText(err);
       this._syncRefetchStatus(err);
     }
     sync.busy = false;
     await this._syncReviewOpen(ruleId);
+    // The refetch clears the error, so the failure of this action is put back afterwards.
+    if (failure) {
+      sync.error = failure;
+      this._render();
+    }
     try {
       sync.state = await this._ws("sync_state");
       sync.raw = JSON.stringify(sync.state || {});
       this._render();
+      this._syncCheckAuth();
     } catch {
       /* The review list is already fresh; the next poll refreshes the status. */
     }
@@ -19220,6 +19516,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       d.after_atelier_add = Boolean(el.checked);
     } else if (type === "sync-watch") {
       d.watch = Boolean(el.checked);
+      this._render();
     } else if (type === "sync-reset") {
       d.resetConfirmed = Boolean(el.checked);
       this._render();
@@ -19263,6 +19560,8 @@ const bringWizardMethods = {
     sync.bring.confirm = false;
     sync.wizard = {
       step: connected ? 2 : 1,
+      // Adding a rule to an account that was already connected when the dialog opened.
+      addRule: connected && !rule,
       fixRule: rule
         ? {
             id: rule.id,
@@ -19374,8 +19673,10 @@ const bringWizardMethods = {
     const w = this._bwData();
     const used = this._syncRules().map((rule) => rule.source_list_id);
     w.free = asArray(this._data.shopping?.lists).filter((l) => !used.includes(String(l.id)));
+    // A choice that is still free survives a recompute; the rules may have loaded after sign-in.
+    const kept = w.free.find((l) => String(l.id) === String(w.mealieList));
     const active = w.free.find((l) => String(l.id) === String(this._activeList));
-    w.mealieList = String((active || w.free[0])?.id || "");
+    w.mealieList = String((kept || active || w.free[0])?.id || "");
   },
   async _bwLoadLists() {
     const w = this._bwData();
@@ -19412,6 +19713,8 @@ const bringWizardMethods = {
     if (!w) return;
     w.step = step;
     w.error = "";
+    // The rules are fetched after sign-in, so the free lists are recomputed when the step opens.
+    if (step === 3) this._bwPickMealie();
     this._render();
     this._bwFocus();
     if (step === 2 && w.listsState === "idle") this._bwLoadLists();
@@ -19669,26 +19972,21 @@ const bringWizardMethods = {
     const ready = w.preview && !w.previewBusy && !w.previewError;
     const list = this._bwBringName(w);
     const count = this._bwSendCount();
-    const text =
-      w.preview && !w.previewBusy && !w.previewError
+    const emptyPreview = w.preview && !w.previewBusy && !w.previewError && !lines.length;
+    // An empty preview has its own notice below, so the heading adds no second sentence.
+    const text = emptyPreview
+      ? ""
+      : w.preview && !w.previewBusy && !w.previewError
         ? count
           ? this.tp("bwPreviewText", count, { list })
           : this.t("bwPreviewTextNone", { list })
         : this.t("bwPreviewTextBase", { list });
     return `${this._bwHeading(this.t("bwPreviewTitle"), text)}${body}${this._bwNav({ back: true, next: "sync-bw-next", nextDisabled: !ready })}`;
   },
-  // Bring! titles read "Milch (2)" or "Mehl (500 g)": an amount above one reads "2 × Milch", a lone one is dropped.
-  _bwLineParts(line) {
-    const match = /^(.*?) \((.+)\)$/.exec(String(line.title || ""));
-    const name = match ? match[1] : String(line.title || "");
-    const detail = match ? match[2] : "";
-    const amount = /^\d+(?:[.,]\d+)?$/.test(detail) ? Number(detail.replace(",", ".")) : null;
-    if (amount === null)
-      return { name, note: [detail, line.description].filter(Boolean).join(", ") };
-    return { name: amount > 1 ? `${detail} × ${name}` : name, note: line.description || "" };
-  },
   _bwLineHtml(line, actionLabel) {
-    const { name, note } = this._bwLineParts(line);
+    // The title is shown as Bring! receives it, like in the first-delivery review.
+    const name = String(line.title || "").trim() || this.t("syncItemUntitled");
+    const note = line.description || "";
     const state =
       line.action === "send"
         ? ""
@@ -19737,7 +20035,10 @@ const bringWizardMethods = {
           this._bwStepReleaseHtml(w),
         ][w.step];
     const fix = Boolean(w.fixRule) && !w.done;
-    return `<div class="modal-content sync-panel bw-wizard">${this._syncLead(this.t(fix ? "syncTitle" : "bwTitle"))}${fix ? "" : this._bwProgressHtml(w)}<section class="editor-card bw-panel" aria-busy="${w.saving || w.previewBusy || this._syncData().bring.busy ? "true" : "false"}">${body}</section></div>`;
+    // An account that is already signed in needs neither the connect title nor the sign-in step.
+    const add = w.addRule === true && !w.done && w.step >= 2;
+    const title = fix ? "syncTitle" : add ? "syncAddRule" : "bwTitle";
+    return `<div class="modal-content sync-panel bw-wizard">${this._syncLead(this.t(title))}${fix || add ? "" : this._bwProgressHtml(w)}<section class="editor-card bw-panel" aria-busy="${w.saving || w.previewBusy || this._syncData().bring.busy ? "true" : "false"}">${body}</section></div>`;
   },
 
   // ---- account card (connected state and sign in again) -------------------------------------
@@ -19753,11 +20054,12 @@ const bringWizardMethods = {
     // Only a run that went well counts as a delivery; a failed run must not say "just now".
     // A later failed run does not undo an earlier delivery, so the history counts as well.
     const healthy = ["sent", "nothing_to_send", "reconciled"];
+    // A run that found nothing to send delivered nothing, so it does not move "last delivery".
+    const delivered = (entry) =>
+      ["sent", "partial", "reconciled"].includes(entry?.outcome) && Number(entry.count) > 0;
     const lastRun = [
-      ...rules
-        .filter((rule) => healthy.includes(rule.last_run?.outcome))
-        .map((rule) => rule.last_run),
-      ...asArray(sync.state?.audit).filter((entry) => healthy.includes(entry.outcome)),
+      ...rules.filter((rule) => delivered(rule.last_run)).map((rule) => rule.last_run),
+      ...asArray(sync.state?.audit).filter(delivered),
     ]
       .map((entry) => entry.at)
       .filter(Boolean)
@@ -20977,15 +21279,13 @@ const AtelierStudio = (() => {
     if (!parts.length) return null;
     return parts.reduce((sum, part) => sum + part.value * unitFactor(part.unit), 0);
   }
-  function formatTime(value, locale = "de") {
-    if (typeof value === "number")
-      return Number.isFinite(value) && value > 0
-        ? `${value} ${locale === "de" ? "Min." : "min"}`
-        : "";
+  // The unit is the same lowercase "min" in every language.
+  function formatTime(value) {
+    if (typeof value === "number") return Number.isFinite(value) && value > 0 ? `${value} min` : "";
     const text = String(value ?? "")
       .trim()
       .replace(/\s+/g, " ");
-    return /^\d+(?:[.,]\d+)?$/.test(text) ? `${text} ${locale === "de" ? "Min." : "min"}` : text;
+    return /^\d+(?:[.,]\d+)?$/.test(text) ? `${text} min` : text;
   }
   function recipeServings(recipe) {
     const known = Number(recipe?.recipeServings);
@@ -20998,7 +21298,63 @@ const AtelierStudio = (() => {
       ? count
       : null;
   }
-  function scaleIngredient(row, targetServings, baseServings) {
+  const UNICODE_FRACTIONS = {
+    "½": [1, 2],
+    "⅓": [1, 3],
+    "⅔": [2, 3],
+    "¼": [1, 4],
+    "¾": [3, 4],
+    "⅛": [1, 8],
+    "⅜": [3, 8],
+    "⅝": [5, 8],
+    "⅞": [7, 8],
+  };
+  const GLYPH_BY_FRACTION = Object.fromEntries(
+    Object.entries(UNICODE_FRACTIONS).map(([glyph, [n, d]]) => [`${n}/${d}`, glyph]),
+  );
+  /** Leading quantity of a row: mixed number, fraction, unicode fraction or decimal. */
+  function leadingQuantity(raw) {
+    const glyphs = Object.keys(UNICODE_FRACTIONS).join("");
+    let m = raw.match(new RegExp(`^(\\s*)(\\d+)?\\s?([${glyphs}])(\\s+.*)$`));
+    if (m) {
+      const [n, d] = UNICODE_FRACTIONS[m[3]];
+      return { lead: m[1], value: Number(m[2] || 0) + n / d, style: "glyph", rest: m[4] };
+    }
+    m = raw.match(/^(\s*)(\d+)\s+(\d+)\/(\d+)(\s+.*)$/);
+    if (m && Number(m[4]) > 0)
+      return {
+        lead: m[1],
+        value: Number(m[2]) + Number(m[3]) / Number(m[4]),
+        style: "fraction",
+        rest: m[5],
+      };
+    m = raw.match(/^(\s*)(\d+)\/(\d+)(\s+.*)$/);
+    if (m && Number(m[3]) > 0)
+      return { lead: m[1], value: Number(m[2]) / Number(m[3]), style: "fraction", rest: m[4] };
+    m = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
+    if (m)
+      return { lead: m[1], value: Number(m[2].replace(",", ".")), style: "decimal", rest: m[3] };
+    return null;
+  }
+  /** A fraction text like "2 1/4" when the value is a clean eighth/third, else null. */
+  function formatFraction(value, glyph) {
+    const whole = Math.floor(value + 1e-9);
+    const frac = value - whole;
+    if (frac < 0.01) return String(whole);
+    for (const d of [2, 3, 4, 8]) {
+      const n = Math.round(frac * d);
+      if (n > 0 && n < d && Math.abs(frac - n / d) < 0.01) {
+        // Reduce, so 2/4 reads as 1/2.
+        const div = [8, 4, 2].find((x) => n % x === 0 && d % x === 0) || 1;
+        const key = `${n / div}/${d / div}`;
+        const part = glyph && GLYPH_BY_FRACTION[key] ? GLYPH_BY_FRACTION[key] : key;
+        if (!whole) return part;
+        return glyph && GLYPH_BY_FRACTION[key] ? `${whole}${part}` : `${whole} ${part}`;
+      }
+    }
+    return null;
+  }
+  function scaleIngredient(row, targetServings, baseServings, locale = "de") {
     const raw = typeof row === "string" ? row : ingredient(row),
       target = Number(targetServings),
       base = Number(baseServings);
@@ -21011,11 +21367,17 @@ const AtelierStudio = (() => {
       target === base
     )
       return raw;
-    const match = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
-    if (!match) return raw;
-    const amount = (Number(match[2].replace(",", ".")) * target) / base;
-    const scaled = Number(amount.toFixed(2)).toLocaleString("de-DE", { maximumFractionDigits: 2 });
-    return `${match[1]}${scaled}${match[3]}`;
+    const q = leadingQuantity(raw);
+    if (!q) return raw;
+    // "1 x 400 g" is a pack count, not an amount: scaling it would give "1,5 x 400 g".
+    if (/^\s+[x×]\s*\d/i.test(q.rest)) return raw;
+    const amount = (q.value * target) / base;
+    let scaled = q.style === "decimal" ? null : formatFraction(amount, q.style === "glyph");
+    if (scaled === null)
+      scaled = Number(amount.toFixed(2)).toLocaleString(locale === "en" ? "en-US" : "de-DE", {
+        maximumFractionDigits: 2,
+      });
+    return `${q.lead}${scaled}${q.rest}`;
   }
   // Treat a pantry match as a verified quantity claim, not just a shared word.
   // Mealie has both structured foods/units and legacy display-only ingredients.
@@ -21842,26 +22204,33 @@ const AtelierStudio = (() => {
     };
   }
   // Swap texts and the warning are translation keys; the UI resolves them per locale.
+  // Each entry: translation key plus the German and English words that name the ingredient.
+  // A word matches a whole token, or the start of a token when it has four or more letters.
   const swaps = [
-    ["sahne", "studioSwapCream"],
-    ["butter", "studioSwapButter"],
-    ["ei", "studioSwapEgg"],
-    ["milch", "studioSwapMilk"],
-    ["champignon", "studioSwapMushroom"],
-    ["quark", "studioSwapQuark"],
-    ["parmesan", "studioSwapParmesan"],
-    ["mehl", "studioSwapFlour"],
-    ["zucker", "studioSwapSugar"],
+    ["studioSwapCream", ["sahne", "cream"]],
+    ["studioSwapButter", ["butter"]],
+    ["studioSwapEgg", ["ei", "eier", "egg", "eggs", "eigelb", "eiweiss", "eiweiß"]],
+    ["studioSwapMilk", ["milch", "milk"]],
+    ["studioSwapMushroom", ["champignon", "champignons", "mushroom", "mushrooms"]],
+    ["studioSwapQuark", ["quark"]],
+    ["studioSwapParmesan", ["parmesan"]],
+    ["studioSwapFlour", ["mehl", "flour"]],
+    ["studioSwapSugar", ["zucker", "sugar"]],
   ];
   function substitutions(ingredientName) {
-    const v = clean(ingredientName);
-    return swaps
-      .filter(([k]) => v.includes(k))
-      .map(([from, to]) => ({
-        from,
-        to,
-        warning: "studioSwapWarning",
-      }));
+    const tokens = String(ingredientName ?? "")
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter(Boolean)
+      .map((original) => ({ original, word: clean(original) }));
+    const result = [];
+    for (const [to, names] of swaps) {
+      const hit = tokens.find((t) =>
+        names.some((k) => t.word === k || (k.length >= 4 && t.word.startsWith(k))),
+      );
+      // "from" is the word the user typed, so the English UI never shows a German match key.
+      if (hit) result.push({ from: hit.original, to, warning: "studioSwapWarning" });
+    }
+    return result;
   }
   function safeHelperTasks(recipe) {
     const steps = recipe.recipeInstructions || [];
@@ -22193,6 +22562,7 @@ Object.assign(MealieAtelierCard.prototype, {
     confirmLabel = "",
     initialValue = "",
     secondaryLabel = "",
+    cancelLabel = "",
     focusCancel = false,
   } = {}) {
     return new Promise((resolve) => {
@@ -22205,7 +22575,7 @@ Object.assign(MealieAtelierCard.prototype, {
         kind === "prompt"
           ? `<label class="at-prompt-label">${esc(this.t("studioDialogPromptLabel"))}<input type="text" class="at-prompt-input" maxlength="160" value="${esc(initialValue)}" placeholder="${esc(this.t("studioDialogPromptPlaceholder"))}" required></label>`
           : "";
-      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(this.t("studioCancel"))}</button>`}${secondaryLabel && kind !== "info" ? `<button class="btn" type="submit" value="secondary">${esc(secondaryLabel)}</button>` : ""}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
+      dlg.innerHTML = `<form method="dialog" class="at-dialog-panel"><span class="eyebrow">${esc(this.t("studioDialogLabel"))}</span><h2 id="at-dialog-title">${esc(title || this.t("studioConfirm"))}</h2><p id="at-dialog-description">${esc(copy).replace(/\n/g, "<br>")}</p>${input}<div class="at-dialog-actions">${kind === "info" ? "" : `<button class="btn" type="submit" value="cancel" formnovalidate>${esc(cancelLabel || this.t("studioCancel"))}</button>`}${secondaryLabel && kind !== "info" ? `<button class="btn" type="submit" value="secondary">${esc(secondaryLabel)}</button>` : ""}<button class="btn primary" type="submit" value="confirm">${esc(kind === "info" ? this.t("studioClose") : confirmLabel || this.t("studioConfirm"))}</button></div></form>`;
       const previous = this.shadowRoot.activeElement;
       const surface = this.shadowRoot.querySelector(".atelier");
       if (surface) {
@@ -22564,7 +22934,7 @@ Object.assign(MealieAtelierCard.prototype, {
      ${
        session
          ? `<p class="studio-step-badge">${this.t("familyStep", { step: sharedStep + 1, total: stepTotal || "?", date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next" ${stepTotal && sharedStep >= stepTotal - 1 ? "disabled" : ""}>${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
-     <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${esc(Math.max(0, Math.ceil((x.deadline - Date.now()) / 60000)))} ${this.t("studioMinutesShort")}</b>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
+     <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row${x.deadline <= Date.now() ? " is-done" : ""}"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${sharedTimerText(x)}</b><small class="cook-timer-status" data-shared-timer-status>${x.deadline <= Date.now() ? this.t("uiREADY") : this.t("uiRUNNING")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
      ${!kid && this._permissions.can_write ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
      <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-task-remove" data-id="${esc(t.id)}" aria-label="${esc(this.t("studioRemove"))}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
      ${!kid && this._permissions.can_manage && people.length ? `<form class="studio-form" data-form="studio-task"><label>${this.t("familyTask")}<input name="text" maxlength="300" required placeholder="${this.t("familyTaskPlaceholder")}"></label><label>${this.t("familyAssign")}<select name="memberId">${people.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label><label class="studio-inline"><input type="checkbox" name="adultApproved"><span>${this.t("familyApproval")}</span></label><button class="btn" type="submit">${this.t("familyAssignTask")}</button></form>` : ""}
@@ -22855,7 +23225,7 @@ MealieAtelierCard.prototype._modalHtml = function () {
   if (this._modal === "cook" && this._detail) {
     const session = this._studio?.family?.session;
     const connected = session?.slug === this._detail.slug;
-    const voice = `<div class="studio-cook-tools"><button class="btn" data-action="studio-read-step">${icon("book", 14)} ${this.t("studioReadStepLabel")}</button><button class="btn" data-action="studio-voice-command">${icon("spark", 14)} ${this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${icon("refresh", 14)} ${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
+    const voice = `<div class="studio-cook-tools"><button class="btn${this._readSpeaking ? " is-active" : ""}" data-action="studio-read-step" aria-pressed="${this._readSpeaking ? "true" : "false"}">${icon("book", 14)} ${this._readSpeaking ? this.t("studioReadSpeaking") : this.t("studioReadStepLabel")}</button><button class="btn${this._voiceListening ? " is-active" : ""}" data-action="studio-voice-command" aria-pressed="${this._voiceListening ? "true" : "false"}">${icon("spark", 14)} ${this._voiceListening ? this.t("studioVoiceListening") : this.t("studioVoiceCommandLabel")}</button><button class="btn" data-action="studio-replacement">${icon("refresh", 14)} ${this.t("studioReplacementLabel")}</button>${this._hass?.callService && /^scene\.[a-z0-9_]+$/i.test(this._config.cooking_scene || "") ? `<button class="btn" data-action="studio-ha-scene">${icon("sun", 14)} ${this.t("studioCookingLight")}</button>` : ""}${this._hass?.callService && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-quiet">${icon("volume", 14)} ${this.t("studioLowerMusic")}</button>` : ""}${this._hass?.callService && /^tts\.[a-z0-9_]+$/i.test(this._config.cooking_tts_engine || "") && /^media_player\.[a-z0-9_]+$/i.test(this._config.cooking_media_player || "") ? `<button class="btn" data-action="studio-ha-tts">${icon("volume", 14)} ${this.t("studioSpeakerLabel")}</button>` : ""}${connected ? `<span class="studio-shared-note">● ${this.t("studioSharedFamily")}</span>` : ""}</div>${this._aiSwap ? `<div class="studio-swap">${esc(this._aiSwap)}</div>` : ""}`;
     html = html.replace(/<section class="cook-utility"[^>]*>/, (open) => open + voice);
     if (connected && session.timers.length) {
       html = html.replace(/<div class="cook-timers-empty">.*?<\/div>/s, "");
@@ -22891,7 +23261,7 @@ MealieAtelierCard.prototype._tickTimers = function () {
     );
     if (timer) {
       span.textContent = sharedTimerText(timer);
-      const card = span.closest(".cook-timer-card");
+      const card = span.closest(".cook-timer-card, .studio-timer-row");
       if (card) {
         const done = timer.deadline <= Date.now();
         card.classList.toggle("is-done", done);
@@ -23226,10 +23596,28 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       if (!this._detail) return;
       const step = instructionText(asArray(this._detail.recipeInstructions)[this._cookIndex]);
       if ("speechSynthesis" in window) {
+        const wasSpeaking = this._readSpeaking;
         speechSynthesis.cancel();
+        // A second press stops the reading.
+        if (wasSpeaking) {
+          this._readSpeaking = false;
+          this._render();
+          return;
+        }
         const utterance = new SpeechSynthesisUtterance(step);
         utterance.lang = this.t(this._locale === "de" ? "studioSpeechDe" : "studioSpeechEn");
         utterance.rate = 0.91;
+        const stop = () => {
+          if (!this._readSpeaking) return;
+          this._readSpeaking = false;
+          this._render();
+        };
+        utterance.onstart = () => {
+          this._readSpeaking = true;
+          this._render();
+        };
+        utterance.onend = stop;
+        utterance.onerror = stop;
         speechSynthesis.speak(utterance);
       } else this._flash(this.t("studioReadUnsupported"));
       return;
@@ -23263,7 +23651,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           const rows = asArray(this._detail?.recipeIngredient);
           const ask = AtelierStudio.clean(
             speech.replace(
-              /wie viel|wieviel|wie viele|brauche ich|ist|an|how much|how many|do i need|need/g,
+              /\b(?:wie viele?|wieviel|brauche ich|how much|how many|do i need|need)\b/g,
               "",
             ),
           );
@@ -23283,7 +23671,20 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         } else this._flash(this.t("studioVoiceUnknown", { command: speech }));
         this._render();
       };
-      recognizer.onerror = () => this._flash(this.t("studioMicrophoneError"));
+      const stopListening = () => {
+        if (!this._voiceListening) return;
+        this._voiceListening = false;
+        this._render();
+      };
+      recognizer.onstart = () => {
+        this._voiceListening = true;
+        this._render();
+      };
+      recognizer.onend = stopListening;
+      recognizer.onerror = () => {
+        this._flash(this.t("studioMicrophoneError"));
+        stopListening();
+      };
       try {
         recognizer.start();
       } catch {
@@ -23401,10 +23802,9 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (existed && this._modal === "cook") {
       // Joining a running shared session: open at the shared step instead of step 1.
       const steps = asArray(this._detail.recipeInstructions);
-      this._cookIndex = Math.min(
-        Math.max(0, Number(active.step) || 0),
-        Math.max(0, steps.length - 1),
-      );
+      const last = Math.max(0, steps.length - 1);
+      // Done ends the session (cook-finish), so a running one is always joined at its shared step.
+      this._cookIndex = Math.min(Math.max(0, Number(active.step) || 0), last);
       this._render();
     }
     if (this._permissions.can_write && !existed && (!active || replace))
@@ -23425,8 +23825,12 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
   }
   if (action === "cook-finish" && this._detail) {
     const slug = this._detail.slug,
-      previous = this._studio?.journal?.[slug] || {};
+      previous = this._studio?.journal?.[slug] || {},
+      shared = this._studio?.family?.session;
     await _atOriginalClick.call(this, event);
+    // Done ends the shared session this recipe owns, so the next start begins at step 1.
+    if (shared?.slug === slug && this._permissions.can_write && !this._kidView)
+      await this._studioWrite("session_end", { session_id: shared.id });
     if (this._canJournal)
       await this._studioWrite("journal_set", {
         slug,
@@ -23612,7 +24016,7 @@ class AtelierManageCard extends MealieAtelierCard {
 }
 
 // Native Home Assistant visual card editor (no YAML editing required).
-const EDITOR_STYLE = "/* Home Assistant visual card editor; inherits the same control geometry as Atelier. */\n:host {\n  --ds-motion-fast: 140ms;\n  --ds-motion-base: 220ms;\n  --ds-motion-enter: 300ms;\n  --ds-motion-slow: 480ms;\n  --ds-motion-image: 680ms;\n  --ds-motion-image-long: 960ms;\n  --ds-motion-loading: 1800ms;\n  --ds-motion-reduced: 0.01ms;\n  --ds-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);\n  --ds-motion-spring: cubic-bezier(0.18, 1.12, 0.32, 1);\n  --ds-motion-linear: linear;\n  --ed-text: var(--primary-text-color, #eaf0eb);\n  --ed-muted: var(--secondary-text-color, #a4b0aa);\n  --ed-surface: var(--card-background-color, #1b2722);\n  --ed-border: var(--divider-color, #74847a65);\n  --ed-accent: var(--primary-color, #9dcbb2);\n  display: block;\n  font-family: Inter, ui-sans-serif, system-ui, sans-serif;\n  color: var(--ed-text);\n}\n*,\n*::before,\n*::after {\n  box-sizing: border-box;\n}\n.editor {\n  display: grid;\n  gap: 12px;\n  padding: 16px 4px 20px;\n}\n.title {\n  font:\n    600 21px/1.2 Georgia,\n    serif;\n  letter-spacing: -0.025em;\n  margin-bottom: 4px;\n}\n.hint {\n  font-size: 12px;\n  line-height: 1.6;\n  color: var(--ed-muted);\n  margin: 0 0 3px;\n  overflow-wrap: anywhere;\n}\n.group {\n  display: grid;\n  gap: 7px;\n  min-width: 0;\n  padding: 4px 0;\n}\n.group > label {\n  font-size: 13px;\n  line-height: 1.4;\n  font-weight: 650;\n}\n:where(select, input:not([type=\"checkbox\"])) {\n  box-sizing: border-box;\n  min-height: 48px;\n  min-width: 0;\n  width: 100%;\n  border: 1px solid var(--ed-border);\n  border-radius: 12px;\n  background: var(--ed-surface);\n  color: var(--ed-text);\n  padding: 12px 14px;\n  font: inherit;\n  font-size: 14px;\n  line-height: 1.4;\n  transition:\n    border-color var(--ds-motion-fast) var(--ds-motion-ease),\n    box-shadow var(--ds-motion-fast) var(--ds-motion-ease);\n}\n:where(select, input:not([type=\"checkbox\"])):hover {\n  border-color: var(--ed-accent);\n}\n:where(select, input:not([type=\"checkbox\"])):focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 2px;\n}\nselect {\n  cursor: pointer;\n  -webkit-appearance: none;\n  appearance: none;\n  padding-inline-end: 46px !important;\n  background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23a7b7ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\");\n  background-repeat: no-repeat;\n  background-position: right 15px center;\n  background-size: 18px;\n}\n.group :where(select, input:not([type=\"checkbox\"])) {\n  margin: 0;\n}\n.group {\n  gap: 9px;\n  padding-block: 6px;\n}\n.group > label {\n  margin: 0;\n  line-height: 1.5;\n}\n.line {\n  min-height: 52px;\n  gap: 14px;\n  padding: 12px 15px;\n}\n\ninput[type=\"checkbox\"] {\n  -webkit-appearance: none;\n  appearance: none;\n  margin: 0;\n  padding: 0;\n  min-width: 22px;\n  width: 22px;\n  min-height: 22px;\n  height: 22px;\n  flex: 0 0 22px;\n  display: grid;\n  place-content: center;\n  border: 1.5px solid var(--ed-muted);\n  border-radius: 6px;\n  background: var(--ed-surface);\n  cursor: pointer;\n  transition:\n    border-color var(--ds-motion-fast) var(--ds-motion-ease),\n    background var(--ds-motion-fast) var(--ds-motion-ease);\n}\ninput[type=\"checkbox\"]::before {\n  content: \"\";\n  width: 11px;\n  height: 7px;\n  border: solid #13291d;\n  border-width: 0 0 2.5px 2.5px;\n  transform: translateY(-1px) rotate(-45deg) scale(0);\n  opacity: 0;\n  transition:\n    opacity var(--ds-motion-fast) var(--ds-motion-ease),\n    transform var(--ds-motion-fast) var(--ds-motion-ease);\n}\ninput[type=\"checkbox\"]:checked {\n  background: var(--ed-accent);\n  border-color: var(--ed-accent);\n}\ninput[type=\"checkbox\"]:checked::before {\n  transform: translateY(-1px) rotate(-45deg) scale(1);\n  opacity: 1;\n}\ninput[type=\"checkbox\"]:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 3px;\n}\n.line {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 48px;\n  padding: 11px 12px;\n  border: 1px solid var(--ed-border);\n  border-radius: 12px;\n  cursor: pointer;\n  background: color-mix(in srgb, var(--ed-surface) 94%, var(--ed-accent));\n  font-size: 13px;\n  font-weight: 550;\n  line-height: 1.45;\n}\n.line:hover {\n  border-color: color-mix(in srgb, var(--ed-accent) 50%, var(--ed-border));\n}\n.line:has(input:checked) {\n  border-color: color-mix(in srgb, var(--ed-accent) 40%, var(--ed-border));\n}\n.line:has(input:focus-visible) {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 2px;\n}\n@media (prefers-reduced-motion: reduce) {\n  input,\n  select {\n    transition: none !important;\n  }\n}\n@media (forced-colors: active) {\n  input[type=\"checkbox\"]:checked {\n    background: Highlight;\n    border-color: Highlight;\n  }\n}\n/* The editor shares the same editorial hierarchy as the cards. */\n.title {\n  font-size: 23px;\n  margin: 0 0 4px;\n}\n.title-accent {\n  color: var(--ed-accent);\n  font-style: italic;\n  font-weight: 500;\n}\n.section-head {\n  display: grid;\n  grid-template-columns: 34px minmax(0, 1fr);\n  align-items: start;\n  gap: 12px;\n  margin: 18px 0 2px;\n  padding: 17px 4px 10px;\n  border-top: 1px solid var(--ed-border);\n}\n.section-head > span {\n  color: var(--ed-accent);\n  font-size: 11px;\n  letter-spacing: 0.07em;\n  font-weight: 800;\n  padding-top: 3px;\n}\n.section-head strong {\n  font:\n    500 21px/1.2 Georgia,\n    serif;\n  letter-spacing: -0.03em;\n}\n.section-head p {\n  margin: 4px 0 0;\n  color: var(--ed-muted);\n  font-size: 12px;\n  line-height: 1.5;\n}\n.editor-footer {\n  border-top: 1px solid var(--ed-border);\n  padding-top: 18px;\n  margin-top: 14px;\n}\n:where(select, input:not([type=\"checkbox\"])):user-invalid {\n  border-color: #d99c82;\n  box-shadow: 0 0 0 3px #d99c8222;\n}\n:where(select, input:not([type=\"checkbox\"])):disabled {\n  opacity: 0.52;\n  cursor: not-allowed;\n}\ninput[type=\"checkbox\"]:disabled {\n  opacity: 0.48;\n  cursor: not-allowed;\n}\n\n.editor.setup-editor {\n  width: min(100%, 780px);\n  margin-inline: auto;\n  gap: 20px;\n  padding: 18px 4px 24px;\n}\n.setup-header,\n.settings-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 22px;\n}\n.setup-brand {\n  font-size: 10px;\n  font-weight: 800;\n  letter-spacing: 0.16em;\n  color: var(--ed-muted);\n}\n.setup-brand span {\n  color: var(--ed-accent);\n}\n.setup-header h1 {\n  max-width: 560px;\n  margin: 10px 0 7px;\n  font:\n    500 clamp(29px, 5vw, 40px) / 1.08 Georgia,\n    serif;\n  letter-spacing: -0.035em;\n}\n.setup-header p,\n.setup-description {\n  max-width: 570px;\n  margin: 0;\n  color: var(--ed-muted);\n  font-size: 13px;\n  line-height: 1.65;\n}\n.setup-skip,\n.editor-link-button {\n  border: 0;\n  padding: 8px 0;\n  background: transparent;\n  color: var(--ed-muted);\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 600;\n  line-height: 1.4;\n  white-space: nowrap;\n  text-decoration: underline;\n  text-decoration-color: color-mix(in srgb, var(--ed-muted) 42%, transparent);\n  text-underline-offset: 4px;\n  cursor: pointer;\n}\n.setup-skip:hover,\n.editor-link-button:hover {\n  color: var(--ed-text);\n}\n.setup-skip:focus-visible,\n.editor-link-button:focus-visible,\n.setup-link:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 4px;\n  border-radius: 4px;\n}\n.setup-progress {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 0;\n  margin: 4px 0 0;\n  padding: 0;\n  list-style: none;\n}\n.setup-progress li {\n  position: relative;\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  align-content: start;\n  gap: 7px;\n  min-width: 0;\n  padding: 0 10px 0 0;\n  color: var(--ed-muted);\n}\n.setup-progress li:before {\n  content: \"\";\n  position: absolute;\n  z-index: 0;\n  top: 15px;\n  left: 16px;\n  right: -16px;\n  height: 1px;\n  background: var(--ed-border);\n}\n.setup-progress li:last-child:before {\n  display: none;\n}\n.setup-progress li > span {\n  z-index: 1;\n  display: grid;\n  place-items: center;\n  width: 31px;\n  height: 31px;\n  border: 1px solid var(--ed-border);\n  border-radius: 50%;\n  background: var(--ed-surface);\n  font:\n    700 10px/1 ui-monospace,\n    monospace;\n  color: var(--ed-muted);\n}\n.setup-progress li small {\n  overflow: hidden;\n  font-size: 11px;\n  line-height: 1.35;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.setup-progress li.current {\n  color: var(--ed-text);\n}\n.setup-progress li.current > span,\n.setup-progress li.complete > span {\n  border-color: var(--ed-accent);\n  background: var(--ed-accent);\n  color: #13251b;\n}\n.setup-progress li.complete:before {\n  background: var(--ed-accent);\n}\n.setup-panel {\n  display: grid;\n  gap: 13px;\n  min-height: 310px;\n  padding: clamp(20px, 4vw, 32px);\n  border: 1px solid var(--ed-border);\n  border-radius: 20px;\n  background: color-mix(in srgb, var(--ed-surface) 91%, var(--ed-accent));\n  animation: setup-panel-in var(--ds-motion-enter) var(--ds-motion-ease) both;\n}\n.setup-kicker {\n  margin: 0 0 1px;\n  color: var(--ed-accent);\n  font-size: 10px;\n  font-weight: 800;\n  letter-spacing: 0.13em;\n}\n.setup-step-title {\n  margin: 0;\n  font:\n    500 clamp(25px, 4vw, 32px) / 1.16 Georgia,\n    serif;\n  letter-spacing: -0.025em;\n  outline: 0;\n}\n.setup-step-title:focus-visible {\n  border-radius: 3px;\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 5px;\n}\n.setup-description {\n  margin-top: -4px;\n}\n.setup-state {\n  display: flex;\n  align-items: center;\n  gap: 11px;\n  min-height: 104px;\n  padding: 17px;\n  border: 1px solid var(--ed-border);\n  border-radius: 14px;\n  color: var(--ed-muted);\n  font-size: 13px;\n}\n.setup-spinner {\n  width: 17px;\n  height: 17px;\n  flex: none;\n  border: 2px solid color-mix(in srgb, var(--ed-accent) 28%, transparent);\n  border-top-color: var(--ed-accent);\n  border-radius: 50%;\n  animation: setup-spin var(--ds-motion-slow) var(--ds-motion-linear) infinite;\n}\n.setup-callout {\n  display: grid;\n  gap: 8px;\n  padding: 18px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 24%, var(--ed-border));\n  border-radius: 14px;\n  background: color-mix(in srgb, var(--ed-surface) 84%, var(--ed-accent));\n}\n.setup-callout strong {\n  font:\n    500 18px/1.25 Georgia,\n    serif;\n  color: var(--ed-text);\n}\n.setup-callout > span {\n  max-width: 610px;\n  color: var(--ed-muted);\n  font-size: 12px;\n  line-height: 1.65;\n}\n.setup-callout-actions {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 14px;\n  margin-top: 3px;\n}\n.setup-link {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  width: max-content;\n  max-width: 100%;\n  margin-top: 4px;\n  padding: 10px 13px;\n  border: 1px solid var(--ed-border);\n  border-radius: 10px;\n  color: var(--ed-text);\n  background: var(--ed-surface);\n  font-size: 12px;\n  font-weight: 700;\n  text-decoration: none;\n}\n.setup-link:hover {\n  border-color: var(--ed-accent);\n  color: var(--ed-text);\n}\n.setup-assurance {\n  padding-top: 5px;\n  color: var(--ed-muted);\n  font-size: 11px;\n}\n.setup-assurance span {\n  padding-inline: 5px;\n  color: var(--ed-accent);\n}\n.provider-card {\n  display: grid;\n  gap: 12px;\n  padding: 16px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 34%, var(--ed-border));\n  border-radius: 16px;\n  background: color-mix(in srgb, var(--ed-surface) 90%, var(--ed-accent));\n  animation: setup-panel-in var(--ds-motion-enter) var(--ds-motion-ease) both;\n}\n.provider-card p {\n  max-width: 620px;\n  margin: 0;\n  color: var(--ed-muted);\n  font-size: 12px;\n  line-height: 1.65;\n}\n.provider-card-head {\n  display: grid;\n  grid-template-columns: 38px minmax(0, 1fr) auto;\n  align-items: center;\n  gap: 11px;\n}\n.provider-mark {\n  display: grid;\n  place-items: center;\n  width: 38px;\n  height: 38px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 40%, var(--ed-border));\n  border-radius: 12px;\n  background: var(--ed-surface);\n  color: var(--ed-accent);\n  font:\n    600 19px Georgia,\n    serif;\n}\n.provider-card-head > div {\n  display: grid;\n  gap: 3px;\n  min-width: 0;\n}\n.provider-card-head strong {\n  font-size: 13px;\n}\n.provider-card-head small {\n  color: var(--ed-muted);\n  font-size: 11px;\n}\n.provider-badge {\n  padding: 5px 8px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 42%, var(--ed-border));\n  border-radius: var(--ds-radius-pill, 999px);\n  color: var(--ed-accent);\n  font-size: 9px;\n  font-weight: 800;\n  letter-spacing: 0.08em;\n}\n.setup-live-preview {\n  display: grid;\n  grid-template-columns: 120px minmax(0, 1fr);\n  align-items: center;\n  gap: 18px;\n  margin-top: 5px;\n  padding: 15px;\n  border: 1px solid var(--ed-border);\n  border-radius: 15px;\n  background: var(--ed-surface);\n}\n.setup-preview-art {\n  position: relative;\n  height: 82px;\n  overflow: hidden;\n  border-radius: 10px;\n  background: linear-gradient(\n    135deg,\n    color-mix(in srgb, var(--ed-accent) 40%, var(--ed-surface)),\n    var(--ed-surface)\n  );\n}\n.setup-preview-art:before {\n  content: \"\";\n  position: absolute;\n  inset: 15px 17px 20px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 48%, var(--ed-border));\n  border-radius: 7px;\n  background: color-mix(in srgb, var(--ed-surface) 74%, var(--ed-accent));\n}\n.setup-preview-art span,\n.setup-preview-art i,\n.setup-preview-art b {\n  position: absolute;\n  bottom: 9px;\n  width: 25px;\n  height: 20px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 35%, var(--ed-border));\n  border-radius: 4px;\n  background: var(--ed-surface);\n}\n.setup-preview-art span {\n  left: 13px;\n}\n.setup-preview-art i {\n  left: 47px;\n}\n.setup-preview-art b {\n  left: 81px;\n}\n.setup-live-preview > div:last-child {\n  display: grid;\n  gap: 5px;\n  min-width: 0;\n}\n.setup-live-preview small {\n  color: var(--ed-accent);\n  font-size: 9px;\n  font-weight: 800;\n  letter-spacing: 0.12em;\n}\n.setup-live-preview strong {\n  font:\n    500 18px/1.25 Georgia,\n    serif;\n}\n.setup-live-preview > div:last-child > span {\n  color: var(--ed-muted);\n  font-size: 11px;\n  line-height: 1.5;\n}\n.setup-presets {\n  display: grid;\n  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));\n  gap: 13px;\n  margin-top: 5px;\n}\n.setup-preset {\n  display: grid;\n  gap: 7px;\n  min-width: 0;\n  padding: 9px 9px 13px;\n  border: 1px solid var(--ed-border);\n  border-radius: 14px;\n  background: var(--ed-surface);\n  color: var(--ed-text);\n  text-align: left;\n  cursor: pointer;\n  transition:\n    border-color var(--ds-motion-fast) var(--ds-motion-ease),\n    transform var(--ds-motion-fast) var(--ds-motion-ease);\n}\n.setup-preset:hover {\n  transform: translateY(-2px);\n  border-color: color-mix(in srgb, var(--ed-accent) 60%, var(--ed-border));\n}\n.setup-preset:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 3px;\n}\n.setup-preset.selected {\n  border-color: var(--ed-accent);\n  box-shadow: inset 0 0 0 1px var(--ed-accent);\n}\n.preset-art {\n  position: relative;\n  display: block;\n  height: 96px;\n  overflow: hidden;\n  border-radius: 9px;\n  background: #17231d;\n}\n.preset-art:before {\n  content: \"\";\n  position: absolute;\n  inset: 11px 12px 13px 48%;\n  border: 1px solid #ffffff22;\n  border-radius: 6px;\n  background: #22372c;\n}\n.preset-art i,\n.preset-art b,\n.preset-art em {\n  position: absolute;\n  display: block;\n  border-radius: 4px;\n}\n.preset-art i {\n  top: 17px;\n  left: 13px;\n  width: 27%;\n  height: 26px;\n  background: #789b7d;\n}\n.preset-art b {\n  top: 50px;\n  left: 13px;\n  width: 27%;\n  height: 31px;\n  background: #526e5a;\n}\n.preset-art em {\n  top: 19px;\n  left: 54%;\n  right: 10px;\n  height: 5px;\n  background: #bdd4c2;\n  box-shadow:\n    0 11px 0 #8da895,\n    0 23px 0 #48634f;\n}\n.preset-light {\n  background: #edf1eb;\n}\n.preset-light:before {\n  border-color: #25352c24;\n  background: #fff;\n}\n.preset-light i {\n  background: #dfaa83;\n}\n.preset-light b {\n  background: #cfddc5;\n}\n.preset-light em {\n  background: #536c5b;\n  box-shadow:\n    0 11px 0 #87958a,\n    0 23px 0 #d6ded8;\n}\n.preset-auto {\n  background: linear-gradient(90deg, #17231d 50%, #edf1eb 50%);\n}\n.setup-preset strong {\n  padding: 2px 4px 0;\n  font-size: 13px;\n}\n.setup-preset small {\n  padding: 0 4px;\n  color: var(--ed-muted);\n  font-size: 10px;\n  line-height: 1.45;\n}\n.setup-reassure {\n  margin: 0;\n  color: var(--ed-muted);\n  font-size: 11px;\n  line-height: 1.5;\n}\n.setup-actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-top: auto;\n  padding-top: 18px;\n  border-top: 1px solid var(--ed-border);\n}\n.editor-primary,\n.editor-secondary {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  min-height: 46px;\n  padding: 11px 17px;\n  border: 1px solid var(--ed-border);\n  border-radius: 999px;\n  background: var(--ed-surface);\n  color: var(--ed-text);\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 650;\n  line-height: 1.2;\n  cursor: pointer;\n  transition:\n    transform var(--ds-motion-fast) var(--ds-motion-ease),\n    background var(--ds-motion-fast) var(--ds-motion-ease),\n    border-color var(--ds-motion-fast) var(--ds-motion-ease);\n}\n.editor-primary {\n  border-color: var(--ed-accent);\n  background: var(--ed-accent);\n  color: #14251b;\n}\n.editor-primary:hover,\n.editor-secondary:hover {\n  transform: translateY(-1px);\n}\n.editor-primary:focus-visible,\n.editor-secondary:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 3px;\n}\n.editor-primary:active,\n.editor-secondary:active {\n  transform: scale(0.98);\n}\n.setup-footer {\n  margin: -5px 0 0;\n  color: var(--ed-muted);\n  font-size: 11px;\n  line-height: 1.55;\n  text-align: center;\n}\n.settings-top {\n  align-items: center;\n}\n.setup-success {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 13px 15px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 38%, var(--ed-border));\n  border-radius: 13px;\n  background: color-mix(in srgb, var(--ed-surface) 85%, var(--ed-accent));\n}\n.setup-success > span {\n  display: grid;\n  place-items: center;\n  flex: none;\n  width: 27px;\n  height: 27px;\n  border-radius: 50%;\n  background: var(--ed-accent);\n  color: #13251b;\n  font-weight: 800;\n}\n.setup-success > div {\n  display: grid;\n  gap: 3px;\n}\n.setup-success strong {\n  font-size: 12px;\n}\n.setup-success small {\n  color: var(--ed-muted);\n  font-size: 11px;\n}\n.editor-advanced {\n  margin-top: 15px;\n  border-top: 1px solid var(--ed-border);\n  border-bottom: 1px solid var(--ed-border);\n}\n.editor-advanced > summary {\n  padding: 16px 3px;\n  color: var(--ed-text);\n  font-size: 13px;\n  font-weight: 700;\n  cursor: pointer;\n}\n.editor-advanced[open] {\n  padding-bottom: 12px;\n}\n@keyframes setup-panel-in {\n  from {\n    opacity: 0.65;\n    transform: translateY(5px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n@keyframes setup-spin {\n  to {\n    transform: rotate(360deg);\n  }\n}\n@media (max-width: 600px) {\n  .editor.setup-editor {\n    gap: 15px;\n    padding: 13px 2px 18px;\n  }\n  .setup-header {\n    gap: 10px;\n  }\n  .setup-header h1 {\n    font-size: 30px;\n  }\n  .setup-skip {\n    font-size: 11px;\n  }\n  .setup-progress li {\n    grid-template-columns: minmax(0, 1fr);\n    gap: 6px;\n    padding-right: 4px;\n  }\n  .setup-progress li > span {\n    width: 27px;\n    height: 27px;\n  }\n  .setup-progress li:before {\n    top: 13px;\n    left: 14px;\n    right: -14px;\n  }\n  .setup-progress li small {\n    font-size: 9px;\n    white-space: normal;\n  }\n  .setup-panel {\n    min-height: 330px;\n    padding: 19px 16px;\n    border-radius: 16px;\n  }\n  .setup-live-preview {\n    grid-template-columns: 86px minmax(0, 1fr);\n    gap: 11px;\n    padding: 11px;\n  }\n  .setup-preview-art {\n    height: 70px;\n  }\n  .setup-preview-art i {\n    left: 37px;\n  }\n  .setup-preview-art b {\n    left: 62px;\n  }\n  .setup-live-preview strong {\n    font-size: 16px;\n  }\n  .preset-art {\n    height: 72px;\n  }\n  .preset-art i {\n    top: 12px;\n    left: 9px;\n    height: 21px;\n  }\n  .preset-art b {\n    top: 39px;\n    left: 9px;\n    height: 22px;\n  }\n  .preset-art em {\n    top: 14px;\n    left: 54%;\n    right: 7px;\n  }\n  .setup-preset {\n    padding: 7px 7px 10px;\n  }\n  .setup-preset small {\n    font-size: 9px;\n  }\n  .editor-primary,\n  .editor-secondary {\n    min-height: 44px;\n    padding: 10px 14px;\n  }\n  .settings-top {\n    align-items: flex-start;\n    flex-direction: column;\n  }\n}\n@media (max-width: 360px) {\n  .setup-header h1 {\n    font-size: 26px;\n  }\n  .setup-skip {\n    white-space: normal;\n    text-align: right;\n  }\n  .setup-progress li small {\n    font-size: 8px;\n  }\n  .setup-live-preview {\n    grid-template-columns: 70px minmax(0, 1fr);\n  }\n  .setup-preview-art span {\n    left: 7px;\n  }\n  .setup-preview-art i {\n    left: 29px;\n  }\n  .setup-preview-art b {\n    left: 51px;\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .setup-panel,\n  .setup-spinner {\n    animation: none !important;\n  }\n  .setup-preset,\n  .editor-primary,\n  .editor-secondary {\n    transition: none !important;\n  }\n}\n\n.accent-pick {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n}\n.accent-pick select {\n  flex: 1;\n}\n.accent-dot {\n  flex: none;\n  width: 22px;\n  height: 22px;\n  border-radius: 50%;\n  box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.45);\n}";
+const EDITOR_STYLE = "/* Home Assistant visual card editor; inherits the same control geometry as Atelier. */\n:host {\n  --ds-motion-fast: 140ms;\n  --ds-motion-base: 220ms;\n  --ds-motion-enter: 300ms;\n  --ds-motion-slow: 480ms;\n  --ds-motion-image: 680ms;\n  --ds-motion-image-long: 960ms;\n  --ds-motion-loading: 1800ms;\n  --ds-motion-reduced: 0.01ms;\n  --ds-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);\n  --ds-motion-spring: cubic-bezier(0.18, 1.12, 0.32, 1);\n  --ds-motion-linear: linear;\n  --ed-text: var(--primary-text-color, #eaf0eb);\n  --ed-muted: var(--secondary-text-color, #a4b0aa);\n  --ed-surface: var(--card-background-color, #1b2722);\n  --ed-border: var(--divider-color, #74847a65);\n  --ed-accent: var(--primary-color, #9dcbb2);\n  display: block;\n  font-family: Inter, ui-sans-serif, system-ui, sans-serif;\n  color: var(--ed-text);\n  font-feature-settings: \"lnum\";\n}\n*,\n*::before,\n*::after {\n  box-sizing: border-box;\n}\n.editor {\n  display: grid;\n  gap: 12px;\n  padding: 16px 4px 20px;\n}\n.title {\n  font:\n    600 21px/1.2 Georgia,\n    serif;\n  letter-spacing: -0.025em;\n  margin-bottom: 4px;\n}\n.hint {\n  font-size: 12px;\n  line-height: 1.6;\n  color: var(--ed-muted);\n  margin: 0 0 3px;\n  overflow-wrap: anywhere;\n}\n.group {\n  display: grid;\n  gap: 7px;\n  min-width: 0;\n  padding: 4px 0;\n}\n.group > label {\n  font-size: 13px;\n  line-height: 1.4;\n  font-weight: 650;\n}\n:where(select, input:not([type=\"checkbox\"])) {\n  box-sizing: border-box;\n  min-height: 48px;\n  min-width: 0;\n  width: 100%;\n  border: 1px solid var(--ed-border);\n  border-radius: 12px;\n  background: var(--ed-surface);\n  color: var(--ed-text);\n  padding: 12px 14px;\n  font: inherit;\n  font-size: 14px;\n  line-height: 1.4;\n  transition:\n    border-color var(--ds-motion-fast) var(--ds-motion-ease),\n    box-shadow var(--ds-motion-fast) var(--ds-motion-ease);\n}\n:where(select, input:not([type=\"checkbox\"])):hover {\n  border-color: var(--ed-accent);\n}\n:where(select, input:not([type=\"checkbox\"])):focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 2px;\n}\nselect {\n  cursor: pointer;\n  -webkit-appearance: none;\n  appearance: none;\n  padding-inline-end: 46px !important;\n  background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23a7b7ad' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\");\n  background-repeat: no-repeat;\n  background-position: right 15px center;\n  background-size: 18px;\n}\n.group :where(select, input:not([type=\"checkbox\"])) {\n  margin: 0;\n}\n.group {\n  gap: 9px;\n  padding-block: 6px;\n}\n.group > label {\n  margin: 0;\n  line-height: 1.5;\n}\n.line {\n  min-height: 52px;\n  gap: 14px;\n  padding: 12px 15px;\n}\n\ninput[type=\"checkbox\"] {\n  -webkit-appearance: none;\n  appearance: none;\n  margin: 0;\n  padding: 0;\n  min-width: 22px;\n  width: 22px;\n  min-height: 22px;\n  height: 22px;\n  flex: 0 0 22px;\n  display: grid;\n  place-content: center;\n  border: 1.5px solid var(--ed-muted);\n  border-radius: 6px;\n  background: var(--ed-surface);\n  cursor: pointer;\n  transition:\n    border-color var(--ds-motion-fast) var(--ds-motion-ease),\n    background var(--ds-motion-fast) var(--ds-motion-ease);\n}\ninput[type=\"checkbox\"]::before {\n  content: \"\";\n  width: 11px;\n  height: 7px;\n  border: solid #13291d;\n  border-width: 0 0 2.5px 2.5px;\n  transform: translateY(-1px) rotate(-45deg) scale(0);\n  opacity: 0;\n  transition:\n    opacity var(--ds-motion-fast) var(--ds-motion-ease),\n    transform var(--ds-motion-fast) var(--ds-motion-ease);\n}\ninput[type=\"checkbox\"]:checked {\n  background: var(--ed-accent);\n  border-color: var(--ed-accent);\n}\ninput[type=\"checkbox\"]:checked::before {\n  transform: translateY(-1px) rotate(-45deg) scale(1);\n  opacity: 1;\n}\ninput[type=\"checkbox\"]:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 3px;\n}\n.line {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  min-height: 48px;\n  padding: 11px 12px;\n  border: 1px solid var(--ed-border);\n  border-radius: 12px;\n  cursor: pointer;\n  background: color-mix(in srgb, var(--ed-surface) 94%, var(--ed-accent));\n  font-size: 13px;\n  font-weight: 550;\n  line-height: 1.45;\n}\n.line:hover {\n  border-color: color-mix(in srgb, var(--ed-accent) 50%, var(--ed-border));\n}\n.line:has(input:checked) {\n  border-color: color-mix(in srgb, var(--ed-accent) 40%, var(--ed-border));\n}\n.line:has(input:focus-visible) {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 2px;\n}\n@media (prefers-reduced-motion: reduce) {\n  input,\n  select {\n    transition: none !important;\n  }\n}\n@media (forced-colors: active) {\n  input[type=\"checkbox\"]:checked {\n    background: Highlight;\n    border-color: Highlight;\n  }\n}\n/* The editor shares the same editorial hierarchy as the cards. */\n.title {\n  font-size: 23px;\n  margin: 0 0 4px;\n}\n.title-accent {\n  color: var(--ed-accent);\n  font-style: italic;\n  font-weight: 500;\n}\n.section-head {\n  display: grid;\n  grid-template-columns: 34px minmax(0, 1fr);\n  align-items: start;\n  gap: 12px;\n  margin: 18px 0 2px;\n  padding: 17px 4px 10px;\n  border-top: 1px solid var(--ed-border);\n}\n.section-head > span {\n  color: var(--ed-accent);\n  font-size: 11px;\n  letter-spacing: 0.07em;\n  font-weight: 800;\n  padding-top: 3px;\n}\n.section-head strong {\n  font:\n    500 21px/1.2 Georgia,\n    serif;\n  letter-spacing: -0.03em;\n}\n.section-head p {\n  margin: 4px 0 0;\n  color: var(--ed-muted);\n  font-size: 12px;\n  line-height: 1.5;\n}\n.editor-footer {\n  border-top: 1px solid var(--ed-border);\n  padding-top: 18px;\n  margin-top: 14px;\n}\n:where(select, input:not([type=\"checkbox\"])):user-invalid {\n  border-color: #d99c82;\n  box-shadow: 0 0 0 3px #d99c8222;\n}\n:where(select, input:not([type=\"checkbox\"])):disabled {\n  opacity: 0.52;\n  cursor: not-allowed;\n}\ninput[type=\"checkbox\"]:disabled {\n  opacity: 0.48;\n  cursor: not-allowed;\n}\n\n.editor.setup-editor {\n  width: min(100%, 780px);\n  margin-inline: auto;\n  gap: 20px;\n  padding: 18px 4px 24px;\n}\n.setup-header,\n.settings-top {\n  display: flex;\n  align-items: flex-start;\n  justify-content: space-between;\n  gap: 22px;\n}\n.setup-brand {\n  font-size: 10px;\n  font-weight: 800;\n  letter-spacing: 0.16em;\n  color: var(--ed-muted);\n}\n.setup-brand span {\n  color: var(--ed-accent);\n}\n.setup-header h1 {\n  max-width: 560px;\n  margin: 10px 0 7px;\n  font:\n    500 clamp(29px, 5vw, 40px) / 1.08 Georgia,\n    serif;\n  letter-spacing: -0.035em;\n}\n.setup-header p,\n.setup-description {\n  max-width: 570px;\n  margin: 0;\n  color: var(--ed-muted);\n  font-size: 13px;\n  line-height: 1.65;\n}\n.setup-skip,\n.editor-link-button {\n  border: 0;\n  padding: 8px 0;\n  background: transparent;\n  color: var(--ed-muted);\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 600;\n  line-height: 1.4;\n  white-space: nowrap;\n  text-decoration: underline;\n  text-decoration-color: color-mix(in srgb, var(--ed-muted) 42%, transparent);\n  text-underline-offset: 4px;\n  cursor: pointer;\n}\n.setup-skip:hover,\n.editor-link-button:hover {\n  color: var(--ed-text);\n}\n.setup-skip:focus-visible,\n.editor-link-button:focus-visible,\n.setup-link:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 4px;\n  border-radius: 4px;\n}\n.setup-progress {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 0;\n  margin: 4px 0 0;\n  padding: 0;\n  list-style: none;\n}\n.setup-progress li {\n  position: relative;\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  align-content: start;\n  gap: 7px;\n  min-width: 0;\n  padding: 0 10px 0 0;\n  color: var(--ed-muted);\n}\n.setup-progress li:before {\n  content: \"\";\n  position: absolute;\n  z-index: 0;\n  top: 15px;\n  left: 16px;\n  right: -16px;\n  height: 1px;\n  background: var(--ed-border);\n}\n.setup-progress li:last-child:before {\n  display: none;\n}\n.setup-progress li > span {\n  z-index: 1;\n  display: grid;\n  place-items: center;\n  width: 31px;\n  height: 31px;\n  border: 1px solid var(--ed-border);\n  border-radius: 50%;\n  background: var(--ed-surface);\n  font:\n    700 10px/1 ui-monospace,\n    monospace;\n  color: var(--ed-muted);\n}\n.setup-progress li small {\n  overflow: hidden;\n  font-size: 11px;\n  line-height: 1.35;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n}\n.setup-progress li.current {\n  color: var(--ed-text);\n}\n.setup-progress li.current > span,\n.setup-progress li.complete > span {\n  border-color: var(--ed-accent);\n  background: var(--ed-accent);\n  color: #13251b;\n}\n.setup-progress li.complete:before {\n  background: var(--ed-accent);\n}\n.setup-panel {\n  display: grid;\n  gap: 13px;\n  min-height: 310px;\n  padding: clamp(20px, 4vw, 32px);\n  border: 1px solid var(--ed-border);\n  border-radius: 20px;\n  background: color-mix(in srgb, var(--ed-surface) 91%, var(--ed-accent));\n  animation: setup-panel-in var(--ds-motion-enter) var(--ds-motion-ease) both;\n}\n.setup-kicker {\n  margin: 0 0 1px;\n  color: var(--ed-accent);\n  font-size: 10px;\n  font-weight: 800;\n  letter-spacing: 0.13em;\n}\n.setup-step-title {\n  margin: 0;\n  font:\n    500 clamp(25px, 4vw, 32px) / 1.16 Georgia,\n    serif;\n  letter-spacing: -0.025em;\n  outline: 0;\n}\n.setup-step-title:focus-visible {\n  border-radius: 3px;\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 5px;\n}\n.setup-description {\n  margin-top: -4px;\n}\n.setup-state {\n  display: flex;\n  align-items: center;\n  gap: 11px;\n  min-height: 104px;\n  padding: 17px;\n  border: 1px solid var(--ed-border);\n  border-radius: 14px;\n  color: var(--ed-muted);\n  font-size: 13px;\n}\n.setup-spinner {\n  width: 17px;\n  height: 17px;\n  flex: none;\n  border: 2px solid color-mix(in srgb, var(--ed-accent) 28%, transparent);\n  border-top-color: var(--ed-accent);\n  border-radius: 50%;\n  animation: setup-spin var(--ds-motion-slow) var(--ds-motion-linear) infinite;\n}\n.setup-callout {\n  display: grid;\n  gap: 8px;\n  padding: 18px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 24%, var(--ed-border));\n  border-radius: 14px;\n  background: color-mix(in srgb, var(--ed-surface) 84%, var(--ed-accent));\n}\n.setup-callout strong {\n  font:\n    500 18px/1.25 Georgia,\n    serif;\n  color: var(--ed-text);\n}\n.setup-callout > span {\n  max-width: 610px;\n  color: var(--ed-muted);\n  font-size: 12px;\n  line-height: 1.65;\n}\n.setup-callout-actions {\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  gap: 14px;\n  margin-top: 3px;\n}\n.setup-link {\n  display: inline-flex;\n  align-items: center;\n  gap: 8px;\n  width: max-content;\n  max-width: 100%;\n  margin-top: 4px;\n  padding: 10px 13px;\n  border: 1px solid var(--ed-border);\n  border-radius: 10px;\n  color: var(--ed-text);\n  background: var(--ed-surface);\n  font-size: 12px;\n  font-weight: 700;\n  text-decoration: none;\n}\n.setup-link:hover {\n  border-color: var(--ed-accent);\n  color: var(--ed-text);\n}\n.setup-assurance {\n  padding-top: 5px;\n  color: var(--ed-muted);\n  font-size: 11px;\n}\n.setup-assurance span {\n  padding-inline: 5px;\n  color: var(--ed-accent);\n}\n.provider-card {\n  display: grid;\n  gap: 12px;\n  padding: 16px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 34%, var(--ed-border));\n  border-radius: 16px;\n  background: color-mix(in srgb, var(--ed-surface) 90%, var(--ed-accent));\n  animation: setup-panel-in var(--ds-motion-enter) var(--ds-motion-ease) both;\n}\n.provider-card p {\n  max-width: 620px;\n  margin: 0;\n  color: var(--ed-muted);\n  font-size: 12px;\n  line-height: 1.65;\n}\n.provider-card-head {\n  display: grid;\n  grid-template-columns: 38px minmax(0, 1fr) auto;\n  align-items: center;\n  gap: 11px;\n}\n.provider-mark {\n  display: grid;\n  place-items: center;\n  width: 38px;\n  height: 38px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 40%, var(--ed-border));\n  border-radius: 12px;\n  background: var(--ed-surface);\n  color: var(--ed-accent);\n  font:\n    600 19px Georgia,\n    serif;\n}\n.provider-card-head > div {\n  display: grid;\n  gap: 3px;\n  min-width: 0;\n}\n.provider-card-head strong {\n  font-size: 13px;\n}\n.provider-card-head small {\n  color: var(--ed-muted);\n  font-size: 11px;\n}\n.provider-badge {\n  padding: 5px 8px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 42%, var(--ed-border));\n  border-radius: var(--ds-radius-pill, 999px);\n  color: var(--ed-accent);\n  font-size: 9px;\n  font-weight: 800;\n  letter-spacing: 0.08em;\n}\n.setup-live-preview {\n  display: grid;\n  grid-template-columns: 120px minmax(0, 1fr);\n  align-items: center;\n  gap: 18px;\n  margin-top: 5px;\n  padding: 15px;\n  border: 1px solid var(--ed-border);\n  border-radius: 15px;\n  background: var(--ed-surface);\n}\n.setup-preview-art {\n  position: relative;\n  height: 82px;\n  overflow: hidden;\n  border-radius: 10px;\n  background: linear-gradient(\n    135deg,\n    color-mix(in srgb, var(--ed-accent) 40%, var(--ed-surface)),\n    var(--ed-surface)\n  );\n}\n.setup-preview-art:before {\n  content: \"\";\n  position: absolute;\n  inset: 15px 17px 20px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 48%, var(--ed-border));\n  border-radius: 7px;\n  background: color-mix(in srgb, var(--ed-surface) 74%, var(--ed-accent));\n}\n.setup-preview-art span,\n.setup-preview-art i,\n.setup-preview-art b {\n  position: absolute;\n  bottom: 9px;\n  width: 25px;\n  height: 20px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 35%, var(--ed-border));\n  border-radius: 4px;\n  background: var(--ed-surface);\n}\n.setup-preview-art span {\n  left: 13px;\n}\n.setup-preview-art i {\n  left: 47px;\n}\n.setup-preview-art b {\n  left: 81px;\n}\n.setup-live-preview > div:last-child {\n  display: grid;\n  gap: 5px;\n  min-width: 0;\n}\n.setup-live-preview small {\n  color: var(--ed-accent);\n  font-size: 9px;\n  font-weight: 800;\n  letter-spacing: 0.12em;\n}\n.setup-live-preview strong {\n  font:\n    500 18px/1.25 Georgia,\n    serif;\n}\n.setup-live-preview > div:last-child > span {\n  color: var(--ed-muted);\n  font-size: 11px;\n  line-height: 1.5;\n}\n.setup-presets {\n  display: grid;\n  grid-template-columns: repeat(3, minmax(0, 1fr));\n  gap: 13px;\n  margin-top: 5px;\n}\n@media (max-width: 420px) {\n  .setup-presets {\n    grid-template-columns: minmax(0, 1fr);\n  }\n}\n.setup-preset {\n  display: grid;\n  grid-template-rows: auto auto 1fr;\n  align-content: start;\n  gap: 7px;\n  min-width: 0;\n  padding: 9px 9px 13px;\n  border: 1px solid var(--ed-border);\n  border-radius: 14px;\n  background: var(--ed-surface);\n  color: var(--ed-text);\n  text-align: left;\n  cursor: pointer;\n  transition:\n    border-color var(--ds-motion-fast) var(--ds-motion-ease),\n    transform var(--ds-motion-fast) var(--ds-motion-ease);\n}\n.setup-preset:hover {\n  transform: translateY(-2px);\n  border-color: color-mix(in srgb, var(--ed-accent) 60%, var(--ed-border));\n}\n.setup-preset:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 3px;\n}\n.setup-preset.selected {\n  border-color: var(--ed-accent);\n  box-shadow: inset 0 0 0 1px var(--ed-accent);\n}\n.preset-art {\n  position: relative;\n  display: block;\n  height: 96px;\n  overflow: hidden;\n  border-radius: 9px;\n  background: #17231d;\n  box-shadow: inset 0 0 0 1px #ffffff2e;\n}\n.preset-art:before {\n  content: \"\";\n  position: absolute;\n  inset: 11px 12px 13px 48%;\n  border: 1px solid #ffffff22;\n  border-radius: 6px;\n  background: #22372c;\n}\n.preset-art i,\n.preset-art b,\n.preset-art em {\n  position: absolute;\n  display: block;\n  border-radius: 4px;\n}\n.preset-art i {\n  top: 17px;\n  left: 13px;\n  width: 27%;\n  height: 26px;\n  background: #789b7d;\n}\n.preset-art b {\n  top: 50px;\n  left: 13px;\n  width: 27%;\n  height: 31px;\n  background: #526e5a;\n}\n.preset-art em {\n  top: 19px;\n  left: 54%;\n  right: 10px;\n  height: 5px;\n  background: #bdd4c2;\n  box-shadow:\n    0 11px 0 #8da895,\n    0 23px 0 #48634f;\n}\n.preset-light {\n  background: #edf1eb;\n  box-shadow: inset 0 0 0 1px #25352c24;\n}\n.preset-light:before {\n  border-color: #25352c24;\n  background: #fff;\n}\n.preset-light i {\n  background: #dfaa83;\n}\n.preset-light b {\n  background: #cfddc5;\n}\n.preset-light em {\n  background: #536c5b;\n  box-shadow:\n    0 11px 0 #87958a,\n    0 23px 0 #d6ded8;\n}\n.preset-auto {\n  background: linear-gradient(90deg, #17231d 50%, #edf1eb 50%);\n}\n.setup-preset strong {\n  padding: 2px 4px 0;\n  font-size: 13px;\n}\n.setup-preset small {\n  padding: 0 4px;\n  color: var(--ed-muted);\n  font-size: 10px;\n  line-height: 1.45;\n}\n.setup-reassure {\n  margin: 0;\n  color: var(--ed-muted);\n  font-size: 11px;\n  line-height: 1.5;\n}\n.setup-actions {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 12px;\n  margin-top: auto;\n  padding-top: 18px;\n  border-top: 1px solid var(--ed-border);\n}\n.editor-primary,\n.editor-secondary {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  gap: 10px;\n  min-height: 46px;\n  padding: 11px 17px;\n  border: 1px solid var(--ed-border);\n  border-radius: 999px;\n  background: var(--ed-surface);\n  color: var(--ed-text);\n  font-family: inherit;\n  font-size: 12px;\n  font-weight: 650;\n  line-height: 1.2;\n  cursor: pointer;\n  transition:\n    transform var(--ds-motion-fast) var(--ds-motion-ease),\n    background var(--ds-motion-fast) var(--ds-motion-ease),\n    border-color var(--ds-motion-fast) var(--ds-motion-ease);\n}\n.editor-primary {\n  border-color: var(--ed-accent);\n  background: var(--ed-accent);\n  color: #14251b;\n}\n.editor-primary:hover,\n.editor-secondary:hover {\n  transform: translateY(-1px);\n}\n.editor-primary:focus-visible,\n.editor-secondary:focus-visible {\n  outline: 2px solid var(--ed-accent);\n  outline-offset: 3px;\n}\n.editor-primary:active,\n.editor-secondary:active {\n  transform: scale(0.98);\n}\n.setup-footer {\n  margin: -5px 0 0;\n  color: var(--ed-muted);\n  font-size: 11px;\n  line-height: 1.55;\n  text-align: center;\n}\n.settings-top {\n  align-items: center;\n}\n.setup-success {\n  display: flex;\n  align-items: center;\n  gap: 12px;\n  padding: 13px 15px;\n  border: 1px solid color-mix(in srgb, var(--ed-accent) 38%, var(--ed-border));\n  border-radius: 13px;\n  background: color-mix(in srgb, var(--ed-surface) 85%, var(--ed-accent));\n}\n.setup-success > span {\n  display: grid;\n  place-items: center;\n  flex: none;\n  width: 27px;\n  height: 27px;\n  border-radius: 50%;\n  background: var(--ed-accent);\n  color: #13251b;\n  font-weight: 800;\n}\n.setup-success > div {\n  display: grid;\n  gap: 3px;\n}\n.setup-success strong {\n  font-size: 12px;\n}\n.setup-success small {\n  color: var(--ed-muted);\n  font-size: 11px;\n}\n.editor-advanced {\n  margin-top: 15px;\n  border-top: 1px solid var(--ed-border);\n  border-bottom: 1px solid var(--ed-border);\n}\n.editor-advanced > summary {\n  padding: 16px 3px;\n  color: var(--ed-text);\n  font-size: 13px;\n  font-weight: 700;\n  cursor: pointer;\n}\n.editor-advanced[open] {\n  padding-bottom: 12px;\n}\n@keyframes setup-panel-in {\n  from {\n    opacity: 0.65;\n    transform: translateY(5px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n@keyframes setup-spin {\n  to {\n    transform: rotate(360deg);\n  }\n}\n@media (max-width: 600px) {\n  .editor.setup-editor {\n    gap: 15px;\n    padding: 13px 2px 18px;\n  }\n  .setup-header {\n    gap: 10px;\n  }\n  .setup-header h1 {\n    font-size: 30px;\n  }\n  .setup-skip {\n    font-size: 11px;\n  }\n  .setup-progress li {\n    grid-template-columns: minmax(0, 1fr);\n    gap: 6px;\n    padding-right: 4px;\n  }\n  .setup-progress li > span {\n    width: 27px;\n    height: 27px;\n  }\n  .setup-progress li:before {\n    top: 13px;\n    left: 14px;\n    right: -14px;\n  }\n  .setup-progress li small {\n    font-size: 9px;\n    white-space: normal;\n  }\n  .setup-panel {\n    min-height: 330px;\n    padding: 19px 16px;\n    border-radius: 16px;\n  }\n  .setup-live-preview {\n    grid-template-columns: 86px minmax(0, 1fr);\n    gap: 11px;\n    padding: 11px;\n  }\n  .setup-preview-art {\n    height: 70px;\n  }\n  .setup-preview-art i {\n    left: 37px;\n  }\n  .setup-preview-art b {\n    left: 62px;\n  }\n  .setup-live-preview strong {\n    font-size: 16px;\n  }\n  .preset-art {\n    height: 72px;\n  }\n  .preset-art i {\n    top: 12px;\n    left: 9px;\n    height: 21px;\n  }\n  .preset-art b {\n    top: 39px;\n    left: 9px;\n    height: 22px;\n  }\n  .preset-art em {\n    top: 14px;\n    left: 54%;\n    right: 7px;\n  }\n  .setup-preset {\n    padding: 7px 7px 10px;\n  }\n  .setup-preset small {\n    font-size: 9px;\n  }\n  .editor-primary,\n  .editor-secondary {\n    min-height: 44px;\n    padding: 10px 14px;\n  }\n  .settings-top {\n    align-items: flex-start;\n    flex-direction: column;\n  }\n}\n@media (max-width: 360px) {\n  .setup-header h1 {\n    font-size: 26px;\n  }\n  .setup-skip {\n    white-space: normal;\n    text-align: right;\n  }\n  .setup-progress li small {\n    font-size: 8px;\n  }\n  .setup-live-preview {\n    grid-template-columns: 70px minmax(0, 1fr);\n  }\n  .setup-preview-art span {\n    left: 7px;\n  }\n  .setup-preview-art i {\n    left: 29px;\n  }\n  .setup-preview-art b {\n    left: 51px;\n  }\n}\n@media (prefers-reduced-motion: reduce) {\n  .setup-panel,\n  .setup-spinner {\n    animation: none !important;\n  }\n  .setup-preset,\n  .editor-primary,\n  .editor-secondary {\n    transition: none !important;\n  }\n}\n\n.accent-pick {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n}\n.accent-pick select {\n  flex: 1;\n}\n.accent-dot {\n  flex: none;\n  width: 22px;\n  height: 22px;\n  border-radius: 50%;\n  box-shadow: inset 0 0 0 1px rgba(128, 128, 128, 0.45);\n}";
 
 const COLOR_NAMES = {
   "#9dcbb2": "editorColorSage",
