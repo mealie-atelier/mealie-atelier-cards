@@ -680,7 +680,7 @@ export const shoppingSyncMethods = {
           ].join(". ")
         : "",
       bringAuth
-        ? this.t("bwSessionExpired")
+        ? this.t(caps.bringEnv ? "bwSessionExpiredEnv" : "bwSessionExpired")
         : bringUnreachable
           ? open
             ? this.tp("bwUnreachable", open, { count: open })
