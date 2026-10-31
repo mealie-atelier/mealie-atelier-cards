@@ -374,6 +374,9 @@ try:
                 cs = top.get("columnScroll") if top else None
                 if not cs:
                     return
+                inset = page.evaluate("() => {" + CARD + " const c = card.shadowRoot.querySelector('.cook-content'); const t = card.shadowRoot.querySelector('.cook-topline'); if (!c || !t || c.scrollTop > 0) return null; return Math.round(t.getBoundingClientRect().top - card.shadowRoot.querySelector('.modal').getBoundingClientRect().top); }")
+                if inset is not None and inset < 18:
+                    problems.append(f"{label}: the cook topline sits {inset}px below the dialog top, cramped against the edge")
                 if cs["room"] > 0:
                     for y in sorted({0, cs["room"] // 3, cs["room"]}):
                         page.evaluate("(y) => {" + CARD + " card.shadowRoot.querySelector('.cook-content').scrollTop = y; }", y)

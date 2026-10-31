@@ -132,7 +132,6 @@
   .modal
   :is(
     .modal-content > :is(h1, h2, .eyebrow),
-    .editor-lead > div > :is(h2, .eyebrow),
     .bw-panel > .bw-head > .bw-title,
     .setup-kicker,
     .setup-step-title
@@ -140,6 +139,16 @@
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: var(--at-close-reserve);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* The editor lead already keeps 64px clear on its right (foundation.css), so its title block only needs what is left
+   of the reserve; the full reserve on top of it made short German titles hyphenate with room to spare. */
+.atelier .modal .editor-lead > div > :is(h2, .eyebrow) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-end: max(0px, var(--at-close-reserve) - 64px);
   overflow-wrap: anywhere;
   hyphens: auto;
 }

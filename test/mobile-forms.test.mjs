@@ -437,10 +437,15 @@ test("only a dialog's title block reserves room for the close button, not every 
   const targets = rule[1].replace(/\s+/g, " ");
   for (const wanted of [
     ".modal-content > :is(h1, h2, .eyebrow)",
-    ".editor-lead > div > :is(h2, .eyebrow)",
     ".bw-panel > .bw-head > .bw-title",
   ])
     assert.ok(targets.includes(wanted), wanted);
+  // The editor lead keeps 64px clear itself, so its title block takes only the rest of the reserve, never all of it.
+  assert.ok(!targets.includes(".editor-lead"), "the editor lead is not reserved twice");
+  assert.match(
+    css,
+    /\.atelier \.modal \.editor-lead > div > :is\(h2, \.eyebrow\) \{[^}]*padding-inline-end:\s*max\(0px, var\(--at-close-reserve\) - 64px\)/,
+  );
   // Not the broad selector that also reached cook steps, card headings and the centred Bring! done screen.
   assert.doesNotMatch(css, /\.atelier \.modal :is\(h1, h2, h3, h4, \.eyebrow\)/);
 });

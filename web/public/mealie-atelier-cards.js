@@ -12754,7 +12754,6 @@ ha-card {
   .modal
   :is(
     .modal-content > :is(h1, h2, .eyebrow),
-    .editor-lead > div > :is(h2, .eyebrow),
     .bw-panel > .bw-head > .bw-title,
     .setup-kicker,
     .setup-step-title
@@ -12762,6 +12761,16 @@ ha-card {
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: var(--at-close-reserve);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* The editor lead already keeps 64px clear on its right (foundation.css), so its title block only needs what is left
+   of the reserve; the full reserve on top of it made short German titles hyphenate with room to spare. */
+.atelier .modal .editor-lead > div > :is(h2, .eyebrow) {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding-inline-end: max(0px, var(--at-close-reserve) - 64px);
   overflow-wrap: anywhere;
   hyphens: auto;
 }
@@ -12846,7 +12855,8 @@ ha-card {
 @media (orientation: landscape) and (min-height: 701px) and (max-height: 900px) {
   .atelier .modal:has(.cook-layout) .cook-content {
     gap: 6px;
-    padding-top: 12px;
+    /* The column scrolls from its top edge here, so the topline keeps a calm inset instead of touching the dialog edge. */
+    padding-top: 26px;
     padding-bottom: 12px;
   }
   .atelier .modal:has(.cook-layout) .cook-stage {
@@ -12856,7 +12866,6 @@ ha-card {
 @media (orientation: landscape) and (min-height: 701px) and (max-height: 800px) {
   .atelier .modal:has(.cook-layout) .cook-content {
     gap: 3px;
-    padding-top: 6px;
     padding-bottom: 4px;
   }
   .atelier .modal:has(.cook-layout) .cook-stage h2 {
