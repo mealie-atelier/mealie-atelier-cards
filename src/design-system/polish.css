@@ -1580,13 +1580,35 @@
   }
 }
 .atelier .modal:has(.cook-layout) .cook-content {
-  --cook-close-clear: max(0px, calc(20px + var(--cook-close-size) + 12px - var(--cook-pad-x)));
+  --cook-close-reserve: max(0px, calc(20px + var(--cook-close-size) + 12px - var(--cook-pad-x)));
+  --cook-close-clear: var(--cook-close-reserve);
+}
+/* Stacked layout: the close button sits in the photo band above the content, so the counter and the
+   progress bar reach the same right edge as the Back and Done row. Short landscape screens keep the
+   two column layout at any width, where the button floats over the step column again. */
+@container atelier-card (max-width: 760px) {
+  .atelier .modal:has(.cook-layout) .cook-content {
+    --cook-close-clear: 0px;
+  }
+}
+@media (orientation: landscape) and (max-height: 700px) {
+  .atelier .modal:has(.cook-layout) .cook-content {
+    --cook-close-clear: var(--cook-close-reserve);
+  }
 }
 .atelier .modal:has(.cook-layout) .cook-topline {
   padding-inline-end: var(--cook-close-clear);
 }
 .atelier .modal:has(.cook-layout) .cook-track {
   margin-inline-end: var(--cook-close-clear);
+}
+
+/* The same 14px gap under the keep-awake row as the portrait short screens, whatever the step.
+   Landscape reaches up to 900px so laptop heights such as 720 keep it too. */
+@media (orientation: landscape) and (max-height: 900px) {
+  .atelier .modal:has(.cook-layout) .cook-stage {
+    padding-top: 14px;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 700px) {
@@ -1765,9 +1787,9 @@
   }
   .atelier .modal:has(.cook-layout) .cook-stage {
     gap: 8px;
-    padding-top: 8px;
+    padding-top: 14px;
   }
-  .atelier .modal:has(.cook-layout) .cook-stage h2 {
+  .atelier .modal:has(.cook-layout) .cook-stage h2:not(.cook-stage--long) {
     font-size: clamp(23px, 6vw, 28px);
     line-height: 1.15;
   }
@@ -2590,4 +2612,9 @@
     padding-inline: 6px;
     margin-inline: -6px;
   }
+}
+
+/* The Save bar sits flush at the bottom of the scrolling dialog, so the content padding must not push it up. */
+.atelier .modal-content.atelier-editor:has(.editor-footer) {
+  padding-bottom: 0;
 }

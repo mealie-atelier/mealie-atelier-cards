@@ -435,6 +435,10 @@
 .atelier .cook-timer-card.is-progress-unknown .cook-timer-dial {
   background: color-mix(in srgb, var(--ds-brand) 15%, var(--ds-border));
 }
+/* A finished shared timer has no measured progress, so its ring is filled like a finished local one. */
+.atelier .cook-timer-card.is-done .cook-timer-dial {
+  background: var(--ds-brand);
+}
 .atelier .cook-timer-copy {
   display: grid;
   gap: 2px;

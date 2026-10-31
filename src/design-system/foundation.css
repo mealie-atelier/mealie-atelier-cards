@@ -1478,9 +1478,9 @@ ha-card {
 }
 .atelier .editor-footer {
   position: sticky;
-  bottom: -24px;
+  bottom: 0;
   z-index: 2;
-  margin: 0 -23px -23px;
+  margin: 0 -23px;
   padding: 16px 23px;
   background: var(--at-panel);
   border-top: 1px solid var(--at-line);
@@ -1488,7 +1488,7 @@ ha-card {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 23px 23px;
 }
 .atelier .editor-footer small {
   font-size: 11px;
@@ -1621,8 +1621,7 @@ ha-card {
     padding: 18px;
   }
   .atelier .editor-footer {
-    margin: 0 -18px -18px;
-    bottom: -18px;
+    margin: 0 -18px;
     padding: 15px 18px;
   }
   .atelier .editor-step {

@@ -751,7 +751,7 @@
 }
 .atelier .editor-footer {
   background: var(--at-panel);
-  border-radius: 0 0 18px 18px;
+  border-radius: 0 0 23px 23px;
 }
 .atelier .print-setup {
   gap: 30px;
@@ -1020,7 +1020,7 @@
     font-size: 24px;
   }
   .atelier .editor-footer {
-    margin: 0 -20px -20px;
+    margin: 0 -20px;
     padding: 15px 20px;
   }
   .atelier .print-paper {

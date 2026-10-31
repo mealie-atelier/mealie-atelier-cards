@@ -10,7 +10,7 @@ const css = (file) =>
 test("the counter and the progress bar end a fixed gap before the close button at every padding", () => {
   const polish = css("polish.css");
   const clear = polish.match(
-    /\.cook-content \{\s*--cook-close-clear: max\(0px, calc\((\d+)px \+ var\(--cook-close-size\) \+ (\d+)px - var\(--cook-pad-x\)\)\);/,
+    /\.cook-content \{\s*--cook-close-reserve: max\(0px, calc\((\d+)px \+ var\(--cook-close-size\) \+ (\d+)px - var\(--cook-pad-x\)\)\);/,
   );
   assert.ok(clear, "the free space is computed from the close button and the content padding");
   assert.equal(clear[1], "20", "button inset from the dialog edge");

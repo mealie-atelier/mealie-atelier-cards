@@ -148,8 +148,7 @@
     padding: 18px;
   }
   .atelier .editor-footer {
-    margin: 0 -18px -18px;
-    bottom: -18px;
+    margin: 0 -18px;
     padding: 15px 18px;
   }
   .atelier .editor-step {
@@ -413,7 +412,7 @@
     font-size: 24px;
   }
   .atelier .editor-footer {
-    margin: 0 -20px -20px;
+    margin: 0 -20px;
     padding: 15px 20px;
   }
   .atelier .print-paper {
