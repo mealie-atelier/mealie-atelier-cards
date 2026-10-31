@@ -5,6 +5,9 @@ services:
     env_file: .env # also carries the optional ATELIER_SYNC_LANGUAGE (language of Bring! item text)
     # Smart Shopping Sync to Bring!: connect the account in the app (an administrator signs in once;
     # only tokens land in the atelier_data volume) or set BRING_EMAIL and BRING_PASSWORD in .env.
+    # ATELIER_SYNC_LANGUAGE (de or en; unset follows the app language) and the test-only
+    # BRING_API_BASE and BRING_API_KEY
+    # also come from .env.
     environment:
       # Fixed container-side values; they win over .env so the port mapping below always matches.
       PORT: "3000"

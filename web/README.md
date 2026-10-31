@@ -1,6 +1,6 @@
 # Mealie Atelier Web · private standalone recipe dashboard
 
-Part of [Mealie Atelier Cards](../README.md). Contents: [Docker](#docker-quick-start) · [Node](#node-quick-start) · [Configuration](#configuration) · [Accounts](#per-person-accounts) · [Security](#security) · [Third-party hosts](#third-party-hosts) · [Tests](#tests) · [Notes](#notes) · [Printing](#printing-recipes-and-plans) · [Nutrition Lab](#nutrition-lab) · [Kitchen state](#kitchen-state-and-persistence) · [Support](#support) · [License](#license)
+Part of [Mealie Atelier Cards](../README.md). Contents: [Docker](#docker-quick-start) · [Node](#node-quick-start) · [Configuration](#configuration) · [Accounts](#per-person-accounts) · [Security](#security) · [Third-party hosts](#third-party-hosts) · [Tests](#tests) · [Development](#development) · [Notes](#notes) · [Bring!](#smart-shopping-sync-to-bring) · [Printing](#printing-recipes-and-plans) · [Nutrition Lab](#nutrition-lab) · [Kitchen state](#kitchen-state-and-persistence) · [Support](#support) · [License](#license)
 
 Run the full Mealie Atelier kitchen UI on iPhone, tablet or a wall display **without Home Assistant**. This standalone web app shares the same visual components as the Mealie Atelier cards, but uses a local, password-protected Node proxy to your own Mealie API.
 
@@ -161,27 +161,27 @@ The web app copies items of a Mealie shopping list to a Bring! list, **without H
 ### Set it up
 
 1. Sign in to the web app as an administrator and open the shopping view.
-2. Choose **Mit Bring! verbinden** (Connect to Bring!).
+2. Choose **Connect to Bring!** (German: Mit Bring! verbinden).
 3. Follow the five steps: sign in with your Bring! e-mail address and password, pick the Bring! list (your usual list is preselected), pick the Mealie list, check the preview of the real items and release the first delivery.
 
-Duplicates are skipped and the sync runs after adding by default. Move mode, merging and the delay sit under **Mehr Optionen** (More options). Without a rule nothing is sent; with `ATELIER_READ_ONLY=true` the dialog cannot connect at all.
+Duplicates are skipped and the sync runs after adding by default. Move mode, merging and the delay sit under **More options** (Mehr Optionen). Without a rule nothing is sent; with `ATELIER_READ_ONLY=true` the dialog cannot connect at all.
 
 ### Your account and your password
 
 - The password travels to the server over your connection (use HTTPS), is used for one login and is dropped. It is never written to disk.
 - The server keeps only the session tokens and the account's e-mail address in `ATELIER_DATA_DIR/bring-account.json` (file mode 600) and renews the session on its own.
 - Everyone sees the address masked (for example `f•••@example.com`). Only administrators receive it in full, so that signing in again needs just the password.
-- **Verbindung trennen** (Disconnect) asks for confirmation, deletes the tokens and stops the sync. The rules stay saved.
+- **Disconnect** (Verbindung trennen) asks for confirmation, deletes the tokens and stops the sync. The rules stay saved.
 - If Bring! refuses the stored tokens, the dialog offers one sign-in again that keeps all rules and asks for the password only. A Bring! outage during sign-in keeps the typed password in the browser's memory (never stored), so one click retries; closing the dialog drops it.
-- If someone deletes the Bring! list a rule sends to, the rule card says so and **Andere Liste wählen** (Choose another list) swaps the list without recreating the rule.
+- If someone deletes the Bring! list a rule sends to, the rule card says so and **Choose another list** (Andere Liste wählen) swaps the list without recreating the rule.
 
-**Try it without a real account.** Run `node web/test/support/fake-bring-server.mjs 5110` and start the app with the printed `BRING_API_BASE` and `BRING_API_KEY`. Sign in with the printed fictional account. The screenshots in this repository were taken this way, with `scripts/capture-bring-showcase.py`.
+**Try it without a real account.** From the `web/` folder run `node test/support/fake-bring-server.mjs 5110` and start the app with the printed `BRING_API_BASE` and `BRING_API_KEY`. Put the two variables into `.env` for Docker or into the environment for Node, for example `BRING_API_BASE=http://127.0.0.1:5110 BRING_API_KEY=... npm start`. From Docker the fake server must listen beyond loopback and be reached as `host.docker.internal`: run `node test/support/fake-bring-server.mjs 5110 0.0.0.0`, which prints `BRING_API_BASE=http://host.docker.internal:5110`. Sign in with the printed fictional account. The screenshots in this repository were taken this way, with `scripts/capture-bring-showcase.py`.
 
 **Headless setup.** Set `BRING_EMAIL` and `BRING_PASSWORD` in `.env` to connect at start without the dialog. The password is read once from the environment, kept in memory for renewing the session and never written to the data directory. Disconnecting in the dialog lasts until the next restart while these variables are set; remove them for good.
 
 **Who may do what.** Reading the sync state is open to every signed-in user. Running, pausing and retrying needs the write role. Connecting or disconnecting the account, changing rules and confirming the first batch need an administrator. `ATELIER_READ_ONLY=true` blocks connecting, rules and runs.
 
-**Privacy.** Shopping items are sent to Bring! only after an administrator connected an account, and only for the Mealie lists that a rule you confirmed names. Without a connected account the app sends no shopping data to anyone. The Bring! API is unofficial; its terms and privacy rules apply. The rule outbox lives in `ATELIER_DATA_DIR/shopping-sync.json`. `BRING_API_BASE` and `BRING_API_KEY` exist for tests and are not needed.
+**Privacy.** Shopping items are sent to Bring! only after an administrator connected an account, and only for the Mealie lists that a rule you confirmed names. Without a connected account the app sends no shopping data to anyone. The Bring! API is unofficial; its terms and privacy rules apply. The rule outbox lives in `ATELIER_DATA_DIR/shopping-sync.json`. `BRING_API_BASE` and `BRING_API_KEY` exist for tests and are not needed (see [Try it without a real account](#smart-shopping-sync-to-bring)).
 
 ## Printing recipes and plans
 

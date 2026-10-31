@@ -11,3 +11,11 @@ test(".env.example keeps the documented defaults (writable app, default user)", 
   assert.ok(!active.some((l) => l.startsWith("ATELIER_USERNAME=")));
   assert.ok(!active.some((l) => l.startsWith("ATELIER_EXPERIMENTAL_INGREDIENTS")));
 });
+
+test(".env.example documents the sync language and the test-only Bring! variables as comments", () => {
+  const text = readFileSync(new URL("../.env.example", import.meta.url), "utf8");
+  for (const name of ["ATELIER_SYNC_LANGUAGE", "BRING_API_BASE", "BRING_API_KEY"]) {
+    assert.match(text, new RegExp(`^# ${name}=`, "m"));
+    assert.ok(!active.some((l) => l.startsWith(`${name}=`)));
+  }
+});
