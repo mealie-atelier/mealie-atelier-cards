@@ -2202,7 +2202,7 @@ ha-card {
   font-weight: 700;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(20, 32, 26, 0.55);
+  background: rgba(20, 32, 26, 0.7);
   text-shadow: 0 1px 4px #0009;
 }
 .atelier .tile-body {
@@ -7836,10 +7836,15 @@ ha-card {
   padding: 2px 8px;
 }
 .atelier .cook-stage h2.cook-stage--long {
-  font-size: clamp(22px, 4.2vw, 32px);
+  font-size: clamp(20px, 3.4vw, 28px);
   line-height: 1.3;
   hyphens: auto;
   overflow-wrap: anywhere;
+}
+/* A paragraph of 320 characters or more must not push the timers and buttons off the screen. */
+.atelier .cook-stage h2.cook-stage--long.cook-stage--xlong {
+  font-size: clamp(17px, 2.4vw, 21px);
+  line-height: 1.4;
 }
 .atelier .print-section-heading {
   margin-block: 0 var(--ds-space-3);
@@ -10912,25 +10917,41 @@ ha-card {
   line-clamp: 3;
   overflow: hidden;
   overflow-wrap: break-word;
-  hyphens: manual;
+  /* Where a long word cannot fit the column the break is a real hyphenated one (the card sets lang), never a bare split. */
+  hyphens: auto;
+  hyphenate-limit-chars: 7 3 3;
 }
-/* Tablet week strip: seven narrow columns. A smaller name and tighter padding keep long German
-   words such as "Hähnchensalat" whole instead of splitting them mid-word. */
-@container atelier-card (min-width: 561px) and (max-width: 1080px) {
-  .atelier .week-grid .day-meal {
-    padding: 9px 8px;
-  }
-  .atelier .week-grid .day-meal-name {
-    font-size: 11px;
-  }
-}
-
-/* Wide cards keep a real minimum column width and the grid scrolls sideways instead of squeezing recipe names into
-   55px. Scoped to the card container so the narrow carousel rules in layout.css (760px and below) keep winning. */
-@container atelier-card (min-width: 901px) {
+/* Week grid by card width. A recipe name needs about 110px of text width to keep a long German word such as
+   "Kürbissuppe" whole, so seven columns only appear when they get that room (a card with a sidebar loses about 280px
+   to it). Below that the days wrap into 4 + 3 rows, and in a narrow dashboard card they scroll sideways as a carousel
+   with a real column width. The container is the card, so the narrow carousel rules in layout.css keep winning at
+   760px and below. */
+@container atelier-card (min-width: 761px) and (max-width: 919px) {
   .atelier .week-grid {
-    grid-template-columns: repeat(7, minmax(120px, 1fr));
+    grid-template-columns: repeat(7, 200px);
     overflow-x: auto;
+  }
+}
+@container atelier-card (min-width: 920px) {
+  .atelier .week-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow-x: auto;
+  }
+}
+@container atelier-card (min-width: 1480px) {
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, minmax(150px, 1fr));
+  }
+}
+/* Without a sidebar the grid has the whole card. */
+@container atelier-card (min-width: 761px) {
+  .atelier .shell.single .week-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container atelier-card (min-width: 1260px) {
+  .atelier .shell.single .week-grid {
+    grid-template-columns: repeat(7, minmax(150px, 1fr));
   }
 }
 
@@ -11201,8 +11222,9 @@ ha-card {
     flex: 1 1 auto;
   }
 }
-/* A day strip wider than its card fades out at the end edge so the cut tile reads as scrollable. */
-@container atelier-card (max-width: 1080px) {
+/* A day strip wider than its card fades out at the end edge so the cut tile reads as scrollable. Only the carousel
+   widths scroll: from 920px (761px without a sidebar) the days wrap into rows and the fade and hint stay off. */
+@container atelier-card (max-width: 760px) {
   .atelier .week-grid {
     padding-inline-end: 36px;
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
@@ -11210,6 +11232,20 @@ ha-card {
   }
   .atelier .week-swipe-hint {
     display: flex;
+  }
+}
+@container atelier-card (min-width: 761px) and (max-width: 919px) {
+  .atelier .shell:not(.single) .week-grid {
+    padding-inline-end: 36px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+  .atelier .shell:not(.single) .week-swipe-hint {
+    display: flex;
+  }
+}
+@container atelier-card (max-width: 919px) {
+  .atelier .week-swipe-hint {
     align-items: center;
     gap: 8px;
     color: var(--at-sub);
@@ -11429,6 +11465,19 @@ ha-card {
   .atelier .topbar .breadcrumb > span {
     display: none;
   }
+}
+/* A card that holds nothing but its action row (the clear-ticked-items dialog) is just that row: no card frame, padding or margin above the buttons. */
+.atelier .editor-card:has(> .form-actions:only-child) {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.atelier .editor-card > .form-actions:only-child {
+  margin-block: 0;
+}
+.atelier .editor-form > .editor-sub:has(+ .form-actions) {
+  margin-block-end: 0;
 }
 
 /* Structured recipe editor (feature B): ingredient rows, comboboxes, history and photo uploads.
@@ -12956,7 +13005,7 @@ ha-card {
     gap: 3px;
     padding-bottom: 4px;
   }
-  .atelier .modal:has(.cook-layout) .cook-stage h2 {
+  .atelier .modal:has(.cook-layout) .cook-stage h2:not(.cook-stage--long) {
     font-size: clamp(24px, 3vw, 30px);
   }
 }
@@ -13069,6 +13118,14 @@ function linkify(text) {
 }
 function instructionText(row) {
   return typeof row === "string" ? row : row?.text || "";
+}
+/** Plain text for print and paper previews: drops the Markdown markers, keeps link targets as "label (url)". */
+function plainMarkdown(text) {
+  return String(text ?? "")
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s()<>"']+)\)/g, "$1 ($2)")
+    .replace(/\*\*([^*\n]+?)\*\*/g, "$1")
+    .replace(/(?<![\w*])\*([^*\s][^*\n]*?)\*(?![\w*])/g, "$1")
+    .replace(/(?<!\w)_([^_\s][^_\n]*?)_(?!\w)/g, "$1");
 }
 function instructionImages(row) {
   return asArray(row?.imageUrls).map(imageOk).filter(Boolean);
@@ -13195,7 +13252,7 @@ function buildPrintDocument(
       ? instructions
           .map(
             (row, i) =>
-              `<div class="method-row"><span class="method-index">${String(i + 1).padStart(2, "0")}</span><p>${esc(instructionText(row))}</p></div>`,
+              `<div class="method-row"><span class="method-index">${String(i + 1).padStart(2, "0")}</span><p>${esc(plainMarkdown(instructionText(row)))}</p></div>`,
           )
           .join("")
       : `<p class="quiet">${esc(words.empty)}</p>`;
@@ -16789,7 +16846,7 @@ const dialogMethods = {
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
-        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${!stepSummary && stepBody.length > 140 ? ' class="cook-stage--long"' : ""}>${inlineMarkdown(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
+        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${!stepSummary && stepBody.length > 140 ? ` class="cook-stage--long${stepBody.length > 320 ? " cook-stage--xlong" : ""}"` : ""}>${inlineMarkdown(stepSummary || stepBody)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}">
           <header class="cook-timer-header"><span class="cook-timer-mark" aria-hidden="true">${icon("clock", 16)}</span><div><span class="cook-timer-kicker">${this.t("uiATELIERKITCHENTIMER")}</span><strong>${this.t("uiKeepEverythingInRhythm")}</strong></div><span class="cook-timer-count">${this._timers.filter((timer) => !timer.done).length} ${this.t("uiactive")}</span></header>
           <p class="cook-sr-only" role="status" aria-live="polite" aria-atomic="true" data-timer-announce>${esc(this._timerAnnouncement || "")}</p><div class="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}" ${this._timerError ? 'aria-invalid="true" aria-describedby="cook-timer-err"' : ""}></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div>${this._timerError ? `<p class="cook-timer-error" role="alert" id="cook-timer-err">${esc(this._timerError)}</p>` : ""}</div>
@@ -16936,7 +16993,7 @@ const dialogMethods = {
               );
       const paperMethod =
         this._printKind === "recipe"
-          ? asArray(this._detail?.recipeInstructions).map(instructionText)
+          ? asArray(this._detail?.recipeInstructions).map((x) => plainMarkdown(instructionText(x)))
           : this._printKind === "shopping"
             ? ["", ""]
             : asArray(this._data.mealplan).map(mealName);
@@ -22342,7 +22399,8 @@ Object.assign(MealieAtelierCard.prototype, {
           this._modal === "cook" &&
           this._detail &&
           !this._cookStepSync &&
-          v.family?.session?.slug === this._detail.slug
+          v.family?.session?.slug === this._detail.slug &&
+          !this._cookSessionDone(v.family.session, v.journal)
         ) {
           const steps = asArray(this._detail.recipeInstructions);
           this._cookIndex = Math.min(
@@ -22427,6 +22485,20 @@ Object.assign(MealieAtelierCard.prototype, {
         if (failed) await this._studioRefresh();
       })();
     return this._cookStepSync;
+  },
+  /**
+   * A shared session that sits on the last step of its recipe after the cooking was finished is
+   * done, even when the session_end write failed or this user may not write. The journal stamp
+   * (`lastCooked`) is not older than the session start, or this device finished that session.
+   */
+  _cookSessionDone(session, journal = this._studio?.journal) {
+    if (!session || this._detail?.slug !== session.slug) return false;
+    const last = Math.max(0, asArray(this._detail.recipeInstructions).length - 1);
+    if (!(Number(session.step) >= last)) return false;
+    if (this._cookDoneSessions?.has(session.id)) return true;
+    const finished = Date.parse(journal?.[session.slug]?.lastCooked);
+    const started = Date.parse(session.started);
+    return Number.isFinite(finished) && (!Number.isFinite(started) || finished >= started);
   },
   /** Step count of the shared session's recipe, or null while it is not known yet. */
   _sessionStepTotal(session) {
@@ -23117,7 +23189,7 @@ Object.assign(MealieAtelierCard.prototype, {
           )
             .map(
               (x, j) =>
-                `<p class="method"><b>${String(j + 1).padStart(2, "0")}</b>${esc(instructionText(x))}</p>`,
+                `<p class="method"><b>${String(j + 1).padStart(2, "0")}</b>${esc(plainMarkdown(instructionText(x)))}</p>`,
             )
             .join("")}</section></div></article>`,
       )
@@ -23803,9 +23875,15 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       // Joining a running shared session: open at the shared step instead of step 1.
       const steps = asArray(this._detail.recipeInstructions);
       const last = Math.max(0, steps.length - 1);
-      // Done ends the session (cook-finish), so a running one is always joined at its shared step.
-      this._cookIndex = Math.min(Math.max(0, Number(active.step) || 0), last);
-      this._render();
+      if (this._cookSessionDone(active)) {
+        // A finished recipe starts again at step 1, also when the session could not be ended.
+        this._cookIndex = 0;
+        this._render();
+        if (this._permissions.can_write && !this._kidView) await this._studioSyncStep(active.id, 0);
+      } else {
+        this._cookIndex = Math.min(Math.max(0, Number(active.step) || 0), last);
+        this._render();
+      }
     }
     if (this._permissions.can_write && !existed && (!active || replace))
       await this._studioWrite("session_start", { slug, name, replace_existing: replace });
@@ -23828,6 +23906,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       previous = this._studio?.journal?.[slug] || {},
       shared = this._studio?.family?.session;
     await _atOriginalClick.call(this, event);
+    if (shared?.slug === slug) (this._cookDoneSessions ||= new Set()).add(shared.id);
     // Done ends the shared session this recipe owns, so the next start begins at step 1.
     if (shared?.slug === slug && this._permissions.can_write && !this._kidView)
       await this._studioWrite("session_end", { session_id: shared.id });
