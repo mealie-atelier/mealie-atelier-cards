@@ -33,6 +33,21 @@ test("readme shots pin the English profile language and the shared sidebar dashb
   assert.match(source, /asyncio\.run\(set_profile_language\(\)\)/);
 });
 
+test("readme shots show only the product dashboard in the sidebar and restore the rig afterwards", () => {
+  const source = read("capture-readme-shots.py");
+  // The smoke test dashboard is hidden during the capture, so "Atelier" does not stand above "Kitchen".
+  assert.match(source, /"atelier_live": \{"title": "Atelier", "show_in_sidebar": False\}/);
+  assert.doesNotMatch(source, /"atelier_live": \{[^}]*"show_in_sidebar": True/);
+  // Any other dashboard that shows in the sidebar is hidden too.
+  assert.match(source, /wanted is None and board\.get\("show_in_sidebar"\)/);
+  // The original language and sidebar settings are recorded first and restored in a finally block.
+  const body = source.slice(source.indexOf("def run()"), source.indexOf("if __name__"));
+  assert.match(body, /asyncio\.run\(snapshot_rig\(saved\)\)/);
+  assert.match(body, /try:\s+main\(\)\s+finally:\s+asyncio\.run\(restore_rig\(saved\)\)/);
+  assert.match(source, /async def restore_rig/);
+  assert.match(source, /"show_in_sidebar": board\["show_in_sidebar"\]/);
+});
+
 test("the week plan feature shot is a cropped narrow window without automatic hyphenation", () => {
   const source = read("capture-app-showcase.py");
   assert.match(source, /FEATURE = dict\(viewport=\(960, 1200\)[^\n]*whole_names=True/);

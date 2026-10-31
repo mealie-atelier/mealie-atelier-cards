@@ -123,17 +123,45 @@ async def prepare_phone_boards() -> None:
                 raise SystemExit(f"dashboard config: {error}")
 
 
-# The sidebar every shot shows: Overview, Atelier, Kitchen, Map, Energy. The rig is shared with other captures
-# (German showcase, live tests) that rename and hide these dashboards, so each run puts them back.
+# The sidebar every shot shows: Overview, Kitchen, Map, Energy. Only the product dashboard (Kitchen, atelier_cards) may
+# appear: the smoke test dashboard (atelier_live, also titled "Atelier") and every other dashboard that shows in the
+# sidebar are hidden during the capture, so a reader sees one entry for the product. The rig is shared with other
+# captures (German showcase, live tests) that rename and hide these dashboards, so each run puts them as the shots
+# need them and restores the original settings afterwards (see restore_rig).
 SIDEBAR = {
     "map": {"title": "Map"},
-    "atelier_live": {"title": "Atelier", "show_in_sidebar": True},
+    "atelier_live": {"title": "Atelier", "show_in_sidebar": False},
     "atelier_cards": {"title": "Kitchen", "show_in_sidebar": True},
 }
 
 
+async def snapshot_rig(saved: dict) -> None:
+    """Record the profile language and the title and sidebar flag of every dashboard before the capture changes them."""
+    async with cs.HaSocket(cs.BASE, cs.read_token(str(LIVE / "state" / "ha-token"))) as socket:
+        _, data = await socket.call({"type": "frontend/get_user_data", "key": "language"})
+        _, boards = await socket.call({"type": "lovelace/dashboards/list"})
+        saved["language"] = (data or {}).get("value")
+        saved["dashboards"] = {
+            board["id"]: {"title": board["title"], "show_in_sidebar": board["show_in_sidebar"]} for board in boards or []
+        }
+
+
+async def restore_rig(saved: dict) -> None:
+    """Put the profile language and every dashboard back the way snapshot_rig found them."""
+    if not saved:
+        return
+    async with cs.HaSocket(cs.BASE, cs.read_token(str(LIVE / "state" / "ha-token"))) as socket:
+        if saved.get("language") is not None:
+            await socket.call({"type": "frontend/set_user_data", "key": "language", "value": saved["language"]})
+        _, boards = await socket.call({"type": "lovelace/dashboards/list"})
+        for board in boards or []:
+            original = saved.get("dashboards", {}).get(board["id"])
+            if original and any(board.get(key) != value for key, value in original.items()):
+                await socket.call({"type": "lovelace/dashboards/update", "dashboard_id": board["id"], **original})
+
+
 async def set_profile_language() -> None:
-    """Pin the rig user's profile language to English.
+    """Pin the rig user's profile language to English and show only the product dashboard in the sidebar.
 
     The profile language wins over the browser locale. The German showcase capture leaves it on German, and
     Home Assistant then labels the sidebar in German. The built-in map dashboard also keeps the German title it was
@@ -148,6 +176,8 @@ async def set_profile_language() -> None:
         _, boards = await socket.call({"type": "lovelace/dashboards/list"})
         for board in boards or []:
             wanted = SIDEBAR.get(board["id"])
+            if wanted is None and board.get("show_in_sidebar"):
+                wanted = {"show_in_sidebar": False}
             if wanted and any(board.get(key) != value for key, value in wanted.items()):
                 ok, error = await socket.call(
                     {"type": "lovelace/dashboards/update", "dashboard_id": board["id"], **wanted}
@@ -498,5 +528,15 @@ def main() -> None:
     tmp.unlink(missing_ok=True)
 
 
+def run() -> None:
+    """Record the rig settings, capture, and put the language and sidebar dashboards back whatever happens."""
+    saved: dict = {}
+    asyncio.run(snapshot_rig(saved))
+    try:
+        main()
+    finally:
+        asyncio.run(restore_rig(saved))
+
+
 if __name__ == "__main__":
-    main()
+    run()
