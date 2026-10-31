@@ -12361,6 +12361,11 @@ ha-card {
     display: flex;
     flex-direction: column;
   }
+  /* In the column the close button and the header strip must keep their size when the step is taller than the dialog:
+     the strip clips its text, so it could shrink to nothing while its negative margin still pulls the heading up. */
+  .atelier .modal.sync-modal:has(> .bw-wizard) > :is(.modal-close, .modal-bar-title) {
+    flex: none;
+  }
   .atelier .modal.sync-modal > .bw-wizard {
     display: flex;
     flex-direction: column;
@@ -13407,7 +13412,7 @@ class MealieAtelierCard extends HTMLElement {
     }
   }
   disconnectedCallback() {
-    this._modalBarObserver?.disconnect();
+    this._unwatchModalBar();
     // BEGIN feature H: offline queue listener
     this._offlineDetach();
     // END feature H
@@ -14332,9 +14337,16 @@ class MealieAtelierCard extends HTMLElement {
     }
     return typeof el.offsetHeight === "number" ? top + el.offsetHeight : null;
   }
-  _watchModalBar() {
+  /** Drops the observer and the listeners of the previous dialog element (the cook dialog keeps its element). */
+  _unwatchModalBar() {
     this._modalBarObserver?.disconnect();
     this._modalBarObserver = null;
+    for (const { el, type, fn } of this._modalBarListeners || [])
+      el.removeEventListener?.(type, fn);
+    this._modalBarListeners = [];
+  }
+  _watchModalBar() {
+    this._unwatchModalBar();
     const modal = this.shadowRoot.querySelector(".modal");
     const strip = modal?.querySelector(":scope > .modal-bar-title");
     const heading = modal?.querySelector("h2");
@@ -14366,7 +14378,17 @@ class MealieAtelierCard extends HTMLElement {
     // Decide now (the observer reports asynchronously), and again when the entrance animation is over, so a
     // dialog or step that starts at scroll 0 never keeps a stale strip.
     settle();
-    modal.addEventListener?.("animationend", () => settle());
+    // The observer alone is not a reliable trigger: a heading that already sits inside the strip band at scroll 0
+    // (phones) never crosses the observed edge again. So scrolling and the end of the entrance animation decide too.
+    const again = () => settle();
+    this._modalBarListeners = [];
+    for (const [type, options] of [
+      ["scroll", { passive: true }],
+      ["animationend", undefined],
+    ]) {
+      modal.addEventListener?.(type, again, options);
+      this._modalBarListeners.push({ el: modal, type, fn: again });
+    }
   }
   /** True when focusing the element would open the on-screen keyboard of a touch device. */
   _opensTouchKeyboard(el) {

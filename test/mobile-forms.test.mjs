@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
 
 const css = readFileSync(new URL("../src/design-system/mobile-forms.css", import.meta.url), "utf8");
@@ -92,9 +92,16 @@ function watchedModal({ strip = {}, headingText = " Gericht einplanen " } = {}) 
     classList: {
       toggle: (name, on) => (on ? classes.add(name) : classes.delete(name)),
     },
+    listeners: new Map(),
     addEventListener: (type, fn) => {
-      if (type === "animationend") modal.animationEnd = fn;
+      if (!modal.listeners.has(type)) modal.listeners.set(type, new Set());
+      modal.listeners.get(type).add(fn);
     },
+    removeEventListener: (type, fn) => modal.listeners.get(type)?.delete(fn),
+    fire: (type) => {
+      for (const fn of [...(modal.listeners.get(type) || [])]) fn();
+    },
+    fireAnimationEnd: () => modal.fire("animationend"),
     querySelector: (sel) =>
       sel === ":scope > .modal-bar-title" ? stripEl : sel === "h2" ? heading : null,
   };
@@ -160,7 +167,7 @@ test("the strip is decided synchronously from the layout, so a stale on state is
   assert.equal(classes.has("bar-on"), true);
   // Back at the top, the entrance animation ending re-evaluates.
   modalEl.scrollTop = 0;
-  modalEl.animationEnd();
+  modalEl.fireAnimationEnd();
   assert.equal(classes.has("bar-on"), false);
 });
 
@@ -170,4 +177,109 @@ test("the strip and its title are never split: no dialog hides the strip behind 
     "utf8",
   );
   assert.doesNotMatch(wizard, /sync-modal > \.modal-close::before \{\s*display: none/);
+});
+
+test("watching the same dialog element again (cook steps patch it in place) keeps one animationend and one scroll listener", () => {
+  const { card } = watchedModal();
+  const modalEl = card.shadowRoot.querySelector(".modal");
+  for (let step = 0; step < 5; step += 1) card._watchModalBar();
+  assert.equal(modalEl.listeners.get("animationend").size, 1);
+  assert.equal(modalEl.listeners.get("scroll").size, 1);
+  card._unwatchModalBar();
+  assert.equal(modalEl.listeners.get("animationend").size, 0);
+  assert.equal(modalEl.listeners.get("scroll").size, 0);
+});
+
+/** Splits a stylesheet into rules with the chain of enclosing at-rule preludes. */
+function flatRules(css) {
+  const out = [];
+  const walk = (text, context) => {
+    let i = 0;
+    while (i < text.length) {
+      const open = text.indexOf("{", i);
+      if (open < 0) break;
+      const prelude = text.slice(i, open).trim();
+      let depth = 1;
+      let j = open + 1;
+      while (j < text.length && depth) {
+        if (text[j] === "{") depth += 1;
+        if (text[j] === "}") depth -= 1;
+        j += 1;
+      }
+      const body = text.slice(open + 1, j - 1);
+      if (prelude.startsWith("@")) walk(body, [...context, prelude.replace(/\s+/g, " ")]);
+      else out.push({ selector: prelude.replace(/\s+/g, " "), body, context });
+      i = j;
+    }
+  };
+  walk(css.replace(/\/\*[\s\S]*?\*\//g, ""), []);
+  return out;
+}
+
+test("in every stylesheet the strip and its title are hidden under exactly the same conditions", () => {
+  const dir = new URL("../src/design-system/", import.meta.url);
+  const hides = (body) =>
+    /display:\s*none|visibility:\s*hidden|opacity:\s*0(?![.\d])|content:\s*none/.test(body);
+  const titleOff = [];
+  const stripOff = [];
+  for (const file of readdirSync(dir).filter((name) => name.endsWith(".css"))) {
+    for (const r of flatRules(readFileSync(new URL(file, dir), "utf8"))) {
+      const key = JSON.stringify(r.context);
+      for (const selector of r.selector.split(",").map((part) => part.trim())) {
+        const onBar = /\.modal-bar-title/.test(selector);
+        const onStrip = /\.modal-close::before/.test(selector);
+        if (!hides(r.body) || (!onBar && !onStrip)) continue;
+        // Anything that is not scoped to the closed state (.bar-on adds the opacity) must hide both together.
+        const base = /^\.atelier \.modal > \.modal-(bar-title|close::before)$/.test(selector);
+        const entry = `${key}|${r.body.includes("opacity") ? "fade" : "gone"}|${base}`;
+        (onBar ? titleOff : stripOff).push(entry);
+        assert.ok(
+          base,
+          `${file}: "${selector}" hides the ${onBar ? "title" : "strip"} outside the shared base rule`,
+        );
+      }
+    }
+  }
+  assert.ok(titleOff.length > 0 && stripOff.length > 0);
+  assert.deepEqual([...new Set(titleOff)].sort(), [...new Set(stripOff)].sort());
+});
+
+test("the shared close strip is switched on by .bar-on in the same rule family as the title", () => {
+  const dir = new URL("../src/design-system/", import.meta.url);
+  const on = { title: 0, strip: 0 };
+  for (const file of readdirSync(dir).filter((name) => name.endsWith(".css"))) {
+    for (const r of flatRules(readFileSync(new URL(file, dir), "utf8"))) {
+      if (
+        /^\.atelier \.modal\.bar-on > \.modal-bar-title$/.test(r.selector) &&
+        /opacity:\s*1/.test(r.body)
+      )
+        on.title += 1;
+      if (
+        /^\.atelier \.modal\.bar-on > \.modal-close::before$/.test(r.selector) &&
+        /opacity:\s*1/.test(r.body)
+      )
+        on.strip += 1;
+    }
+  }
+  assert.deepEqual(on, { title: 1, strip: 1 });
+});
+
+test("scrolling decides the strip even when the observer never fires (heading already inside the strip band)", () => {
+  const { card, classes, heading, stripEl, observers } = watchedModal();
+  const modalEl = card.shadowRoot.querySelector(".modal");
+  // Phone: the heading spans 36..65 and the strip edge is at 64, so it never crosses the observed edge again.
+  heading.offsetParent = modalEl;
+  heading.offsetTop = 36;
+  heading.offsetHeight = 29;
+  stripEl.offsetHeight = 44;
+  modalEl.scrollTop = 0;
+  card._watchModalBar();
+  assert.equal(classes.has("bar-on"), false);
+  assert.equal(observers.length, 1);
+  modalEl.scrollTop = 120;
+  modalEl.fire("scroll");
+  assert.equal(classes.has("bar-on"), true);
+  modalEl.scrollTop = 0;
+  modalEl.fire("scroll");
+  assert.equal(classes.has("bar-on"), false);
 });

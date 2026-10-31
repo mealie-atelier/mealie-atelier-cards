@@ -565,6 +565,11 @@
     display: flex;
     flex-direction: column;
   }
+  /* In the column the close button and the header strip must keep their size when the step is taller than the dialog:
+     the strip clips its text, so it could shrink to nothing while its negative margin still pulls the heading up. */
+  .atelier .modal.sync-modal:has(> .bw-wizard) > :is(.modal-close, .modal-bar-title) {
+    flex: none;
+  }
   .atelier .modal.sync-modal > .bw-wizard {
     display: flex;
     flex-direction: column;

@@ -72,3 +72,10 @@ test("the last sync card keeps a bottom margin and the phone disconnect link sta
     )?.[1] || "";
   assert.match(hover, /background:\s*transparent/);
 });
+
+test("in the phone wizard column the close button and the header strip never shrink", () => {
+  assert.match(
+    css,
+    /\.sync-modal:has\(> \.bw-wizard\) > :is\(\.modal-close, \.modal-bar-title\)\s*\{[^}]*flex:\s*none/,
+  );
+});
