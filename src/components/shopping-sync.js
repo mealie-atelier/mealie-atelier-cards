@@ -53,6 +53,8 @@ export const shoppingSyncMethods = {
       bringSetup: !native && entry.features?.bring_setup === true,
       bringState: String(entry.bring?.state || ""),
       bringAccount: String(entry.bring?.account || ""),
+      // The server holds the credentials in its environment (from_env), nothing is stored per user.
+      bringEnv: entry.bring?.from_env === true,
       // Only administrators receive the full address; it saves typing it again after a lapse.
       bringEmail: String(entry.bring?.email || ""),
       bringDefault: String(entry.bring?.default_list || ""),

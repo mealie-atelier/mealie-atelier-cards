@@ -163,16 +163,26 @@ const AtelierStudio = (() => {
       target === base
     )
       return raw;
+    const fmt = (n) =>
+      Number(n.toFixed(2)).toLocaleString(locale === "en" ? "en-US" : "de-DE", {
+        maximumFractionDigits: 2,
+      });
+    // A range such as "2-3" or "2–3" scales on both ends and keeps its separator.
+    const range = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)(\s*[-–]\s*)(\d+(?:[.,]\d+)?)(\s+.*)$/);
+    if (range) {
+      const low = Number(range[2].replace(",", ".")),
+        high = Number(range[4].replace(",", "."));
+      if (high >= low && !/^\s+[x×]\s*\d/i.test(range[5]))
+        return `${range[1]}${fmt((low * target) / base)}${range[3]}${fmt((high * target) / base)}${range[5]}`;
+      return raw;
+    }
     const q = leadingQuantity(raw);
     if (!q) return raw;
     // "1 x 400 g" is a pack count, not an amount: scaling it would give "1,5 x 400 g".
     if (/^\s+[x×]\s*\d/i.test(q.rest)) return raw;
     const amount = (q.value * target) / base;
     let scaled = q.style === "decimal" ? null : formatFraction(amount, q.style === "glyph");
-    if (scaled === null)
-      scaled = Number(amount.toFixed(2)).toLocaleString(locale === "en" ? "en-US" : "de-DE", {
-        maximumFractionDigits: 2,
-      });
+    if (scaled === null) scaled = fmt(amount);
     return `${q.lead}${scaled}${q.rest}`;
   }
   // Treat a pantry match as a verified quantity claim, not just a shared word.

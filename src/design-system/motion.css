@@ -1558,3 +1558,10 @@
     transform: none;
   }
 }
+/* The toast joins the top layer as a manual popover: reset the popover box so it keeps its place at the bottom. */
+.atelier .toast[popover] {
+  top: auto;
+  height: auto;
+  overflow: visible;
+  inset-inline: 0;
+}

@@ -919,6 +919,15 @@ class MealieAtelierCard extends HTMLElement {
     }
     this._render();
   }
+  // The editor and the card picker show a preview: it never says the dashboard is locked.
+  _previewOnly() {
+    // Home Assistant sets the `preview` property on cards shown in the editor and the picker.
+    return (
+      this.preview === true ||
+      this._config?.preview === true ||
+      this.closest?.("hui-card-preview, hui-card-options, hui-dialog-edit-card") != null
+    );
+  }
   _flash(text, kind = "status") {
     this._toast = String(text || "").slice(0, 500);
     this._toastKind = kind;
@@ -1321,7 +1330,7 @@ class MealieAtelierCard extends HTMLElement {
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
       ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
-      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
+      ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write && !this._previewOnly() ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
       <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
@@ -1352,6 +1361,8 @@ class MealieAtelierCard extends HTMLElement {
       button.type = "button";
     for (const backdrop of this.shadowRoot.querySelectorAll(".modal-backdrop"))
       this._raiseModal(backdrop);
+    // The toast joins the top layer after the dialogs, so it stays readable above a backdrop.
+    for (const toast of this.shadowRoot.querySelectorAll(".toast")) this._raiseModal(toast);
     this._lastRenderedView = this._view;
     this._lastRenderedTheme = theme;
     this._lastRenderedModal = this._modal;
@@ -1621,6 +1632,7 @@ class MealieAtelierCard extends HTMLElement {
     this._closeModalNow();
   }
   _closeModalNow() {
+    this._stopReading?.();
     if (this._modal === "command") {
       clearTimeout(this._commandSearchTimer);
       this._commandSearchSeq++;
@@ -3039,8 +3051,14 @@ class MealieAtelierCard extends HTMLElement {
           ok = await this._mutate("recipe_create", { name: tidy(values.name, 120) }, "all");
         break;
       case "import":
-        if (tidy(values.url))
+        if (tidy(values.url)) {
           ok = await this._mutate("recipe_import", { url: tidy(values.url, 2000) }, "all");
+          // A failed import keeps the dialog open: the typed address stays for correction.
+          if (!ok && this._modal === "import") {
+            const field = this.shadowRoot.querySelector('form[data-form="import"] [name="url"]');
+            if (field) field.value = values.url;
+          }
+        }
         break;
       case "edit":
         if (this._detail && tidy(values.name)) {

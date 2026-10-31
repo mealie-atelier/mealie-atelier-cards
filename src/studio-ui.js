@@ -80,6 +80,7 @@ Object.assign(MealieAtelierCard.prototype, {
             Math.max(0, steps.length - 1),
           );
         }
+        if (this._cookIndex !== cookBefore && this._readSpeaking) this._stopReading();
         // The displayed step must always match the internal one, even when the revision is unchanged.
         if (
           !silent ||
@@ -977,6 +978,12 @@ MealieAtelierCard.prototype._modalHtml = function () {
         /<div class="cook-timers"[^>]*>/,
         (open) => `${open}${session.timers.map((x) => this._sharedTimerCard(x, session)).join("")}`,
       );
+      // The badge counts the shared timers that still run next to the local ones.
+      const sharedRunning = session.timers.filter((x) => x.deadline > Date.now()).length;
+      html = html.replace(
+        /(<span class="cook-timer-count">)(\d+)/,
+        (_m, open, n) => `${open}${Number(n) + sharedRunning}`,
+      );
     }
   }
   if (this._modal === "journal" && this._detail)
@@ -1035,9 +1042,27 @@ MealieAtelierCard.prototype.disconnectedCallback = function () {
   _atOriginalDisconnected.call(this);
   if (this._studioPoll) clearInterval(this._studioPoll);
 };
+const STUDIO_READ_STOPPERS = new Set([
+  "cook-next",
+  "cook-back",
+  "cook-to-recipe",
+  "close-modal",
+  "backdrop",
+  "cook-finish",
+]);
+/** Silence the step narration and reset the read-aloud button (no render, callers render). */
+MealieAtelierCard.prototype._stopReading = function () {
+  if (typeof speechSynthesis !== "undefined" && "speechSynthesis" in window)
+    speechSynthesis.cancel();
+  this._readSpeaking = false;
+  this._readStep = null;
+};
 MealieAtelierCard.prototype._handleClick = async function (event) {
   const el = event.target?.closest?.("[data-action]");
   const action = el?.dataset?.action;
+  // Reading aloud never outlives its step: any move or exit silences it and resets the button.
+  if (STUDIO_READ_STOPPERS.has(action) && (this._readSpeaking || this._readStep != null))
+    this._stopReading();
   if (action?.startsWith("studio-")) {
     event.preventDefault();
     const value = el.dataset.value || "",
@@ -1342,6 +1367,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       if ("speechSynthesis" in window) {
         const wasSpeaking = this._readSpeaking;
         speechSynthesis.cancel();
+        this._readStep = this._cookIndex;
         // A second press stops the reading.
         if (wasSpeaking) {
           this._readSpeaking = false;
@@ -1381,14 +1407,16 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         const speech = String(e.results?.[0]?.[0]?.transcript || "").toLocaleLowerCase(
           this._locale || "en",
         );
-        if (isGerman ? /weiter|nächster/.test(speech) : /next|forward|continue/.test(speech))
+        if (isGerman ? /weiter|nächster/.test(speech) : /next|forward|continue/.test(speech)) {
+          this._stopReading();
           this._cookIndex = Math.min(
             asArray(this._detail?.recipeInstructions).length - 1,
             this._cookIndex + 1,
           );
-        else if (isGerman ? /zurück/.test(speech) : /back|previous/.test(speech))
+        } else if (isGerman ? /zurück/.test(speech) : /back|previous/.test(speech)) {
+          this._stopReading();
           this._cookIndex = Math.max(0, this._cookIndex - 1);
-        else if (isGerman ? /vorlesen|lesen/.test(speech) : /read|read aloud/.test(speech)) {
+        } else if (isGerman ? /vorlesen|lesen/.test(speech) : /read|read aloud/.test(speech)) {
           const b = this.shadowRoot.querySelector('[data-action="studio-read-step"]');
           b?.click();
         } else if (/wie viel|wieviel|wie viele|how much|how many/.test(speech)) {

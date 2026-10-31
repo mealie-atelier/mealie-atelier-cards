@@ -355,7 +355,7 @@ export const bringWizardMethods = {
     return `<form class="bw-form" data-form="bring-login" novalidate>
       <label class="field"><span>${esc(this.t("syncBringEmail"))}</span><input type="email" name="username" data-input="sync-bring-email" value="${esc(email)}" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required${email ? "" : " data-autofocus"}${busy || locked ? " readonly" : ""}${invalid}${described}></label>
       <label class="field"><span>${esc(this.t("syncBringPassword"))}</span><span class="bw-password"><input type="${bring.reveal ? "text" : "password"}" name="password" data-input="sync-bring-password" value="${esc(bring.password)}" autocomplete="current-password" autocapitalize="none" spellcheck="false" maxlength="256" required${email ? " data-autofocus" : ""}${busy ? " readonly" : ""}${invalid}${described}><button type="button" class="icon-btn bw-reveal" data-action="sync-bw-reveal" aria-pressed="${bring.reveal ? "true" : "false"}" title="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}" aria-label="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}">${eye}</button></span></label>
-      <p class="bw-privacy">${icon("leaf", 15)} <span>${esc(this.t("bwPrivacy"))}</span></p>
+      ${this._syncCaps().bringEnv ? "" : `<p class="bw-privacy">${icon("leaf", 15)} <span>${esc(this.t("bwPrivacy"))}</span></p>`}
       <div class="form-actions bw-nav">${again ? "" : `<button type="button" class="btn ghost" data-action="close-modal">${esc(this.t("syncCancel"))}</button>`}<button type="submit" class="btn primary"${busy ? ' disabled aria-busy="true"' : ""}>${busy ? esc(this.t("bwSigningIn")) : `${esc(this.t(again ? "bwReauthButton" : "bwSignIn"))} ${icon("arrow", 14)}`}</button></div></form>`;
   },
   _bwStepLoginHtml() {
@@ -557,7 +557,7 @@ export const bringWizardMethods = {
       : "";
     let action = "";
     if (reauth && editable)
-      action = `<p class="bw-text">${esc(this.t("bwReauthText"))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
+      action = `<p class="bw-text">${esc(this.t(caps.bringEnv ? "bwReauthTextEnv" : "bwReauthText"))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
     else if (!editable)
       action = `<p class="sync-muted" role="note">${esc(this.t(caps.readOnly ? "syncReadOnly" : "syncBringAdminOnly"))}</p>`;
     else if (bring.confirm)
