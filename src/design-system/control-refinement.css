@@ -246,8 +246,9 @@
     flex: 1 1 auto;
   }
 }
-/* A day strip wider than its card fades out at the end edge so the cut tile reads as scrollable. */
-@container atelier-card (max-width: 1080px) {
+/* A day strip wider than its card fades out at the end edge so the cut tile reads as scrollable. Only the carousel
+   widths scroll: from 920px (761px without a sidebar) the days wrap into rows and the fade and hint stay off. */
+@container atelier-card (max-width: 760px) {
   .atelier .week-grid {
     padding-inline-end: 36px;
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
@@ -255,6 +256,20 @@
   }
   .atelier .week-swipe-hint {
     display: flex;
+  }
+}
+@container atelier-card (min-width: 761px) and (max-width: 919px) {
+  .atelier .shell:not(.single) .week-grid {
+    padding-inline-end: 36px;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+  .atelier .shell:not(.single) .week-swipe-hint {
+    display: flex;
+  }
+}
+@container atelier-card (max-width: 919px) {
+  .atelier .week-swipe-hint {
     align-items: center;
     gap: 8px;
     color: var(--at-sub);

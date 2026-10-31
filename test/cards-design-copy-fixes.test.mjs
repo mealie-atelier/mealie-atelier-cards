@@ -395,9 +395,9 @@ test("the cooking dialog is a fixed-height flex column with the action bar on it
   );
 });
 
-test("week day names never hyphenate, so no German word is split by the browser", () => {
+test("week meal names use language aware hyphenation, so no German word is split bare", () => {
   const polish = read("../src/design-system/polish.css");
-  assert.match(rule(polish, ".atelier .day-meal-name"), /hyphens:\s*manual;/);
+  assert.match(rule(polish, ".atelier .day-meal-name"), /hyphens:\s*auto;/);
 });
 
 test("the cards UI always names the Mealie Atelier Bridge in full", () => {

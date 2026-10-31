@@ -31,6 +31,36 @@ const richIngredients = rich
   : [];
 const richDescription =
   "Ein langes Rezept für die Familie, das nach dem Einkauf am Wochenende in Ruhe gekocht wird und auch am nächsten Tag noch schmeckt. Die Beschreibung ist absichtlich länger, damit der Dialog auch in einem Desktopfenster scrollt.";
+// MOCK_LONG_PLAN=1 plans long German recipe names on every day around today, so the week grid is checked with
+// the words that used to break mid-word (browser check of the week grid).
+const longNames = [
+  "Kürbissuppe mit Feta und Kürbiskernen",
+  "Hähnchensalat mit Parmesan und Croutons",
+  "Artischockenpfanne mit Zitronenreis",
+  "Schweinemedaillons in Pfeffersauce",
+  "Gemüselasagne mit Büffelmozzarella",
+  "Spargelrisotto mit Bärlauchpesto",
+  "Kartoffelgratin mit Rosmarin",
+];
+const longPlan = () => {
+  const day = (offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  return Array.from({ length: 29 }, (_, n) => n - 14).flatMap((offset) =>
+    ["dinner", "lunch"].map((entryType, k) => ({
+      id: `plan-${offset}-${k}`,
+      date: day(offset),
+      entryType,
+      recipe: {
+        id: `recipe-${offset}-${k}`,
+        slug: "testgericht",
+        name: longNames[(offset + 14 + k * 3) % longNames.length],
+      },
+    })),
+  );
+};
 const server = createServer(async (req, res) => {
   const path = new URL(req.url, "http://localhost").pathname;
   if (path.startsWith("/api/services/notify/")) {
@@ -60,7 +90,8 @@ const server = createServer(async (req, res) => {
       recipeIngredient: [{ id: "r1", originalText: "Tomaten" }, ...richIngredients],
       ...(rich ? { description: richDescription } : {}),
     });
-  if (path === "/api/households/mealplans") return json(res, 200, []);
+  if (path === "/api/households/mealplans")
+    return json(res, 200, process.env.MOCK_LONG_PLAN === "1" ? { items: longPlan() } : []);
   if (path === "/api/households/shopping/lists")
     return json(res, 200, { items: [{ id: "list-a", name: "Einkauf" }] });
   if (path === "/api/households/shopping/items" && req.method === "GET")

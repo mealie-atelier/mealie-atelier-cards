@@ -2535,25 +2535,41 @@
   line-clamp: 3;
   overflow: hidden;
   overflow-wrap: break-word;
-  hyphens: manual;
+  /* Where a long word cannot fit the column the break is a real hyphenated one (the card sets lang), never a bare split. */
+  hyphens: auto;
+  hyphenate-limit-chars: 7 3 3;
 }
-/* Tablet week strip: seven narrow columns. A smaller name and tighter padding keep long German
-   words such as "Hähnchensalat" whole instead of splitting them mid-word. */
-@container atelier-card (min-width: 561px) and (max-width: 1080px) {
-  .atelier .week-grid .day-meal {
-    padding: 9px 8px;
-  }
-  .atelier .week-grid .day-meal-name {
-    font-size: 11px;
-  }
-}
-
-/* Wide cards keep a real minimum column width and the grid scrolls sideways instead of squeezing recipe names into
-   55px. Scoped to the card container so the narrow carousel rules in layout.css (760px and below) keep winning. */
-@container atelier-card (min-width: 901px) {
+/* Week grid by card width. A recipe name needs about 110px of text width to keep a long German word such as
+   "Kürbissuppe" whole, so seven columns only appear when they get that room (a card with a sidebar loses about 280px
+   to it). Below that the days wrap into 4 + 3 rows, and in a narrow dashboard card they scroll sideways as a carousel
+   with a real column width. The container is the card, so the narrow carousel rules in layout.css keep winning at
+   760px and below. */
+@container atelier-card (min-width: 761px) and (max-width: 919px) {
   .atelier .week-grid {
-    grid-template-columns: repeat(7, minmax(120px, 1fr));
+    grid-template-columns: repeat(7, 200px);
     overflow-x: auto;
+  }
+}
+@container atelier-card (min-width: 920px) {
+  .atelier .week-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow-x: auto;
+  }
+}
+@container atelier-card (min-width: 1480px) {
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, minmax(150px, 1fr));
+  }
+}
+/* Without a sidebar the grid has the whole card. */
+@container atelier-card (min-width: 761px) {
+  .atelier .shell.single .week-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container atelier-card (min-width: 1260px) {
+  .atelier .shell.single .week-grid {
+    grid-template-columns: repeat(7, minmax(150px, 1fr));
   }
 }
 

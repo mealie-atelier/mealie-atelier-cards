@@ -134,7 +134,7 @@ test("mealplan toolbar buttons meet the 44px touch target and the tablet week st
   assert.match(adaptive, /repeat\(7, minmax\(140px, 1fr\)\)/);
   assert.match(
     read("../src/design-system/polish.css"),
-    /\.day-meal-name \{[^}]*overflow-wrap: break-word;[^}]*hyphens: manual/,
+    /\.day-meal-name \{[^}]*overflow-wrap: break-word;[^}]*hyphens: auto/,
   );
 });
 
@@ -154,13 +154,15 @@ test("wrapped shopping actions fill their rows up to tablet width", () => {
   );
 });
 
-test("the day strip fades at the end edge and shows the swipe hint up to 1080px", () => {
+test("the day strip fades at the end edge and shows the swipe hint only while it scrolls", () => {
   const refine = read("../src/design-system/control-refinement.css");
   assert.match(
     refine,
-    /max-width: 1080px\) \{\s*\.atelier \.week-grid \{[^}]*mask-image: linear-gradient/,
+    /max-width: 760px\) \{\s*\.atelier \.week-grid \{[^}]*mask-image: linear-gradient/,
   );
-  assert.match(refine, /max-width: 1080px\)[\s\S]*\.week-swipe-hint \{\s*display: flex/);
+  assert.match(refine, /max-width: 760px\)[\s\S]*\.week-swipe-hint \{\s*display: flex/);
+  assert.match(refine, /min-width: 761px\) and \(max-width: 919px\)/);
+  assert.doesNotMatch(refine, /max-width: 1080px\) \{\s*\.atelier \.week-grid/);
 });
 
 test("the week strip hint says scroll, not swipe, so it fits mouse users", () => {

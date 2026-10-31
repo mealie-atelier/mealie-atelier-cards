@@ -15,17 +15,32 @@ const block = (css, selector) => {
   return css.slice(start, css.indexOf("}", start));
 };
 
-test("the week grid keeps a real column minimum on wide viewports and scrolls sideways", () => {
-  const rule = polish.match(
-    /@container atelier-card \(min-width: 901px\) \{\s*\.atelier \.week-grid \{([^}]*)\}/,
+test("the week grid wraps into rows instead of squeezing seven narrow columns", () => {
+  const rule = (min) =>
+    polish.match(
+      new RegExp(
+        `@container atelier-card \\(min-width: ${min}px\\) \\{\\s*\\.atelier \\.week-grid \\{([^}]*)\\}`,
+      ),
+    );
+  assert.match(rule(920)?.[1] ?? "", /repeat\(4, minmax\(0, 1fr\)\)/, "4 + 3 rows from 920px");
+  assert.match(
+    rule(1480)?.[1] ?? "",
+    /repeat\(7, minmax\(150px, 1fr\)\)/,
+    "seven columns with room",
   );
-  assert.ok(rule, "wide week grid rule");
-  assert.match(rule[1], /repeat\(7, minmax\(120px, 1fr\)\)/);
-  assert.match(rule[1], /overflow-x: auto/);
+  assert.match(
+    block(polish, ".atelier .shell.single .week-grid {"),
+    /repeat\(4, minmax\(0, 1fr\)\)/,
+  );
+  assert.match(
+    polish,
+    /min-width: 1260px\) \{\s*\.atelier \.shell\.single \.week-grid \{[^}]*repeat\(7, minmax\(150px/,
+  );
   assert.doesNotMatch(polish, /@media \(min-width: 1081px\) \{\s*\.atelier \.week-grid/);
+  assert.doesNotMatch(polish, /Tablet week strip/, "no 11px name for seven squeezed columns");
 });
 
-test("the wide week grid rule cannot override the narrow carousel container rules", () => {
+test("the week grid rules cannot override the narrow carousel container rules", () => {
   const layout = read("src/design-system/layout.css");
   const narrow = [
     ...layout.matchAll(
@@ -33,11 +48,11 @@ test("the wide week grid rule cannot override the narrow carousel container rule
     ),
   ];
   assert.ok(narrow.length >= 2, "carousel container rules");
-  const wide = Number(
-    polish.match(/@container atelier-card \(min-width: (\d+)px\) \{\s*\.atelier \.week-grid \{/)[1],
-  );
-  for (const m of narrow)
-    assert.ok(wide > Number(m[1]), `wide rule ${wide} overlaps max-width ${m[1]}`);
+  for (const m of polish.matchAll(
+    /@container atelier-card \(min-width: (\d+)px\)[^{]*\{\s*\.atelier (?:\.shell\.single )?\.week-grid \{/g,
+  ))
+    for (const n of narrow)
+      assert.ok(Number(m[1]) > Number(n[1]), `rule ${m[1]} overlaps max-width ${n[1]}`);
   assert.equal(
     bundle.includes("@media (min-width: 1081px) {\n  .atelier .week-grid {"),
     false,
@@ -45,10 +60,10 @@ test("the wide week grid rule cannot override the narrow carousel container rule
   );
 });
 
-test("week day names and dialog titles never hyphenate or split ordinary words", () => {
+test("week meal names hyphenate properly and dialog titles never split ordinary words", () => {
   const name = block(polish, ".atelier .day-meal-name {");
   assert.match(name, /overflow-wrap: break-word/);
-  assert.match(name, /hyphens: manual/);
+  assert.match(name, /hyphens: auto/);
   for (const selector of [
     ".setup-step-title\n  ) {",
     ".atelier .modal .editor-lead > div > :is(h2, .eyebrow) {",
@@ -100,5 +115,5 @@ test("demo metric values do not auto-hyphenate and the install command shows a s
 
 test("the fixes ship in the bundle", () => {
   assert.ok(bundle.includes(".atelier .modal .cook-visual .cook-brand"));
-  assert.ok(bundle.includes("repeat(7, minmax(120px, 1fr))"));
+  assert.ok(bundle.includes("repeat(4, minmax(0, 1fr))"));
 });
