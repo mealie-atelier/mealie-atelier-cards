@@ -86,7 +86,10 @@ export function mapItem(
   const unit = unitOf(item);
   const amountText =
     amount !== null ? formatQuantity(amount, { fraction: !!unit?.fraction, decimalComma }) : "";
-  const quantityPart = [amountText, unitText(unit, amount)].filter(Boolean).join(" ");
+  const unitName = unitText(unit, amount);
+  // A bare 1 says nothing on a Bring! line, the same as an item typed in the app without amount.
+  const bareOne = layout === "bring" && amount === 1 && !unitName;
+  const quantityPart = [bareOne ? "" : amountText, unitName].filter(Boolean).join(" ");
   if (layout === "bring") {
     const label = truncate(name, BRING_NAME_MAX);
     const spec = truncate([quantityPart, extra].filter(Boolean).join(", "), BRING_SPEC_MAX);

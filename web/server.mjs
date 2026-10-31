@@ -1,5 +1,6 @@
 /** Mealie Atelier companion web: zero-dependency, private-by-default Mealie proxy. Node 22+. */
 import { createServer } from "node:http";
+import { AsyncLocalStorage } from "node:async_hooks";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -112,10 +113,23 @@ const bringClient = new BringClient({
   password: process.env.BRING_PASSWORD || "",
   onSession: (session) => bringAccount.save(session),
 });
+// The language of Bring! item text: ATELIER_SYNC_LANGUAGE when set, else the language of the
+// request being served, else the last one a sync request used (kept in the data directory, so
+// background runs after a restart still use it), else English.
+const syncLocale = new AsyncLocalStorage();
+const SYNC_LOCALE_FILE = join(DATA_DIR, "sync-language.txt");
+let lastSyncLocale = "";
+try {
+  const saved = readFileSync(SYNC_LOCALE_FILE, "utf8").trim();
+  if (/^[a-z]{2}$/.test(saved)) lastSyncLocale = saved;
+} catch {
+  // No saved language yet.
+}
 const shoppingSync = new SyncManager({
   store: new SyncStore({ dir: DATA_DIR }),
   destination: new BringDestination(bringClient),
-  language: () => process.env.ATELIER_SYNC_LANGUAGE || "de",
+  language: () =>
+    process.env.ATELIER_SYNC_LANGUAGE || syncLocale.getStore() || lastSyncLocale || "en",
   readOnly: READ_ONLY,
   source: {
     lists: async () =>
@@ -223,6 +237,8 @@ function reply(res, status, body, contentType = "application/json; charset=utf-8
     ...SECURITY_HEADERS,
     ...headers,
   });
+  // HEAD gets the status and headers of the GET answer, never a body.
+  if (res.req?.method === "HEAD") return res.end();
   res.end(contentType.startsWith("application/json") ? JSON.stringify(body) : body);
 }
 const AUTH_PAGE_TEXT = {
@@ -236,10 +252,16 @@ const AUTH_PAGE_TEXT = {
       "Diese Adresse gibt es bei Mealie Atelier nicht.",
       "Zurück zur App",
     ],
-    locked: (m) => [
-      "Zu viele fehlgeschlagene Anmeldungen",
-      `Aus Sicherheitsgründen ist die Anmeldung gesperrt. Versuche es in ${m} ${m === 1 ? "Minute" : "Minuten"} erneut.`,
-    ],
+    locked: (seconds) => {
+      const wait =
+        seconds >= 60
+          ? `${Math.ceil(seconds / 60)} ${Math.ceil(seconds / 60) === 1 ? "Minute" : "Minuten"}`
+          : `${seconds} ${seconds === 1 ? "Sekunde" : "Sekunden"}`;
+      return [
+        "Zu viele fehlgeschlagene Anmeldungen",
+        `Aus Sicherheitsgründen ist die Anmeldung gesperrt. Versuche es in ${wait} erneut.`,
+      ];
+    },
   },
   en: {
     signIn: [
@@ -251,17 +273,23 @@ const AUTH_PAGE_TEXT = {
       "This address does not exist in Mealie Atelier.",
       "Back to the app",
     ],
-    locked: (m) => [
-      "Too many failed sign-ins",
-      `Sign-in is locked for security reasons. Try again in ${m} ${m === 1 ? "minute" : "minutes"}.`,
-    ],
+    locked: (seconds) => {
+      const wait =
+        seconds >= 60
+          ? `${Math.ceil(seconds / 60)} ${Math.ceil(seconds / 60) === 1 ? "minute" : "minutes"}`
+          : `${seconds} ${seconds === 1 ? "second" : "seconds"}`;
+      return [
+        "Too many failed sign-ins",
+        `Sign-in is locked for security reasons. Try again in ${wait}.`,
+      ];
+    },
   },
 };
 /** Small self-contained page for browser navigations that hit the sign-in gate. */
-function authPage(req, kind, minutes = 1) {
+function authPage(req, kind, seconds = 1) {
   const text = AUTH_PAGE_TEXT[resolveLocale(req.headers["accept-language"])] || AUTH_PAGE_TEXT.en;
   const [title, body, linkText] =
-    kind === "locked" ? text.locked(minutes) : kind === "notFound" ? text.notFound : text.signIn;
+    kind === "locked" ? text.locked(seconds) : kind === "notFound" ? text.notFound : text.signIn;
   const link = linkText ? `<p><a href="/">${linkText}</a></p>` : "";
   const lang = text === AUTH_PAGE_TEXT.de ? "de" : "en";
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title><style>body{font:16px system-ui,sans-serif;max-width:32rem;margin:15vh auto;padding:0 1.5rem;color:#222}h1{font-size:1.4rem}</style></head><body><h1>${title}</h1><p>${body}</p>${link}</body></html>`;
@@ -820,6 +848,10 @@ async function bridge(req) {
   const refusal = denial(req.atelierUser?.role, level, READ_ONLY);
   if (refusal) throw denied(refusal);
   const locale = resolveLocale(req.headers["accept-language"], msg.language ?? msg.locale);
+  if (msg.type === "mealie_atelier/status" && bringClient.hasCredentials && !bringClient.session) {
+    // Environment credentials sign in lazily; do it now so the usual list is known.
+    await inBringLane(() => bringClient.ensureSession()).catch(() => {});
+  }
   // BEGIN feature B: structured editing, backups and uploads
   const editing = editingFor(req);
   if (editing.handles(msg.type)) return editing.handle(msg);
@@ -860,6 +892,7 @@ async function bridge(req) {
               // Signing in again needs only the password when the administrator sees the address.
               email: permissions.can_admin ? bringClient.accountEmail : "",
               default_list: bringClient.defaultList,
+              from_env: bringClient.hasCredentials,
             },
           },
         ],
@@ -883,7 +916,15 @@ async function bridge(req) {
           status: 501,
           code: "sync_not_supported",
         });
-      return handleSyncMessage(shoppingSync, { ...msg, user_id: req.atelierUser?.name || null });
+      if (locale !== lastSyncLocale) {
+        lastSyncLocale = locale;
+        mkdir(DATA_DIR, { recursive: true })
+          .then(() => writeFile(SYNC_LOCALE_FILE, `${locale}\n`))
+          .catch(() => {});
+      }
+      return syncLocale.run(locale, () =>
+        handleSyncMessage(shoppingSync, { ...msg, user_id: req.atelierUser?.name || null }),
+      );
     case "mealie_atelier/bring_connect":
       return connectBring(msg);
     case "mealie_atelier/bring_disconnect":
@@ -1264,6 +1305,20 @@ async function uploadRecipeImage(req, slug) {
     );
   return { saved: true, image: refreshed.image, recipe: withImage(refreshed) };
 }
+const MANIFEST_TEXT = {
+  en: {
+    name: "Mealie Atelier · Your kitchen studio",
+    description: "Your private kitchen studio for Mealie recipes, meal planning and shopping.",
+  },
+};
+/** The manifest in the visitor's language: a language cookie wins over Accept-Language. */
+function localizedManifest(source, req) {
+  const cookie = /(?:^|;\s*)atelier_lang=([A-Za-z-]+)/.exec(String(req.headers.cookie || ""));
+  const locale = resolveLocale(req.headers["accept-language"], cookie?.[1]);
+  const manifest = JSON.parse(source);
+  Object.assign(manifest, MANIFEST_TEXT[locale] || {}, { lang: locale });
+  return JSON.stringify(manifest);
+}
 const FILES = {
   "/": ["index.html", "text/html; charset=utf-8"],
   "/mealie-atelier-cards.js": ["mealie-atelier-cards.js", "text/javascript; charset=utf-8"],
@@ -1303,7 +1358,7 @@ const server = createServer(async (req, res) => {
       reply(
         res,
         429,
-        authPage(req, "locked", Math.ceil(retryMs / 60000)),
+        authPage(req, "locked", Math.ceil(retryMs / 1000)),
         "text/html; charset=utf-8",
         headers,
       );
@@ -1362,14 +1417,19 @@ const server = createServer(async (req, res) => {
       await recipeAsset(req, res, decodeURIComponent(match[1]), decodeURIComponent(match[2]));
       return;
     }
-    if (req.method === "GET" && FILES[pathname]) {
+    if ((req.method === "GET" || req.method === "HEAD") && FILES[pathname]) {
       const [filename, contentType] = FILES[pathname];
       let data = await readFile(join(ROOT, "public", filename));
+      const headers = { "Cache-Control": "private, max-age=3600" };
       if (filename === "sw.js") data = renderServiceWorker(data.toString("utf8"), VERSION);
-      reply(res, 200, data, contentType, { "Cache-Control": "private, max-age=3600" });
+      if (filename === "manifest.webmanifest") {
+        data = localizedManifest(data.toString("utf8"), req);
+        headers.Vary = "Accept-Language, Cookie";
+      }
+      reply(res, 200, data, contentType, headers);
       return;
     }
-    if (req.method === "GET" && wantsHtml(req)) {
+    if ((req.method === "GET" || req.method === "HEAD") && wantsHtml(req)) {
       reply(res, 404, authPage(req, "notFound"), "text/html; charset=utf-8");
       return;
     }
@@ -1398,6 +1458,24 @@ for (const signal of ["SIGTERM", "SIGINT"])
 try {
   const stored = await bringAccount.load();
   if (stored) bringClient.restore(stored);
+  if (bringClient.hasCredentials) {
+    // Check the environment credentials now, so a wrong password shows up in the log and the
+    // account reports that it needs a sign-in instead of looking connected.
+    try {
+      await bringClient.login();
+    } catch (e) {
+      if (e instanceof BringAuthError) {
+        bringClient.failAuth(e);
+        console.warn(
+          "Bring! refused the sign-in from BRING_EMAIL and BRING_PASSWORD. Check both values.",
+        );
+      } else
+        console.warn(
+          "Could not check the Bring! sign-in at startup:",
+          String(e?.message || e).slice(0, 160),
+        );
+    }
+  }
   if (shoppingSync.connected) {
     await shoppingSync.start();
     syncRunning = true;

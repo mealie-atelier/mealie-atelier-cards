@@ -190,7 +190,14 @@ export function initPwaInstall({
   const openDialog = () => {
     render();
     dialog.showModal();
-    dialog.querySelector("[data-install-action]:not([hidden])")?.focus();
+    // Initial focus goes to the primary action when it is shown, else to the title. The close
+    // button never gets it, so a pointer-initiated open shows no focus ring on it.
+    const target = dialog.querySelector("[data-install-action]:not([hidden])") || copyNodes.title;
+    if (target && target !== copyNodes.title) target.focus();
+    else if (target) {
+      target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+    }
   };
   const closeDialog = () => dialog.close();
   const install = async () => {
@@ -221,6 +228,13 @@ export function initPwaInstall({
     context,
     refresh(nextLanguage = language) {
       language = nextLanguage;
+      // The server localizes the web app manifest from this cookie.
+      try {
+        const code = String(language).toLowerCase().startsWith("en") ? "en" : "de";
+        documentRef.cookie = `atelier_lang=${code}; path=/; max-age=31536000; samesite=lax`;
+      } catch {
+        // Cookies can be blocked; the manifest then follows Accept-Language.
+      }
       render();
     },
     dispose() {

@@ -251,3 +251,8 @@
     backdrop-filter: none;
   }
 }
+
+/* The dialog title takes the initial focus programmatically; it is no control, so no ring. */
+.pwa-install-dialog [data-install-title]:focus {
+  outline: none;
+}

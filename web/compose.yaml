@@ -2,7 +2,7 @@ services:
   mealie-atelier:
     build: .
     restart: unless-stopped
-    env_file: .env
+    env_file: .env # also carries the optional ATELIER_SYNC_LANGUAGE (language of Bring! item text)
     # Smart Shopping Sync to Bring!: connect the account in the app (an administrator signs in once;
     # only tokens land in the atelier_data volume) or set BRING_EMAIL and BRING_PASSWORD in .env.
     environment:

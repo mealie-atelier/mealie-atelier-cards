@@ -307,7 +307,7 @@ test("sign-in refusal is a localized HTML page for browsers and JSON for API cli
       });
     const locked = await fetch(url, { headers: { Accept: "text/html", "Accept-Language": "en" } });
     assert.equal(locked.status, 429);
-    assert.match(await locked.text(), /Try again in \d+ minutes?/);
+    assert.match(await locked.text(), /Try again in \d+ seconds?/);
   } finally {
     r.child.kill("SIGTERM");
     stub.server.close();

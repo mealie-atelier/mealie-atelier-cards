@@ -59,6 +59,7 @@ const PROTECTED = new Set([
 ]);
 const MODES = ["copy", "move"];
 const DUPLICATE_POLICIES = ["skip_exact", "skip_exact_merge_same_unit", "none"];
+const BACKOFF_BASE_SECONDS = 30;
 const AUTOMATIC_TRIGGERS = new Set(["after_atelier_add", "watch", "startup"]);
 const RESULT_COUNTS = [
   "sent",
@@ -481,6 +482,7 @@ export class SyncManager {
     this.locks = new Map();
     this.saveLock = new Mutex();
     this.rerun = new Map();
+    this.backoff = new Map();
     this.scheduled = new Map();
     this.watchers = new Map();
     this.baseline = new Map();
@@ -611,6 +613,7 @@ export class SyncManager {
    * released rules send what has been waiting.
    */
   bringReconnected() {
+    this.backoff.clear();
     for (const rule of Object.values(this.rules)) {
       if (rule.last_run?.outcome === "destination_auth")
         rule.last_run = this.lastHealthyRun(rule.id);
@@ -798,6 +801,17 @@ export class SyncManager {
     this.rerun.delete(ruleId);
     if (again !== undefined && this.rules[ruleId] && !this.stopped)
       this.spawn(this.runQuietly(ruleId, again));
+    else if (
+      result.pending_left > 0 &&
+      result.sent > 0 &&
+      ["sent", "partial"].includes(result.outcome) &&
+      this.rules[ruleId]?.activated &&
+      !this.rules[ruleId].paused &&
+      !this.stopped &&
+      !this.scheduled.has(ruleId)
+    )
+      // More lines wait than one batch holds: carry on without waiting for a trigger.
+      this.scheduleRun(ruleId, "startup", 1);
     return result;
   }
 
@@ -825,7 +839,7 @@ export class SyncManager {
     if (this.rules[ruleId]) {
       rule.last_run = { at: now(), trigger, outcome, count };
       this.audit(ruleId, trigger, count, outcome);
-      if (confirm && ["sent", "partial"].includes(outcome) && !rule.activated) {
+      if (confirm && ["sent", "partial", "nothing_to_send"].includes(outcome) && !rule.activated) {
         rule.activated = true;
         rule.updated_at = now();
         this.refreshWatchers();
@@ -854,6 +868,7 @@ export class SyncManager {
       const outcome = { missing: "destination_missing", auth: "destination_auth" }[
         destination.reason
       ];
+      if (destination.reason !== "missing") await this.holdWhileUnavailable(rule, destination);
       return this.finish(rule, trigger, batchId, outcome || "destination_unavailable", counts);
     }
     let items;
@@ -876,6 +891,7 @@ export class SyncManager {
     this.detectChanges(ruleId, byId, options);
     this.enqueue(ruleId, items, options);
     if (destinationItems === null && rule.duplicate_policy !== "none") {
+      this.scheduleBackoff(rule);
       // Without the destination list neither duplicates nor earlier uncertain writes can be
       // checked, so nothing new is sent.
       return this.finish(rule, trigger, batchId, this.unavailableOutcome(), counts, {
@@ -891,13 +907,43 @@ export class SyncManager {
     let outcome;
     if (lost && !delivered && !problems) outcome = this.unavailableOutcome();
     else if (!delivered && !problems) outcome = completionFailed ? "partial" : "nothing_to_send";
+    else if (!counts.sent && !problems && !lost && !completionFailed)
+      // Only duplicates were skipped: nothing reached the destination.
+      outcome = "nothing_to_send";
     else if (!problems && !lost && !completionFailed) outcome = "sent";
     else if (delivered) outcome = "partial";
     else outcome = "failed";
+    if (lost) this.scheduleBackoff(rule);
+    else this.backoff.delete(ruleId);
     return this.finish(rule, trigger, batchId, outcome, counts, {
       confirm,
       present: new Set(byId.keys()),
     });
+  }
+
+  /**
+   * The destination did not answer or its session is gone: the open Mealie items are still
+   * recorded, so they show as waiting, and a retry is scheduled with a growing delay.
+   */
+  async holdWhileUnavailable(rule, destination) {
+    try {
+      const items = await this.source.items(rule.source_list_id);
+      this.enqueue(rule.id, items, this.options(destination));
+    } catch {
+      // The source is unreachable too; the retry reads it again.
+    }
+    this.scheduleBackoff(rule);
+  }
+
+  /** Retries an activated rule with waiting items after 30 s, doubling up to 15 minutes. */
+  scheduleBackoff(rule) {
+    if (this.stopped || this.readOnly || !this.rules[rule.id] || !rule.activated || rule.paused)
+      return;
+    const waiting = this.ruleRecords(rule.id).some((record) => record.state === "pending");
+    if (!waiting) return;
+    const attempt = this.backoff.get(rule.id) || 0;
+    this.backoff.set(rule.id, attempt + 1);
+    this.scheduleRun(rule.id, "startup", Math.min(BACKOFF_BASE_SECONDS * 2 ** attempt, 900));
   }
 
   /**
@@ -1335,6 +1381,10 @@ export class SyncManager {
       }
     }
     await this.store.save();
+    // A resent line is delivered by a run now, not only after the next trigger.
+    const rule = this.rules[ruleId];
+    if (action === "resend" && rule?.activated && !rule.paused && !this.stopped)
+      this.scheduleRun(ruleId, "retry", 0);
     return { record: publicRecord(record), ...(deleted ? { deleted: true } : {}) };
   }
 
