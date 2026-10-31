@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-31
+
 ### Added
 
 - Web app: Smart Shopping Sync to Bring! without Home Assistant. It implements the Bridge sync contract (preview, confirmed first batch, exactly-once delivery, duplicate skip, after-add and watch triggers, move mode, pause, resume, retry and resolve) against Bring! lists, and the existing sync dialog of the cards configures it.
@@ -46,6 +48,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Timers: a finished timer started on another device says "Timer abgelaufen" instead of "Aktiver Timer", and the in-card finished message ends with "!" like the push and Home Assistant messages.
 - Cooking mode: on tall tablets in portrait the photo caption and the footnote stay inside the dialog, only the step column scrolls.
 - Shared cooking: the English feature name is "Cook together" in the navigation, the page title and the card picker, matching "Gemeinsam kochen".
+- Plan dialog on iPhone and iPad: the date field stays inside the form, the sort field spans the row, and opening the dialog on a touch device no longer brings up the keyboard.
+- Dialogs: the pinned title bar and its title appear together once the dialog heading scrolls under it, a newly opened dialog starts at its top (the recipe picker no longer scrolls it to the first recipe), and long headings wrap clear of the close button without hyphenating short titles.
+- Cooking mode at laptop and tablet landscape heights: the step column starts at its top with a calm inset, so the topline, the progress bar and "Keep screen awake" stay reachable, and the progress bar no longer peeks out above the dialog edge.
+- Bring! setup wizard: the done screen title is centered, and the close button keeps its size next to the dialog title.
 
 ## [0.11.0] - 2026-10-30
 
@@ -428,6 +434,7 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/mealie-atelier/mealie-atelier-cards/releases/tag/v0.10.0
