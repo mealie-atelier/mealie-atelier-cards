@@ -79,3 +79,15 @@ test("in the phone wizard column the close button and the header strip never shr
     /\.sync-modal:has\(> \.bw-wizard\) > :is\(\.modal-close, \.modal-bar-title\)\s*\{[^}]*flex:\s*none/,
   );
 });
+
+test("the reauth paragraph sits clear of the account heading, tighter on a phone", () => {
+  assert.match(
+    rule(".atelier .bw-account .bw-account-head + .bw-text"),
+    /margin-block-start:\s*var\(--ds-space-4\)/,
+  );
+  const phone = css.slice(css.indexOf("@container atelier-card (max-width: 460px)"));
+  assert.match(
+    phone,
+    /\.bw-account \.bw-account-head \+ \.bw-text\s*\{[^}]*margin-block-start:\s*var\(--ds-space-3\)/,
+  );
+});

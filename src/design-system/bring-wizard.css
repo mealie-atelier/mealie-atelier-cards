@@ -358,6 +358,10 @@
 .atelier .bw-account > * + * {
   margin-block-start: var(--ds-space-3);
 }
+.atelier .bw-account .bw-account-head + .bw-text {
+  margin-block-start: var(--ds-space-4);
+  line-height: var(--ds-line-body);
+}
 .atelier .bw-account .bw-facts {
   margin-block-end: var(--ds-space-3);
 }
@@ -629,6 +633,9 @@
   }
   .atelier .bw-account > * + * {
     margin-block-start: var(--ds-space-2);
+  }
+  .atelier .bw-account .bw-account-head + .bw-text {
+    margin-block-start: var(--ds-space-3);
   }
   .atelier .bw-account [data-action="sync-bring-disconnect-ask"] {
     min-block-size: 0;

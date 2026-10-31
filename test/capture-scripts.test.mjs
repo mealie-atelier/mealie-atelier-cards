@@ -32,3 +32,11 @@ test("readme shots pin the English profile language and the shared sidebar dashb
   assert.match(source, /"atelier_cards": \{"title": "Kitchen", "show_in_sidebar": True\}/);
   assert.match(source, /asyncio\.run\(set_profile_language\(\)\)/);
 });
+
+test("the week plan feature shot is a cropped narrow window without automatic hyphenation", () => {
+  const source = read("capture-app-showcase.py");
+  assert.match(source, /FEATURE = dict\(viewport=\(960, 1200\)[^\n]*whole_names=True/);
+  assert.match(source, /"feature-mealplan": \(FEATURE, "mealplan"/);
+  assert.match(source, /WHOLE_NAMES = "\.atelier \*\{hyphens:manual!important/);
+  assert.match(source, /device\.get\("whole_names"\)/);
+});

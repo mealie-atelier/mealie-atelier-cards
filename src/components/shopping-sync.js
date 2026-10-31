@@ -429,6 +429,10 @@ export const shoppingSyncMethods = {
       sync.state = null;
       sync.raw = "";
       sync.error = "";
+      // A signed-in account must not keep the failure line of the run that expired it.
+      sync.result = "";
+      sync.resultIcon = "";
+      sync.resultQuiet = false;
       if (!wizard) this._modal = "sync";
     } catch (err) {
       bring.error = this._errorText(err);

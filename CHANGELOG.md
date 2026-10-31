@@ -25,6 +25,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Layout polish: long German shopping item names wrap with a hyphen instead of leaving a stray letter, recipe step fields in the editor show their last line on phones, and the sync preview button has even spacing above the result.
 - Product page: American English recipes and copy, the install routes for the Marketplace and HACS, "das Mealie-Token", and American date and currency formats.
 - Docs: web README contents, fake Bring! server instructions for Docker, `ATELIER_SYNC_LANGUAGE`, no Advanced mode step (Home Assistant removed it in 2026.6), and American spelling in the changelog. Unused demo food images were removed.
+- Bring! sign-in again: a successful sign-in clears the old failure line, and the reauth text promises kept rules only when a rule exists. The reauth text sits clear of the account heading. The product page week plan image shows four whole days with whole recipe names.
 
 ## [0.12.0] - 2026-10-31
 

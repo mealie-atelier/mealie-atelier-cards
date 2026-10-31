@@ -557,9 +557,17 @@ export const bringWizardMethods = {
       ? `<dl class="bw-facts">${facts.map(([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl>`
       : "";
     let action = "";
-    if (reauth && editable)
-      action = `<p class="bw-text">${esc(this.t(caps.bringEnv ? "bwReauthTextEnv" : "bwReauthText"))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
-    else if (!editable)
+    if (reauth && editable) {
+      // Without a rule there is nothing to keep, so the text must not promise it.
+      const key = caps.bringEnv
+        ? rules.length
+          ? "bwReauthTextEnv"
+          : "bwReauthTextEnvNoRules"
+        : rules.length
+          ? "bwReauthText"
+          : "bwReauthTextNoRules";
+      action = `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
+    } else if (!editable)
       // The read-only notice is the banner at the top of the dialog; saying it twice is noise.
       action = caps.readOnly
         ? ""

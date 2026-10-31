@@ -2,6 +2,7 @@
 
   desktop   app-desktop-recipes, app-desktop-mealplan, app-desktop-shopping, compare-desktop-atelier
   tablet    app-tablet-today, app-tablet-mealplan
+  feature   feature-mealplan (the product page "Wochenplan" card: a narrow window, so four whole days read at 580 px)
   phone     app-phone-cookbook, app-phone-discover, app-phone-family, app-phone-family-helper,
             app-phone-mealplan, app-phone-shopping (English only: the German phone shots carry no stale names)
 
@@ -39,6 +40,12 @@ LOCALES = {"de": "de-DE", "en": "en-US"}
 DESKTOP = dict(viewport=(1600, 1000), scale=1, mobile=False)
 COMPARE = dict(viewport=(1600, 797), scale=1, mobile=False)
 TABLET = dict(viewport=(1180, 820), scale=1600 / 1180, mobile=False)
+# The product page card shows the image at about 580 px. A 960 px window wraps the week into rows of four
+# whole days with unbroken names; the crop (CSS px, top and bottom) drops the breadcrumb row above and the
+# second week row below, so the shot ends on the bottom edge of the first row with a little margin.
+# "whole_names" turns automatic hyphenation off for this shot only, so no recipe name breaks mid word
+# ("Arti-schocken"); real hyphens in a name ("Zitronen-Focaccia") still wrap.
+FEATURE = dict(viewport=(960, 1200), scale=1600 / 960, mobile=False, crop=(91, 883), whole_names=True)
 PHONE = dict(viewport=(393, 852), scale=720 / 393, mobile=True)
 
 # name: (device, nav view, extra step, locales)
@@ -49,6 +56,7 @@ SHOTS = {
     "compare-desktop-atelier": (COMPARE, "recipes", None, ("de", "en")),
     "app-tablet-today": (TABLET, "today", None, ("de", "en")),
     "app-tablet-mealplan": (TABLET, "mealplan", None, ("de", "en")),
+    "feature-mealplan": (FEATURE, "mealplan", None, ("de", "en")),
     "app-phone-cookbook": (PHONE, "cookbook", None, ("en",)),
     "app-phone-discover": (PHONE, "discover", None, ("en",)),
     "app-phone-family": (PHONE, "family", None, ("en",)),
@@ -64,6 +72,7 @@ FILL = (
 )
 # Capture only: the screen has no frame of its own, so the card draws no border and fills the whole viewport.
 CARD_FLAT = ".atelier{border:0!important;border-radius:0!important;box-shadow:none!important;min-height:100vh!important}"
+WHOLE_NAMES = ".atelier *{hyphens:manual!important;-webkit-hyphens:manual!important}"
 STALE = re.compile(r"Cook ideas|Meal planner|Family cooking")
 ENGLISH_LEAK = re.compile(r"KITCHEN STUDIO|\bMENU\b|\b(Overview|Today|Recipes|Shopping|Cookbook|Manage|Quick actions)\b")
 GERMAN_LEAK = re.compile(r"KÜCHENSTUDIO|\bMENÜ\b|\b(Übersicht|Heute|Rezepte|Einkaufsliste|Kochbuch|Verwalten|Schnellzugriff)\b")
@@ -157,7 +166,7 @@ def capture(browser, loc, device, view, step):
     card = page.locator("mealie-atelier-card")
     card.evaluate(
         "(c, css) => { const s = document.createElement('style'); s.textContent = css; c.shadowRoot.appendChild(s); }",
-        CARD_FLAT,
+        CARD_FLAT + (WHOLE_NAMES if device.get("whole_names") else ""),
     )
     card.locator(f"[data-action='nav'][data-value='{view}']").first.click()
     page.clock.run_for(2500)
@@ -172,7 +181,11 @@ def capture(browser, loc, device, view, step):
     text = card.evaluate(TEXT_JS)
     png = page.screenshot()
     ctx.close()
-    return Image.open(io.BytesIO(png)).convert("RGB"), text
+    img = Image.open(io.BytesIO(png)).convert("RGB")
+    if "crop" in device:
+        top, bottom = device["crop"]
+        img = img.crop((0, round(top * device["scale"]), img.width, round(bottom * device["scale"])))
+    return img, text
 
 
 def gate(loc, name, text):
