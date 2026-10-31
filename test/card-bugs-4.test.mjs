@@ -240,3 +240,48 @@ test("check rows in a sync fieldset use the fieldset gap only", () => {
   );
   assert.match(css, /\.atelier \.sync-fieldset > \.editor-check \{\s*margin-block-end: 0;/);
 });
+
+test("a tab that straddles the faded end of the phone rail is moved into the fade whole", () => {
+  const tabs = [
+    [0, 80],
+    [86, 160],
+    [166, 250],
+    [256, 330],
+    [336, 430],
+    [436, 520],
+  ];
+  tabs.active = 0;
+  // Rail is 366px wide: the tab at 336..430 starts inside the opaque part and ends beyond it.
+  const cut = railWith({ tabs, scrollWidth: 700 });
+  railCard(cut)._syncNavHints(cut);
+  assert.equal(cut.style.v["--nav-cut"], `${Math.ceil(366 - 336 + 4)}px`);
+  // Nothing straddles the end: the default fade stays.
+  const clean = railWith({ tabs: tabs.slice(0, 4), scrollWidth: 700 });
+  railCard(clean)._syncNavHints(clean);
+  assert.equal(clean.style.v["--nav-cut"], "0px");
+  // Resting at the end there is no fade to move.
+  const end = railWith({ tabs, scrollWidth: 700, scrollLeft: 334 });
+  railCard(end)._syncNavHints(end);
+  assert.equal(end.style.v["--nav-cut"], "0px");
+});
+
+test("the end fade of the phone rail follows --nav-cut and falls back to the 12px fade", () => {
+  const corners = css("corners.css");
+  const fades = corners.match(/transparent calc\(100% - var\(--nav-cut, 0px\)\)/g) ?? [];
+  // end only and start plus end, each in the prefixed and the plain mask property
+  assert.equal(fades.length, 4);
+  assert.doesNotMatch(corners, /#000 calc\(100% - 12px\)/);
+});
+
+// Cooking dialog: the Back and Next bar is pinned, so content must never end under it.
+test("the cooking scrollers keep scroll padding for the pinned bar and never centre past the top", () => {
+  const refinement = css("control-refinement.css");
+  assert.match(
+    refinement,
+    /\.modal:has\(\.cook-layout\),\s*\.atelier \.modal:has\(\.cook-layout\) \.cook-content \{\s*scroll-padding-bottom: var\(--cook-bar-clearance, 180px\);/,
+  );
+  assert.match(
+    refinement,
+    /\.modal\.large:has\(\.cook-layout\) \.cook-content \{[^}]*justify-content: flex-start;\s*justify-content: safe center;/,
+  );
+});

@@ -336,6 +336,17 @@
 /* The bar owns the bottom spacing: padding below it would let it rise off the dialog edge at the end. */
 .atelier .modal.large:has(.cook-layout) .cook-content {
   padding-bottom: 0;
+  /* A column that is taller than the dialog starts at its top: centring it would push the first rows above the
+     top edge where scrolling cannot reach them. */
+  justify-content: flex-start;
+  justify-content: safe center;
+}
+/* Content never ends under the pinned bar: whatever scrolls into view by keyboard focus, find in page or a
+   link lands above it. The bar is 72px high (a wrapped bar in a narrow card up to 172px), so 180px of scroll
+   padding on both scrollers (the step column and, below the laptop sizes, the dialog itself) clears it. */
+.atelier .modal:has(.cook-layout),
+.atelier .modal:has(.cook-layout) .cook-content {
+  scroll-padding-bottom: var(--cook-bar-clearance, 180px);
 }
 .atelier .modal:has(.cook-layout) .cook-actions {
   position: sticky;

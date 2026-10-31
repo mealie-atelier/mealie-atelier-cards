@@ -20,6 +20,7 @@ import datetime
 import hashlib
 import socket
 import io
+import os
 import json
 import re
 import subprocess
@@ -33,6 +34,10 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 SITE = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "demo/public-site"
 SHOWCASE = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "demo/showcase"
+# HERO_SCREENS=phone captures only the phone screen and keeps the published tablet files and their report.
+PHONE_ONLY = os.environ.get("HERO_SCREENS") == "phone"
+# HERO_LOCALES=de captures only the listed locales and keeps the report and files of the others.
+LOCALES = os.environ.get("HERO_LOCALES", "de,en").split(",")
 RECIPE = "gnocchi-alla-sorrentina"
 CLOCK = datetime.datetime(2026, 10, 26, 18, 52, 0)
 TABLET_WIDTHS = [800, 1200, 1600]
@@ -40,12 +45,14 @@ WEBP_QUALITY = 82
 # The tablet carries a dish photo, so its 1600w file would pass the 163 KB budget at 82. 78 keeps it under.
 TABLET_QUALITY = 78
 PHONE_WIDTHS = [400, 700, 1179]
-# 1180 x 880: the dialog is then high enough for the step column down to its footnote. The Back and Next
-# bar sits below the dialog edge at every height from 701 px up (product layout), so the clip ends under the
-# footnote, a little before that bar, and the gate below checks that nothing inside the clip is cut.
+# 1180 x 900: the dialog is 810 px high. With the running timer of the shot the step column is a little taller than
+# that, so the product (bar pinned to the dialog edge, the column scrolls) would show the Back and Next bar over the
+# footnote at rest. For the shot the bar keeps its place in the flow (see TABLET_BAR_FLOW): the footnote stands above
+# it, and the clip ends under the footnote, a little before the bar. The gate below checks that nothing inside the
+# clip is cut and the footnote clears the bar.
 # This is why the tablet is 2096 x 1546 (aspect 1.356) and not the 1.424 of an iPad Air frame: at 820 high the
 # footnote and the end of the step text would be cut. The CSS stage aspect (100 / 76) follows this picture.
-TABLET_VIEWPORT = {"width": 1180, "height": 880}
+TABLET_VIEWPORT = {"width": 1180, "height": 900}
 FOOT_MARGIN = 5  # CSS px between the footnote and the lower clip edge
 # Viewport heights tried for the phone (CSS px, 393 wide, status bar drawn by the page not counted), the one
 # nearest to 798 (an iPhone screen without its status bar) whose lower edge cuts no row is used.
@@ -58,6 +65,11 @@ TEXT = {
 }
 GERMAN_LEAK = re.compile(r"\b(Heute|Einkauf|Rezept|Zutaten|Schritt)\b")
 ENGLISH_LEAK = re.compile(r"\b(Today|Recipe|Ingredients|Step|Cooking mode)\b")
+# Names the views carried before they were renamed (the family view is "Cook together" / "Gemeinsam kochen").
+STALE_VIEW_NAMES = {
+    "en": re.compile(r"\b(Family|Cook ideas|Meal planner)\b", re.I),
+    "de": re.compile(r"\bFamilie\b", re.I),
+}
 
 FILL = (
     "mealie-atelier-card{position:fixed!important;inset:0!important;z-index:9999!important;margin:0!important;"
@@ -66,13 +78,17 @@ FILL = (
 )
 # Capture only: the dialog is framed by the CSS device, so its own corners and border are removed.
 MODAL_FLAT = ".modal{border-radius:0!important;border:0!important;box-shadow:none!important}"
+# Capture only: the bar keeps its place at the end of the step column (it may leave the dialog edge) instead of
+# pinning itself over the footnote at rest.
+TABLET_BAR_FLOW = ".modal:has(.cook-layout) .cook-actions{bottom:-400px!important}"
 # Capture only: the screen is framed by the CSS device, so the card draws no border line of its own. Its
 # `overflow: hidden` would make the card the scroll container of the sticky tab rail, so the rail would scroll
 # away inside the fixed capture box. Without it the rail sticks to the box, as it sticks to the page on a phone.
 CARD_FLAT = ".atelier{border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}"
-# The phone tab rail fades 20 px at each end, the outer 10 px are fully clear (product CSS in polish.css).
+# The phone tab rail fades 12 px at each end (corners.css, the snap position of a tab is that same 12 px), the
+# outer 10 px are practically clear.
 # Nothing of the rail is restyled for the capture: only its scroll position is chosen, see RAIL_JS.
-RAIL_FADE = 20
+RAIL_FADE = 12
 RAIL_CLEAR = 10
 
 CUT_JS = """(card, opts) => {
@@ -145,7 +161,9 @@ ROWS_JS = """(card, gap) => {
 RAIL_JS = """(card, [fade, clear]) => {
   // Only the scroll position of the real rail is chosen. A tab is whole when it sits in the opaque part
   // [fade, width - fade]. Every other tab must keep its icon and label inside a fully clear end (the
-  // outer `clear` px), so no half label shows at either edge. Among the positions that satisfy this and
+  // outer `clear` px), so no half label shows at either edge. At the right end the product moves the fade
+  // so that it hides the first tab that straddles the end (--nav-cut); the check afterwards reads that
+  // value from the real rail and holds the tabs to it. Among the positions that satisfy this and
   // keep the active tab whole, the one with the most even gaps left and right is taken.
   const rail = card.shadowRoot.querySelector('.sidebar .nav');
   const base = rail.getBoundingClientRect();
@@ -162,7 +180,8 @@ RAIL_JS = """(card, [fade, clear]) => {
       const l = t.left - s, r = l + t.width;
       if (l >= fade - 0.5 && r <= W - fade + 0.5) { whole.push(i); continue; }
       const cl = l + t.pad, cr = r - t.pad;
-      if (cr > clear + 0.5 && cl < W - clear - 0.5) return null;
+      // Right of the whole tabs the product fade hides what straddles the end; only the left end is held here.
+      if (cl < W / 2 && cr > clear + 0.5) return null;
     }
     if (!whole.length || !whole.some((i) => tabs[i].active)) return null;
     const first = tabs[whole[0]], last = tabs[whole[whole.length - 1]];
@@ -171,13 +190,20 @@ RAIL_JS = """(card, [fade, clear]) => {
   };
   let best = null;
   const candidates = new Set();
-  for (const t of tabs) { candidates.add(t.left - fade); candidates.add(t.left + t.width - (W - fade)); }
+  // The rail snaps (mandatory): the browser moves any scroll position to a snap point. So every wanted
+  // position is tried on the real rail and judged at the position the browser actually settles on.
+  for (const t of tabs) { candidates.add(t.left - fade); candidates.add(t.left + t.width - (W - fade)); candidates.add(t.left); }
+  candidates.add(max);
+  const reached = new Set();
   for (const raw of candidates) {
-    const s = Math.min(max, Math.max(0, raw));
+    rail.scrollTo({ left: Math.min(max, Math.max(0, raw)), behavior: 'instant' });
+    reached.add(Math.round(rail.scrollLeft * 100) / 100);
+  }
+  for (const s of reached) {
     const e = evaluate(s);
     if (e && (!best || e.skew < best.skew)) best = { s, ...e };
   }
-  if (!best) return { failed: true, tabs: tabs.map((t) => [t.text, Math.round(t.left), Math.round(t.width)]), W };
+  if (!best) return { failed: true, reached: [...reached], tabs: tabs.map((t) => [t.text, Math.round(t.left), Math.round(t.width)]), W };
   rail.scrollTo({ left: best.s, behavior: 'instant' });
   return best;
 }"""
@@ -192,7 +218,9 @@ RAIL_CHECK_JS = """(card, [fade, clear]) => {
   });
   const whole = (t) => t.box.left >= r.left + fade - 0.5 && t.box.right <= r.right - fade + 0.5;
   // Cut: content that reaches into the visible part (beyond the clear end) without the tab being whole.
-  const cut = tabs.filter((t) => !whole(t) && t.content.right > r.left + clear + 0.5 && t.content.left < r.right - clear - 0.5).map((t) => t.text);
+  // The right end is as clear as the product fade makes it (--nav-cut, the width it hides from the edge).
+  const hidden = Math.max(clear, parseFloat(rail.style.getPropertyValue('--nav-cut')) || 0);
+  const cut = tabs.filter((t) => !whole(t) && t.content.right > r.left + clear + 0.5 && t.content.left < r.right - hidden - 0.5).map((t) => t.text);
   const shown = tabs.filter(whole);
   const active = tabs.find((t) => t.active);
   return {
@@ -200,6 +228,7 @@ RAIL_CHECK_JS = """(card, [fade, clear]) => {
     cut,
     activeWhole: whole(active),
     shown: shown.map((t) => t.text),
+    labels: tabs.map((t) => t.text),
     gapLeft: Math.round(shown[0].box.left - r.left),
     gapRight: Math.round(r.right - shown[shown.length - 1].box.right),
   };
@@ -261,7 +290,7 @@ def check_language(loc, text):
 def capture_tablet(browser, loc):
     t = TEXT[loc]
     ctx, page, card = open_page(browser, loc, TABLET_VIEWPORT, 2, False, f"?recipe={RECIPE}#live-demo")
-    card.evaluate("c => { const s = document.createElement('style'); s.textContent = %s; c.shadowRoot.appendChild(s); }" % json.dumps(MODAL_FLAT))
+    card.evaluate("c => { const s = document.createElement('style'); s.textContent = %s; c.shadowRoot.appendChild(s); }" % json.dumps(MODAL_FLAT + TABLET_BAR_FLOW))
     # Pin the page clock (it also follows real time while Playwright works) so the timer runs only
     # on the 32 seconds advanced below.
     page.clock.pause_at(datetime.datetime.fromtimestamp(page.evaluate("Date.now()") / 1000 + 2))
@@ -270,6 +299,9 @@ def capture_tablet(browser, loc):
     card.locator("[data-action='timer-start']").first.click()
     blur_everything(page, card)
     page.clock.run_for(32_000)
+    # Filling the timer fields scrolled the step column towards them: the shot shows it from its top.
+    card.evaluate("c => c.shadowRoot.querySelectorAll('.cook-content, [role=dialog]').forEach((e) => { e.scrollTop = 0; })")
+    page.clock.run_for(300)
     dial = card.locator(".cook-timer-dial").first.inner_text().strip()
     counter = card.locator("[role=dialog]").first.inner_text()
     assert dial == "07:28", f"timer reads {dial}"
@@ -359,6 +391,8 @@ def capture_phone(browser, loc):
     rail = card.evaluate(RAIL_CHECK_JS, [RAIL_FADE, RAIL_CLEAR])
     assert not rail["cut"] and rail["activeWhole"], f"tab rail has a cut label: {rail}"
     assert abs(rail["gapLeft"] - rail["gapRight"]) <= 40, f"tab rail is lopsided: {rail}"
+    stale = [x for x in rail["labels"] if STALE_VIEW_NAMES[loc].search(x)]
+    assert not stale, f"{loc} tab rail shows stale view names (rebuild the demo with npm run build:demo): {stale}"
     visible = card.evaluate(
         "c => [...c.shadowRoot.querySelectorAll('*')].filter((e) => e.tagName !== 'STYLE' && (e.tagName === 'SELECT' || [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) && e.getBoundingClientRect().top >= 0 && e.getBoundingClientRect().bottom <= innerHeight).map((e) => e.tagName === 'SELECT' ? e.selectedOptions[0].textContent.trim() : e.textContent.trim()).join(' | ')"
     )
@@ -392,7 +426,7 @@ def capture_phone(browser, loc):
         "tickedShown": rows["tickedShown"],
         "allRowsShown": rows["allShown"],
         "tickedNames": rows["tickedNames"],
-        "rail": {k: rail[k] for k in ("cut", "activeWhole", "shown", "gapLeft", "gapRight")},
+        "rail": {k: rail[k] for k in ("cut", "activeWhole", "shown", "labels", "gapLeft", "gapRight")},
         "cut": cut,
         "statusColour": "#%02x%02x%02x" % top[0],
     }
@@ -420,8 +454,11 @@ def write_report(reports, entries):
             reports[loc][name]["files"] = {
                 str(w): sha256(SHOWCASE / loc / f"{name}-{w}.webp") for w in entry["widths"]
             }
-    text = json.dumps(reports, indent=2, ensure_ascii=False) + "\n"
-    (SHOWCASE / "hero-capture.json").write_text(text)
+    path = SHOWCASE / "hero-capture.json"
+    merged = json.loads(path.read_text())
+    for loc, items in reports.items():
+        merged.setdefault(loc, {}).update(items)
+    path.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
 
 
 def write_manifest(entries):
@@ -447,16 +484,19 @@ def main():
         with sync_playwright() as p:
             browser = p.chromium.launch()
             try:
-                for loc in TEXT:
-                    tablet, cut_t, report_t = capture_tablet(browser, loc)
+                for loc in LOCALES:
+                    if PHONE_ONLY:
+                        tablet, cut_t = None, []
+                        report_t = json.loads((SHOWCASE / "hero-capture.json").read_text())[loc]["hero-tablet-cook"]
+                    else:
+                        tablet, cut_t, report_t = capture_tablet(browser, loc)
                     phone, cut_p, status, report_p = capture_phone(browser, loc)
                     reports[loc] = {"hero-tablet-cook": report_t, "hero-phone-shopping": report_p}
                     assert not cut_t and not cut_p, f"{loc}: text cut by the screenshot edge: {cut_t} {cut_p}"
                     print(loc, "status bar colour (CSS .status background):", "#%02x%02x%02x" % status)
-                    entries[loc] = {
-                        "hero-tablet-cook": save_variants(tablet, "hero-tablet-cook", TABLET_WIDTHS, loc, TABLET_QUALITY),
-                        "hero-phone-shopping": save_variants(phone, "hero-phone-shopping", PHONE_WIDTHS, loc),
-                    }
+                    entries[loc] = {"hero-phone-shopping": save_variants(phone, "hero-phone-shopping", PHONE_WIDTHS, loc)}
+                    if not PHONE_ONLY:
+                        entries[loc]["hero-tablet-cook"] = save_variants(tablet, "hero-tablet-cook", TABLET_WIDTHS, loc, TABLET_QUALITY)
             finally:
                 browser.close()
     finally:

@@ -120,24 +120,33 @@
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px);
     mask-image: linear-gradient(90deg, transparent 0, #000 12px);
   }
+  /* --nav-cut (set by the card) moves the end fade left so a tab that straddles the end sits whole inside it. */
   .atelier .sidebar .nav[data-more-end] {
-    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent 100%);
-    mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent 100%);
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
+    );
   }
   .atelier .sidebar .nav[data-more-start][data-more-end] {
     -webkit-mask-image: linear-gradient(
       90deg,
       transparent 0,
       #000 12px,
-      #000 calc(100% - 12px),
-      transparent 100%
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
     );
     mask-image: linear-gradient(
       90deg,
       transparent 0,
       #000 12px,
-      #000 calc(100% - 12px),
-      transparent 100%
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
     );
   }
 }

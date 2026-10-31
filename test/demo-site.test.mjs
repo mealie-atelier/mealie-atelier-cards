@@ -1023,6 +1023,26 @@ test("hero captures: what the run measured is what was published", () => {
   }
 });
 
+// A rail label from before the views were renamed means the picture still shows the old name.
+test("hero captures: no stale view name in the measured tab rail labels", () => {
+  const report = JSON.parse(read(new URL("../demo/showcase/hero-capture.json", import.meta.url)));
+  const stale = {
+    en: /\b(Family|Cook ideas|Meal planner)\b/i,
+    de: /\bFamilie\b/i,
+  };
+  for (const locale of ["de", "en"]) {
+    const rail = report[locale]["hero-phone-shopping"].rail;
+    const labels = [...new Set([...rail.shown, ...(rail.labels ?? [])])];
+    assert.ok(labels.length >= 3, `${locale} rail labels were measured`);
+    assert.deepEqual(
+      labels.filter((label) => stale[locale].test(label)),
+      [],
+      `${locale} tab rail shows a stale view name`,
+    );
+  }
+  assert.ok(report.de["hero-phone-shopping"].rail.labels.includes("Gemeinsam kochen"));
+});
+
 test(
   "hero render: both screens decode at every breakpoint, files crisp, no layout shift, entrance as designed",
   { skip: spawnSync("uv", ["--version"]).error ? "uv is not installed" : false, timeout: 600000 },

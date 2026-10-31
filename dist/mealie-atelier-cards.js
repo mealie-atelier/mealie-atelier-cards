@@ -11240,6 +11240,17 @@ ha-card {
 /* The bar owns the bottom spacing: padding below it would let it rise off the dialog edge at the end. */
 .atelier .modal.large:has(.cook-layout) .cook-content {
   padding-bottom: 0;
+  /* A column that is taller than the dialog starts at its top: centring it would push the first rows above the
+     top edge where scrolling cannot reach them. */
+  justify-content: flex-start;
+  justify-content: safe center;
+}
+/* Content never ends under the pinned bar: whatever scrolls into view by keyboard focus, find in page or a
+   link lands above it. The bar is 72px high (a wrapped bar in a narrow card up to 172px), so 180px of scroll
+   padding on both scrollers (the step column and, below the laptop sizes, the dialog itself) clears it. */
+.atelier .modal:has(.cook-layout),
+.atelier .modal:has(.cook-layout) .cook-content {
+  scroll-padding-bottom: var(--cook-bar-clearance, 180px);
 }
 .atelier .modal:has(.cook-layout) .cook-actions {
   position: sticky;
@@ -12869,24 +12880,33 @@ ha-card {
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12px);
     mask-image: linear-gradient(90deg, transparent 0, #000 12px);
   }
+  /* --nav-cut (set by the card) moves the end fade left so a tab that straddles the end sits whole inside it. */
   .atelier .sidebar .nav[data-more-end] {
-    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent 100%);
-    mask-image: linear-gradient(90deg, #000 calc(100% - 12px), transparent 100%);
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
+    );
   }
   .atelier .sidebar .nav[data-more-start][data-more-end] {
     -webkit-mask-image: linear-gradient(
       90deg,
       transparent 0,
       #000 12px,
-      #000 calc(100% - 12px),
-      transparent 100%
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
     );
     mask-image: linear-gradient(
       90deg,
       transparent 0,
       #000 12px,
-      #000 calc(100% - 12px),
-      transparent 100%
+      #000 calc(100% - var(--nav-cut, 0px) - 12px),
+      transparent calc(100% - var(--nav-cut, 0px))
     );
   }
 }
@@ -13945,12 +13965,42 @@ class MealieAtelierCard extends HTMLElement {
     const max = rail.scrollWidth - rail.clientWidth;
     rail.toggleAttribute?.("data-more-start", max > 1 && rail.scrollLeft > 1);
     rail.toggleAttribute?.("data-more-end", max > 1 && rail.scrollLeft < max - 1);
+    this._syncNavCut(rail, max);
     if (!rail._navHintBound && rail.addEventListener) {
       rail._navHintBound = true;
       rail.addEventListener("scroll", () => this._syncNavHints(rail), { passive: true });
       if (typeof ResizeObserver === "function")
         new ResizeObserver(() => this._syncNavHints(rail)).observe(rail);
     }
+  }
+  /**
+   * A tab that straddles the faded right end of the rail never shows half a label: the fade is moved
+   * left so the whole tab sits inside it (--nav-cut is the distance from the rail edge where the
+   * rail is fully transparent). Tabs are of different widths, so no snap position keeps the right
+   * end clean for every active tab; this does.
+   */
+  _syncNavCut(rail, max) {
+    if (!rail.style?.setProperty || !rail.getBoundingClientRect) return;
+    let cut = 0;
+    if (max > 1 && rail.scrollLeft < max - 1) {
+      const r = rail.getBoundingClientRect();
+      for (const tab of rail.querySelectorAll?.("button") || []) {
+        const box = tab.getBoundingClientRect();
+        const pad =
+          (typeof getComputedStyle === "function" &&
+            parseFloat(getComputedStyle(tab).paddingLeft)) ||
+          0;
+        const contentLeft = box.left + pad - r.left;
+        const contentRight = box.right - pad - r.left;
+        if (contentRight > r.width - NAV_EDGE + 0.5 && contentLeft < r.width - NAV_EDGE - 0.5) {
+          cut = Math.ceil(Math.max(0, r.width - contentLeft + 4));
+          break;
+        }
+      }
+    }
+    const value = `${cut}px`;
+    if (rail.style.getPropertyValue?.("--nav-cut") !== value)
+      rail.style.setProperty("--nav-cut", value);
   }
   _topbar() {
     return `<div class="topbar"><div class="breadcrumb">${icon("home", 14)}<span>/</span><strong>${esc(this.t(this._view))}</strong></div><div class="toolbar"><button class="command-launch" data-action="command-open" title="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}" aria-label="${this.t("uiOpenQuickActions", { shortcut: this._shortcutLabel })}">${icon("search", 15)}<span class="command-caption">${this.t("uiQuickActions")}</span><span class="shortcut">${this._shortcutLabel}</span></button><button class="icon-btn" title="${esc(this.t("refresh"))}" data-action="refresh" aria-label="${esc(this.t("refresh"))}">${icon("refresh")}</button>${this._printable() ? `<button class="icon-btn" title="${this.t("uiPrintPDF")}" data-action="print-${this._view === "shopping" ? "list" : "week"}" aria-label="${this.t("uiPrintPDF")}">${icon("print")}</button>` : ""}<button class="icon-btn" title="${esc(this.t("settings"))}" data-action="settings" aria-label="${esc(this.t("settings"))}">${icon("gear")}</button></div></div>`;
