@@ -64,13 +64,9 @@ test("the dialog header names the dialog instead of staying an empty band", () =
 test("the header strip is a two state switch with no scroll-linked alpha", () => {
   const block = rule(".atelier .modal > .modal-bar-title {\n  --at-bar-size");
   assert.match(block, /opacity: 0;/);
-  assert.match(block, /transition: opacity var\(--ds-motion-fast\) linear;/);
+  assert.doesNotMatch(block, /transition/);
   assert.doesNotMatch(css, /animation-timeline|@keyframes at-bar-title/);
   assert.match(rule(".atelier .modal.bar-on > .modal-bar-title"), /opacity: 1;/);
-  assert.match(
-    rule("@media (prefers-reduced-motion: reduce) {\n  .atelier .modal > .modal-bar-title"),
-    /transition: none;/,
-  );
   const refinement = readFileSync(
     new URL("../src/design-system/control-refinement.css", import.meta.url),
     "utf8",
@@ -216,32 +212,104 @@ function flatRules(css) {
   return out;
 }
 
-test("in every stylesheet the strip and its title are hidden under exactly the same conditions", () => {
+/** Declarations that make an element invisible, transparent, empty or inert, whatever property carries them. */
+function defeats(body, { paint = true } = {}) {
+  const out = [];
+  for (const [, prop, rawValue] of body.matchAll(/([a-z-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)) {
+    const value = rawValue.replace(/\s*!important/, "").trim();
+    const zero = /^0(?:px|em|rem|%)?$/.test(value);
+    const transparent =
+      /^(transparent|none|rgba?\([^)]*,\s*0(?:\.0+)?\s*\)|#[0-9a-f]{6}00|#[0-9a-f]{3}0)$/i;
+    if (
+      (prop === "display" && value === "none") ||
+      (prop === "visibility" && /^(hidden|collapse)$/.test(value)) ||
+      (prop === "opacity" && Number(value) < 1) ||
+      (paint && /^(background|background-color|color)$/.test(prop) && transparent.test(value)) ||
+      (paint && /^(background|background-image)$/.test(prop) && value === "none") ||
+      (/^(height|max-height|width|max-width|font-size|line-height)$/.test(prop) && zero) ||
+      (prop === "content" && value === "none") ||
+      (prop === "clip-path" && value !== "none") ||
+      (prop === "clip" && value !== "auto") ||
+      (prop === "transform" && /scale\(0\)|translate/.test(value)) ||
+      (prop === "filter" && /opacity\(|brightness\(0/.test(value)) ||
+      (prop === "transition" && value !== "none") ||
+      (prop === "transition-property" && value !== "none")
+    )
+      out.push(`${prop}: ${value}`);
+  }
+  return out;
+}
+
+test("nothing but the shared base rules (and the short landscape pair) can make the strip or its title invisible", () => {
   const dir = new URL("../src/design-system/", import.meta.url);
-  const hides = (body) =>
-    /display:\s*none|visibility:\s*hidden|opacity:\s*0(?![.\d])|content:\s*none/.test(body);
-  const titleOff = [];
-  const stripOff = [];
+  const BASE = {
+    title: ".atelier .modal > .modal-bar-title",
+    strip: ".atelier .modal > .modal-close::before",
+  };
+  const landscape = "@media (orientation: landscape) and (max-height: 500px)";
+  const found = { title: [], strip: [], close: [] };
   for (const file of readdirSync(dir).filter((name) => name.endsWith(".css"))) {
     for (const r of flatRules(readFileSync(new URL(file, dir), "utf8"))) {
-      const key = JSON.stringify(r.context);
       for (const selector of r.selector.split(",").map((part) => part.trim())) {
-        const onBar = /\.modal-bar-title/.test(selector);
-        const onStrip = /\.modal-close::before/.test(selector);
-        if (!hides(r.body) || (!onBar && !onStrip)) continue;
-        // Anything that is not scoped to the closed state (.bar-on adds the opacity) must hide both together.
-        const base = /^\.atelier \.modal > \.modal-(bar-title|close::before)$/.test(selector);
-        const entry = `${key}|${r.body.includes("opacity") ? "fade" : "gone"}|${base}`;
-        (onBar ? titleOff : stripOff).push(entry);
-        assert.ok(
-          base,
-          `${file}: "${selector}" hides the ${onBar ? "title" : "strip"} outside the shared base rule`,
-        );
+        const kind = /\.modal-bar-title/.test(selector)
+          ? "title"
+          : /\.modal-close::before/.test(selector)
+            ? "strip"
+            : /\.modal-close(?![\w-])(?!::)/.test(selector) &&
+                !/:(hover|active|focus)/.test(selector)
+              ? "close"
+              : null;
+        if (!kind) continue;
+        for (const declaration of defeats(r.body, { paint: kind !== "close" })) {
+          const context = r.context.join(" | ");
+          const allowed =
+            (kind !== "close" && selector === BASE[kind] && context === "") ||
+            (kind !== "close" && selector === BASE[kind] && context === landscape);
+          // The base opacity: 0 is the closed state; .bar-on turns it on. Any other rule must not defeat anything.
+          assert.ok(
+            allowed,
+            `${file}: "${selector}" (${context || "no at-rule"}) declares "${declaration}"`,
+          );
+          found[kind].push(`${context}|${declaration.replace(/:.*/, "")}`);
+        }
       }
     }
   }
-  assert.ok(titleOff.length > 0 && stripOff.length > 0);
-  assert.deepEqual([...new Set(titleOff)].sort(), [...new Set(stripOff)].sort());
+  assert.deepEqual(found.close, [], "the close button is never hidden or made inert by a rule");
+  // Both elements switch off together: the same properties kind under the same conditions.
+  const key = (list) =>
+    [...new Set(list.map((entry) => entry.replace(/\|(opacity|display)$/, "|off")))].sort();
+  assert.deepEqual(key(found.title), key(found.strip));
+});
+
+test("the strip is opaque and sized when on, the title is readable, and neither has a transition", () => {
+  const dir = new URL("../src/design-system/", import.meta.url);
+  const rules = readdirSync(dir)
+    .filter((name) => name.endsWith(".css"))
+    .flatMap((file) => flatRules(readFileSync(new URL(file, dir), "utf8")));
+  const merged = (selector, context = []) =>
+    rules
+      .filter(
+        (r) =>
+          r.selector
+            .split(",")
+            .map((part) => part.trim())
+            .includes(selector) && JSON.stringify(r.context) === JSON.stringify(context),
+      )
+      .map((r) => r.body)
+      .join(";");
+  const strip = merged(".atelier .modal > .modal-close::before");
+  assert.match(strip, /background:\s*var\(--at-surface\)/);
+  assert.match(strip, /height:\s*calc\(var\(--at-close-size\) \+ 33px\)/);
+  assert.match(strip, /opacity:\s*0/);
+  const title = merged(".atelier .modal > .modal-bar-title");
+  assert.match(title, /color:\s*var\(--at-ink\)/);
+  assert.match(title, /height:\s*var\(--at-bar-size\)/);
+  for (const body of [strip, title]) assert.doesNotMatch(body, /transition/);
+  // No stylesheet rule changes the transition of the title or strip in any state.
+  for (const r of rules)
+    if (/\.modal-bar-title|\.modal-close::before/.test(r.selector))
+      assert.doesNotMatch(r.body, /transition/, r.selector);
 });
 
 test("the shared close strip is switched on by .bar-on in the same rule family as the title", () => {
@@ -282,4 +350,25 @@ test("scrolling decides the strip even when the observer never fires (heading al
   modalEl.scrollTop = 0;
   modalEl.fire("scroll");
   assert.equal(classes.has("bar-on"), false);
+});
+
+test("a different dialog opens at scroll 0, the same dialog keeps its scroll on a re-render", () => {
+  const { card } = watchedModal();
+  const writes = [];
+  const modal = card.shadowRoot.querySelector(".modal");
+  modal.querySelector = () => null;
+  modal.classList.contains = () => false;
+  Object.defineProperty(modal, "scrollTop", {
+    get: () => 300,
+    set: (value) => writes.push(value),
+  });
+  card._modal = "recipe";
+  card._lastRenderedModal = "recipe";
+  card._lastRenderedView = card._view;
+  card._render();
+  assert.deepEqual(writes, [300]);
+  writes.length = 0;
+  card._modal = "plan";
+  card._render();
+  assert.deepEqual(writes, []);
 });

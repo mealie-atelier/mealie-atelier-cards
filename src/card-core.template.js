@@ -1213,12 +1213,15 @@ class MealieAtelierCard extends HTMLElement {
     ];
     // The grid can appear without a view change (skeleton to data, or the "today" button).
     const gridBefore = Boolean(this.shadowRoot.querySelector(".week-grid"));
+    // A newly opened dialog (a different one) starts at the top; only a re-render of the same dialog keeps its scroll.
     const scrolls = viewChanged
       ? []
-      : scrollClasses.map((selector) => {
-          const el = this.shadowRoot.querySelector(selector);
-          return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
-        });
+      : scrollClasses
+          .filter((selector) => !(modalChanged && selector === ".modal"))
+          .map((selector) => {
+            const el = this.shadowRoot.querySelector(selector);
+            return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
+          });
     // The swapped rail starts without the trailing space of the old one: carry it over before the
     // scroll position is restored, or a rail resting at its end is clamped onto a cut tab.
     const navEndPad =

@@ -11299,13 +11299,7 @@ ha-card {
   background: var(--at-surface);
   border-bottom: 1px solid var(--at-line);
   opacity: 0;
-  transition: opacity var(--ds-motion-fast) linear;
   pointer-events: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .atelier .modal > .modal-close::before {
-    transition: none;
-  }
 }
 /* The strip is a child of the button's stacking context and would paint over the button's own background. So the
    button paints its tile on ::after (later in tree order, same layer) and keeps its own background transparent. */
@@ -12716,19 +12710,11 @@ ha-card {
   color: var(--at-ink);
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--ds-motion-fast) linear;
 }
+/* No transition on the title or on the strip behind it: both switch in the same frame in every path (scroll,
+   re-render, step change), so the title never shows without its strip or the other way round. */
 .atelier .modal.bar-on > .modal-bar-title {
   opacity: 1;
-}
-/* A re-render swaps the dialog subtree: the strip must not fade again while it keeps its state. */
-.atelier .modal.modal-stable > .modal-bar-title {
-  transition: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .atelier .modal > .modal-bar-title {
-    transition: none;
-  }
 }
 @container atelier-card (max-width: 420px) {
   .atelier .modal > .modal-bar-title {
@@ -14177,12 +14163,15 @@ class MealieAtelierCard extends HTMLElement {
     ];
     // The grid can appear without a view change (skeleton to data, or the "today" button).
     const gridBefore = Boolean(this.shadowRoot.querySelector(".week-grid"));
+    // A newly opened dialog (a different one) starts at the top; only a re-render of the same dialog keeps its scroll.
     const scrolls = viewChanged
       ? []
-      : scrollClasses.map((selector) => {
-          const el = this.shadowRoot.querySelector(selector);
-          return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
-        });
+      : scrollClasses
+          .filter((selector) => !(modalChanged && selector === ".modal"))
+          .map((selector) => {
+            const el = this.shadowRoot.querySelector(selector);
+            return { selector, top: el?.scrollTop || 0, left: el?.scrollLeft || 0 };
+          });
     // The swapped rail starts without the trailing space of the old one: carry it over before the
     // scroll position is restored, or a rail resting at its end is clamped onto a cut tab.
     const navEndPad =
