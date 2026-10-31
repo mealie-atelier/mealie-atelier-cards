@@ -6,12 +6,12 @@
       "cut": [],
       "viewport": {
         "width": 1180,
-        "height": 880
+        "height": 900
       },
       "files": {
-        "800": "1a0e8c7f8dc26d8d889ad478427691c6c8f09dd2a3afad418438f4594c994dc8",
-        "1200": "41d923371de3ec6bf4ba244030b3f1e0adbaf00dc9eda007b35184cb1a06721c",
-        "1600": "d8aad083105d64ad92ad1e6e680a2b38633baf195e2e99603393eedb7eeea31d"
+        "800": "4dcb830dde272010c5074c53fc1f931285bde8a67990f0125ddd3ce7807e08cc",
+        "1200": "65ed2decaa4b8dffca17018733198fef997f87935e51b306f721854e0b7f1e66",
+        "1600": "2b1f422a6182bbc32d5ebd6280055b6c832f9807edfc1d0ff9a8b6552d152db0"
       }
     },
     "hero-phone-shopping": {
@@ -21,20 +21,41 @@
       "total": 9,
       "tickedShown": 2,
       "allRowsShown": true,
-      "tickedNames": ["500 g Kirschtomaten", "2 EL Olivenöl"],
+      "tickedNames": [
+        "500 g Kirschtomaten",
+        "2 EL Olivenöl"
+      ],
       "rail": {
         "cut": [],
         "activeWhole": true,
-        "shown": ["Vorräte", "Einkaufsliste", "Gemeinsam kochen"],
-        "gapLeft": 20,
-        "gapRight": 24
+        "shown": [
+          "Einkaufsliste",
+          "Gemeinsam kochen",
+          "Kochbuch"
+        ],
+        "labels": [
+          "Übersicht",
+          "Heute",
+          "Kochinspo",
+          "Rezepte",
+          "Wochenplan",
+          "Vorräte",
+          "Einkaufsliste",
+          "Gemeinsam kochen",
+          "Kochbuch",
+          "Verwalten"
+        ],
+        "fadeRight": 17,
+        "peek": false,
+        "gapLeft": 12,
+        "gapRight": 16
       },
       "cut": [],
       "statusColour": "#111613",
       "files": {
-        "400": "fa188d06874b3d4f33c64be6ba317e49607bb78f74aa7e09fc2c0dca73b8a869",
-        "700": "2056726b02017e460021498440b06c549c82facd8b0b64e96ae0b9afd9c56aa9",
-        "1179": "d61952ac10c29b4dbceee3bc7674c3c1e0aec32a4d4674ca21de56bb8abae0f6"
+        "400": "cf746e9ee8206ff07409b20aa6049a808ecae90374ce53304fa80a7f8f6a550a",
+        "700": "80e79d64c1b2b52a644597af6b985056dcaaf976c6dc59ce7183567b9847997d",
+        "1179": "677606fbd4a29cd2c1d28921f829e3c90fd47b441efd1640a69d523e5c8df93c"
       }
     }
   },
@@ -45,12 +66,12 @@
       "cut": [],
       "viewport": {
         "width": 1180,
-        "height": 880
+        "height": 900
       },
       "files": {
-        "800": "6e8c61d3409891f02c7986848015ad780d0e63f20f1e6f6c38b1ccd31dd28bfd",
-        "1200": "e8fcc6e2effa1feb23b25a7e790a3547fff477ec70f13d182f0a82cf3dc84793",
-        "1600": "532bb8006a728c11bc4a55e708fc8a729fdd60922f75287e446bee5018cb214c"
+        "800": "d74f1d0674155498919296c72a994f06e582b1472fb02f9bc01d1ff7da354819",
+        "1200": "10dc83ebe623eb7451d71f886feed20352f739d31901f9935ab7d7cb63bb955f",
+        "1600": "25e16ff20515f934f6238b01182faf91ed934e376161ea33422d8eaa5bc83ba9"
       }
     },
     "hero-phone-shopping": {
@@ -60,20 +81,41 @@
       "total": 9,
       "tickedShown": 2,
       "allRowsShown": true,
-      "tickedNames": ["500 g cherry tomatoes", "2 tbsp olive oil"],
+      "tickedNames": [
+        "500 g cherry tomatoes",
+        "2 tbsp olive oil"
+      ],
       "rail": {
         "cut": [],
         "activeWhole": true,
-        "shown": ["Shopping", "Family", "Cookbook", "Manage"],
-        "gapLeft": 25,
-        "gapRight": 20
+        "shown": [
+          "Shopping",
+          "Cook together",
+          "Cookbook"
+        ],
+        "labels": [
+          "Overview",
+          "Today",
+          "Discover",
+          "Recipes",
+          "Meal plan",
+          "Pantry",
+          "Shopping",
+          "Cook together",
+          "Cookbook",
+          "Manage"
+        ],
+        "fadeRight": 67,
+        "peek": true,
+        "gapLeft": 12,
+        "gapRight": 66
       },
       "cut": [],
       "statusColour": "#111613",
       "files": {
-        "400": "6867dd5ab8cf596930d30b37f65c31010fd7ee3016048d39acfc3bfc21f3f13c",
-        "700": "8ed3c5e76e8c00773783d268188b877ad37792c09c44abb75a4b709e5739b5a3",
-        "1179": "9c637a38298fbc9de4c616cb7ddaabf7c2abeebaad60807279cfa62b1ac30336"
+        "400": "221050c7fb3595e51cf4e15ac35cdf03af8fb91f037236195a7e77958b43b812",
+        "700": "e864c95966830ba9bbc0a51388b6b3d5f6f47cf11e52881b250cb18e11817cd7",
+        "1179": "2dd9f64cf766c5ba62b666fb1f51f044be2187fba0a6b197294252ffb2c6d146"
       }
     }
   }

@@ -301,6 +301,7 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature B: recipe editor state and events
     this._ed = null;
     this._boundEditorFocus = (event) => this._editorFocusEvent(event);
+    this._boundCookBarFocus = (event) => this._keepFocusClearOfCookBar(event.target);
     // END feature B
     this._boundImageError = (event) => {
       if (event.target?.tagName === "IMG") event.target.remove();
@@ -429,6 +430,7 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
+    this.shadowRoot.addEventListener("focusin", this._boundCookBarFocus);
     // Theme auto outside Home Assistant follows the system colour scheme live.
     this._schemeQuery =
       typeof window !== "undefined" ? window.matchMedia?.("(prefers-color-scheme: light)") : null;
@@ -465,6 +467,7 @@ class MealieAtelierCard extends HTMLElement {
     document.removeEventListener("visibilitychange", this._boundVisibility);
     this._schemeQuery?.removeEventListener?.("change", this._boundScheme);
     this._wakeLock.set(false);
+    this.shadowRoot.removeEventListener("focusin", this._boundCookBarFocus);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);
     this.shadowRoot.removeEventListener("error", this._boundImageError, true);
@@ -980,11 +983,54 @@ class MealieAtelierCard extends HTMLElement {
     const max = rail.scrollWidth - rail.clientWidth;
     rail.toggleAttribute?.("data-more-start", max > 1 && rail.scrollLeft > 1);
     rail.toggleAttribute?.("data-more-end", max > 1 && rail.scrollLeft < max - 1);
+    this._syncNavFade(rail, max);
     if (!rail._navHintBound && rail.addEventListener) {
       rail._navHintBound = true;
       rail.addEventListener("scroll", () => this._syncNavHints(rail), { passive: true });
       if (typeof ResizeObserver === "function")
         new ResizeObserver(() => this._syncNavHints(rail)).observe(rail);
+    }
+  }
+  /**
+   * The faded right end of the rail starts where the last whole tab ends (--nav-fade is its width,
+   * 12px at least). A tab that straddles the end of the rail therefore only ever shows inside the
+   * fade, never as a half label in the opaque part, and the fade still tells that more tabs follow.
+   * Tabs are of different widths, so no snap position keeps the right end clean for every active
+   * tab; the fade follows the tabs instead.
+   */
+  _syncNavFade(rail, max) {
+    if (!rail.style?.setProperty || !rail.getBoundingClientRect) return;
+    let fade = NAV_EDGE;
+    if (max > 1 && rail.scrollLeft < max - 1) {
+      const r = rail.getBoundingClientRect();
+      let lastWhole = 0;
+      for (const tab of rail.querySelectorAll?.("button") || []) {
+        const right = tab.getBoundingClientRect().right - r.left;
+        if (right <= r.width + 0.5 && right > lastWhole) lastWhole = right;
+      }
+      fade = Math.max(NAV_EDGE, Math.ceil(r.width - lastWhole));
+    }
+    const value = `${fade}px`;
+    if (rail.style.getPropertyValue?.("--nav-fade") !== value)
+      rail.style.setProperty("--nav-fade", value);
+  }
+  /**
+   * The Back and Next bar of the cooking dialog is pinned over the scrolling step column. A control
+   * that takes focus under it (Tab, a label click) is scrolled up until it clears the bar: Safari
+   * leaves a focused control where it is as long as it is inside the scroll area, even under the bar.
+   */
+  _keepFocusClearOfCookBar(target) {
+    const bar = this.shadowRoot?.querySelector(".modal .cook-actions");
+    if (!bar || !target?.getBoundingClientRect || bar.contains(target)) return;
+    const box = target.getBoundingClientRect();
+    const barBox = bar.getBoundingClientRect();
+    if (!box.height || box.bottom <= barBox.top + 0.5 || box.top >= barBox.bottom - 0.5) return;
+    for (let node = target.parentElement; node; node = node.parentElement) {
+      if (typeof getComputedStyle !== "function") return;
+      if (!/(auto|scroll)/.test(getComputedStyle(node).overflowY)) continue;
+      if (node.scrollHeight <= node.clientHeight + 1) continue;
+      node.scrollTop += Math.ceil(box.bottom - barBox.top) + 8;
+      return;
     }
   }
   _topbar() {

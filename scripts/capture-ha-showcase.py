@@ -42,6 +42,11 @@ DEVICES = {
     "ha-phone-dashboard": dict(viewport=(393, 852), scale=720 / 393, mobile=True),
 }
 STALE = re.compile(r"Cook ideas|Meal planner|Family cooking")
+# The family view is called Cook together / Gemeinsam kochen; a bare Family or Familie nav label is an old bundle.
+STALE_NAV = {
+    "en": re.compile(r"(?:^| \| )(Family)(?= \| |$)"),
+    "de": re.compile(r"(?:^| \| )(Familie)(?= \| |$)"),
+}
 ENGLISH_LEAK = re.compile(r"KITCHEN STUDIO|\bMENU\b|\b(Overview|Today|Recipes|Shopping|Cookbook|Manage|Quick actions)\b")
 GERMAN_LEAK = re.compile(r"KÜCHENSTUDIO|\bMENÜ\b|\b(Übersicht|Heute|Rezepte|Einkaufsliste|Kochbuch|Verwalten|Schnellzugriff)\b")
 
@@ -78,7 +83,8 @@ def settle(page):
     page.wait_for_function("!document.getElementById('ha-launch-screen')", timeout=60_000)
     page.wait_for_load_state("networkidle")
     for img in page.locator("mealie-atelier-card img >> visible=true").all():
-        img.evaluate("img => img.decode().catch(() => null)")
+        # A lazy image that never loads must not hang the run: decode() has no timeout of its own.
+        img.evaluate("img => Promise.race([img.decode().catch(() => null), new Promise((done) => setTimeout(done, 5000))])")
     page.wait_for_timeout(1500)
 
 
@@ -122,6 +128,7 @@ def main():
                         "() => { const out = []; const walk = (r) => { for (const e of r.querySelectorAll('*')) { if (e.shadowRoot) walk(e.shadowRoot); if (!e.children.length && e.textContent.trim() && e.getBoundingClientRect().width) out.push(e.textContent.trim()); } }; walk(document); return out.join(' | '); }"
                     )
                     assert not STALE.findall(text), f"{loc}/{name}: stale names {STALE.findall(text)}"
+                    assert not STALE_NAV[loc].findall(text), f"{loc}/{name}: old view name {STALE_NAV[loc].findall(text)}"
                     leak = (ENGLISH_LEAK if loc == "de" else GERMAN_LEAK).findall(text)
                     assert not leak, f"{loc}/{name}: other language {leak}"
                     save(Image.open(io.BytesIO(page.screenshot())).convert("RGB"), name, loc)

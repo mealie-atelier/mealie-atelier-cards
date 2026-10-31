@@ -169,6 +169,17 @@ test("page copy names the card features and buttons exactly as the card labels t
   assert.match(de, /Dein eigenes Kochbuch/);
 });
 
+test("the family view is called Cook together in English and Gemeinsam kochen in German, never Family", () => {
+  const en = landing(builds.local, "en");
+  const de = landing(builds.local, "de");
+  assert.doesNotMatch(en, /\bFamily\b/);
+  assert.doesNotMatch(de, /Familienansicht|Familienmodus/);
+  assert.match(en, /Cook together in the simple helper view/);
+  assert.match(en, /In Cook together, adults hand out helper tasks/);
+  assert.match(de, /Gemeinsam kochen in der einfachen Helferansicht/);
+  assert.match(de, /Gemeinsam kochen verteilt Helferaufgaben/);
+});
+
 test("long resting recipes include the rest in the total time chip and structured data", () => {
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);
@@ -972,7 +983,13 @@ test("hero captures: what the run measured is what was published", () => {
     assert.deepEqual(phone.cut, [], `${locale} phone has no cut text`);
     assert.deepEqual(phone.rail.cut, [], `${locale} tab rail has no cut tab`);
     assert.ok(phone.rail.activeWhole, `${locale} active tab is whole`);
-    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 40, `${locale} rail is even`);
+    // The end gap is the fade, in which the start of the next tab shows: it may be wider than the start gap.
+    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 70, `${locale} rail is even`);
+    assert.ok(
+      phone.rail.peek || phone.rail.gapRight <= 24,
+      `${locale} rail does not look as if it ended`,
+    );
+    assert.ok(phone.rail.shown.length >= 3, `${locale} rail shows at least three whole tabs`);
     assert.equal(phone.statusColour, statusBg, `${locale} status bar joins the capture`);
     assert.match(
       phone.tickedNames.join(" "),
@@ -1010,6 +1027,28 @@ test("hero captures: what the run measured is what was published", () => {
       }
     }
   }
+});
+
+// A rail label from before the views were renamed means the picture still shows the old name.
+test("hero captures: no stale view name in the measured tab rail labels", () => {
+  const report = JSON.parse(read(new URL("../demo/showcase/hero-capture.json", import.meta.url)));
+  const stale = {
+    en: /\b(Family|Cook ideas|Meal planner)\b/i,
+    de: /\bFamilie\b/i,
+  };
+  for (const locale of ["de", "en"]) {
+    const rail = report[locale]["hero-phone-shopping"].rail;
+    const labels = [...new Set([...rail.shown, ...(rail.labels ?? [])])];
+    assert.ok(labels.length >= 3, `${locale} rail labels were measured`);
+    assert.deepEqual(
+      labels.filter((label) => stale[locale].test(label)),
+      [],
+      `${locale} tab rail shows a stale view name`,
+    );
+  }
+  // The renamed view is on the picture itself: whole, in the opaque part of the rail, not only in the list of labels.
+  assert.ok(report.de["hero-phone-shopping"].rail.shown.includes("Gemeinsam kochen"));
+  assert.ok(report.en["hero-phone-shopping"].rail.shown.includes("Cook together"));
 });
 
 test(

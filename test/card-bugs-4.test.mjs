@@ -240,3 +240,98 @@ test("check rows in a sync fieldset use the fieldset gap only", () => {
   );
   assert.match(css, /\.atelier \.sync-fieldset > \.editor-check \{\s*margin-block-end: 0;/);
 });
+
+test("the end fade of the phone rail starts where the last whole tab ends", () => {
+  const tabs = [
+    [0, 80],
+    [86, 160],
+    [166, 250],
+    [256, 330],
+    [336, 430],
+    [436, 520],
+  ];
+  tabs.active = 0;
+  // Rail is 366px wide: the tab at 336..430 straddles the end, so the fade covers 330..366 (36px) and the
+  // straddling tab shows only inside it, never as a half label in the opaque part.
+  const cut = railWith({ tabs, scrollWidth: 700 });
+  railCard(cut)._syncNavHints(cut);
+  assert.equal(cut.style.v["--nav-fade"], "36px");
+  // A last whole tab that ends inside the default fade keeps the 12px fade.
+  const flush = railWith({ tabs: [...tabs.slice(0, 3), [256, 360], [366, 460]], scrollWidth: 700 });
+  flush.attrs = {};
+  railCard(flush)._syncNavHints(flush);
+  assert.equal(flush.style.v["--nav-fade"], "12px");
+  // A tab that does not fit before the end leaves the whole space after the last whole tab to the fade.
+  const wide = railWith({
+    tabs: [
+      [0, 80],
+      [86, 160],
+      [166, 200],
+      [206, 600],
+    ],
+    scrollWidth: 700,
+  });
+  railCard(wide)._syncNavHints(wide);
+  assert.equal(wide.style.v["--nav-fade"], "166px");
+  // Resting at the end there is no fade to move.
+  const end = railWith({ tabs, scrollWidth: 700, scrollLeft: 334 });
+  railCard(end)._syncNavHints(end);
+  assert.equal(end.style.v["--nav-fade"], "12px");
+});
+
+test("the end fade of the phone rail follows --nav-fade and falls back to the 12px fade", () => {
+  const corners = css("corners.css");
+  const stops =
+    corners.match(/#000 calc\(100% - var\(--nav-fade, 12px\)\),\s*transparent 100%/g) ?? [];
+  // end only and start plus end, each in the prefixed and the plain mask property
+  assert.equal(stops.length, 4);
+  assert.doesNotMatch(corners, /nav-cut/);
+});
+
+// Cooking dialog: the Back and Next bar is pinned, so content must never end under it.
+test("the cooking scrollers keep scroll padding for the pinned bar and never centre past the top", () => {
+  const refinement = css("control-refinement.css");
+  assert.match(
+    refinement,
+    /\.modal:has\(\.cook-layout\),\s*\.atelier \.modal:has\(\.cook-layout\) \.cook-content \{\s*scroll-padding-bottom: var\(--cook-bar-clearance, 180px\);/,
+  );
+  assert.match(
+    refinement,
+    /\.modal\.large:has\(\.cook-layout\) \.cook-content \{[^}]*justify-content: flex-start;\s*justify-content: safe center;/,
+  );
+});
+
+test("a control that takes focus under the pinned cooking bar is scrolled up until it clears the bar", () => {
+  const scroller = {
+    parentElement: null,
+    overflowY: "auto",
+    scrollTop: 0,
+    scrollHeight: 1200,
+    clientHeight: 600,
+  };
+  const control = (top, bottom, parent = scroller) => ({
+    parentElement: parent,
+    getBoundingClientRect: () => ({ top, bottom, height: bottom - top }),
+  });
+  const bar = {
+    getBoundingClientRect: () => ({ top: 700, bottom: 772 }),
+    contains: (node) => node === inBar,
+  };
+  const inBar = control(710, 750);
+  const card = makeCard(
+    loadCards({
+      globals: { getComputedStyle: (node) => ({ overflowY: node.overflowY ?? "visible" }) },
+    }),
+  );
+  card.shadowRoot.querySelector = (selector) => (selector === ".modal .cook-actions" ? bar : null);
+  {
+    // 30px of the control sit under the bar: the column moves those 30px plus an 8px margin.
+    card._keepFocusClearOfCookBar(control(690, 730));
+    assert.equal(scroller.scrollTop, 38);
+    // A control above the bar, one inside the bar and one that is not rendered do not move the column.
+    card._keepFocusClearOfCookBar(control(600, 650));
+    card._keepFocusClearOfCookBar(inBar);
+    card._keepFocusClearOfCookBar(control(0, 0));
+    assert.equal(scroller.scrollTop, 38);
+  }
+});
