@@ -25,6 +25,8 @@ export const bringWizardMethods = {
     sync.bring.confirm = false;
     sync.wizard = {
       step: connected ? 2 : 1,
+      // Adding a rule to an account that was already connected when the dialog opened.
+      addRule: connected && !rule,
       fixRule: rule
         ? {
             id: rule.id,
@@ -136,8 +138,10 @@ export const bringWizardMethods = {
     const w = this._bwData();
     const used = this._syncRules().map((rule) => rule.source_list_id);
     w.free = asArray(this._data.shopping?.lists).filter((l) => !used.includes(String(l.id)));
+    // A choice that is still free survives a recompute; the rules may have loaded after sign-in.
+    const kept = w.free.find((l) => String(l.id) === String(w.mealieList));
     const active = w.free.find((l) => String(l.id) === String(this._activeList));
-    w.mealieList = String((active || w.free[0])?.id || "");
+    w.mealieList = String((kept || active || w.free[0])?.id || "");
   },
   async _bwLoadLists() {
     const w = this._bwData();
@@ -174,6 +178,8 @@ export const bringWizardMethods = {
     if (!w) return;
     w.step = step;
     w.error = "";
+    // The rules are fetched after sign-in, so the free lists are recomputed when the step opens.
+    if (step === 3) this._bwPickMealie();
     this._render();
     this._bwFocus();
     if (step === 2 && w.listsState === "idle") this._bwLoadLists();
@@ -431,26 +437,21 @@ export const bringWizardMethods = {
     const ready = w.preview && !w.previewBusy && !w.previewError;
     const list = this._bwBringName(w);
     const count = this._bwSendCount();
-    const text =
-      w.preview && !w.previewBusy && !w.previewError
+    const emptyPreview = w.preview && !w.previewBusy && !w.previewError && !lines.length;
+    // An empty preview has its own notice below, so the heading adds no second sentence.
+    const text = emptyPreview
+      ? ""
+      : w.preview && !w.previewBusy && !w.previewError
         ? count
           ? this.tp("bwPreviewText", count, { list })
           : this.t("bwPreviewTextNone", { list })
         : this.t("bwPreviewTextBase", { list });
     return `${this._bwHeading(this.t("bwPreviewTitle"), text)}${body}${this._bwNav({ back: true, next: "sync-bw-next", nextDisabled: !ready })}`;
   },
-  // Bring! titles read "Milch (2)" or "Mehl (500 g)": an amount above one reads "2 × Milch", a lone one is dropped.
-  _bwLineParts(line) {
-    const match = /^(.*?) \((.+)\)$/.exec(String(line.title || ""));
-    const name = match ? match[1] : String(line.title || "");
-    const detail = match ? match[2] : "";
-    const amount = /^\d+(?:[.,]\d+)?$/.test(detail) ? Number(detail.replace(",", ".")) : null;
-    if (amount === null)
-      return { name, note: [detail, line.description].filter(Boolean).join(", ") };
-    return { name: amount > 1 ? `${detail} × ${name}` : name, note: line.description || "" };
-  },
   _bwLineHtml(line, actionLabel) {
-    const { name, note } = this._bwLineParts(line);
+    // The title is shown as Bring! receives it, like in the first-delivery review.
+    const name = String(line.title || "").trim() || this.t("syncItemUntitled");
+    const note = line.description || "";
     const state =
       line.action === "send"
         ? ""
@@ -499,7 +500,10 @@ export const bringWizardMethods = {
           this._bwStepReleaseHtml(w),
         ][w.step];
     const fix = Boolean(w.fixRule) && !w.done;
-    return `<div class="modal-content sync-panel bw-wizard">${this._syncLead(this.t(fix ? "syncTitle" : "bwTitle"))}${fix ? "" : this._bwProgressHtml(w)}<section class="editor-card bw-panel" aria-busy="${w.saving || w.previewBusy || this._syncData().bring.busy ? "true" : "false"}">${body}</section></div>`;
+    // An account that is already signed in needs neither the connect title nor the sign-in step.
+    const add = w.addRule === true && !w.done && w.step >= 2;
+    const title = fix ? "syncTitle" : add ? "syncAddRule" : "bwTitle";
+    return `<div class="modal-content sync-panel bw-wizard">${this._syncLead(this.t(title))}${fix || add ? "" : this._bwProgressHtml(w)}<section class="editor-card bw-panel" aria-busy="${w.saving || w.previewBusy || this._syncData().bring.busy ? "true" : "false"}">${body}</section></div>`;
   },
 
   // ---- account card (connected state and sign in again) -------------------------------------
@@ -515,11 +519,12 @@ export const bringWizardMethods = {
     // Only a run that went well counts as a delivery; a failed run must not say "just now".
     // A later failed run does not undo an earlier delivery, so the history counts as well.
     const healthy = ["sent", "nothing_to_send", "reconciled"];
+    // A run that found nothing to send delivered nothing, so it does not move "last delivery".
+    const delivered = (entry) =>
+      ["sent", "partial", "reconciled"].includes(entry?.outcome) && Number(entry.count) > 0;
     const lastRun = [
-      ...rules
-        .filter((rule) => healthy.includes(rule.last_run?.outcome))
-        .map((rule) => rule.last_run),
-      ...asArray(sync.state?.audit).filter((entry) => healthy.includes(entry.outcome)),
+      ...rules.filter((rule) => delivered(rule.last_run)).map((rule) => rule.last_run),
+      ...asArray(sync.state?.audit).filter(delivered),
     ]
       .map((entry) => entry.at)
       .filter(Boolean)

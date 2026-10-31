@@ -1518,7 +1518,7 @@ test("web app: Last delivery survives a later failed run and an expired session 
   assert.doesNotMatch(html, /unreachable|cannot be reached/);
 });
 
-test("web app: preview rows show amounts like the list and badge only what differs", async () => {
+test("web app: preview rows show the Bring! title as sent and badge only what differs", async () => {
   const lines = [
     { source_item_id: "a", title: "Milk (2)", description: null, action: "send" },
     { source_item_id: "b", title: "Cheese (1)", description: null, action: "send" },
@@ -1535,9 +1535,9 @@ test("web app: preview rows show amounts like the list and badge only what diffe
   await click(env.card, { action: "sync-bw-next" });
   await click(env.card, { action: "sync-bw-next" });
   const html = markup(env.cards);
-  assert.match(html, /<strong>2 × Milk<\/strong>/);
-  assert.match(html, /<strong>Cheese<\/strong>/);
-  assert.match(html, /<strong>Flour<\/strong> <span class="sync-muted">500 g<\/span>/);
+  assert.match(html, /<strong>Milk \(2\)<\/strong>/);
+  assert.match(html, /<strong>Cheese \(1\)<\/strong>/);
+  assert.match(html, /<strong>Flour \(500 g\)<\/strong>/);
   assert.equal((html.match(/bw-line-state/g) || []).length, 1, "only the skipped row has a badge");
 });
 
