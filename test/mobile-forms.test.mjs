@@ -255,7 +255,7 @@ test("nothing but the shared base rules (and the short landscape pair) can make 
           ? "title"
           : /\.modal-close::before/.test(selector)
             ? "strip"
-            : /\.modal-close(?![\w-])(?!::)/.test(selector) &&
+            : /\.modal-close(?![\w-])(?!::before)/.test(selector) &&
                 !/:(hover|active|focus)/.test(selector)
               ? "close"
               : null;
@@ -280,6 +280,62 @@ test("nothing but the shared base rules (and the short landscape pair) can make 
   const key = (list) =>
     [...new Set(list.map((entry) => entry.replace(/\|(opacity|display)$/, "|off")))].sort();
   assert.deepEqual(key(found.title), key(found.strip));
+});
+
+test("only the known rules place the strip, its title and the close button, so they scroll and stack together", () => {
+  const dir = new URL("../src/design-system/", import.meta.url);
+  const PLACEMENT =
+    /^(position|z-index|top|right|bottom|left|inset(-[a-z]+)?|float|isolation|contain|will-change|mix-blend-mode|translate|rotate|scale|zoom)$/;
+  // The wide hero layout in short landscape windows: the dialog itself does not scroll there, the content column does.
+  const heroLandscape = (context) =>
+    context.length === 1 &&
+    /^@media \(orientation: landscape\) and \((min|max)-height: \d+px\)/.test(context[0]);
+  const allowed = new Map([
+    [
+      "control-refinement.css|.atelier .modal > .modal-close|",
+      { position: "sticky", top: "20px", right: "auto" },
+    ],
+    [
+      "control-refinement.css|.atelier .modal > .modal-close::before|",
+      { position: "absolute", "z-index": "-1", top: "calc(-20px - 1px)", right: "-20px" },
+    ],
+    [
+      "control-refinement.css|.atelier .modal > .modal-close::after|",
+      { position: "absolute", "z-index": "-1", inset: "-1px" },
+    ],
+    [
+      "mobile-forms.css|.atelier .modal > .modal-bar-title|",
+      { position: "sticky", top: "20px", "z-index": "5" },
+    ],
+    ["editorial.css|.atelier .modal .modal-close|", { "z-index": "5", right: "20px", top: "20px" }],
+    [
+      "foundation.css|.atelier .modal-close|",
+      { position: "absolute", right: "18px", top: "18px", "z-index": "2" },
+    ],
+    ["motion.css|.atelier .modal-close|", { "z-index": "5" }],
+  ]);
+  const seen = new Set();
+  for (const file of readdirSync(dir).filter((name) => name.endsWith(".css"))) {
+    for (const r of flatRules(readFileSync(new URL(file, dir), "utf8"))) {
+      for (const selector of r.selector.split(",").map((part) => part.trim())) {
+        if (!/\.modal-bar-title|\.modal-close(?![\w-])/.test(selector)) continue;
+        const placed = [...r.body.matchAll(/([a-z-]+)\s*:\s*([^;]+?)\s*(?:;|$)/g)]
+          .filter(([, prop]) => PLACEMENT.test(prop))
+          .map(([, prop, value]) => [prop, value.replace(/\s*!important/, "")]);
+        if (!placed.length) continue;
+        if (/\.modal-hero/.test(selector) && heroLandscape(r.context)) continue;
+        const key = `${file}|${selector}|${r.context.join(" | ")}`;
+        const expected = allowed.get(key);
+        assert.ok(
+          expected,
+          `${key} places the strip, title or close button: ${JSON.stringify(placed)}`,
+        );
+        for (const [prop, value] of placed) assert.equal(value, expected[prop], `${key}: ${prop}`);
+        seen.add(key);
+      }
+    }
+  }
+  assert.deepEqual([...seen].sort(), [...allowed.keys()].sort());
 });
 
 test("the strip is opaque and sized when on, the title is readable, and neither has a transition", () => {

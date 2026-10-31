@@ -478,3 +478,42 @@ test("picker translations exist in English and German", () => {
     );
   }
 });
+
+/** A card whose picker list holds one option below the visible part of the list. */
+function paintedCombobox({ reveal }) {
+  const calls = [];
+  const cards = loadCards();
+  const card = makeCard(cards);
+  const input = element();
+  const list = element({ scrollHeight: 400, clientHeight: 100, scrollTop: 0 });
+  list.scrollHeight = 400;
+  list.clientHeight = 100;
+  list.scrollTop = 0;
+  list.getBoundingClientRect = () => ({ top: 500, bottom: 600 });
+  const option = element();
+  option.scrollIntoView = (options) => calls.push(options);
+  option.getBoundingClientRect = () => ({ top: 640, bottom: 680 });
+  list.querySelectorAll = () => [option];
+  const panel = element();
+  card.shadowRoot.querySelector = (sel) =>
+    sel.startsWith("[data-combobox-panel")
+      ? panel
+      : sel.startsWith("[data-combobox-list")
+        ? list
+        : input;
+  card.shadowRoot.activeElement = input;
+  card._comboboxPaint({ id: "c", open: true, active: 0, items: [recipe(1)] }, { reveal });
+  return { calls, list };
+}
+
+test("a picker list painted without a key press never scrolls the dialog around it, even with the field focused", () => {
+  const idle = paintedCombobox({ reveal: false });
+  assert.deepEqual(idle.calls, []);
+  assert.equal(
+    idle.list.scrollTop,
+    80,
+    "only the list scrolls, just far enough to show the option",
+  );
+  const typing = paintedCombobox({ reveal: true });
+  assert.equal(typing.calls.length, 1, "a key press in the field still gets the option in view");
+});
