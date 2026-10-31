@@ -90,3 +90,26 @@ test("on narrow cards the cooking bar is one compact row on a solid ground", () 
   assert.match(block, /background:\s*var\(--at-surface\)/);
   assert.match(block, /\.btn\.primary \{\s*grid-column:\s*auto/);
 });
+
+test("edit dialog save bar is flush with the dialog edges and square at the bottom", () => {
+  const polish = css("polish");
+  const flush = polish.slice(polish.indexOf("--editor-inline: clamp"));
+  const vars = flush.slice(flush.indexOf("--editor-inline"), flush.indexOf("}"));
+  assert.match(vars, /--editor-inline:\s*clamp\(24px, 3\.1cqi, 45px\)/);
+  assert.match(vars, /padding-inline:\s*var\(--editor-inline\)/);
+  assert.match(
+    flush,
+    /@container atelier-card \(max-width: 460px\) \{\s*\.atelier \.modal-content\.atelier-editor \{\s*--editor-inline: 19px;/,
+  );
+  const footer = rule(flush, ".atelier .modal-content.atelier-editor .editor-footer");
+  assert.match(footer, /margin-inline:\s*calc\(-1 \* var\(--editor-inline\)\)/);
+  assert.match(footer, /padding-inline:\s*var\(--editor-inline\)/);
+  // The dialog's own overflow clip rounds the corners, so the bar must not carry a radius of its own.
+  assert.match(footer, /border-radius:\s*0;/);
+});
+
+test("cook step eyebrow hyphenates a long word like the heading below it", () => {
+  const block = rule(css("editorial"), ".atelier .cook-step-section");
+  assert.match(block, /hyphens:\s*auto;/);
+  assert.match(block, /overflow-wrap:\s*break-word;/);
+});

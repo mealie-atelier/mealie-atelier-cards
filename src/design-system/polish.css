@@ -2619,6 +2619,23 @@
   padding-bottom: 0;
 }
 
+/* The Save bar runs flush with the dialog edges at every width. The dialog's inline padding lives in one variable, so the
+   footer's negative margin always equals it, and the dialog's own rounded overflow clips the bottom corners. */
+.atelier .modal-content.atelier-editor {
+  --editor-inline: clamp(24px, 3.1cqi, 45px);
+  padding-inline: var(--editor-inline);
+}
+@container atelier-card (max-width: 460px) {
+  .atelier .modal-content.atelier-editor {
+    --editor-inline: 19px;
+  }
+}
+.atelier .modal-content.atelier-editor .editor-footer {
+  margin-inline: calc(-1 * var(--editor-inline));
+  padding-inline: var(--editor-inline);
+  border-radius: 0;
+}
+
 /* A progress bar cut by the scrolled step column's top edge would read as a stray tab; it hides until back in view. */
 .atelier .modal:has(.cook-layout) .cook-track.is-cut {
   visibility: hidden;

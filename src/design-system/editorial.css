@@ -1187,6 +1187,8 @@
   text-transform: uppercase;
   color: var(--ds-brand-text);
   font-weight: 760;
+  hyphens: auto;
+  overflow-wrap: break-word;
 }
 .atelier .cook-stage .cook-step-detail {
   max-width: 620px;
