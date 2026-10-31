@@ -139,8 +139,18 @@
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: var(--at-close-reserve);
+  /* Whole words stay whole; only a word wider than the line breaks, never an ordinary one. */
+  overflow-wrap: break-word;
+  hyphens: manual;
+  text-wrap: balance;
+}
+
+/* The cooking header title is a plain div over the photo, so it needs its own wrap rule and the close tile clearance. */
+.atelier .modal .cook-visual .cook-brand {
+  box-sizing: border-box;
+  max-width: min(75%, calc(100% - 27px - var(--at-close-reserve)));
   overflow-wrap: anywhere;
-  hyphens: auto;
+  hyphens: manual;
 }
 
 /* The editor lead already keeps 64px clear on its right (foundation.css), so its title block only needs what is left
@@ -149,8 +159,9 @@
   box-sizing: border-box;
   max-width: 100%;
   padding-inline-end: max(0px, var(--at-close-reserve) - 64px);
-  overflow-wrap: anywhere;
-  hyphens: auto;
+  overflow-wrap: break-word;
+  hyphens: manual;
+  text-wrap: balance;
 }
 
 /* Fields side by side or stacked in a column share one rhythm: the grid gap alone spaces them. */

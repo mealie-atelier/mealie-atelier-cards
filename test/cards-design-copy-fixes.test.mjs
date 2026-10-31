@@ -395,9 +395,9 @@ test("the cooking dialog is a fixed-height flex column with the action bar on it
   );
 });
 
-test("long German words hyphenate only when the word is at least 12 letters long", () => {
+test("week day names never hyphenate, so no German word is split by the browser", () => {
   const polish = read("../src/design-system/polish.css");
-  assert.match(rule(polish, ".atelier .day-meal-name"), /hyphenate-limit-chars:\s*12 5 5;/);
+  assert.match(rule(polish, ".atelier .day-meal-name"), /hyphens:\s*manual;/);
 });
 
 test("the cards UI always names the Mealie Atelier Bridge in full", () => {

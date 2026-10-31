@@ -1542,10 +1542,16 @@
   }
   .atelier .nutri-header {
     padding: 16px;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr);
   }
   .atelier .nutri-header .nutri-eyebrow {
     font-size: 19px;
+    grid-column: 1 / -1;
+    grid-row: auto;
+    max-width: none;
+  }
+  .atelier .nutri-header :is(strong, span) {
+    text-align: start;
   }
   .atelier .nutri-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));

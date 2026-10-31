@@ -65,8 +65,8 @@ test("a long dish name in the week strip wraps and clamps instead of overflowing
   assert.match(cards.document.markup, /<div lang="[A-Za-z-]+" class="atelier /);
   const css = file("src/design-system/polish.css");
   const rule = css.match(/\.atelier \.day-meal-name \{[^}]*\}/)?.[0] || "";
-  assert.match(rule, /overflow-wrap: anywhere/);
-  assert.match(rule, /hyphens: auto/);
+  assert.match(rule, /overflow-wrap: break-word/);
+  assert.match(rule, /hyphens: manual/);
   assert.match(rule, /line-clamp: 3/);
 });
 

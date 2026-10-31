@@ -2313,6 +2313,33 @@ html.js .live-frame:not([data-ready])::after {
   overflow-x: auto;
   font: inherit;
 }
+/* The no-wrap command keeps scrolling. A scroll-driven fade on the right edge shows that there is more of it:
+   it exists only while the command overflows and shrinks to nothing once the end is reached. */
+@property --term-fade {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes term-fade-out {
+  0%,
+  85% {
+    --term-fade: 28px;
+  }
+  100% {
+    --term-fade: 0px;
+  }
+}
+.term pre {
+  --term-fade: 0px;
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - var(--term-fade)), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - var(--term-fade)), transparent);
+}
+@supports (animation-timeline: scroll()) {
+  .term pre {
+    animation: term-fade-out linear both;
+    animation-timeline: scroll(self inline);
+  }
+}
 @media (max-width: 480px) {
   .term {
     font-size: 12px;
@@ -3254,7 +3281,7 @@ details[open] .chev {
 }
 .recipe-metrics b {
   overflow-wrap: break-word;
-  hyphens: auto;
+  hyphens: manual;
   font: 500 22px/1.2 var(--serif);
 }
 .recipe-metrics span {
@@ -3310,7 +3337,7 @@ details[open] .chev {
   }
   .recipe-hero .recipe-metrics b {
     overflow-wrap: break-word;
-    hyphens: auto;
+    hyphens: manual;
     font-size: 26px;
   }
   .recipe-hero .recipe-metrics div {

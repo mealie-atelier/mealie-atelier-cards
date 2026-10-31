@@ -1257,6 +1257,13 @@
   line-height: 1.25;
   margin: 9px 0 10px;
   text-wrap: balance;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* A flex item keeps min-width: auto, so one unbreakable word would widen the whole lead past the dialog. */
+.atelier .editor-lead > div {
+  min-width: 0;
 }
 .atelier .editor-lead {
   gap: 18px;
@@ -1628,6 +1635,11 @@
   .atelier .modal:has(.cook-layout) .cook-footnote {
     order: 5;
   }
+  /* The dialog never scrolls here, the column does: the close tile floats over it, so the step heading and text keep
+     clear of the tile instead of sliding under it. */
+  .atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
+    padding-inline-end: var(--cook-close-clear);
+  }
 }
 
 /* Laptop screens: the cooking dialog keeps its height, the photo column stays whole and only the
@@ -1677,6 +1689,11 @@
   .atelier .modal:has(.cook-layout) .cook-footnote {
     order: 5;
     padding-bottom: 18px;
+  }
+  /* The dialog never scrolls here, the column does: the close tile floats over it, so the step heading and text keep
+     clear of the tile instead of sliding under it. */
+  .atelier .modal:has(.cook-layout) .cook-stage :is(h2, p, .cook-step-detail) {
+    padding-inline-end: var(--cook-close-clear);
   }
 }
 
@@ -2517,11 +2534,8 @@
   -webkit-line-clamp: 3;
   line-clamp: 3;
   overflow: hidden;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  hyphenate-limit-chars: 12 5 5;
-  -webkit-hyphenate-limit-before: 5;
-  -webkit-hyphenate-limit-after: 5;
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
 /* Tablet week strip: seven narrow columns. A smaller name and tighter padding keep long German
    words such as "Hähnchensalat" whole instead of splitting them mid-word. */
@@ -2531,6 +2545,15 @@
   }
   .atelier .week-grid .day-meal-name {
     font-size: 11px;
+  }
+}
+
+/* Wide cards keep a real minimum column width and the grid scrolls sideways instead of squeezing recipe names into
+   55px. Scoped to the card container so the narrow carousel rules in layout.css (760px and below) keep winning. */
+@container atelier-card (min-width: 901px) {
+  .atelier .week-grid {
+    grid-template-columns: repeat(7, minmax(120px, 1fr));
+    overflow-x: auto;
   }
 }
 

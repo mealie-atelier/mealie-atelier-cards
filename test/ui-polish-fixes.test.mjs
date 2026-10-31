@@ -134,7 +134,7 @@ test("mealplan toolbar buttons meet the 44px touch target and the tablet week st
   assert.match(adaptive, /repeat\(7, minmax\(140px, 1fr\)\)/);
   assert.match(
     read("../src/design-system/polish.css"),
-    /\.day-meal-name \{[^}]*hyphens: auto;[^}]*hyphenate-limit-chars: 12 5 5;[^}]*-webkit-hyphenate-limit-before: 5;[^}]*-webkit-hyphenate-limit-after: 5/,
+    /\.day-meal-name \{[^}]*overflow-wrap: break-word;[^}]*hyphens: manual/,
   );
 });
 
