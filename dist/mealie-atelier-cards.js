@@ -5127,7 +5127,7 @@ ha-card {
   .atelier *::after {
     animation-duration: var(--ds-motion-reduced) !important;
     animation-iteration-count: 1 !important;
-    transition-duration: var(--ds-motion-reduced) !important;
+    transition: none !important;
     scroll-behavior: auto !important;
     filter: none !important;
   }
@@ -7425,7 +7425,7 @@ ha-card {
   .atelier .ds-page * {
     scroll-behavior: auto !important;
     animation-duration: var(--ds-motion-reduced) !important;
-    transition-duration: var(--ds-motion-reduced) !important;
+    transition: none !important;
   }
 }
 
@@ -9695,7 +9695,7 @@ ha-card {
   .atelier *::before,
   .atelier *::after {
     animation-duration: var(--ds-motion-reduced) !important;
-    transition-duration: var(--ds-motion-reduced) !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }
@@ -11224,7 +11224,7 @@ ha-card {
 }
 @media (prefers-reduced-motion: reduce) {
   .atelier :is(.btn, .icon-btn, select) {
-    transition-duration: var(--ds-motion-reduced);
+    transition: none !important;
   }
 }
 /* Consistent vertical rhythm and icon alignment for grouped actions. */
@@ -12077,7 +12077,7 @@ ha-card {
 @media (prefers-reduced-motion: reduce) {
   .atelier .ed-progress-bar,
   .atelier .ed-option {
-    transition-duration: var(--ds-motion-reduced);
+    transition: none !important;
   }
 }
 
