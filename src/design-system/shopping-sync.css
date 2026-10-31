@@ -140,6 +140,12 @@
 .atelier .sync-panel .form-actions + .editor-card {
   margin-block-start: var(--ds-space-3);
 }
+.atelier .sync-panel .editor-card > .eyebrow + .form-actions {
+  margin-block-start: 0;
+}
+.atelier .sync-panel .editor-card > .form-actions + .sync-preview {
+  margin-top: var(--ds-space-3);
+}
 .atelier .sync-sr {
   position: absolute;
   inline-size: 1px;

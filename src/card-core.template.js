@@ -459,6 +459,7 @@ class MealieAtelierCard extends HTMLElement {
   }
   disconnectedCallback() {
     this._unwatchModalBar();
+    this._unwatchStepSizing();
     // BEGIN feature H: offline queue listener
     this._offlineDetach();
     // END feature H
@@ -1091,6 +1092,27 @@ class MealieAtelierCard extends HTMLElement {
       if (ta.scrollHeight) ta.style.height = `${ta.scrollHeight}px`;
     }
   }
+  /** Re-measures the step fields once layout, fonts and the dialog width have settled. */
+  _settleStepSizing() {
+    const run = () => {
+      if (this._modal === "edit") this._autosizeSteps();
+    };
+    requestAnimationFrame(run);
+    document.fonts?.ready?.then(run);
+    const dialog = this.shadowRoot.querySelector(".modal");
+    if (this._stepSizeTarget === dialog) return;
+    this._unwatchStepSizing();
+    if (dialog && typeof ResizeObserver === "function") {
+      this._stepSizeTarget = dialog;
+      this._stepSizeObserver = new ResizeObserver(run);
+      this._stepSizeObserver.observe(dialog);
+    }
+  }
+  _unwatchStepSizing() {
+    this._stepSizeObserver?.disconnect();
+    this._stepSizeObserver = null;
+    this._stepSizeTarget = null;
+  }
   _renumberSteps() {
     this.shadowRoot.querySelectorAll("[data-editor-step]").forEach((element, index) => {
       const count = element.querySelector(".step-count");
@@ -1377,7 +1399,10 @@ class MealieAtelierCard extends HTMLElement {
       }
     // After the scroll position is back: the strip is judged on the real geometry, never on the old state.
     this._watchModalBar();
-    if (this._modal === "edit") this._autosizeSteps();
+    if (this._modal === "edit") {
+      this._autosizeSteps();
+      this._settleStepSizing();
+    } else this._unwatchStepSizing();
     // On phones the navigation is swipeable: keep the active destination in sight.
     // When re-rendering a checkbox, form or timer, do not reset the user's rail position.
     // Layout can still settle after the swap (container queries, fonts), so it runs again next frame.

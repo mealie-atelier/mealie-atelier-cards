@@ -745,7 +745,8 @@ ha-card {
   font-weight: 600;
   flex: 1;
   min-width: 0;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 .atelier .shopping-qty {
   font-size: 11px;
@@ -1639,4 +1640,9 @@ ha-card {
     margin: auto;
     width: 100%;
   }
+}
+
+/* Step textareas size to their content where the browser supports it (the script autosize covers the rest). */
+.atelier textarea[data-step-text] {
+  field-sizing: content;
 }
