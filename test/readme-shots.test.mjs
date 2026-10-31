@@ -19,8 +19,8 @@ test("the recipe README shot ends between two rows instead of slicing a card", (
 test("the phone cooking shot scrolls the tools and timer clear of the step bar", () => {
   const main = block("main");
   const cook = main.slice(main.indexOf('if step == "cook":', main.indexOf("PHONE, True")));
-  assert.match(cook.slice(0, 200), /start_cooking\(page\)\s+scroll_cook_dialog\(page\)/);
-  assert.match(block("scroll_cook_dialog"), /eval\(cuts\)\(m, false\) === 0/);
+  assert.match(cook.slice(0, 200), /start_cooking\(page\)\s+scroll_cook_dialog\(page, True\)/);
+  assert.match(block("scroll_cook_dialog"), /eval\(cuts\)\(m, true\) === 0/);
 });
 
 test("unused stale screenshots and uncredited food images are gone", () => {

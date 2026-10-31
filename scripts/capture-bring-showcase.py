@@ -6,7 +6,9 @@ Runs the standalone web app on ports 5190 (fake Bring!) and 5191 (app) against a
 fictional list "Wocheneinkauf" (German) and walks the real connect dialog with the fake Bring! server
 (web/test/support/fake-bring-server.mjs, account familie.beispiel@example.com). The English run adds a
 temporary Mealie list "Weekly shop" and removes it again. Nothing real is contacted. The dialog is captured in its
-connected state: a wide one for the browser frame and a phone one.
+connected state: a wide one for the browser frame and a phone one. The English wide run also writes
+web/assets/bring-account.webp (the web README image): the whole dialog with README_MARGIN css pixels above and below its
+borders, so the bottom border and the rounded corners show.
 """
 
 from __future__ import annotations
@@ -29,6 +31,8 @@ MEALIE, TOKEN_FILE = sys.argv[1], sys.argv[2]
 OUT = Path(sys.argv[3]) if len(sys.argv) > 3 else ROOT / "demo" / "showcase"
 TOKEN = Path(TOKEN_FILE).read_text().strip()
 FAKE_PORT, APP_PORT = 5190, 5191
+README_SHOT = ROOT / "web" / "assets" / "bring-account.webp"
+README_MARGIN = 48  # css pixels kept below the dialog's bottom border
 EMAIL, PASSWORD = "familie.beispiel@example.com", "fixture-bring-password"
 LOCALES = {
     "de": {"locale": "de-DE", "list": "Wocheneinkauf", "shop": "Einkauf", "nav": "Einkauf"},
@@ -80,7 +84,13 @@ def save(png: Path, name: str, locale: str, widths: list[int], crop_height: int 
     return image.size
 
 
-def connect(browser, lang: str, viewport: dict, scale: int, shot: Path):
+def readme_clip(width: int, dialog_top: float, dialog_bottom: float) -> dict:
+    """The clip of the README image: the full width, the dialog with a margin above and below its borders."""
+    top = max(0, round(dialog_top - README_MARGIN))
+    return {"x": 0, "y": top, "width": width, "height": round(dialog_bottom + README_MARGIN) - top}
+
+
+def connect(browser, lang: str, viewport: dict, scale: int, shot: Path, readme: Path | None = None):
     spec = LOCALES[lang]
     context = browser.new_context(
         locale=spec["locale"],
@@ -119,6 +129,14 @@ def connect(browser, lang: str, viewport: dict, scale: int, shot: Path):
         page.locator('[data-action="sync-bring-disconnect-ask"]').wait_for()
         page.wait_for_timeout(1500)
         page.screenshot(path=str(shot))
+        if readme:
+            # A taller viewport lets the whole dialog show, whatever its height, before it is measured.
+            page.set_viewport_size({"width": viewport["width"], "height": 1400})
+            page.wait_for_timeout(600)
+            top, bottom = page.locator('[role="dialog"]').first.evaluate(
+                "el => { const r = el.getBoundingClientRect(); return [r.top, r.bottom]; }"
+            )
+            page.screenshot(path=str(readme), clip=readme_clip(viewport["width"], top, bottom))
     except Exception:
         page.screenshot(path=str(shot.with_suffix(".fail.png")))
         raise
@@ -167,8 +185,14 @@ def main():
                         try:
                             wait_port(APP_PORT)
                             png = tmp / f"{lang}-{kind}.png"
-                            connect(browser, lang, viewport, 2, png)
+                            readme = tmp / "readme-bring-account.png" if lang == "en" and kind == "wide" else None
+                            connect(browser, lang, viewport, 2, png, readme)
                             save(png, name, lang, widths, 858 if kind == "wide" else 0)
+                            if readme:
+                                image = Image.open(readme).convert("RGB")
+                                README_SHOT.parent.mkdir(parents=True, exist_ok=True)
+                                image.save(README_SHOT, "WEBP", quality=86, method=6)
+                                print("en readme bring-account", image.size)
                         finally:
                             app.terminate()
                             app.wait(10)

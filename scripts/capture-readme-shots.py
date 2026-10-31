@@ -116,6 +116,39 @@ async def prepare_phone_boards() -> None:
                 raise SystemExit(f"dashboard config: {error}")
 
 
+# The sidebar every shot shows: Overview, Atelier, Kitchen, Map, Energy. The rig is shared with other captures
+# (German showcase, live tests) that rename and hide these dashboards, so each run puts them back.
+SIDEBAR = {
+    "map": {"title": "Map"},
+    "atelier_live": {"title": "Atelier", "show_in_sidebar": True},
+    "atelier_cards": {"title": "Kitchen", "show_in_sidebar": True},
+}
+
+
+async def set_profile_language() -> None:
+    """Pin the rig user's profile language to English.
+
+    The profile language wins over the browser locale. The German showcase capture leaves it on German, and
+    Home Assistant then labels the sidebar in German. The built-in map dashboard also keeps the German title it was
+    renamed to ("Karte"), which sorts it before "Kitchen" instead of after it, so the sidebar dashboards are reset.
+    """
+    async with cs.HaSocket(cs.BASE, cs.read_token(str(LIVE / "state" / "ha-token"))) as socket:
+        ok, error = await socket.call(
+            {"type": "frontend/set_user_data", "key": "language", "value": {"language": "en"}}
+        )
+        if not ok:
+            raise SystemExit(f"profile language: {error}")
+        _, boards = await socket.call({"type": "lovelace/dashboards/list"})
+        for board in boards or []:
+            wanted = SIDEBAR.get(board["id"])
+            if wanted and any(board.get(key) != value for key, value in wanted.items()):
+                ok, error = await socket.call(
+                    {"type": "lovelace/dashboards/update", "dashboard_id": board["id"], **wanted}
+                )
+                if not ok:
+                    raise SystemExit(f"sidebar dashboard {board['id']}: {error}")
+
+
 def sign_in(page) -> None:
     page.goto(f"{cs.BASE}/{cs.DASHBOARD}-light/dashboard")
     page.wait_for_url("**/auth/authorize**", timeout=30_000)
@@ -142,6 +175,9 @@ def set_sidebar(page, mode: str) -> None:
     page.evaluate(f"localStorage.setItem('dockedSidebar', JSON.stringify('{mode}'))")
     page.reload()
     page.wait_for_load_state("domcontentloaded")
+    if mode == "docked":
+        # The English sidebar names the map panel "Map"; wait for it so no shot is taken in another language.
+        page.get_by_text("Map", exact=True).first.wait_for(timeout=60_000)
 
 
 def view(page, theme: str, mode: str, board: str = cs.DASHBOARD) -> None:
@@ -304,19 +340,30 @@ def scroll_until_clean(page) -> None:
     raise SystemExit("no phone page scroll with a clean bottom edge")
 
 
-def scroll_cook_dialog(page) -> None:
-    """Scroll the cooking dialog (natural size) the fewest pixels that leave no tool or timer card under the step bar."""
+def scroll_cook_dialog(page, fit_viewport: bool = False) -> None:
+    """Scroll the cooking dialog (natural size) the fewest pixels that leave nothing cut at an edge.
+
+    Neither a tool or timer card under the step bar nor a half line of step text under the pinned title strip
+    (the sticky close button draws it) may be sliced by the scroll position. On a phone the last scroll position
+    can still leave a line astride the strip, so the viewport is shortened (same aspect) until one position is clean.
+    """
     modal = page.locator(".modal >> visible=true").first
-    top = modal.evaluate(
+    find = (
         "(m, [cuts, limit]) => { m.style.transition = 'none';"
-        " for (let t = 0; t <= limit; t += 1) { m.scrollTop = t; if (eval(cuts)(m, false) === 0) return t; }"
-        " return -1; }",
-        [CUTS, 500],
+        " for (let t = 0; t <= limit; t += 1) { m.scrollTop = t; if (eval(cuts)(m, true) === 0) return t; }"
+        " return -1; }"
     )
-    if top < 0:
-        raise SystemExit("no cooking dialog scroll without a cut card")
-    print("cooking dialog scroll", top)
-    page.wait_for_timeout(400)
+    heights = range(PHONE["height"], PHONE["height"] - 200, -2) if fit_viewport else [None]
+    for height in heights:
+        if height is not None:
+            page.set_viewport_size({"width": round(height * PHONE["width"] / PHONE["height"]), "height": height})
+            page.wait_for_timeout(180)
+        top = modal.evaluate(find, [CUTS, 800])
+        if top >= 0:
+            print("cooking dialog scroll", top, "viewport height", height)
+            page.wait_for_timeout(400)
+            return
+    raise SystemExit("no cooking dialog scroll without a cut card or a half line")
 
 
 def fit_desktop_viewport(page, check) -> None:
@@ -338,6 +385,7 @@ def shot(page, tmp: Path) -> Path:
 def main() -> None:
     asyncio.run(cs.prepare())
     asyncio.run(prepare_phone_boards())
+    asyncio.run(set_profile_language())
     tmp = Path(sys.argv[0]).resolve().parent / ".shot.png"
     desktop = [
         ("dashboard-light", "light", "dashboard", None),
@@ -398,7 +446,7 @@ def main() -> None:
                     modal = page.locator(".modal >> visible=true").first
                     if step == "cook":
                         start_cooking(page)
-                        scroll_cook_dialog(page)
+                        scroll_cook_dialog(page, True)
                     else:
                         modal.evaluate("m => { m.scrollTop = 0; }")
                         fit_phone_viewport(page, lambda: modal.evaluate(CUTS, False))
