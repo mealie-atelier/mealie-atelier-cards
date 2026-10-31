@@ -760,6 +760,11 @@ export class SyncManager {
     }
   }
 
+  /** The line as Mealie holds it now, shown next to the sent title in the review row. */
+  currentTitle(item, options) {
+    return mapItem(item, options)?.title ?? "";
+  }
+
   options(destination) {
     return {
       decimalComma: String(this.language() || "en")
@@ -900,7 +905,8 @@ export class SyncManager {
     }
     const lost = await this.sendBatch(rule, batchId, byId, destinationItems || [], options, counts);
     let completionFailed = 0;
-    if (rule.mode === "move") completionFailed = await this.completeSources(ruleId, byId, counts);
+    if (rule.mode === "move")
+      completionFailed = await this.completeSources(ruleId, byId, counts, options);
     this.baseline.set(ruleId, snapshot([...byId.values()]));
     const delivered = counts.sent + counts.skipped_duplicates;
     const problems = counts.failed + counts.needs_reconciliation;
@@ -999,14 +1005,20 @@ export class SyncManager {
         else {
           const current = fingerprint(item);
           if (current !== record.sent_fingerprint)
-            this.set(record, "changed_after_send", { fingerprint: current });
+            this.set(record, "changed_after_send", {
+              fingerprint: current,
+              current_title: this.currentTitle(item, options),
+            });
         }
       } else if (record.state === "source_completed") {
         // A deleted completed item is normal; the record becomes prunable.
         if (item) {
           const current = fingerprint(item);
           if (current !== record.fingerprint)
-            this.set(record, "changed_after_send", { fingerprint: current });
+            this.set(record, "changed_after_send", {
+              fingerprint: current,
+              current_title: this.currentTitle(item, options),
+            });
         }
       } else if (record.state === "pending" || record.state === "failed") {
         const mapped = item && !item.checked ? mapItem(item, options) : null;
@@ -1143,7 +1155,7 @@ export class SyncManager {
   }
 
   /** Move mode: checks off items in Mealie that the destination confirmed. Returns failures. */
-  async completeSources(ruleId, byId, counts) {
+  async completeSources(ruleId, byId, counts, options) {
     let failed = 0;
     for (const record of this.ruleRecords(ruleId)) {
       if (record.state !== "sent" || !this.rules[ruleId]) continue;
@@ -1169,6 +1181,7 @@ export class SyncManager {
         // Edited between send and completion: the destination holds the old version.
         this.set(record, "changed_after_send", {
           fingerprint: currentPrint,
+          current_title: this.currentTitle(current, options),
           completion_pending: false,
         });
         byId.set(itemId, current);
