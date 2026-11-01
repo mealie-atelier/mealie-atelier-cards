@@ -8,7 +8,7 @@ const dialogs = readFileSync(new URL("../src/components/dialogs.js", import.meta
 test("detail step rows keep the toggle in its own button and the text outside any button", () => {
   const start = dialogs.indexOf('<div class="recipe-step-row"');
   const row = dialogs.slice(start, dialogs.indexOf("</div>`;", start));
-  assert.match(row, /<button class="step-number step-toggle"[^>]*aria-pressed=/);
+  assert.match(row, /<button class="step-number step-toggle at-numeral"[^>]*aria-pressed=/);
   assert.match(row, /<div class="step /);
   assert.doesNotMatch(row, /<button class="step /);
   assert.match(row, /step-text">\$\{inlineMarkdown\(instructionText\(step\)\)\}/);

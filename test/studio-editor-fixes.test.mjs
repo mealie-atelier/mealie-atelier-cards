@@ -73,16 +73,16 @@ test("a plain confirm still focuses the primary button", () => {
 
 test("ticking a cookbook recipe updates the localized selection heading", () => {
   const card = makeCard(loadCards());
-  const heading = { textContent: "0 recipes selected" };
+  const heading = { innerHTML: '<span class="at-numeral">0</span> recipes selected' };
   card._view = "cookbook";
   card.shadowRoot.querySelector = (sel) =>
     sel === "[data-book-selected-count]" ? heading : { disabled: true };
   const tick = (checked, slug) =>
     card._handleInput({ target: { hasAttribute: () => true, checked, dataset: { book: slug } } });
   tick(true, "a");
-  assert.equal(heading.textContent, "1 recipe selected");
+  assert.equal(heading.innerHTML, '<span class="at-numeral">1</span> recipe selected');
   tick(true, "b");
-  assert.equal(heading.textContent, "2 recipes selected");
+  assert.equal(heading.innerHTML, '<span class="at-numeral">2</span> recipes selected');
 });
 
 test("the cookbook heading carries the live-count hook", () => {

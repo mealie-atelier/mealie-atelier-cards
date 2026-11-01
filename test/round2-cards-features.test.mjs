@@ -171,7 +171,7 @@ test("a recipe step keeps its checkbox separate from the text and links URLs saf
   );
   assert.match(
     row,
-    /<button class="step-number step-toggle" type="button" data-action="step-check" data-value="0" aria-pressed="true" aria-label="Step 1">01<\/button><span class="step-copy">/,
+    /<button class="step-number step-toggle at-numeral" type="button" data-action="step-check" data-value="0" aria-pressed="true" aria-label="Step 1">01<\/button><span class="step-copy">/,
   );
   assert.match(
     row,
