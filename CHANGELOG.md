@@ -7,6 +7,12 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Fixed
 
 - Product page: the play triangle sits in the middle of its circle on the film play button and the hero film link instead of to the right.
+- Scaled ingredient amounts read like a kitchen: grams and milliliters round to sensible steps (330 g instead of 333.33 g), spoons, cups, pinches and pieces round to quarters and thirds, and all fractions use the same glyphs (¼ ½ ¾ ⅓ ⅔). Common units and nouns follow the amount as shown (1 Tasse, 1½ Tassen, 1 Ei, 3 Eier, 1 cup, 2 cups) in the recipe dialog, cooking mode and the editor preview.
+- Dialog buttons such as "Erledigte entfernen" no longer break into two lines on a phone: when two labels do not fit side by side, each button takes its own row.
+- Visual editor: the "Einrichtungsassistent starten" / "Run setup wizard" button stays on one line instead of being squeezed next to the intro text.
+- Cooking mode on a short phone: the close button sits fully inside the photo band instead of hanging over its lower edge.
+- Cooking mode: the shared session note reads "Mit dem gemeinsamen Kochen synchronisiert" / "Synced with shared cooking".
+- Web app: the footer line no longer leaves "MEALIE" alone on a second line on narrow screens.
 
 ## [0.12.2] - 2026-11-01
 
