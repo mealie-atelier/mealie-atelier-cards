@@ -674,6 +674,17 @@
   color: var(--ds-brand-text);
   font-weight: 800;
 }
+.atelier :is(.field, .ds-field) > .field-error,
+.atelier .field-error {
+  display: block;
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-negative);
+  font-size: var(--ds-font-xs);
+  font-weight: 650;
+}
+.atelier .field:has([aria-invalid="true"]) > span:first-child {
+  color: var(--ds-negative);
+}
 .atelier .cook-timer-error {
   margin: var(--ds-space-2) 0 0;
   color: var(--ds-negative);

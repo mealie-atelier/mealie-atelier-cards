@@ -178,7 +178,7 @@
           ?.setAttribute("content", normalizedTheme === "light" ? "#f4f1eb" : "#101613");
       };
       syncShellTheme(card._design.theme);
-      // Theme "auto" follows the system colour scheme live, including the browser chrome colour.
+      // Theme "auto" follows the system color scheme live, including the browser chrome color.
       window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
         if (card._design.theme !== "auto") return;
         syncShellTheme("auto");
@@ -213,7 +213,7 @@
       card.addEventListener("mealie-atelier-theme-change", (event) => {
         syncShellTheme(event.detail?.theme);
       });
-      // Automatic theme follows the system colour scheme live while the app is open.
+      // Automatic theme follows the system color scheme live while the app is open.
       window.matchMedia?.("(prefers-color-scheme: light)")?.addEventListener?.("change", () => {
         if (card._design.theme === "auto") syncShellTheme("auto");
       });

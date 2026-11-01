@@ -75,14 +75,14 @@ test("servings are not sent when the saved value is unchanged, even outside the 
   assert.equal("servings" in sent[0].payload, false);
   formValues = { name: "Big", description: "x", servings: "" };
   await card._handleSubmit({ target: { closest: () => form }, preventDefault() {} });
-  assert.equal("servings" in sent[1].payload, false, "an empty field means no change");
+  assert.equal(sent.length, 1, "an emptied field with a saved value is refused, not dropped");
 });
 
-test("changed servings above 100 or at most 0 show a toast and skip the mutation", async () => {
+test("changed servings above 100 or at most 0 skip the mutation without a toast", async () => {
   for (const bad of ["150", "0", "-1"]) {
     const { sent, flashes } = await submitEdit({ name: LONG, description: "", servings: bad });
     assert.equal(sent.length, 0, bad);
-    assert.match(flashes[0], /Servings must be more than 0 and at most 100/, bad);
+    assert.equal(flashes.length, 0, "the inline error replaces the toast");
   }
 });
 

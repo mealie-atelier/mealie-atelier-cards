@@ -122,7 +122,7 @@
       };
       // Fill this week and next from Monday, so the week view never opens on empty days.
       // Today's dinner stays the first recipe; the other days rotate through the rest, and a lunch
-      // repeats a dinner four days away, never the neighbouring one.
+      // repeats a dinner four days away, never the neighboring one.
       const monday = -((new Date().getDay() + 6) % 7);
       const meals = [];
       for (let d = monday; d < monday + 14; d += 1) {

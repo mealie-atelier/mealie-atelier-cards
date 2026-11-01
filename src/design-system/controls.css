@@ -13,6 +13,7 @@
   color-scheme: dark;
 }
 .atelier.light {
+  --ds-negative: #8f2f17;
   color-scheme: light;
 }
 

@@ -929,6 +929,31 @@ class MealieAtelierCard extends HTMLElement {
       this.closest?.("hui-card-preview, hui-card-options, hui-dialog-edit-card") != null
     );
   }
+  _showServingsError(form) {
+    const input = form?.querySelector?.('input[name="servings"]');
+    if (!input?.setAttribute) return;
+    input.setAttribute("aria-invalid", "true");
+    const label = input.closest?.("label") || input.parentNode;
+    let note = label?.querySelector?.("[data-servings-error]");
+    if (!note && label) {
+      note = document.createElement("span");
+      note.className = "field-error";
+      note.dataset.servingsError = "";
+      note.id = "servings-error";
+      note.setAttribute("role", "alert");
+      input.insertAdjacentElement("afterend", note);
+    }
+    if (note) note.textContent = this.t("editorServingsInvalid");
+    input.setAttribute("aria-describedby", "servings-error");
+    input.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    input.focus?.({ preventScroll: true });
+  }
+  _clearServingsError(input) {
+    if (input?.getAttribute?.("aria-invalid") !== "true") return;
+    input.removeAttribute("aria-invalid");
+    input.removeAttribute("aria-describedby");
+    input.closest?.("label")?.querySelector?.("[data-servings-error]")?.remove();
+  }
   _flash(text, kind = "status") {
     this._toast = String(text || "").slice(0, 500);
     this._toastKind = kind;
@@ -2776,6 +2801,7 @@ class MealieAtelierCard extends HTMLElement {
     if (event.target?.matches?.("[data-step-text]"))
       this._autosizeSteps({ querySelectorAll: () => [event.target] });
     if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
+    if (event.target?.matches?.('input[name="servings"]')) this._clearServingsError(event.target);
     // BEGIN feature B: recipe editor inputs
     if (this._editorInput(event)) return;
     // END feature B
@@ -3156,11 +3182,14 @@ class MealieAtelierCard extends HTMLElement {
           const rawServings = String(values.servings ?? "").trim();
           const servings = rawServings === "" ? NaN : Number(rawServings);
           const savedServings = Number(this._detail.recipeServings);
+          // An emptied field with a saved value above 0 is a change that cannot be sent, so it is
+          // refused like any other invalid value instead of being dropped silently.
           const servingsChanged = Number.isFinite(servings)
             ? servings !== savedServings
-            : rawServings !== "";
+            : rawServings !== "" || savedServings > 0;
           if (servingsChanged && !(Number.isFinite(servings) && servings > 0 && servings <= 100)) {
-            this._flash(this.t("editorServingsInvalid"), "error");
+            // Inline only: a toast re-renders the form and would throw the typed value away.
+            this._showServingsError(form);
             break;
           }
           const payload = {

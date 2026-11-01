@@ -50,7 +50,7 @@ body { font-family: "Bricolage", "Helvetica Neue", Arial, sans-serif; position: 
 // visible heights, which differ per locale because the copy wraps differently) and framed as whole
 // rounded cards, so nothing is cut at the frame edge and nothing bleeds off it. The recipe screen sits
 // in front and large enough to read at feed thumbnail size, the shopping screen behind it. Neither
-// screen shows a date, so the share image never goes stale. The copy column centres its headline
+// screen shows a date, so the share image never goes stale. The copy column centers its headline
 // block between the lockup and the chips, so a one line tagline (English) and a longer German one keep
 // the same rhythm.
 export function landingHtml(job) {
@@ -89,8 +89,8 @@ h1 em { font-style: normal; color: #9dcbb2; }
 // a full-bleed 1.9:1 crop would cut them to a sliver), the text sits on the solid dark panel at the
 // left. No text ever lies on the photo, so the contrast is that of cream on near-black, whatever the
 // picture shows. The photo meets the panel in a clean straight edge with a thin paprika accent (no
-// gradient, which smeared grey on light photos). The panel is composed top, middle, bottom: lockup,
-// then kicker and title centred in the remaining height, then a quiet one line footer.
+// gradient, which smeared gray on light photos). The panel is composed top, middle, bottom: lockup,
+// then kicker and title centered in the remaining height, then a quiet one line footer.
 // A title never breaks at a compound hyphen: every hyphenated word is kept whole and the font
 // shrinks (in the page, once the font has loaded) until the widest such word fits the panel.
 export function titleWords(title) {
