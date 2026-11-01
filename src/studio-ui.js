@@ -330,13 +330,21 @@ Object.assign(MealieAtelierCard.prototype, {
   // The shopping note keeps the amount the recipe asked for when the row cannot be summed (spoons, cups).
   _studioNoteAmount(item) {
     const de = this._language === "de";
-    if (item.needed != null) return [item.needed, this._studioUnit(item.unit, item.needed)];
+    if (item.needed != null)
+      return [this._studioNumber(item.needed), this._studioUnit(item.unit, item.needed)];
     if (item.quantity == null) return ["?", ""];
     const label = { el: de ? "EL" : "tbsp", tl: de ? "TL" : "tsp" }[item.unit];
     const unit =
       label ||
       (item.unit === "cup" ? (item.quantity > 1 ? "cups" : "cup") : this._studioUnit(item.unit));
-    return [item.quantity, unit];
+    return [this._studioNumber(item.quantity), unit];
+  },
+  _studioNumber(value) {
+    return typeof value === "number"
+      ? value.toLocaleString(this._language === "de" ? "de-DE" : "en-US", {
+          maximumFractionDigits: 2,
+        })
+      : value;
   },
   _studioShell(title, lead, content, kicker = this.t("studioKicker")) {
     const progress = this._catalogProgress;
@@ -838,7 +846,7 @@ Object.assign(MealieAtelierCard.prototype, {
     for (const item of items) {
       const [amount, unit] = this._studioNoteAmount(item);
       const note =
-        `${amount} ${unit} ${item.name}${item.uncertain ? " (" + this.t("studioShoppingUncertain") + ")" : ""}`
+        `${[amount, unit, item.name].filter(Boolean).join(" ")}${item.uncertain ? " (" + this.t("studioShoppingUncertain") + ")" : ""}`
           .trim()
           .slice(0, 250);
       try {

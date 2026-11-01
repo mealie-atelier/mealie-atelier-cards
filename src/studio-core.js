@@ -1031,7 +1031,7 @@ const AtelierStudio = (() => {
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon|(?:flour|bread|rice|pasta|penne|spaghetti|noodle|oat|oatmeal|lentil|bean|chickpea|wine|beer|stock|broth|cracker|graham)s?$)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon|(?:flour|bread|rice|pasta|penne|spaghetti|noodle|oat|oatmeal|lentil|chickpea|wine|beer|stock|broth|cracker|graham)s?$)/,
     ],
     [
       "spices",
@@ -1049,7 +1049,7 @@ const AtelierStudio = (() => {
   // "pepper" is a seasoning only next to one of these words or on its own; "red pepper" and
   // "jalapeno pepper" are vegetables. Garlic cloves are produce, "whole cloves" a spice.
   const pepperSeasoning =
-    /^(black|white|ground|cracked|cayenne|lemon|freshly|salt|and|flakes?|pinch|powder)$/;
+    /^(black|white|ground|cracked|cayenne|lemon|freshly|salt|flakes?|pinch|powder)$/;
   const pepperSlot = /^peppers?$/;
   const cloveSlot = /^cloves?$/;
   const garlicWord = /^(garlic|knoblauch)/;
@@ -1060,7 +1060,7 @@ const AtelierStudio = (() => {
       "pantry",
       /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon|flour|bread|rice|stock|broth|cracker)$/,
     ],
-    ["spices", /(salz|zucker|essig|pfeffer|ol|salt|sugar|vinegar|oil)$/],
+    ["spices", /(salz|zucker|essig|pfeffer|ol|salt|sugar|vinegar|(?<!f)oil)$/],
   ];
   const category = (name) => {
     const cleaned = clean(name);

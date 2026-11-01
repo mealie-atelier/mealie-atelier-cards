@@ -648,8 +648,26 @@ test("the shopping print line says 1 item in the singular", () => {
 
 test("the shopping note keeps the original amount and the reader's unit", async () => {
   for (const [language, expected] of [
-    ["en", ["2 tbsp olive oil (check amount)", "1 cup flour (check amount)", "3 kg rice"]],
-    ["de", ["2 EL olive oil (check amount)", "1 cup flour (check amount)", "3 kg rice"]],
+    [
+      "en",
+      [
+        "2 tbsp olive oil (check amount)",
+        "1 cup flour (check amount)",
+        "3 kg rice",
+        "1.5 tsp salt (check amount)",
+        "? salt and pepper (check amount)",
+      ],
+    ],
+    [
+      "de",
+      [
+        "2 EL olive oil (check amount)",
+        "1 cup flour (check amount)",
+        "3 kg rice",
+        "1,5 TL salt (check amount)",
+        "? salt and pepper (check amount)",
+      ],
+    ],
   ]) {
     const { card } = permissionCard(grants(true, true, false), language);
     const notes = [];
@@ -663,6 +681,8 @@ test("the shopping note keeps the original amount and the reader's unit", async 
       { name: "olive oil", unit: "el", quantity: 2, needed: null, uncertain: true },
       { name: "flour", unit: "cup", quantity: 1, needed: null, uncertain: true },
       { name: "rice", unit: "kg", quantity: 3, needed: 3 },
+      { name: "salt", unit: "tl", quantity: 1.5, needed: null, uncertain: true },
+      { name: "salt and pepper", unit: "", quantity: null, needed: null, uncertain: true },
     ];
     card.t = (key) => (key === "studioShoppingUncertain" ? "check amount" : key);
     await card._studioSendGroceries();

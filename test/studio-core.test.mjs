@@ -956,6 +956,11 @@ test("English aisle words do not catch German or unrelated foods", () => {
   assert.equal(by("1 tsp black pepper").category, "spices");
   assert.equal(by("2 tbsp brown sugar").category, "spices");
   assert.equal(by("2 minced garlic").category, "produce");
+  assert.equal(by("200 g green beans").category, "produce");
+  assert.equal(by("200 g bean sprouts").category, "produce");
+  assert.equal(by("2 peppers and onions").category, "produce");
+  assert.equal(by("1 roll aluminum foil").category, "produce");
+  assert.equal(by("2 tbsp olive oil").category, "spices");
 });
 test("whole cloves stay a spice row while garlic cloves are a count unit", () => {
   const rows = Studio.shoppingNeeds([recipe("x", ["4 whole cloves"])]);
