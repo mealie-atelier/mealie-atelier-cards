@@ -8,6 +8,11 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- English wording: ticked shopping items read "Done" everywhere (section heading, "Clear done", "Clear done items?" and its confirmation).
+- The visual editor uses the Design Studio labels for photo crop (Tall, Square, Wide) and corner style (Round, Soft, Square) in German and English. The plan dialog eyebrow shows the view name.
+- Sync setup: the empty preview notice keeps its check icon and text on one line on phones.
+- Sync setup: a preview error appears next to the preview button. A destination list that no longer exists in Home Assistant is reported as such instead of with the Mealie list advice.
+- Sync rules no longer say "Sending shortly" next to a fresh send when nothing is waiting.
 - Print dialog: the three style tiles (Editorial, Compact, Ink saver) share one fixed size, so their titles start at the same x on every width and scheme.
 - Recipe editor: the "apply edited steps" option keeps a normal gap to the first step card.
 - Discover: the people count and the other answers start from the saved profile when the page loads directly. A draft built from placeholder state is rebuilt when the first real state arrives and is never saved by itself.
