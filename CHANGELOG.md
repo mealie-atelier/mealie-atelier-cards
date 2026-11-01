@@ -4,6 +4,17 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Shopping assistant in English: tbsp, tsp, cups, pinches, handfuls, cloves, sprigs, slices and pieces are read as units instead of being glued to the name ("tbsp olive oil 8 pcs"), English foods land in the same aisles as German ones (flour and stock in the pantry, bacon and ham with the proteins, oil and salt with the spices), the piece unit reads "piece" / "pieces" and the note sent to the shopping list keeps the amount in the reader's unit ("2 tbsp olive oil", "2 EL Olivenöl").
+- Shopping assistant: identical lines without an amount, such as "Salz und schwarzer Pfeffer" from four recipes, show up once.
+- Scaled ingredient amounts: more nouns follow the amount, including German compounds (½ Knoblauchzehe, 1 Rosmarinzweig, 1 Hähnchenbrustfilet) and English nouns (3 onions, 1 slice).
+- Shopping card in a narrow column: the progress badge moves below the list picker so the list name stays readable.
+- Web app: after a wrong password on re-sign-in, only the password field is marked invalid, not the locked e-mail field.
+- Web app offline panel on a phone: "Lokale Daten löschen" no longer breaks into two lines next to "Jetzt abgleichen".
+- Bring! sync dialog: the space below the last button matches the side padding instead of doubling when the content fits.
+- Product page: the meal plan images have alt texts that describe what they show.
+
 ## [0.12.3] - 2026-11-01
 
 ### Fixed
