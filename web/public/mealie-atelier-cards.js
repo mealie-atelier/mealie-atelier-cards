@@ -3101,7 +3101,7 @@ ha-card {
   }
 }
 
-/* v0.5 — Atelier Nutrition & the kitchen companion. */
+/* Atelier Nutrition and the kitchen companion. */
 .atelier .nutrition-studio .editor-lead h2,
 .atelier .journal-studio h2 {
   font-family: var(--at-serif);
@@ -3469,7 +3469,7 @@ ha-card {
   overflow-wrap: anywhere;
 }
 
-/* Atelier 0.6 · Kitchen Intelligence — premium, responsive and reduced-motion friendly. */
+/* Kitchen Intelligence: premium, responsive and reduced-motion friendly. */
 .atelier .studio-daily {
   display: flex;
   justify-content: space-between;
@@ -4005,7 +4005,7 @@ ha-card {
   margin-top: 16px;
 }
 
-/* Atelier 0.7 — a purposeful motion language, premium surfaces, responsive interaction.
+/* A purposeful motion language, premium surfaces, responsive interaction.
    Animations use opacity/transform; no infinite page animation and no motion when reduced. */
 :host {
   color-scheme: dark;
@@ -13415,6 +13415,20 @@ ha-card {
   max-width: min(75%, calc(100% - 27px - var(--at-close-reserve)));
   overflow-wrap: anywhere;
   hyphens: manual;
+  /* The title sits on the photo's bottom edge, so a long one would grow upward out of the clipped strip: three lines,
+     then an ellipsis; the full name stays in the title attribute. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+/* The phone strip is only about 84px tall; three lines would touch its top edge. */
+@media (max-width: 520px) {
+  .atelier .modal .cook-visual .cook-brand {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
 }
 
 /* The editor lead already keeps 64px clear on its right (foundation.css), so its title block only needs what is left
@@ -17546,7 +17560,7 @@ const dialogMethods = {
             ? `${this._detail.recipeYieldQuantity} ${this._detail.recipeYield}`
             : this._detail.recipeYield || "";
       size = "large";
-      content = `<div class="cook-layout"><div class="cook-visual">${this._photo(this._detail, "cook-visual-image")}<div class="cook-brand">${esc(this._detail.name)}</div></div>
+      content = `<div class="cook-layout"><div class="cook-visual">${this._photo(this._detail, "cook-visual-image")}<div class="cook-brand" title="${esc(this._detail.name)}">${esc(this._detail.name)}</div></div>
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
@@ -20891,7 +20905,7 @@ const bringWizardMethods = {
     const described = bring.error ? ' aria-describedby="bw-login-error"' : "";
     return `<form class="bw-form" data-form="bring-login" novalidate>
       <label class="field"><span>${esc(this.t("syncBringEmail"))}</span><input type="email" name="username" data-input="sync-bring-email" value="${esc(email)}" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="254" required${email ? "" : " data-autofocus"}${busy || locked ? " readonly" : ""}${invalid}${described}></label>
-      <label class="field"><span>${esc(this.t("syncBringPassword"))}</span><span class="bw-password"><input type="${bring.reveal ? "text" : "password"}" name="password" data-input="sync-bring-password" value="${esc(bring.password)}" autocomplete="current-password" autocapitalize="none" spellcheck="false" maxlength="256" required${email ? " data-autofocus" : ""}${busy ? " readonly" : ""}${invalid}${described}><button type="button" class="icon-btn bw-reveal" data-action="sync-bw-reveal" aria-pressed="${bring.reveal ? "true" : "false"}" title="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}" aria-label="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}">${eye}</button></span></label>
+      <label class="field"><span id="bw-password-label">${esc(this.t("syncBringPassword"))}</span><span class="bw-password"><input type="${bring.reveal ? "text" : "password"}" aria-labelledby="bw-password-label" name="password" data-input="sync-bring-password" value="${esc(bring.password)}" autocomplete="current-password" autocapitalize="none" spellcheck="false" maxlength="256" required${email ? " data-autofocus" : ""}${busy ? " readonly" : ""}${invalid}${described}><button type="button" class="icon-btn bw-reveal" data-action="sync-bw-reveal" aria-pressed="${bring.reveal ? "true" : "false"}" title="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}" aria-label="${esc(this.t(bring.reveal ? "bwHidePassword" : "bwShowPassword"))}">${eye}</button></span></label>
       ${this._syncCaps().bringEnv ? "" : `<p class="bw-privacy">${icon("leaf", 15)} <span>${esc(this.t("bwPrivacy"))}</span></p>`}
       <div class="form-actions bw-nav">${again ? "" : `<button type="button" class="btn ghost" data-action="close-modal">${esc(this.t("syncCancel"))}</button>`}<button type="submit" class="btn primary"${busy ? ' disabled aria-busy="true"' : ""}>${busy ? esc(this.t("bwSigningIn")) : `${esc(this.t(again ? "bwReauthButton" : "bwSignIn"))} ${icon("arrow", 14)}`}</button></div></form>`;
   },

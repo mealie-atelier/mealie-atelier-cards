@@ -61,6 +61,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Bring! sign-in again: a successful sign-in clears the old failure line, and the reauth text promises kept rules only when a rule exists. The reauth text sits clear of the account heading. The product page week plan image shows four whole days with whole recipe names.
 - Cooking mode on phones and tablets: nothing reaches past the dialog edge, tool labels stay readable at 12px and wrap instead of being clipped, the sync note takes its own row, and the step text keeps at least four lines. The timer form folds behind a new "Set a timer" button, and a fade with a thin scrollbar shows when the step text scrolls.
 - Fifth and sixth fractions such as ⅕ and ⅚ scale with the servings, the cooking notes title no longer wraps early on phones, and the demo footer credit reads "Mit ♥ von Daniel" like the app.
+- A very long recipe title in the cooking mode header ends after three lines with an ellipsis instead of being cut off at the top, and the Bring! password field is announced as "Password" without the reveal button's label.
 
 ## [0.12.0] - 2026-10-31
 
