@@ -13107,7 +13107,8 @@ ha-card {
   margin-block-end: var(--ds-space-3);
 }
 
-/* The scrolling sync panel keeps the same air below its last card as at its sides. */
+/* The scrolling sync panel keeps the same air below its last card as at its sides. The padding alone
+   carries it: a second margin on the last card doubled the gap when the content fits. */
 .atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) {
   --bw-pad: clamp(24px, 3.1cqi, 44px);
   padding-block-end: var(--bw-pad);
@@ -13116,10 +13117,6 @@ ha-card {
   .atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) {
     --bw-pad: var(--ds-space-4);
   }
-}
-/* Padding alone is lost at the end of the scroll, so the last card carries the gap as a margin too. */
-.atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child {
-  margin-block-end: var(--bw-pad);
 }
 
 /* Phone: the account card is compact (label and value on one row, disconnect as a text link) so the

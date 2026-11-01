@@ -61,11 +61,13 @@ test("the scrolling sync panel has bottom padding, the close strip stays with it
   assert.match(css, /\.bw-wizard \.bw-panel > \.bw-nav,[^{]*\{[^}]*margin-block-start:\s*auto/);
 });
 
-test("the last sync card keeps a bottom margin and the phone disconnect link stays transparent on hover", () => {
-  assert.match(
+test("the last sync card adds no bottom margin on top of the panel padding and the phone disconnect link stays transparent on hover", () => {
+  assert.equal(
     rule(".atelier .modal.sync-modal .modal-content.sync-panel:not(.bw-wizard) > :last-child"),
-    /margin-block-end:\s*var\(--bw-pad\)/,
+    "",
+    "padding plus margin doubled the bottom gap",
   );
+  assert.doesNotMatch(css, /sync-panel:not\(\.bw-wizard\)\s*>\s*:last-child/);
   const hover =
     css.match(
       /sync-bring-disconnect-ask"\]:is\(:hover, :active, :focus-visible\)[^{]*\{([^}]*)\}/,
