@@ -146,6 +146,9 @@ test("wrong BRING_PASSWORD is logged at startup and the account needs a sign-in"
     BRING_PASSWORD: "wrong-password",
   });
   try {
+    // The check runs after the server listens, so wait for its log line.
+    for (let i = 0; i < 100 && !/refused the sign-in/.test(app.err); i += 1)
+      await new Promise((resolve) => setTimeout(resolve, 50));
     assert.match(app.err, /Bring! refused the sign-in from BRING_EMAIL and BRING_PASSWORD/);
     const res = await fetchApp(app, "/api/bridge", {
       method: "POST",

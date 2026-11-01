@@ -792,6 +792,41 @@ const inBringLane = (task) => {
   bringLane = run.catch(() => {});
   return run;
 };
+const ENV_SIGN_IN_THROTTLE_MS = 60_000;
+const STATUS_SIGN_IN_WAIT_MS = 2_000;
+let envSignInPending = null;
+let envSignInAt = 0;
+/** The startup sign-in check and sync start, while it runs. */
+let startupCheck = null;
+/**
+ * Signs in with the environment credentials unless that cannot help: no credentials, a session
+ * exists, Bring! already refused them, or an attempt ran within the last minute. Returns the
+ * running attempt (never rejects) or null.
+ */
+function envSignIn({ force = false } = {}) {
+  if (envSignInPending) return envSignInPending;
+  if (!bringClient.hasCredentials) return null;
+  if (!force && bringClient.session) return null;
+  if (!force && (bringClient.authFailed || Date.now() - envSignInAt < ENV_SIGN_IN_THROTTLE_MS))
+    return null;
+  envSignInAt = Date.now();
+  envSignInPending = inBringLane(() => bringClient.login())
+    .catch((e) => {
+      if (!force) return;
+      if (e instanceof BringAuthError) {
+        bringClient.failAuth(e);
+        console.warn(
+          "Bring! refused the sign-in from BRING_EMAIL and BRING_PASSWORD. Check both values.",
+        );
+      } else
+        console.warn(
+          "Could not check the Bring! sign-in at startup:",
+          String(e?.message || e).slice(0, 160),
+        );
+    })
+    .finally(() => (envSignInPending = null));
+  return envSignInPending;
+}
 function bringFailure(error) {
   if (error instanceof BringAuthError)
     return Object.assign(new Error("Bring! refused the e-mail address or the password"), {
@@ -861,9 +896,19 @@ async function bridge(req) {
   const refusal = denial(req.atelierUser?.role, level, READ_ONLY);
   if (refusal) throw denied(refusal);
   const locale = resolveLocale(req.headers["accept-language"], msg.language ?? msg.locale);
-  if (msg.type === "mealie_atelier/status" && bringClient.hasCredentials && !bringClient.session) {
-    // Environment credentials sign in lazily; do it now so the usual list is known.
-    await inBringLane(() => bringClient.ensureSession()).catch(() => {});
+  {
+    // Environment credentials sign in lazily so the usual list is known. Calls wait at most
+    // briefly for a running attempt, and a refused or failing sign-in is not repeated per call.
+    const signIn = msg.type === "mealie_atelier/status" ? envSignIn() : null;
+    const waiting = [signIn, startupCheck].filter(Boolean);
+    if (waiting.length) {
+      let timer;
+      await Promise.race([
+        Promise.all(waiting),
+        new Promise((resolve) => (timer = setTimeout(resolve, STATUS_SIGN_IN_WAIT_MS).unref())),
+      ]);
+      clearTimeout(timer);
+    }
   }
   // BEGIN feature B: structured editing, backups and uploads
   const editing = editingFor(req);
@@ -1471,28 +1516,6 @@ for (const signal of ["SIGTERM", "SIGINT"])
 try {
   const stored = await bringAccount.load();
   if (stored) bringClient.restore(stored);
-  if (bringClient.hasCredentials) {
-    // Check the environment credentials now, so a wrong password shows up in the log and the
-    // account reports that it needs a sign-in instead of looking connected.
-    try {
-      await bringClient.login();
-    } catch (e) {
-      if (e instanceof BringAuthError) {
-        bringClient.failAuth(e);
-        console.warn(
-          "Bring! refused the sign-in from BRING_EMAIL and BRING_PASSWORD. Check both values.",
-        );
-      } else
-        console.warn(
-          "Could not check the Bring! sign-in at startup:",
-          String(e?.message || e).slice(0, 160),
-        );
-    }
-  }
-  if (shoppingSync.connected) {
-    await shoppingSync.start();
-    syncRunning = true;
-  }
 } catch (e) {
   console.error("Shopping sync could not start:", String(e?.message || e).slice(0, 160));
 }
@@ -1509,3 +1532,16 @@ server.listen(PORT, HOST, async () => {
     process.exitCode = 1;
   }
 });
+// The environment sign-in check runs after listening, so a slow Bring! never delays the server.
+// A failed login is only logged, never fatal; the sync starts once the check resolved.
+startupCheck = (async () => {
+  try {
+    await envSignIn({ force: true });
+    if (shoppingSync.connected) {
+      await shoppingSync.start();
+      syncRunning = true;
+    }
+  } catch (e) {
+    console.error("Shopping sync could not start:", String(e?.message || e).slice(0, 160));
+  }
+})().finally(() => (startupCheck = null));
