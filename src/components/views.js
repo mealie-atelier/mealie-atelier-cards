@@ -1,5 +1,13 @@
 /** Render the primary card views from normalized provider state. */
 export const viewMethods = {
+  /** Recipe photo markup, empty when the card option show_images is off (every view honours it). */
+  _photo(recipe, cls = "", eager = false) {
+    return this._design.show_images !== false ? recipeImage(recipe, cls, eager) : "";
+  },
+  /** The connection error banner is up: it is the one error state, so views skip their own load-failed box. */
+  _loadErrorShown() {
+    return Boolean(this._error);
+  },
   _hero() {
     const today = dateYmd(new Date());
     const entry =
@@ -7,7 +15,7 @@ export const viewMethods = {
       asArray(this._data.mealplan).find((e) => e.date === today);
     const title = entry ? mealName(entry) : this.t("headline");
     const name = entry?.recipe?.name;
-    const img = recipeImage(entry?.recipe || {}, "hero-food", true);
+    const img = this._photo(entry?.recipe || {}, "hero-food", true);
     const emptyLibrary = this._libraryEmpty();
     return `<section class="hero">${img}<div class="hero-copy"><div class="eyebrow">${esc(this.t("tonight"))}</div><h2>${esc(title)}</h2><p>${esc(entry ? this.t("featured") : emptyLibrary ? this.t("uiEmptyLibraryHero") : this.t("uiHeroSub"))}</p>
       ${emptyLibrary && !entry ? "" : `<button class="btn primary" data-action="${name ? "open-recipe" : "nav"}" data-value="${name ? esc(entry.recipe.slug) : "mealplan"}">${icon(name ? "book" : "plus", 15)} ${esc(this.t(name ? "viewRecipe" : "planNow"))} ${icon("arrow", 14)}</button>`}</div>
@@ -51,14 +59,14 @@ export const viewMethods = {
         const category =
           recipe.recipeCategory?.[0]?.name || recipe.recipeCategory?.[0] || this.t("featured");
         const image = this._design.show_images !== false;
-        const photo = image ? recipeImage(recipe) : "";
+        const photo = this._photo(recipe);
         const time = AtelierStudio.formatTime(recipe.totalTime, this._language);
         const timeLabel = time || this.t("uiMealieRecipeFallback");
         return `<button class="recipe-tile" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(recipe.name)}"><div class="tile-image tint${idx % 4}">${photo}<div class="photo-index">ATELIER / ${String(idx + 1).padStart(2, "0")}</div>${image ? `<div class="placeholder" aria-hidden="true"><span>${esc(recipe.name)}</span></div>` : ""}</div><div class="tile-body"><small>${esc(category)}</small><h3>${esc(recipe.name)}</h3><div class="tile-meta">${icon(time ? "clock" : "book", 13)}${esc(timeLabel)}</div><span class="tile-open">${icon("arrow", 13)}</span></div></button>`;
       })
       .join(
         "",
-      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && (this._loadFailed || this._failedParts?.has("recipes")) ? `<div class="notice load-failed" role="status">${icon("book")} ${esc(this.t("offline"))}</div>` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
+      )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadErrorShown() && (this._loadFailed || this._failedParts?.has("recipes")) ? `<div class="notice load-failed" role="status">${icon("book")} ${esc(this.t("offline"))}</div>` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
     const page = this._data.recipes || {};
@@ -118,7 +126,7 @@ export const viewMethods = {
     const all = asArray(this._data.mealplan);
     const today = dateYmd(new Date());
     const mealplanFailed = this._failedParts?.has("mealplan") === true;
-    return `${mealplanFailed ? `<div class="notice load-failed" role="status">${icon("calendar")} ${esc(this.t("offline"))}</div>` : ""}<div class="week-grid">${Array.from(
+    return `${mealplanFailed && !this._loadErrorShown() ? `<div class="notice load-failed" role="status">${icon("calendar")} ${esc(this.t("offline"))}</div>` : ""}<div class="week-grid">${Array.from(
       { length: 7 },
       (_, i) => {
         const day = addDays(this._weekStart, i),
@@ -127,7 +135,7 @@ export const viewMethods = {
         return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
       ${todays
         .map((meal) => {
-          const photo = recipeImage(meal.recipe || {});
+          const photo = this._photo(meal.recipe || {});
           return `<button class="day-meal${photo ? " has-photo" : ""}" data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
         })
         .join("")}
@@ -250,6 +258,7 @@ export const viewMethods = {
     const filtered = all.filter((i) => String(i.shoppingListId) === selected);
     const done = filtered.filter((i) => i.checked).length;
     if (!lists.length && !filtered.length && this._failedParts?.has("shopping")) {
+      if (this._loadErrorShown()) return "";
       return `<div class="shopping-card"><div class="notice load-failed" role="status">${icon("cart")} ${esc(this.t("offline"))}</div></div>`;
     }
     return `<div class="shopping-card"><div class="toolbar shopping-toolbar">${this._syncEntryButton()}${this._permissions.can_write ? `<button class="btn tiny" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>` : ""}${this._permissions.can_write && lists.length && this._shoppingClearable(filtered) ? `<button class="btn tiny" data-action="shopping-clear-form">${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button>` : ""}</div>${lists.length ? `<div class="shopping-list-filter"><select data-input="shopping-list" aria-label="${esc(this.t("label"))}">${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === selected ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select><span class="pill">${done}/${filtered.length} ${esc(this.t("progress"))}</span></div>` : ""}
@@ -268,7 +277,7 @@ export const viewMethods = {
     const shopFailed = this._failedParts?.has("shopping") === true;
     return `${this._intro(this.t("todayIntro"), this.t("todaySub"), esc(dayString(this._locale, new Date(), { weekday: "long", day: "numeric", month: "long" })).toUpperCase())}
     <div class="today-board"><div class="today-panel"><div class="eyebrow">${esc(this.t("plannedForToday"))}</div><h3>${esc(this.t("tonight"))}</h3>
-    ${meals.length ? meals.map((meal) => `<div class="today-meal">${recipeImage(meal.recipe || {}, "", true) ? `<div class="meal-photo">${recipeImage(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : this._failedParts?.has("mealplan") ? "" : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
+    ${meals.length ? meals.map((meal) => `<div class="today-meal">${this._photo(meal.recipe || {}, "", true) ? `<div class="meal-photo">${this._photo(meal.recipe || {}, "", true)}</div>` : `<div class="meal-badge">${icon("utensils", 22)}</div>`}<div class="meal-details"><small>${esc(this._mealTypeLabel(meal.entryType))}</small><strong>${esc(mealName(meal))}</strong></div>${meal.recipe?.slug ? `<button class="btn tiny icon-only" data-action="open-recipe" data-value="${esc(meal.recipe.slug)}" aria-label="${esc(this.t("viewRecipe") + ": " + mealName(meal))}">${icon("arrow", 14)}</button>` : ""}</div>`).join("") : this._failedParts?.has("mealplan") ? "" : `<div class="notice">${icon("spark", 16)} ${esc(this.t("noPlan"))}</div>`}
     <div class="form-actions">${this._permissions.can_write ? `<button class="btn primary" data-action="plan-form" data-value="${today}">${icon("plus", 14)} ${esc(this.t("planNow"))}</button>` : ""}</div></div>
     <div class="today-panel"><div class="eyebrow">${esc(lists.find((l) => String(l.id) === selected)?.name || this.t("shopping"))}</div><h3>${shopFailed ? "—" : esc(this.tp("openItems", open.length))}</h3>
     ${

@@ -1208,7 +1208,7 @@ test("pantry quantities keep one line and the cooking dialog closes with a singl
   const views = readFileSync(new URL("../src/components/views.js", import.meta.url), "utf8");
   assert.match(
     views,
-    /recipeImage\(meal\.recipe \|\| \{\}, "", true\)/,
+    /this\._photo\(meal\.recipe \|\| \{\}, "", true\)/,
     "today photo loads eagerly",
   );
 });

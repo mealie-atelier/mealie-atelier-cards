@@ -61,8 +61,8 @@ test("a network failure on load shows the translated offline text and marks the 
   await card._refresh();
   assert.equal(card._error, card.t("offline"));
   assert.equal(card._loadFailed, true);
-  // The failure is announced, and the misleading empty-library text stays hidden.
-  assert.match(card._recipes(), /load-failed/);
+  // The error banner is the one error state: no second load-failed box, and no empty-library text.
+  assert.doesNotMatch(card._recipes(), /load-failed/);
   assert.doesNotMatch(card._recipes(), new RegExp(card.t("noRecipes")));
 });
 

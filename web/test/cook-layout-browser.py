@@ -133,6 +133,32 @@ def check(ok, label, detail=""):
         problems.append(f"{label}: {detail}")
 
 
+STEP_SCROLL_SETUP = """async (text) => {
+  document.querySelectorAll("mealie-atelier-card").forEach((c) => c.remove());
+  const card = document.createElement("mealie-atelier-card");
+  card.setConfig({ type: "custom:mealie-atelier-card", motion: "off" });
+  document.body.append(card);
+  card._status = { entries: [{ entry_id: "e1", can_write: true, can_manage: true }] };
+  card._hass = { language: "en", callWS: async () => ({}) };
+  card._detail = { slug: "g", name: "Gnocchi", recipeInstructions: [{ text: "First " + text }, { text: "Second " + text }, { text: "Third " + text }] };
+  card._studio = { family: { members: [], session: null }, journal: {}, pantry: [], goals: {}, history: [] };
+  card._timers = [];
+  card._modal = "cook";
+  card._cookIndex = 1;
+  card._render();
+  await new Promise((resolve) => setTimeout(resolve, 400));
+}"""
+
+STEP_SCROLL_STATE = """() => {
+  const root = document.querySelector("mealie-atelier-card").shadowRoot;
+  const stage = root.querySelector(".cook-stage");
+  const h2 = stage.querySelector("h2, .cook-step-detail, p");
+  const sr = stage.getBoundingClientRect();
+  return { top: stage.scrollTop, max: stage.scrollHeight - stage.clientHeight, headTop: h2 ? h2.getBoundingClientRect().top - sr.top : 0,
+    more: stage.classList.contains("has-more"), text: stage.textContent.slice(0, 20) };
+}"""
+
+
 def judge(label, s, full_rules=True):
     check(not s["sticks"], f"{label} (a) past the dialog edge", str(s["sticks"][:5]))
     check(not s["clipped"], f"{label} (b) clipped label", str(s["clipped"][:5]))
@@ -184,6 +210,22 @@ with tempfile.TemporaryDirectory() as tmp, sync_playwright() as pw:
                         if shots:
                             page.screenshot(path=str(shots / f"{label.replace(' ', '_')}_form.png"))
                         judge(label + " form open", o, full_rules=False)
+        # A new step opens scrolled to its top, for Next and for Back (the stage is the scroll container).
+        page.evaluate(STEP_SCROLL_SETUP, "word " * 400)
+        for action in ("cook-next", "cook-back"):
+            label = f"{browser_name} {width}x{height} step scroll {action}"
+            page.evaluate("() => { const st = document.querySelector('mealie-atelier-card').shadowRoot.querySelector('.cook-stage'); st.scrollTop = 80; }")
+            before = page.evaluate(STEP_SCROLL_STATE)
+            if before["max"] < 20:
+                continue  # the whole step fits: nothing to reset
+            check(before["top"] > 0, f"{label} precondition: stage scrolled", json.dumps(before))
+            page.evaluate("(a) => document.querySelector('mealie-atelier-card').shadowRoot.querySelector(`[data-action=\"${a}\"]`).click()", action)
+            for wait in (50, 400):
+                page.wait_for_timeout(wait)
+                after = page.evaluate(STEP_SCROLL_STATE)
+                check(after["top"] == 0, f"{label} stage scrollTop is 0", json.dumps(after))
+                check(after["headTop"] >= -1, f"{label} heading visible", json.dumps(after))
+                check(after["more"] == (after["max"] > 1), f"{label} has-more re-evaluated", json.dumps(after))
         page.close()
     browser.close()
 

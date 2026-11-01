@@ -1661,7 +1661,7 @@ class MealieAtelierCard extends HTMLElement {
   }
   /** A new step opens at its top: scroll back to 0 and re-judge the modal bar. */
   _resetCookScroll() {
-    for (const selector of [".modal", ".cook-content"]) {
+    for (const selector of [".modal", ".cook-content", ".cook-stage"]) {
       const el = this.shadowRoot?.querySelector?.(selector);
       if (el) el.scrollTop = 0;
     }
@@ -3035,7 +3035,7 @@ class MealieAtelierCard extends HTMLElement {
           { recipe, match },
           index,
         ) => `<button class="command-item command-recipe ${index === 0 ? "is-featured" : ""}" type="button" data-action="open-recipe" data-value="${esc(recipe.slug)}" aria-label="${esc(this.t("uiOpenRecipe", { name: recipe.name }))}">
-      <span class="command-recipe-image">${recipeImage(recipe)}</span><span class="command-recipe-copy"><strong>${esc(recipe.name)}</strong><span class="command-recipe-meta">${recipe.totalTime ? `${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language))}` : `${icon("book", 12)} ${esc(recipe.recipeCategory?.[0]?.name || this.t("featured"))}`}</span></span>
+      <span class="command-recipe-image">${this._photo(recipe)}</span><span class="command-recipe-copy"><strong>${esc(recipe.name)}</strong><span class="command-recipe-meta">${recipe.totalTime ? `${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language))}` : `${icon("book", 12)} ${esc(recipe.recipeCategory?.[0]?.name || this.t("featured"))}`}</span></span>
       <span class="command-match command-match-${match}">${esc(label[match] || label.match)}</span><span class="command-arrow">${icon("arrow", 15)}</span></button>`,
       )
       .join("");

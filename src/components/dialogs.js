@@ -116,7 +116,7 @@ export const dialogMethods = {
               baseUnit: this.tp("uiServing", servingBase),
             })}</p>`
           : "";
-      const img = recipeImage(recipe);
+      const img = this._photo(recipe);
       const labelName = (x) => String(x?.name ?? x ?? "").trim();
       const categoryNames = asArray(recipe.recipeCategory).map(labelName).filter(Boolean),
         tagNames = asArray(recipe.tags).map(labelName).filter(Boolean);
@@ -215,7 +215,7 @@ export const dialogMethods = {
             ? `${this._detail.recipeYieldQuantity} ${this._detail.recipeYield}`
             : this._detail.recipeYield || "";
       size = "large";
-      content = `<div class="cook-layout"><div class="cook-visual">${recipeImage(this._detail, "cook-visual-image")}<div class="cook-brand">${esc(this._detail.name)}</div></div>
+      content = `<div class="cook-layout"><div class="cook-visual">${this._photo(this._detail, "cook-visual-image")}<div class="cook-brand">${esc(this._detail.name)}</div></div>
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
