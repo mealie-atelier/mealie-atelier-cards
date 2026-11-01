@@ -257,6 +257,22 @@ const AtelierStudio = (() => {
         eier: ["Ei", "Eier"],
         dose: ["Dose", "Dosen"],
         dosen: ["Dose", "Dosen"],
+        scheibe: ["Scheibe", "Scheiben"],
+        scheiben: ["Scheibe", "Scheiben"],
+        zweig: ["Zweig", "Zweige"],
+        zweige: ["Zweig", "Zweige"],
+        zwiebel: ["Zwiebel", "Zwiebeln"],
+        zwiebeln: ["Zwiebel", "Zwiebeln"],
+        karotte: ["Karotte", "Karotten"],
+        karotten: ["Karotte", "Karotten"],
+        möhre: ["Möhre", "Möhren"],
+        möhren: ["Möhre", "Möhren"],
+        limette: ["Limette", "Limetten"],
+        limetten: ["Limette", "Limetten"],
+        zitrone: ["Zitrone", "Zitronen"],
+        zitronen: ["Zitrone", "Zitronen"],
+        filet: ["Filet", "Filets"],
+        filets: ["Filet", "Filets"],
       },
       en: {
         cup: ["cup", "cups"],
@@ -269,8 +285,28 @@ const AtelierStudio = (() => {
         eggs: ["egg", "eggs"],
         can: ["can", "cans"],
         cans: ["can", "cans"],
+        onion: ["onion", "onions"],
+        onions: ["onion", "onions"],
+        carrot: ["carrot", "carrots"],
+        carrots: ["carrot", "carrots"],
+        tablespoon: ["tablespoon", "tablespoons"],
+        tablespoons: ["tablespoon", "tablespoons"],
+        teaspoon: ["teaspoon", "teaspoons"],
+        teaspoons: ["teaspoon", "teaspoons"],
+        slice: ["slice", "slices"],
+        slices: ["slice", "slices"],
+        sprig: ["sprig", "sprigs"],
+        sprigs: ["sprig", "sprigs"],
+        rasher: ["rasher", "rashers"],
+        rashers: ["rasher", "rashers"],
+        piece: ["piece", "pieces"],
+        pieces: ["piece", "pieces"],
+        fillet: ["fillet", "fillets"],
+        fillets: ["fillet", "fillets"],
       },
     };
+    // German compounds ending in a counted noun (Knoblauchzehen, Hähnchenbrustfilets) agree on the last part.
+    const COMPOUND_TAILS = ["zehe", "scheibe", "zweig", "zwiebel", "karotte", "limette", "filet"];
     // The number as the reader sees it ("1", "1¼", "1,5", "⅚"): agreement follows the shown amount, not the raw one.
     const GLYPHS = {
       "¼": 0.25,
@@ -303,14 +339,28 @@ const AtelierStudio = (() => {
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
       const word = unitWord(rest);
-      const forms = (NOUNS[locale === "en" ? "en" : "de"] || {})[word.toLowerCase()];
+      const table = NOUNS[locale === "en" ? "en" : "de"] || {};
+      const lower = word.toLowerCase();
+      const plural = amount > 1 + 1e-9 ? 1 : 0;
+      let prefix = "";
+      let forms = table[lower];
+      if (!forms && locale !== "en") {
+        const tail = COMPOUND_TAILS.flatMap((t) => [t + "n", t + "s", t]).find(
+          (t) => lower.length >= t.length + 3 && lower.endsWith(t) && table[t],
+        );
+        if (tail) {
+          forms = table[tail];
+          prefix = word.slice(0, word.length - tail.length);
+        }
+      }
       if (!forms) return rest;
-      const next = forms[amount <= 1 + 1e-9 ? 0 : 1];
+      const base = forms[plural];
+      const next = prefix ? base.toLowerCase() : base;
       const keepCase =
         word.length > 1 && word === word.toUpperCase()
-          ? next.toUpperCase()
-          : word[0] === word[0].toLowerCase()
-            ? next.toLowerCase()
+          ? prefix + next.toUpperCase()
+          : prefix || word[0] === word[0].toLowerCase()
+            ? prefix + next.toLowerCase()
             : next;
       return rest.replace(word, keepCase);
     };
@@ -365,6 +415,10 @@ const AtelierStudio = (() => {
     if (["l", "liter", "litre", "liters"].includes(s)) return { unit: "ml", factor: 1000 };
     if (["stück", "stueck", "stk", "piece", "pieces"].includes(s))
       return { unit: "stück", factor: 1 };
+    // English spoons read like EL and TL: a volume that is never converted to ml.
+    if (["tbsp", "tablespoon", "tablespoons"].includes(s)) return { unit: "el", factor: 1 };
+    if (["tsp", "teaspoon", "teaspoons"].includes(s)) return { unit: "tl", factor: 1 };
+    if (["cup", "cups"].includes(s)) return { unit: "cup", factor: 1 };
     return { unit: s, factor: 1 };
   };
   // Unicode vulgar fractions as numeric values.
@@ -388,7 +442,7 @@ const AtelierStudio = (() => {
   // One amount: "1 1/2", "1/3", "1½", "½", "1,5" or "2".
   const amountPattern = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*\\s?[${Object.keys(fractionChars).join("")}]|\\d+(?:[.,]\\d+)?)`;
   const ingredientAmount = new RegExp(
-    `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(kg|g|gramm|ml|l|stück|stueck|stk|el|tl)?(?:\\s+|$)`,
+    `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(kg|g|gramm|ml|l|stück|stueck|stk|el|tl|tbsp|tsp|tablespoons?|teaspoons?|cups?)?(?:\\s+|$)`,
     "i",
   );
   function amountValue(text) {
@@ -969,19 +1023,19 @@ const AtelierStudio = (() => {
   const aisleStems = [
     [
       "chilled",
-      /^(milch|kase|kaese|joghurt|yoghurt|quark|sahne|butter|feta|mozzarella|parmesan|mascarpone|ricotta|schmand|ei$|eier|frischkase|creme)/,
+      /^(milch|kase|kaese|joghurt|yoghurt|quark|sahne|butter|feta|mozzarella|parmesan|mascarpone|ricotta|schmand|ei$|eier|frischkase|creme|milk|cheese|yogurt|cream|egg|cheddar)/,
     ],
     [
       "protein",
-      /^(fleisch|wurst|fisch|tofu|tempeh|hahnchen|hanchen|huhn|hahn|rind|ochsen|schwein|hack$|hackfleisch|speck|schinken|lachs|thunfisch|garnele|lamm|pute|truthahn|salami)/,
+      /^(fleisch|wurst|fisch|tofu|tempeh|hahnchen|hanchen|huhn|hahn|rind|ochsen|schwein|hack$|hackfleisch|speck|schinken|lachs|thunfisch|garnele|lamm|pute|truthahn|salami|chicken|beef|pork|bacon|ham$|lamb|turkey|sausage|salmon|tuna|shrimp|prawn|fish|steak|mince|duck|tofu)/,
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon|flour|bread|rice|pasta|penne|spaghetti|noodle|oat|lentil|bean|chickpea|wine|beer|stock|broth)/,
     ],
     [
       "spices",
-      /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$)/,
+      /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$|salt|pepper|oil|vinegar|sugar|cinnamon|thyme$)/,
     ],
   ];
   // Foods whose name starts like a spice or pantry stem but are something else (Zuckerschoten, Pfefferminze).
@@ -991,12 +1045,17 @@ const AtelierStudio = (() => {
       /^(zuckerschote|zuckererbse|zuckermais|zuckerruebe|zuckerrube|zuckerhut|pfefferminz|pfefferoni)/,
     ],
     ["pantry", /^(gewurzgurke|gewurzgurken)/],
+    // "red bell pepper" and "roasted peppers" are vegetables, not spices.
+    ["produce", /^(bell|peppers)$/],
   ];
   const aisleSuffixes = [
-    ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter)$/],
-    ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein)$/],
-    ["pantry", /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon)$/],
-    ["spices", /(salz|zucker|essig|pfeffer|ol)$/],
+    ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter|milk|cheese|yogurt|cream)$/],
+    ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein|sausage|bacon|ham)$/],
+    [
+      "pantry",
+      /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon|flour|bread|rice|stock|broth)$/,
+    ],
+    ["spices", /(salz|zucker|essig|pfeffer|ol|salt|sugar|vinegar|pepper|oil)$/],
   ];
   const category = (name) => {
     const tokens = clean(name).split(" ").filter(Boolean);
@@ -1027,7 +1086,33 @@ const AtelierStudio = (() => {
     packungen: ["Packung", "Packungen"],
     kopf: ["Kopf", "Köpfe"],
     köpfe: ["Kopf", "Köpfe"],
+    prise: ["Prise", "Prisen"],
+    prisen: ["Prise", "Prisen"],
+    handful: ["handful", "handfuls"],
+    handfuls: ["handful", "handfuls"],
+    pinch: ["pinch", "pinches"],
+    pinches: ["pinch", "pinches"],
+    clove: ["clove", "cloves"],
+    cloves: ["clove", "cloves"],
+    sprig: ["sprig", "sprigs"],
+    sprigs: ["sprig", "sprigs"],
+    slice: ["slice", "slices"],
+    slices: ["slice", "slices"],
+    rasher: ["rasher", "rashers"],
+    rashers: ["rasher", "rashers"],
+    piece: ["piece", "pieces"],
+    pieces: ["piece", "pieces"],
+    can: ["can", "cans"],
+    cans: ["can", "cans"],
+    head: ["head", "heads"],
+    heads: ["head", "heads"],
+    stalk: ["stalk", "stalks"],
+    stalks: ["stalk", "stalks"],
+    bunch: ["bunch", "bunches"],
+    bunches: ["bunch", "bunches"],
   };
+  // English tails of a label that name the counting word ("garlic cloves").
+  const countTail = /^(.+?)\s+(cloves?|sprigs?|stalks?)$/i;
   function shoppingNeeds(recipes, pantry = [], profile = {}) {
     const combined = [];
     for (const recipe of recipes) {
@@ -1044,11 +1129,19 @@ const AtelierStudio = (() => {
         if (!ing.label) continue;
         // Preparation notes after a comma are not part of the food ("Knoblauchzehen, fein gehackt").
         ing.label = ing.label.split(",")[0].trim() || ing.label;
-        const lead = ing.label.match(/^(\S+)\s+(.+)$/);
+        // A size word may precede the counting word ("small heads bok choy").
+        const sized = ing.label.replace(/^(?:small|medium|large|big)\s+(?=\S+\s+\S)/i, "");
+        const lead = sized.match(/^(\S+)\s+(.+)$/);
         const counted = lead && countUnits[lead[1].toLocaleLowerCase("de")];
+        const tail = ing.label.match(countTail);
         if (counted && ing.quantity !== null && ing.unit === "stück") {
           ing.unit = counted[0].toLocaleLowerCase("de");
-          ing.label = lead[2];
+          ing.label = lead[2].replace(/^(?:of|von)\s+/i, "");
+          ing.estimated = false;
+        } else if (tail && ing.quantity !== null && ing.unit === "stück") {
+          // "2 garlic cloves" and "1 clove garlic" merge into one row.
+          ing.unit = countUnits[tail[2].toLowerCase()][0];
+          ing.label = tail[1];
           ing.estimated = false;
         } else if (ing.quantity !== null && ing.unit === "stück" && !/\s/.test(ing.label)) {
           // "2 Knoblauchzehen" reads like "2 Zehen Knoblauch", so both merge into one row.
@@ -1067,11 +1160,11 @@ const AtelierStudio = (() => {
           (x) =>
             sameFood(x.name, ing.label) &&
             x.unit === ing.unit &&
-            x.quantity !== null &&
-            ing.quantity !== null,
+            // Identical lines without an amount ("Salt and black pepper" x4) collapse to one row.
+            (x.quantity === null) === (ing.quantity === null),
         );
         if (found) {
-          found.quantity += ing.quantity;
+          if (ing.quantity !== null) found.quantity += ing.quantity;
           found.recipeNames.push(recipe.name);
         } else
           combined.push({

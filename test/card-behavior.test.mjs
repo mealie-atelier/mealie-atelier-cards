@@ -476,7 +476,7 @@ test("a shared journal needs write access while a personal journal only needs a 
 test("the piece unit is shown translated, never as its stored key", () => {
   for (const [language, label] of [
     ["de", "Stück"],
-    ["en", "pcs"],
+    ["en", "pieces"],
   ]) {
     const { card } = permissionCard(grants(true, true, false));
     card._config = { ...card._config, language };

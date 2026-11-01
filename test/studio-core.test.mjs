@@ -867,3 +867,74 @@ test("scaled amounts read like a kitchen: rounding, glyph fractions, unit agreem
   assert.equal(s("2-4 Eier", 1, 4), "½-1 Ei");
   assert.equal(s("2 Tassen Mehl", 4, 3), "2⅔ Tassen Mehl");
 });
+test("English ingredient units parse, merge and group like the German ones", () => {
+  const rows = [
+    "1 tbsp olive oil",
+    "2 tsp salt",
+    "1 pinch of salt",
+    "1 handful basil leaves",
+    "1 garlic clove, sliced",
+    "2 garlic cloves, finely chopped",
+    "3 sprigs rosemary",
+    "2 slices white bread",
+    "4 rashers bacon",
+    "250 g all-purpose flour",
+    "800 ml chicken stock",
+    "250 g ground pork",
+    "60 g wafer-thin sliced ham",
+    "1 red bell pepper",
+    "Salt and black pepper",
+  ];
+  const list = Studio.shoppingNeeds(
+    [recipe("a", rows), recipe("b", ["Salt and black pepper", "2 garlic cloves"])],
+    [],
+    { people: 2 },
+  );
+  const by = (name) => list.find((x) => x.name.toLowerCase() === name);
+  assert.equal(by("olive oil").needed, null);
+  assert.equal(by("olive oil").unit, "el");
+  assert.equal(by("salt").unit, "tl");
+  assert.equal(by("salt").needed, null);
+  assert.deepEqual([by("garlic").needed, by("garlic").unit], [5, "cloves"]);
+  assert.deepEqual([by("rosemary").needed, by("rosemary").unit], [3, "sprigs"]);
+  assert.deepEqual([by("white bread").needed, by("white bread").unit], [2, "slices"]);
+  assert.deepEqual([by("bacon").needed, by("bacon").unit], [4, "rashers"]);
+  assert.deepEqual([by("basil leaves").needed, by("basil leaves").unit], [1, "handful"]);
+  assert.equal(list.filter((x) => x.name === "Salt and black pepper").length, 1);
+  assert.equal(list.filter((x) => /^garlic/.test(x.name)).length, 1);
+  assert.equal(
+    list.some((x) => /^(tbsp|tsp|pinch|handful|slices?)\b/i.test(x.name)),
+    false,
+  );
+  assert.equal(by("all-purpose flour").category, "pantry");
+  assert.equal(by("chicken stock").category, "pantry");
+  assert.equal(by("bacon").category, "protein");
+  assert.equal(by("ground pork").category, "protein");
+  assert.equal(by("wafer-thin sliced ham").category, "protein");
+  assert.equal(by("red bell pepper").category, "produce");
+  assert.equal(by("salt and black pepper").category, "spices");
+});
+test("identical German lines without an amount merge into one row", () => {
+  const rows = ["Salz und schwarzer Pfeffer"];
+  const list = Studio.shoppingNeeds([recipe("a", rows), recipe("b", rows), recipe("c", rows)]);
+  assert.equal(list.filter((x) => x.name === "Salz und schwarzer Pfeffer").length, 1);
+});
+test("scaled amounts agree with more nouns, including German compounds", () => {
+  assert.equal(Studio.scaleIngredient("2 Knoblauchzehen", 1, 4), "½ Knoblauchzehe");
+  assert.equal(Studio.scaleIngredient("1 Knoblauchzehe", 4, 1), "4 Knoblauchzehen");
+  assert.equal(
+    Studio.scaleIngredient("4 Scheiben Frühstücksspeck", 1, 4),
+    "1 Scheibe Frühstücksspeck",
+  );
+  assert.equal(Studio.scaleIngredient("1 Zwiebel", 3, 1), "3 Zwiebeln");
+  assert.equal(Studio.scaleIngredient("2 Zweige Thymian", 1, 4), "½ Zweig Thymian");
+  assert.equal(Studio.scaleIngredient("2 Hähnchenbrustfilets", 1, 2), "1 Hähnchenbrustfilet");
+  assert.equal(Studio.scaleIngredient("1 Limette", 4, 1), "4 Limetten");
+  assert.equal(Studio.scaleIngredient("2 KNOBLAUCHZEHEN", 1, 2), "1 KNOBLAUCHZEHE");
+  assert.equal(Studio.scaleIngredient("1 onion", 3, 1, "en"), "3 onions");
+  assert.equal(Studio.scaleIngredient("2 slices bread", 1, 2, "en"), "1 slice bread");
+  assert.equal(Studio.scaleIngredient("1 sprig thyme", 3, 1, "en"), "3 sprigs thyme");
+  assert.equal(Studio.scaleIngredient("1 clove garlic", 3, 1, "en"), "3 cloves garlic");
+  assert.equal(Studio.scaleIngredient("2 tablespoons oil", 1, 2, "en"), "1 tablespoon oil");
+  assert.equal(Studio.scaleIngredient("1 egg", 4, 1, "en"), "4 eggs");
+});
