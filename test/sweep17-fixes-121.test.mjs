@@ -38,3 +38,9 @@ test("design system comments carry no dash punctuation and no stale version labe
     }
   }
 });
+
+test("the English product page names the print styles like the print tiles", () => {
+  const story = read("demo/site/sections-story.mjs");
+  assert.match(story, /"Editorial, Compact or Ink saver"/);
+  assert.doesNotMatch(story, /compact or ink saver/);
+});
