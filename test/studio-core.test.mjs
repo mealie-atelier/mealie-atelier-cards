@@ -985,3 +985,77 @@ test("German compound plurals agree on every counted tail", () => {
   assert.equal(Studio.scaleIngredient("2 Biolimetten", 1, 2), "1 Biolimette");
   assert.equal(Studio.scaleIngredient("2 Lachsfilets", 1, 2), "1 Lachsfilet");
 });
+
+test("German singular and plural of the same food share one grocery row in the natural form", () => {
+  const list = Studio.shoppingNeeds(
+    [
+      recipe("A", ["1 Ei", "1 Zwiebel", "1 Tomate", "1 Kartoffel", "1 Zitrone", "Eigelb"]),
+      recipe("B", [
+        "4 Eier",
+        "2 Zwiebeln",
+        "3 Tomaten",
+        "4 Kartoffeln",
+        "2 Zitronen",
+        "Tomatenmark",
+      ]),
+    ],
+    [],
+  );
+  const find = (name) => list.find((x) => x.name === name);
+  assert.deepEqual([find("Eier")?.needed, find("Eier")?.unit], [5, "stück"]);
+  assert.equal(find("Zwiebeln")?.needed, 3);
+  assert.equal(find("Tomaten")?.needed, 4);
+  assert.equal(find("Kartoffeln")?.needed, 5);
+  assert.equal(find("Zitronen")?.needed, 3);
+  assert.equal(list.filter((x) => /^Ei/.test(x.name)).length, 2, "Eier and Eigelb stay apart");
+  assert.ok(find("Eigelb") && find("Tomatenmark"), "different foods are not merged");
+  assert.equal(Studio.shoppingNeeds([recipe("C", ["1 Ei"])], [])[0].name, "Ei");
+});
+
+test("German count words before the food become the unit, not part of the food", () => {
+  const list = Studio.shoppingNeeds(
+    [
+      recipe("K", [
+        "4 Scheiben Knäckebrot",
+        "1 Zweig Rosmarin",
+        "2 Becher Joghurt",
+        "1 Glas Gurken",
+        "3 Gläser Oliven",
+        "2 Stück Butter",
+        "1 Dose Mais",
+        "2 Packungen Nudeln",
+        "1 Bund Petersilie",
+        "2 Stangen Sellerie",
+      ]),
+    ],
+    [],
+  );
+  const got = Object.fromEntries(list.map((x) => [x.name, [x.needed, x.unit]]));
+  assert.deepEqual(got.Knäckebrot, [4, "Scheiben"]);
+  assert.deepEqual(got.Rosmarin, [1, "Zweig"]);
+  assert.deepEqual(got.Joghurt, [2, "Becher"]);
+  assert.deepEqual(got.Gurken, [1, "Glas"]);
+  assert.deepEqual(got.Oliven, [3, "Gläser"]);
+  assert.deepEqual(got.Butter, [2, "stück"]);
+  assert.deepEqual(got.Mais, [1, "Dose"]);
+  assert.deepEqual(got.Nudeln, [2, "Packungen"]);
+  assert.deepEqual(got.Petersilie, [1, "Bund"]);
+  assert.deepEqual(got.Sellerie, [2, "Stangen"]);
+  // A linked food without a unit keeps the count word in its name, so the same rule applies to it.
+  const linked = Studio.shoppingNeeds(
+    [
+      {
+        name: "L",
+        recipeServings: 2,
+        recipeIngredient: [{ quantity: 4, food: { name: "Scheiben Knäckebrot" } }],
+      },
+    ],
+    [],
+  );
+  assert.deepEqual(
+    [linked[0].name, linked[0].needed, linked[0].unit],
+    ["Knäckebrot", 4, "Scheiben"],
+  );
+  const garlic = Studio.shoppingNeeds([recipe("G", ["2 Knoblauchzehen", "1 Zehe Knoblauch"])], []);
+  assert.equal(garlic.length, 1);
+});

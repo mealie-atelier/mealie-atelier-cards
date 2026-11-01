@@ -1233,7 +1233,8 @@
     justify-self: start;
   }
   .atelier .studio-actions > .btn {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .studio-pantry-row > div:last-child {
     width: 100%;

@@ -229,8 +229,10 @@
   }
 }
 @container atelier-card (max-width: 430px) {
+  /* Content width is the basis: two buttons share a row only when both labels fit on one line, else each takes its own row. */
   .atelier .studio-actions > .btn {
-    flex: 1 1 145px;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .studio-actions > .btn:only-child {
     flex-grow: 0;
@@ -657,8 +659,10 @@
   .atelier .studio-actions {
     gap: var(--ds-space-2);
   }
+  /* Content width is the basis: two buttons share a row only when both labels fit on one line, else each takes its own row. */
   .atelier .studio-actions > .btn {
-    flex: 1 1 min(100%, 145px);
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .studio-actions > .btn:only-child {
     flex: 1 1 auto;

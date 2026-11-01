@@ -151,3 +151,26 @@ test("the shopping list filter stacks the pill below the select in narrow cards"
   assert.ok(narrow > lastWide, "the 360px shopping filter rule must follow the last 430px block");
   assert.match(bundle, /max-width: 360px\) \{[^}]*\.shopping-list-filter/);
 });
+
+test("studio action buttons share a row only when both labels fit on one line", () => {
+  const components = read("src/design-system/components.css");
+  const rules = [
+    ...(components + polish).matchAll(/\.atelier \.studio-actions > \.btn \{([^}]*)\}/g),
+  ];
+  assert.ok(rules.length >= 3, "the phone rules for studio actions exist");
+  for (const [, body] of rules) {
+    assert.doesNotMatch(
+      body,
+      /flex:\s*1 1 (?:\d|min\()/,
+      "no fixed basis that forces equal halves",
+    );
+    assert.doesNotMatch(body, /flex:\s*1 1 100%/);
+  }
+  const sized = rules.filter(([, body]) => /flex:\s*1 1 auto/.test(body));
+  assert.ok(sized.length >= 3, "content width is the basis");
+  for (const [, body] of sized) assert.match(body, /max-width:\s*100%/);
+  assert.match(
+    block(read("src/design-system/kitchen.css"), ".atelier .studio-actions {"),
+    /flex-wrap:\s*wrap/,
+  );
+});

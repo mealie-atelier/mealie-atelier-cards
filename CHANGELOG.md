@@ -16,6 +16,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Web app offline panel on a phone: "Lokale Daten löschen" no longer breaks into two lines next to "Jetzt abgleichen".
 - Bring! sync dialog: the space below the last button matches the side padding instead of doubling when the content fits.
 - Product page: the meal plan images have alt texts that describe what they show.
+- Kitchen studio action rows on a phone ("Einkauf berechnen" and "In Mealie-Liste übernehmen", "Calculate shopping list" and "Add to Mealie list"): two buttons share a row only when both labels fit on one line, otherwise each takes its own row, so a label never breaks into two lines.
+- Shopping assistant in German: "1 Ei" and "4 Eier" (also Zwiebel, Tomate, Kartoffel, Zitrone and similar) from different recipes merge into one row in the matching form ("Eier 5"), while Eigelb and Tomatenmark stay separate foods.
+- Shopping assistant in German: count words before the food are read as units ("4 Scheiben Knäckebrot" is Knäckebrot, 4 Scheiben), including Becher, Glas and Stück, and a linked food without a unit no longer leaves "Scheiben" in the name.
 
 ## [0.12.3] - 2026-11-01
 

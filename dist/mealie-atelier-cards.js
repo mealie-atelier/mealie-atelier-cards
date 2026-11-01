@@ -7422,8 +7422,10 @@ ha-card {
   }
 }
 @container atelier-card (max-width: 430px) {
+  /* Content width is the basis: two buttons share a row only when both labels fit on one line, else each takes its own row. */
   .atelier .studio-actions > .btn {
-    flex: 1 1 145px;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .studio-actions > .btn:only-child {
     flex-grow: 0;
@@ -7850,8 +7852,10 @@ ha-card {
   .atelier .studio-actions {
     gap: var(--ds-space-2);
   }
+  /* Content width is the basis: two buttons share a row only when both labels fit on one line, else each takes its own row. */
   .atelier .studio-actions > .btn {
-    flex: 1 1 min(100%, 145px);
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .studio-actions > .btn:only-child {
     flex: 1 1 auto;
@@ -9716,7 +9720,8 @@ ha-card {
     justify-self: start;
   }
   .atelier .studio-actions > .btn {
-    flex: 1 1 100%;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .studio-pantry-row > div:last-child {
     width: 100%;
@@ -22787,7 +22792,7 @@ const AtelierStudio = (() => {
     if (["ml", "milliliter", "milliliters", "millilitre"].includes(s))
       return { unit: "ml", factor: 1 };
     if (["l", "liter", "litre", "liters"].includes(s)) return { unit: "ml", factor: 1000 };
-    if (["stück", "stueck", "stk", "piece", "pieces"].includes(s))
+    if (["stück", "stuck", "stueck", "stk", "piece", "pieces"].includes(s))
       return { unit: "stück", factor: 1 };
     // English spoons read like EL and TL: a volume that is never converted to ml.
     if (["tbsp", "tablespoon", "tablespoons"].includes(s)) return { unit: "el", factor: 1 };
@@ -22874,7 +22879,7 @@ const AtelierStudio = (() => {
           .trim() || raw;
     // Missing units, spoons and unknown units are never silently converted to g/ml.
     // Quantity without a unit means pieces, but is explicitly marked estimated.
-    const unit = !structured && !source.unit && quantity !== null ? "stück" : source.unit;
+    const unit = !source.unit && quantity !== null ? "stück" : source.unit;
     return {
       label,
       raw,
@@ -22892,11 +22897,14 @@ const AtelierStudio = (() => {
       " ",
     ),
   );
+  // "Ei" is shorter than the three letters a word needs, and "Eier" keeps its r after the suffix cut, so the
+  // egg is folded by hand.
   const identity = (name) =>
     words(name)
       .filter((w) => !prepWords.has(w))
+      .map((w) => (w === "eier" ? "ei" : w))
       .sort()
-      .join("|");
+      .join("|") || (/^ei(?:er)?$/.test(clean(name)) ? "ei" : "");
   const sameFood = (a, b) => !!identity(a) && identity(a) === identity(b);
   const goodStock = (row, today) =>
     row &&
@@ -23465,6 +23473,9 @@ const AtelierStudio = (() => {
     zehe: ["Zehe", "Zehen"],
     zehen: ["Zehe", "Zehen"],
     bund: ["Bund", "Bund"],
+    becher: ["Becher", "Becher"],
+    glas: ["Glas", "Gläser"],
+    gläser: ["Glas", "Gläser"],
     zweig: ["Zweig", "Zweige"],
     zweige: ["Zweig", "Zweige"],
     dose: ["Dose", "Dosen"],
@@ -23498,6 +23509,28 @@ const AtelierStudio = (() => {
     bunch: ["bunch", "bunches"],
     bunches: ["bunch", "bunches"],
   };
+  // Words that only join a compound when they follow a food ("Joghurtbecher" stays one food label).
+  const looseCountUnits = new Set(["becher", "glas", "gläser"]);
+  // German foods counted in pieces: singular and plural display form. One row per food across recipes.
+  const foodForms = Object.fromEntries(
+    [
+      ["Ei", "Eier"],
+      ["Zwiebel", "Zwiebeln"],
+      ["Karotte", "Karotten"],
+      ["Möhre", "Möhren"],
+      ["Zehe", "Zehen"],
+      ["Limette", "Limetten"],
+      ["Zitrone", "Zitronen"],
+      ["Tomate", "Tomaten"],
+      ["Kartoffel", "Kartoffeln"],
+      ["Gurke", "Gurken"],
+      ["Orange", "Orangen"],
+      ["Banane", "Bananen"],
+      ["Birne", "Birnen"],
+      ["Apfel", "Äpfel"],
+      ["Paprikaschote", "Paprikaschoten"],
+    ].flatMap((pair) => pair.map((word) => [word.toLocaleLowerCase("de"), pair])),
+  );
   // English tails of a label that name the counting word ("garlic cloves").
   const countTail = /^(.+?)\s+(cloves?|sprigs?|stalks?)$/i;
   // Only garlic cloves count as a unit; "whole cloves" are the spice.
@@ -23522,6 +23555,16 @@ const AtelierStudio = (() => {
         const sized = ing.label.replace(/^(?:small|medium|large|big)\s+(?=\S+\s+\S)/i, "");
         const lead = sized.match(/^(\S+)\s+(.+)$/);
         const counted = lead && countUnits[lead[1].toLocaleLowerCase("de")];
+        // "2 Stück Butter": the piece word is the unit, not part of the food.
+        if (
+          lead &&
+          ing.quantity !== null &&
+          ing.unit === "stück" &&
+          /^st(?:ü|ue)cke?$/i.test(lead[1])
+        ) {
+          ing.label = lead[2].replace(/^(?:of|von)\s+/i, "");
+          ing.estimated = false;
+        }
         const tail = ing.label.match(countTail);
         if (
           counted &&
@@ -23546,6 +23589,7 @@ const AtelierStudio = (() => {
           // "2 Knoblauchzehen" reads like "2 Zehen Knoblauch", so both merge into one row.
           const lower = ing.label.toLocaleLowerCase("de");
           const word = Object.keys(countUnits)
+            .filter((key) => !looseCountUnits.has(key))
             .sort((a, b) => b.length - a.length)
             .find((key) => lower.length >= key.length + 3 && lower.endsWith(key));
           if (word) {
@@ -23605,8 +23649,12 @@ const AtelierStudio = (() => {
         if (needed !== null && (item.unit === "stück" || counted))
           needed = Math.ceil(needed - 1e-9);
         if (s && !s.staple && needed !== null) s.amount = Math.max(0, s.amount - item.quantity);
+        // A food counted in pieces reads in the form that matches the amount ("1 Ei", "5 Eier").
+        const forms = item.unit === "stück" ? foodForms[item.name.toLocaleLowerCase("de")] : null;
+        const amount = needed ?? item.quantity;
         return {
           ...item,
+          name: forms && amount !== null ? forms[amount === 1 ? 0 : 1] : item.name,
           unit: counted && needed !== null ? counted[needed === 1 ? 0 : 1] : item.unit,
           have,
           needed,
