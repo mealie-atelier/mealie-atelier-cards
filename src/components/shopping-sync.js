@@ -84,6 +84,19 @@ export const shoppingSyncMethods = {
     const c = rule?.counts || {};
     return (c.pending || 0) + (c.sending || 0);
   },
+  // The bridge schedules a debounced send: it is still ahead while next_run_at lies in the future.
+  _syncNextRunAhead(rule) {
+    const at = Date.parse(rule?.next_run_at || "");
+    return Number.isFinite(at) && at > Date.now();
+  },
+  // A rule whose Mealie list is not among the lists that loaded fine: the list was deleted.
+  _syncSourceGone(rule) {
+    if (!rule?.source_list_id) return false;
+    const shopping = this._data?.shopping;
+    if (!shopping || !Array.isArray(shopping.lists) || this._failedParts?.has?.("shopping"))
+      return false;
+    return !shopping.lists.some((l) => String(l.id) === String(rule.source_list_id));
+  },
   _syncEntryButton() {
     const caps = this._syncCaps();
     if (!caps.supported && !caps.standalone) return "";
@@ -328,7 +341,32 @@ export const shoppingSyncMethods = {
     this._syncPollMs = wanted;
     this._syncTimer = setInterval(() => this._syncPollTick(), wanted);
   },
+  // Re-renders once the bridge's next_run_at passes, so a scheduled send does not stay "waiting".
+  _syncNextRunSchedule() {
+    const open = this._modal === "sync";
+    const times = open
+      ? this._syncRules()
+          .filter((rule) => this._syncNextRunAhead(rule))
+          .map((rule) => Date.parse(rule.next_run_at))
+      : [];
+    const target = times.length ? Math.min(...times) : 0;
+    if (target === (this._syncNextAt || 0)) return;
+    if (this._syncNextTimer) clearTimeout(this._syncNextTimer);
+    this._syncNextTimer = null;
+    this._syncNextAt = target;
+    if (!target) return;
+    // Cap the delay to what a timer holds and wait a moment for the send to start.
+    const delay = Math.min(Math.max(target - Date.now(), 0) + 500, 2 ** 31 - 1);
+    this._syncNextTimer = setTimeout(() => {
+      this._syncNextTimer = null;
+      this._syncNextAt = 0;
+      this._syncLoad({ quiet: true }).finally(() => this._render());
+    }, delay);
+  },
   _syncPollStop() {
+    if (this._syncNextTimer) clearTimeout(this._syncNextTimer);
+    this._syncNextTimer = null;
+    this._syncNextAt = 0;
     if (this._syncTimer) clearInterval(this._syncTimer);
     this._syncTimer = null;
     this._syncPollMs = 0;
@@ -360,6 +398,7 @@ export const shoppingSyncMethods = {
     )
       this._syncLoad({ quiet: true });
     this._syncPollSchedule();
+    this._syncNextRunSchedule();
   },
 
   _syncModalHtml() {
@@ -390,7 +429,8 @@ export const shoppingSyncMethods = {
     const note = this._bwCanConnect()
       ? ""
       : this.t(caps.readOnly ? "syncReadOnly" : "syncBringAdminOnly");
-    return `<section class="editor-card sync-bring"><h3>${esc(this.t("syncBringTitle"))}</h3>${note ? `<p class="sync-muted" role="note">${esc(note)}</p>` : ""}${caps.readOnly ? "" : `<p class="sync-muted">${esc(this.t("syncBringPrivacy"))}</p>`}</section>`;
+    // With env credentials no administrator connects anything, so the "after an administrator connects" text is wrong.
+    return `<section class="editor-card sync-bring"><h3>${esc(this.t("syncBringTitle"))}</h3>${note ? `<p class="sync-muted" role="note">${esc(note)}</p>` : ""}${caps.readOnly || caps.bringEnv ? "" : `<p class="sync-muted">${esc(this.t("syncBringPrivacy"))}</p>`}</section>`;
   },
   _syncBringHandleInput(el) {
     const type = el.dataset?.input || "";
@@ -559,8 +599,16 @@ export const shoppingSyncMethods = {
       ${this._bwAccountHtml(caps)}
       ${body}
       ${caps.admin && rules.length >= MAX_SYNC_RULES ? `<p class="notice" role="note">${icon("leaf", 16)} ${esc(this.t("errSyncTooManyRules"))}</p>` : ""}
-      ${caps.admin && rules.length < MAX_SYNC_RULES ? `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${icon("plus", 14)} ${esc(this.t("syncAddRule"))}</button></div>` : ""}
+      ${caps.admin && rules.length < MAX_SYNC_RULES ? this._syncAddRuleHtml(caps) : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditLine(a, rules))}</li>`).join("")}</ul></section>` : ""}</div>`;
+  },
+  // With env credentials and no connected account only the server's .env can fix the sign-in: Add stays, disabled.
+  _syncAddRuleHtml(caps) {
+    const envBlocked = caps.bringSetup && caps.bringEnv && caps.bringState !== "connected";
+    const label = `${icon("plus", 14)} ${esc(this.t("syncAddRule"))}`;
+    if (envBlocked)
+      return `<div class="form-actions"><button class="btn primary" data-action="sync-bw-open" data-value="" disabled aria-describedby="sync-add-hint">${label}</button></div><p class="sync-muted" id="sync-add-hint" role="note">${esc(this.t(caps.admin ? "bwSessionExpiredEnv" : "bwSessionExpiredEnvAskAdmin"))}</p>`;
+    return `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${label}</button></div>`;
   },
   // With several rules a history line names the rule it belongs to.
   _syncAuditLine(entry, rules) {
@@ -666,7 +714,10 @@ export const shoppingSyncMethods = {
       !bringAuth &&
       (destination.reason === "unreachable" || last?.outcome === "destination_unavailable");
     // The Mealie list this rule reads from was deleted: nothing can run until the rule is edited or removed.
-    const sourceMissing = rule.source_missing === true || last?.outcome === "source_missing";
+    const sourceMissing =
+      rule.source_missing === true ||
+      last?.outcome === "source_missing" ||
+      this._syncSourceGone(rule);
     // The destination list was removed from Home Assistant: the same dead end, announced once with its way out.
     const destinationMissing = !bringGone && last?.outcome === "destination_missing";
     // A rule that cannot run offers Edit first, and its notice already states the status.
@@ -730,11 +781,12 @@ export const shoppingSyncMethods = {
         ? `<button class="btn tiny danger" data-action="sync-delete" data-value="${id}">${esc(this.t("syncDelete"))}</button>`
         : "",
     ].join("");
+    const sending = sync.sending === rule.id;
     const confirm =
       sync.confirmDelete === rule.id
         ? `<div class="notice bw-confirm" role="alert"><span>${esc(this._syncBringT("syncDeleteConfirm"))}</span><div class="form-actions bw-nav"><button class="btn tiny ghost" data-action="sync-delete-cancel">${esc(this.t("syncCancel"))}</button><button class="btn tiny danger" data-action="sync-delete-confirm" data-value="${id}">${esc(this.t("syncDelete"))}</button></div></div>`
         : "";
-    return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}">
+    return `<section class="editor-card sync-rule" aria-labelledby="sync-rule-${id}" aria-busy="${sending ? "true" : "false"}">
       <h3 id="sync-rule-${id}">${esc(this._syncRuleTitle(rule, destination, destName))}</h3>
 ${this._syncRouteHtml(rule, destination, destName)}
       <dl class="bw-facts sync-facts">${[
@@ -743,22 +795,26 @@ ${this._syncRouteHtml(rule, destination, destName)}
           `${esc(this.t(`syncMode${mode}`))} <small class="sync-muted">${esc(this._syncBringT(`syncMode${mode}Hint`))}</small>`,
         ],
         // A notice that already says what is wrong replaces the status and the matching last run.
-        stuck
+        stuck && !sending
           ? null
           : [
               this.t("syncFactStatus"),
-              bringGone
-                ? `${icon("bolt", 15)} ${esc(this.t("bwStatusListGone"))}`
-                : sourceMissing
-                  ? `${icon("bolt", 15)} ${esc(this.t("syncOutcomeSourceMissing"))}`
-                  : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
+              sending
+                ? `${icon("refresh", 15)} ${esc(this.t("syncSending"))}`
+                : bringGone
+                  ? `${icon("bolt", 15)} ${esc(this.t("bwStatusListGone"))}`
+                  : sourceMissing
+                    ? `${icon("bolt", 15)} ${esc(this.t("syncOutcomeSourceMissing"))}`
+                    : `${stateIcon} ${esc(this._syncBringT(`syncState${state}`))}`,
             ],
         [
           this.t("bwFactPending"),
           esc(
             this._syncWaiting(rule)
               ? this.tp("syncPending", this._syncWaiting(rule))
-              : this.t("syncPendingNone"),
+              : this._syncNextRunAhead(rule)
+                ? this.t("syncNextRun")
+                : this.t("syncPendingNone"),
           ),
         ],
         stuck && ["source_missing", "destination_missing"].includes(last?.outcome)
@@ -775,7 +831,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
           ([label, value]) => `<div class="bw-row"><dt>${esc(label)}</dt><dd>${value}</dd></div>`,
         )
         .join("")}</dl>
-      <div class="form-actions sync-actions">${actions}</div>
+      <div class="form-actions sync-actions">${sending ? "" : actions}</div>
       ${problems.map((p) => `<p class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${esc(p)}</span></p>`).join("")}
       ${counts.needs_reconciliation > 0 ? `<p class="notice" role="status">${icon("clock", 16)} <span>${esc(this._syncBringTp("syncReconcileHint", counts.needs_reconciliation))}</span></p>` : ""}
       ${issues > 0 ? `<p class="sync-issues">${icon("bolt", 15)} ${esc(this.t("syncBadgeIssues", { count: issues }))}</p>` : ""}
@@ -1025,7 +1081,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
           d.activated
             ? `<button class="btn primary" data-action="sync-save" data-value="changes"${blocked ? " disabled" : ""}>${icon("check", 14)} ${esc(this.t("syncSaveChanges"))}</button>`
             : `<button class="btn primary" data-action="sync-save" data-value="send"${blocked || !d.preview ? " disabled" : ""}>${icon("arrow", 14)} ${esc(confirmLabel)}</button>${d.preview && !d.previewBusy && sendCount === 0 ? "" : `<button class="btn" data-action="sync-save" data-value="only"${blocked ? " disabled" : ""}>${esc(this.t("syncSaveOnly"))}</button>`}`
-        }<button class="btn ghost" data-action="sync-setup-cancel">${esc(this.t("syncCancel"))}</button></div></section></div>`;
+        }<button class="btn ghost" data-action="sync-setup-cancel"${d.saving ? " disabled" : ""}>${esc(this.t("syncCancel"))}</button></div></section></div>`;
   },
 
   // Returns true when the click belonged to the sync workflow.
@@ -1292,6 +1348,12 @@ ${this._syncRouteHtml(rule, destination, destName)}
     sync.result = "";
     if (this._modal === "sync-setup") this._modal = "sync";
     if (kind === "send" && rule?.id) {
+      // A long send must not look like a frozen form: show the status view with the rule busy right away.
+      sync.sending = rule.id;
+      const rules = asArray(sync.state?.rules);
+      if (sync.state && !rules.some((r) => r.id === rule.id))
+        sync.state = { ...sync.state, rules: [...rules, { counts: {}, ...rule }] };
+      this._render();
       try {
         const result = await this._ws("sync_run", { rule_id: rule.id, confirm_first_batch: true });
         this._syncShowResult(result);
@@ -1299,6 +1361,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         sync.error = this._errorText(err);
         this._syncRefetchStatus(err);
       }
+      sync.sending = "";
     }
     try {
       sync.state = await this._ws("sync_state");

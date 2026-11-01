@@ -86,13 +86,17 @@ test("preview total omits the batch sentence when everything is shown", async ()
   assert.equal(en["syncPreviewTotalBringAll.one"], "1 open item in the Mealie list.");
 });
 
-test("env mode never opens the Bring! sign-in step for an unconnected account", () => {
+test("env mode never opens the Bring! sign-in step and keeps the sync dialog for an unconnected account", () => {
   for (const state of ["reauth", "none", ""]) {
     const card = make({ env: true, state });
     card._modal = "sync";
     card._bwOpen();
-    assert.equal(card._modal, "sync-info");
+    assert.equal(card._modal, "sync");
     assert.ok(!card._syncData().wizard || card._syncData().wizard.step !== 1);
+    // Opened from outside the dialog (the shopping view entry) the info panel still explains the .env fix.
+    card._modal = null;
+    card._bwOpen();
+    assert.equal(card._modal, "sync-info");
     assert.ok(card._syncInfoHtml().includes(en.bwSessionExpiredEnv.replace(/&/g, "&amp;")));
   }
   const ok = make({ env: true, state: "connected" });

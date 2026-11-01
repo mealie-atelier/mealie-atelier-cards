@@ -8,7 +8,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
-- Shopping sync dialog: the preview no longer mentions a first batch when every open item is shown. With env Bring! credentials that Bring! refuses, adding a rule explains the .env fix instead of opening a sign-in form. The expired-session hint now fits the role: non-administrators are asked to have an administrator sign in again or fix the server credentials.
+- Shopping sync dialog: the preview no longer mentions a first batch when every open item is shown. With env Bring! credentials that Bring! refuses, adding a rule is disabled in place, with the .env fix as its hint, and the dialog keeps the account state and the rules. The expired-session hint now fits the role: non-administrators are asked to have an administrator sign in again or fix the server credentials.
+- Shopping sync: saving and sending a rule moves to the status view at once and shows the rule as "Wird gesendet …" / "Sending…" until the send returns. A scheduled debounced send shows "Wird gleich gesendet" / "Sending shortly" in the Waiting row instead of "Nothing waiting". A rule whose Mealie list was deleted shows the missing-list warning without a manual run. Wrapped rule action buttons align left.
 - Recipe editor: an invalid or emptied servings value now shows an inline error under the field, focuses it and keeps the typed text, instead of a toast that reset the field. Clearing the servings of a recipe that has servings no longer reports "Saved" while keeping the old value.
 - Light scheme: the timer and field error text is dark enough to read (a light-scheme error color with at least 4.5:1 contrast).
 - Cooking mode: "Set a timer" and the timer presets no longer focus the minutes field on touch devices, so the on-screen keyboard stays down. Mouse and keyboard users still get the focus.

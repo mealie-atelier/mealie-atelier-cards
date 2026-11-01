@@ -1081,6 +1081,8 @@
   "syncReviewTitle": "Items to review",
   "syncJustNow": "just now",
   "syncPlatformShoppingList": "Shopping list",
+  "syncSending": "Sending…",
+  "syncNextRun": "Sending shortly",
   "syncPendingNone": "Nothing waiting",
   "syncReviewProblems": "Needs attention",
   "syncConfirmSendNeutral": "Save and send",

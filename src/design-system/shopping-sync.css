@@ -53,6 +53,7 @@
 }
 .atelier .sync-actions {
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 .atelier .sync-actions button[aria-disabled="true"],
 .atelier .sync-record-actions button[aria-disabled="true"] {

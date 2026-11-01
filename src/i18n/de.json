@@ -1077,6 +1077,8 @@
   "syncReviewTitle": "Artikel zum Prüfen",
   "syncJustNow": "gerade eben",
   "syncPlatformShoppingList": "Einkaufsliste",
+  "syncSending": "Wird gesendet …",
+  "syncNextRun": "Wird gleich gesendet",
   "syncPendingNone": "Nichts ausstehend",
   "syncReviewProblems": "Braucht Aufmerksamkeit",
   "syncConfirmSendNeutral": "Speichern und senden",

@@ -15,7 +15,10 @@ export const bringWizardMethods = {
     const caps = this._syncCaps();
     if (!caps.bringSetup) return;
     // With env credentials there is no sign-in step: an unconnected account is fixed in the server's .env.
-    if (!this._bwCanConnect() || (caps.bringEnv && caps.bringState !== "connected")) {
+    const envBlocked = caps.bringEnv && caps.bringState !== "connected";
+    // The sync dialog stays as it is: its account chip and env notice already say what to fix.
+    if (envBlocked && this._modal === "sync") return;
+    if (!this._bwCanConnect() || envBlocked) {
       this._modal = "sync-info";
       this._render();
       return;
