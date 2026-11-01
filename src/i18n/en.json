@@ -773,7 +773,7 @@
   "offlineDeleteConfirmTitle": "Delete offline data?",
   "offlineDeleteConfirmBody": "Local shopping lists and unsynced changes will be permanently deleted.",
   "offlineDeleteConfirmAction": "Delete data",
-  "offlineEnableConfirmAction": "Enable offline mode",
+  "offlineEnableConfirmAction": "Enable offline",
   "offlinePushSetup": "Set up push notifications",
   "offlineEnableHelp": "Enable offline shopping",
   "offlineAlarmError": "Kitchen timer notification error",

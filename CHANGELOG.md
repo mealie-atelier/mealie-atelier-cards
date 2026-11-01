@@ -4,6 +4,14 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Shopping note in German: an amount in cups reads "Tasse" or "Tassen" instead of "cups".
+- Cooking mode: starting to cook reloads the shared session first, so a second device no longer asks to replace a session that has already ended, and a double tap on the start button starts only once.
+- Bring! sync in German: the waiting row reads "Wird gleich geprüft", matching the English "Checking shortly".
+- Web app in English: the offline confirm button reads "Enable offline" and fits on one line on a phone.
+- Product page: the shopping list feature image shows the current list design, and the English Discover results image shows the same recipe data as the live demo.
+
 ## [0.12.4] - 2026-11-01
 
 ### Fixed
@@ -17,8 +25,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Bring! sync dialog: the space below the last button matches the side padding instead of doubling when the content fits.
 - Product page: the meal plan images have alt texts that describe what they show.
 - Kitchen studio action rows on a phone ("Einkauf berechnen" and "In Mealie-Liste übernehmen", "Calculate shopping list" and "Add to Mealie list"): two buttons share a row only when both labels fit on one line, otherwise each takes its own row, so a label never breaks into two lines.
-- Shopping assistant in German: "1 Ei" and "4 Eier" (also Zwiebel, Tomate, Kartoffel, Zitrone and similar) from different recipes merge into one row in the matching form ("Eier 5"), while Eigelb and Tomatenmark stay separate foods.
-- Shopping assistant in German: count words before the food are read as units ("4 Scheiben Knäckebrot" is Knäckebrot, 4 Scheiben), including Becher, Glas and Stück, and a linked food without a unit no longer leaves "Scheiben" in the name.
+- Shopping assistant in German: "1 Ei" and "4 Eier" (also Zwiebel, Tomate, Kartoffel, Zitrone and similar) from different recipes merge into one row in the matching form ("Eier 5"), while Eigelb, Tomatenmark and Eis stay separate foods.
+- Shopping assistant in German: count words before the food are read as units ("4 Scheiben Knäckebrot" is Knäckebrot, 4 Scheiben), including Becher, Glas and Stück, and a linked food without a unit no longer leaves "Scheiben" in the name. A linked food without a unit is marked as an estimated amount, and a compound that ends in a jar or cup word ("2 Weinglaser", "2 Senfgläser", "2 Joghurtbecher") stays one item.
 
 ## [0.12.3] - 2026-11-01
 

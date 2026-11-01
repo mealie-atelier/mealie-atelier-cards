@@ -121,7 +121,7 @@ test("Cancel is disabled while the setup dialog saves", async () => {
 });
 
 test("a scheduled debounced send is announced in the Waiting row and re-rendered after next_run_at", async () => {
-  const at = new Date(Date.now() + 60).toISOString();
+  const at = new Date(Date.now() + 60_000).toISOString();
   const { card } = make({ rules: [rule({ next_run_at: at })] });
   card._syncData().state = { rules: [rule({ next_run_at: at })], audit: [] };
   const html = card._syncSyncHtml();
@@ -142,7 +142,8 @@ test("a scheduled debounced send is announced in the Waiting row and re-rendered
   assert.ok(past.card._syncSyncHtml().includes(en.syncPendingNone));
   const waiting = make({ rules: [rule({ next_run_at: at, counts: { pending: 2 } })] });
   assert.ok(!waiting.card._syncSyncHtml().includes(en.syncChecking));
-  assert.equal(de.syncChecking, "Wird geprüft");
+  assert.equal(de.syncChecking, "Wird gleich geprüft");
+  assert.equal(en.offlineEnableConfirmAction, "Enable offline");
   assert.equal(de["syncPending.other"], "{count} ausstehend");
   assert.equal(de["syncPending.one"], "1 ausstehend");
   assert.equal(de.syncSending, "Wird gesendet …");

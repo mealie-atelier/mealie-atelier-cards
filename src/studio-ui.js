@@ -333,10 +333,13 @@ Object.assign(MealieAtelierCard.prototype, {
     if (item.needed != null)
       return [this._studioNumber(item.needed), this._studioUnit(item.unit, item.needed)];
     if (item.quantity == null) return ["?", ""];
-    const label = { el: de ? "EL" : "tbsp", tl: de ? "TL" : "tsp" }[item.unit];
-    const unit =
-      label ||
-      (item.unit === "cup" ? (item.quantity > 1 ? "cups" : "cup") : this._studioUnit(item.unit));
+    const plural = item.quantity > 1;
+    const label = {
+      el: de ? "EL" : "tbsp",
+      tl: de ? "TL" : "tsp",
+      cup: de ? (plural ? "Tassen" : "Tasse") : plural ? "cups" : "cup",
+    }[item.unit];
+    const unit = label || this._studioUnit(item.unit);
     return [this._studioNumber(item.quantity), unit];
   },
   _studioNumber(value) {
@@ -1645,6 +1648,25 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
   if (action === "cook-start" && this._detail) {
     const slug = this._detail.slug,
       name = this._detail.name;
+    // Another device may have started or ended a session since the last poll. Refresh first,
+    // but never let a slow or offline server block the start.
+    // A second click while the refresh is pending must not start a second run.
+    if (this._cookStartPending) return;
+    this._cookStartPending = true;
+    el.disabled = true;
+    el.setAttribute?.("aria-busy", "true");
+    let timer;
+    try {
+      await Promise.race([
+        this._studioRefresh({ silent: true }),
+        new Promise((resolve) => (timer = setTimeout(resolve, 1500))),
+      ]).catch(() => {});
+    } finally {
+      clearTimeout(timer);
+      this._cookStartPending = false;
+      el.disabled = false;
+      el.removeAttribute?.("aria-busy");
+    }
     const active = this._studio?.family?.session;
     const existed = active?.slug === slug;
     // Starting a different recipe must never destroy shared tasks/timers silently.

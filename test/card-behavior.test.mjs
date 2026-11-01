@@ -662,7 +662,7 @@ test("the shopping note keeps the original amount and the reader's unit", async 
       "de",
       [
         "2 EL olive oil (check amount)",
-        "1 cup flour (check amount)",
+        "1 Tasse flour (check amount)",
         "3 kg rice",
         "1,5 TL salt (check amount)",
         "? salt and pepper (check amount)",
