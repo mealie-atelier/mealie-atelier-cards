@@ -11043,22 +11043,34 @@ ha-card {
   .atelier .week-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     overflow-x: auto;
+    /* Wrapped rows: an empty day keeps its own compact height instead of stretching to the tallest day in its row. */
+    align-items: start;
   }
 }
-@container atelier-card (min-width: 1480px) {
+/* Seven columns as one row. With a sidebar the grid loses about 280px to it, so the card needs 1400px; without one
+   1100px give every day 140px or more (a name box of at least 110px). */
+@container atelier-card (min-width: 1400px) {
   .atelier .week-grid {
-    grid-template-columns: repeat(7, minmax(150px, 1fr));
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    align-items: stretch;
   }
 }
 /* Without a sidebar the grid has the whole card. */
 @container atelier-card (min-width: 761px) {
   .atelier .shell.single .week-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
   }
 }
-@container atelier-card (min-width: 1260px) {
+@container atelier-card (min-width: 1100px) {
   .atelier .shell.single .week-grid {
-    grid-template-columns: repeat(7, minmax(150px, 1fr));
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    align-items: stretch;
+  }
+}
+@container atelier-card (min-width: 761px) {
+  .atelier .week-grid > .day:has(> .day-empty) {
+    min-height: 0;
   }
 }
 
@@ -13975,14 +13987,17 @@ class MealieAtelierCard extends HTMLElement {
     this._offlineOnHass(value);
     // END feature H
     const darkBefore = this._hass?.themes?.darkMode;
+    const languageBefore = this._language;
     this._hass = value;
     if (this.isConnected && !this._didLoad) {
       this._didLoad = true;
       this._refresh();
     } else if (
       this.isConnected &&
-      this._design.theme === "auto" &&
-      darkBefore !== value?.themes?.darkMode
+      ((this._design.theme === "auto" && darkBefore !== value?.themes?.darkMode) ||
+        // A live language switch re-renders everything, an open cook dialog included. The cook
+        // dialog is patched in place, so its step, timers and scroll position stay.
+        languageBefore !== this._language)
     )
       this._render();
   }
@@ -15927,10 +15942,12 @@ class MealieAtelierCard extends HTMLElement {
       const minutes = Number(rawMinutes);
       if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
         const rawLabel = this.shadowRoot.querySelector("[data-timer-label]")?.value;
-        // The toast sits behind the cooking dialog, so the range message is also shown inside the form.
+        // The range message is always shown inside the form (role="alert"). Outside the cooking
+        // dialog a toast repeats it; in cooking mode the toast would only cover the Back buttons.
         this._timerError = this.t("uiTimerMinutesRange");
-        this._flash(this._timerError, "error");
-        // The flash re-renders the card: mark and focus the new input and keep what was typed.
+        if (this._modal === "cook") this._render();
+        else this._flash(this._timerError, "error");
+        // The re-render replaces the input: mark and focus the new one and keep what was typed.
         const fresh = this.shadowRoot.querySelector("[data-timer-minutes]");
         if (fresh) {
           if (rawMinutes !== undefined) fresh.value = rawMinutes;
@@ -19829,7 +19846,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         ? ""
         : this._syncBringT(`syncLastError_${record.last_error}`)
       : "";
-    // Every row has the same two buttons, so each one names its item.
+    // A removed item cannot be sent again, so its row only offers Dismiss. Each button names its item.
     const button = (action, label) =>
       `<button class="btn tiny" data-action="${action}" data-value="${key}" data-rule="${esc(ruleId)}" aria-label="${esc(`${label}: ${record.title}`)}" title="${esc(`${label}: ${record.title}`)}"${caps.write ? "" : ' aria-disabled="true"'}>${esc(label)}</button>`;
     // After a change in Mealie the bridge may report the current title: show old → new.
@@ -19838,7 +19855,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       record.state === "changed_after_send" && current && current !== record.title
         ? `${record.title} → ${current}`
         : record.title;
-    return `<li class="sync-record"><div><strong>${esc(shown)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
+    return `<li class="sync-record"><div><strong>${esc(shown)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${record.state === "removed_after_send" ? "" : button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
   },
 
   _syncDraftRequest(draft) {
@@ -22357,9 +22374,23 @@ const AtelierStudio = (() => {
     }
     return Number(t.replace(",", "."));
   }
+  const superDigits = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const subDigits = "₀₁₂₃₄₅₆₇₈₉";
+  // "¹/₂", "¹⁄₂" and "2 ¹/₂" become "1/2" and "2 1/2" so one amount pattern covers every fraction form.
+  function normalizeFractions(text) {
+    const digit = (c) => {
+      const i = superDigits.indexOf(c);
+      return String(i >= 0 ? i : subDigits.indexOf(c));
+    };
+    return String(text).replace(
+      new RegExp(`([${superDigits}${subDigits}]+)\\s?[/⁄]\\s?([${superDigits}${subDigits}]+)`, "g"),
+      (_, n, d) => `${[...n].map(digit).join("")}/${[...d].map(digit).join("")}`,
+    );
+  }
   function parseIngredient(row) {
     const raw = typeof row === "string" ? row : ingredient(row);
-    const m = raw.trim().match(ingredientAmount);
+    const normalized = normalizeFractions(raw).trim();
+    const m = normalized.match(ingredientAmount);
     const structured =
       typeof row === "object" &&
       row !== null &&
@@ -22372,10 +22403,16 @@ const AtelierStudio = (() => {
       ? Math.round(row.quantity * source.factor * 1000) / 1000
       : m
         ? Math.round(amountValue(m[2] || m[1]) * source.factor * 1000) / 1000
-        : null;
+        : // Rows without a linked food still carry a numeric quantity from Mealie.
+          typeof row === "object" &&
+            row !== null &&
+            Number.isFinite(row.quantity) &&
+            row.quantity > 0
+          ? Math.round(row.quantity * source.factor * 1000) / 1000
+          : null;
     const label = structured
       ? String(row.food.name).trim()
-      : raw
+      : normalized
           .slice(m ? m[0].length : 0)
           .replace(/^[,;\s]+/, "")
           .trim() || raw;
