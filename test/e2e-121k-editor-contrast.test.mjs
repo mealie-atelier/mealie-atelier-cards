@@ -125,9 +125,14 @@ test("light scheme defines a darker negative token and the inline error uses it"
 });
 
 test("a blank or too long name shows an inline error and never flashes", async () => {
-  for (const [values, d, field] of [
-    [{ name: "  ", description: "typed", servings: "2" }, detail, "  "],
-    [{ name: "x".repeat(121), description: "typed", servings: "2" }, detail, "x".repeat(121)],
+  for (const [values, d, field, message] of [
+    [{ name: "  ", description: "typed", servings: "2" }, detail, "  ", /Fill in this field/],
+    [
+      { name: "x".repeat(121), description: "typed", servings: "2" },
+      detail,
+      "x".repeat(121),
+      /at most 120/,
+    ],
   ]) {
     const doc = { createElement: () => fakeEl({ dataset: {}, textContent: "" }) };
     const card = makeCard(loadCards({ globals: { FormData: FakeFormData, document: doc } }));
@@ -162,7 +167,7 @@ test("a blank or too long name shows an inline error and never flashes", async (
     assert.equal(renders, 0);
     assert.equal(input.getAttribute("aria-invalid"), "true");
     assert.equal(label.note.getAttribute("role"), "alert");
-    assert.match(label.note.textContent, /\S/);
+    assert.match(label.note.textContent, message);
     assert.equal(input.focused, true);
     assert.equal(input.scrolled, true);
     label.note.remove = () => (label.note = null);

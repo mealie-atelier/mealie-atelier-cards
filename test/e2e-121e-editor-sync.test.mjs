@@ -42,7 +42,8 @@ test("an unchanged 140 character name is not sent when only servings change", as
 test("a changed name over 120 characters is refused instead of cut", async () => {
   const { sent, flashes } = await submitEdit({ name: `${LONG}x`, description: "", servings: "2" });
   assert.equal(sent.length, 0);
-  assert.match(flashes[0], /at most 120/);
+  // The limit is reported inline at the name field (e2e-121k-editor-contrast), never as a re-rendering toast.
+  assert.deepEqual(flashes, []);
 });
 
 test("a changed name within 120 characters is sent", async () => {
