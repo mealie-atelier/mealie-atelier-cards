@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.4] - 2026-11-01
+
 ### Fixed
 
 - Shopping assistant in English: tbsp, tsp, cups, pinches, handfuls, cloves, sprigs, slices and pieces are read as units instead of being glued to the name ("tbsp olive oil 8 pcs"), English foods land in the same aisles as German ones (flour and stock in the pantry, bacon and ham with the proteins, oil and salt with the spices), the piece unit reads "piece" / "pieces" and the note sent to the shopping list keeps the amount in the reader's unit ("2 tbsp olive oil", "2 EL Olivenöl").
@@ -536,7 +538,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.3...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.4...HEAD
+[0.12.4]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.3...v0.12.4
 [0.12.3]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.2...v0.12.3
 [0.12.2]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.0...v0.12.1
