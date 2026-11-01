@@ -515,6 +515,13 @@ Object.assign(MealieAtelierCard.prototype, {
     ).length;
     return `<section class="studio-daily ds-surface"><div><span class="eyebrow">${this.t("studioDailyEyebrow")} · ${morning ? this.t("studioDailyMorningLabel") : evening ? this.t("studioDailyEveningLabel") : this.t("studioDailyOverviewLabel")}</span><h2>${esc(greeting)}</h2><p>${soon ? this.t(soon === 1 ? "studioDailyExpiringOne" : "studioDailyExpiring", { count: soon }) : this.t("studioDailyDiscover")}</p></div><div class="studio-daily-actions"><button class="btn primary" data-action="nav" data-value="discover">${icon("spark", 15)} ${this.t("discover")}</button><button class="btn" data-action="nav" data-value="pantry">${icon("cart", 15)} ${this.t("studioDailyPantry")}</button></div></section>`;
   },
+  // Only the count takes the UI face: the serif's old-style zero reads as the letter o.
+  _bookCountHtml(count) {
+    return esc(this.tp("cookbookSelected", count)).replace(
+      /\d+/,
+      (n) => `<span class="at-numeral">${n}</span>`,
+    );
+  },
   _studioDiscover() {
     const p = this._studio.profile || {};
     const d = (this._discoverDraft = atDiscoverDraft(this._studio, this._discoverDraft));
@@ -728,7 +735,7 @@ Object.assign(MealieAtelierCard.prototype, {
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
       }</div></section>
-      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2 data-book-selected-count>${this.tp("cookbookSelected", selected.size)}</h2></div>
+      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2 data-book-selected-count>${this._bookCountHtml(selected.size)}</h2></div>
       <form class="studio-form" data-form="studio-book"><label>${this.t("cookbookTitleLabel")}<input name="title" maxlength="100" value="${this.t("cookbookTitleDefault")}" required></label><label>${this.t("cookbookSubtitleLabel")}<input name="subtitle" maxlength="160" value="${this.t("cookbookSubtitleDefault")}"></label>
       <label class="studio-inline"><input type="checkbox" name="photos"> ${this.t("cookbookPhotos")}</label>
       <button class="btn primary" type="submit" ${!selected.size ? "disabled" : ""}>${icon("print", 15)} ${this.t("cookbookPrint")}</button></form>
@@ -1803,7 +1810,7 @@ MealieAtelierCard.prototype._handleInput = function (event) {
     else this._bookSelected.delete(event.target.dataset.book);
     const count = this.shadowRoot.querySelector("[data-book-selected-count]");
     if (this._view === "cookbook" && count)
-      count.textContent = this.tp("cookbookSelected", this._bookSelected.size);
+      count.innerHTML = this._bookCountHtml(this._bookSelected.size);
     const submit = this.shadowRoot.querySelector('[data-form="studio-book"] button[type="submit"]');
     if (submit) submit.disabled = !this._bookSelected.size;
     return;

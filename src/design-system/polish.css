@@ -2686,9 +2686,9 @@
 
 /* Georgia sets old-style figures, so a zero reads as the letter o. Numbers shown in
    the serif display face use the UI face with lining, tabular figures instead. The
-   studio-ui markup is not editable here, so its number displays are matched by selector. */
+   recipe step toggle needs its own selector to outrank the serif rule in editorial.css. */
 .atelier .at-numeral.at-numeral,
-.atelier .studio-head h2[data-book-selected-count],
+.atelier .detail-cols .step-number.step-toggle.at-numeral,
 .atelier .stat strong,
 .atelier .studio-counter output {
   font-family: var(--ds-font-ui);

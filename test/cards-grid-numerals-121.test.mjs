@@ -35,7 +35,8 @@ test("serif number displays use lining numerals in the UI face", () => {
   const start = css.indexOf(".atelier .at-numeral.at-numeral,");
   assert.ok(start >= 0);
   const block = css.slice(start, css.indexOf("}", start));
-  assert.match(block, /\.studio-head h2\[data-book-selected-count\]/);
+  assert.doesNotMatch(block, /data-book-selected-count/, "only the count, not the whole heading");
+  assert.match(block, /\.detail-cols \.step-number\.step-toggle\.at-numeral/);
   assert.doesNotMatch(block, /cook-timer-header/);
   assert.match(block, /font-family: var\(--ds-font-ui\)/);
   assert.match(block, /lining-nums tabular-nums/);
@@ -48,4 +49,21 @@ test("serif number displays use lining numerals in the UI face", () => {
     /<strong class="at-numeral">\$\{report/,
   );
   assert.match(read("src/components/views.js"), /<b class="at-numeral">\$\{day\.getDate\(\)\}/);
+  assert.match(read("src/components/dialogs.js"), /class="step-number step-toggle at-numeral"/);
+  assert.match(read("src/card-core.template.js"), /<span class="step-count at-numeral">/);
+});
+
+test("the cookbook heading wraps only its count in the numeral face", () => {
+  const source = read("src/studio-ui.js");
+  const body = source.match(/\n {2}_bookCountHtml\(count\) \{\n([\s\S]*?)\n {2}\},/);
+  assert.ok(body, "_bookCountHtml helper");
+  const esc = (value) => String(value).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  const helper = new Function("esc", `return function (count) {${body[1]}}`)(esc);
+  const html = helper.call({ tp: (_key, n) => `${n} Rezepte ausgewählt` }, 0);
+  assert.equal(html, '<span class="at-numeral">0</span> Rezepte ausgewählt');
+  assert.match(
+    source,
+    /<h2 data-book-selected-count>\$\{this\._bookCountHtml\(selected\.size\)\}<\/h2>/,
+  );
+  assert.match(source, /count\.innerHTML = this\._bookCountHtml\(this\._bookSelected\.size\)/);
 });

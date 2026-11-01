@@ -26,6 +26,7 @@ const HOST_SPECIFIC_ERRORS = [
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 // Result cap of the official Home Assistant provider; hitting it means the list may be cut off.
 const NATIVE_RESULT_LIMIT = 500;
+const GRID_OPTIONS = Object.freeze({ columns: 12, rows: 10, min_columns: 4, min_rows: 3 });
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",
@@ -11165,6 +11166,20 @@ ha-card {
   visibility: hidden;
 }
 
+/* Georgia sets old-style figures, so a zero reads as the letter o. Numbers shown in
+   the serif display face use the UI face with lining, tabular figures instead. The
+   recipe step toggle needs its own selector to outrank the serif rule in editorial.css. */
+.atelier .at-numeral.at-numeral,
+.atelier .detail-cols .step-number.step-toggle.at-numeral,
+.atelier .stat strong,
+.atelier .studio-counter output {
+  font-family: var(--ds-font-ui);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings:
+    "lnum" 1,
+    "tnum" 1;
+}
+
 /* Atelier Control Refinement 0.9.5: single geometric contract.
    Loaded last, scoped to Atelier, preserving colors, surfaces and typography. */
 :host {
@@ -12209,6 +12224,12 @@ ha-card {
   .atelier .ed-option {
     transition: none !important;
   }
+}
+
+/* The Save bar is sticky at the bottom of the scrolling dialog: anything scrolled into view (the restore confirm,
+   keyboard focus) must land above it. The editor measures the bar and sets its height; 96px is the fallback. */
+.atelier .modal:has(.atelier-editor .editor-footer) {
+  scroll-padding-bottom: var(--ed-footer-height, 96px);
 }
 
 /* Smart Shopping Sync: status panel, setup wizard and review list. No motion of its own. */
@@ -13912,7 +13933,11 @@ class MealieAtelierCard extends HTMLElement {
     };
   }
   static getGridOptions() {
-    return { columns: 12, rows: 10, min_columns: 4, min_rows: 3 };
+    return { ...GRID_OPTIONS };
+  }
+  // Home Assistant reads the grid options from the card instance, not the class.
+  getGridOptions() {
+    return { ...GRID_OPTIONS };
   }
 
   constructor() {
@@ -14755,7 +14780,7 @@ class MealieAtelierCard extends HTMLElement {
     return AtelierUI.metric({ value: number, label, graphic: ico, target });
   }
   _stepEditRow(value = "", index = 0, id = "") {
-    const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
+    const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count at-numeral">${index + 1}</span>
       <textarea data-step-text maxlength="2000" rows="2" aria-label="${this.t("uiStep")} ${index + 1}" placeholder="${this.t("uiDescribeThisStep")}">${esc(value)}</textarea>
       <div class="step-buttons"><button type="button" data-action="step-up" aria-label="${this.t("uiMoveUp")}" title="${this.t("uiMoveUp")}">↑</button><button type="button" data-action="step-down" aria-label="${this.t("uiMoveDown")}" title="${this.t("uiMoveDown")}">↓</button><button type="button" data-action="step-remove" aria-label="${this.t("uiRemoveStep")}" title="${this.t("uiRemove")}">×</button></div></div>`;
     // BEGIN feature B: step photo thumbnails inside the step row
@@ -17001,7 +17026,7 @@ const viewMethods = {
         const day = addDays(this._weekStart, i),
           ymd = dateYmd(day),
           todays = this._sortMeals(all.filter((m) => m.date === ymd));
-        return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
+        return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b class="at-numeral">${day.getDate()}</b></div>
       ${todays
         .map((meal) => {
           const photo = this._photo(meal.recipe || {});
@@ -17260,7 +17285,7 @@ const nutritionJournalMethods = {
     );
     const report = n.report;
     return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div><div class="editor-stamp">${icon("leaf", 27)}</div></div>
-      <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong>${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.tp("uiServing", Number(n.preview.servings) || 0))}</span></div>
+      <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong class="at-numeral">${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.tp("uiServing", Number(n.preview.servings) || 0))}</span></div>
       ${!n.preview.fdc_enabled ? `<div class="nutri-alert">${this.t(this._isWebApp ? "uiUsdaKeyMissingWeb" : "nutriUsdaKeyMissingHa")}</div>` : ""}
       ${existing ? `<div class="nutri-alert">${this.t("uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt")}</div>` : ""}
       <div class="nutri-tools"><button class="btn" data-action="nutri-ai" ${!n.preview.ai_enabled || n.busy ? "disabled" : ""}>${icon("spark", 16)} ${esc(this.t("nutriAi"))}</button><span>${n.preview.ai_enabled ? this.t("uiSendsIngredientTextToAIProviderNoInventedMacros") : this.t("uiOptionalConfigureAIAPIKey")}</span></div>
@@ -17270,7 +17295,7 @@ const nutritionJournalMethods = {
           (
             row,
             i,
-          ) => `<div class="nutri-row"><div class="nutri-row-head"><span class="nutri-number">${String(i + 1).padStart(2, "0")}</span><strong>${esc(row.text)}</strong><span class="nutri-state ${row.selected ? "matched" : ""}">${row.selected ? "✓ USDA" : this.t("uiNotMatched")}</span></div>
+          ) => `<div class="nutri-row"><div class="nutri-row-head"><span class="nutri-number at-numeral">${String(i + 1).padStart(2, "0")}</span><strong>${esc(row.text)}</strong><span class="nutri-state ${row.selected ? "matched" : ""}">${row.selected ? "✓ USDA" : this.t("uiNotMatched")}</span></div>
         <div class="nutri-row-fields"><label><span>${esc(this.t("nutriGrams"))}</span><input type="number" min="0.01" max="50000" step="0.1" data-nutri-grams="${i}" value="${row.grams ?? ""}" placeholder="${esc(this.t("nutriGramsPlaceholder"))}" aria-label="${esc(this.t("nutriGrams"))} ${i + 1}"></label>
         <label class="nutri-query"><span>${this.t("uiFoodSearchQuery")}</span><input data-nutri-query="${i}" maxlength="100" value="${esc(row.query)}" aria-label="${this.t("uiFindFood")} ${i + 1}"></label>
         <button class="btn tiny" data-action="nutri-search" data-index="${i}" ${!n.preview.fdc_enabled || n.busy ? "disabled" : ""}>${icon("search", 14)} ${esc(this.t("nutriSearch"))}</button></div>
@@ -17278,7 +17303,7 @@ const nutritionJournalMethods = {
         ${n.active === i ? `<div class="nutri-choices">${n.choices.length ? n.choices.map((choice) => `<button data-action="nutri-select" data-index="${i}" data-value="${esc(choice.id)}"><strong>${esc(choice.name)}</strong><small>${esc(choice.data_type || "")} · ${Number(choice.per_100g.calories).toFixed(0)} kcal/100 g</small></button>`).join("") : `<p>${this.t("uiNoCompleteNutritionEntriesFoundTryAnotherQuery")}</p>`}</div>` : ""}</div>`,
         )
         .join("")}</div>
-      <div class="nutri-result"><div class="eyebrow">02 / ${esc(this.t("nutriResult")).toUpperCase()}</div><div class="nutri-stats">${nutrients.map(([key, label, unit]) => `<div class="nutri-stat"><span>${esc(label)}</span><strong>${report && report.per_portion[key] != null ? esc(report.per_portion[key]) : "—"}</strong><small>${esc(unit)}</small></div>`).join("")}</div>
+      <div class="nutri-result"><div class="eyebrow">02 / ${esc(this.t("nutriResult")).toUpperCase()}</div><div class="nutri-stats">${nutrients.map(([key, label, unit]) => `<div class="nutri-stat"><span>${esc(label)}</span><strong class="at-numeral">${report && report.per_portion[key] != null ? esc(report.per_portion[key]) : "—"}</strong><small>${esc(unit)}</small></div>`).join("")}</div>
       <p class="nutri-subnote">${this.t("uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates")}</p>
       ${
         report
@@ -17463,7 +17488,7 @@ const dialogMethods = {
                 `<img class="step-photo" src="${esc(src)}" alt="${this.t("uiRecipeStepImageAlt", { step: i + 1 })}" loading="lazy" decoding="async">`,
             )
             .join("");
-          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${inlineMarkdown(summary)}</strong>` : ""}<span class="step-text">${inlineMarkdown(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
+          return `<div class="recipe-step-row" role="listitem">${sectionHeading}<div class="step ${this._checkedSteps.has(i) ? "active" : ""}" data-action="step-check" data-value="${i}"><button class="step-number step-toggle at-numeral" type="button" data-action="step-check" data-value="${i}" aria-pressed="${this._checkedSteps.has(i)}" aria-label="${esc(`${this.t("uiStep")} ${i + 1}`)}">${String(i + 1).padStart(2, "0")}</button><span class="step-copy">${summary ? `<strong class="step-summary">${inlineMarkdown(summary)}</strong>` : ""}<span class="step-text">${inlineMarkdown(instructionText(step))}</span>${photos ? `<span class="step-photos">${photos}</span>` : ""}</span></div>`;
         })
         .join("");
       size = "large";
@@ -18291,6 +18316,21 @@ const recipeEditorMethods = {
   _editorPaintHistory(focusSelector = "") {
     this._editorPaint("[data-editor-history]", this._editorHistoryHtml(), focusSelector);
   },
+  /** Scrolls the restore confirm above the sticky save bar once it is painted; focus stays on its button. */
+  _editorRevealConfirm() {
+    const reveal = () => {
+      const root = this.shadowRoot;
+      const confirm = root?.querySelector?.("[data-editor-history] .ed-confirm");
+      if (!confirm) return;
+      const footer = root.querySelector(".editor-footer");
+      const scroller = confirm.closest?.(".modal");
+      if (footer && scroller?.style)
+        scroller.style.setProperty("--ed-footer-height", `${footer.offsetHeight}px`);
+      confirm.scrollIntoView?.({ block: "nearest" });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(reveal);
+    else reveal();
+  },
   _editorPaintSteps() {
     for (const box of this.shadowRoot.querySelectorAll("[data-ed-step-photos]")) {
       const id = box.dataset.edStepPhotos;
@@ -18562,6 +18602,7 @@ const recipeEditorMethods = {
       case "ed-restore-ask":
         state.history.confirm = el.dataset.value || "";
         this._editorPaintHistory('[data-action="ed-restore-do"]');
+        this._editorRevealConfirm();
         break;
       case "ed-restore-cancel":
         state.history.confirm = "";
@@ -19632,9 +19673,12 @@ const shoppingSyncMethods = {
         ? `<p class="sync-sr">${esc(sync.result)}</p>`
         : `<p class="sync-result">${sync.resultIcon || icon("check", 15)} ${esc(sync.result)}</p>`
       : "";
+    // The account card already tells what to fix in the server's .env, so no "no rule yet" card repeats it.
     const body = rules.length
       ? rules.map((rule) => this._syncRuleHtml(rule, caps)).join("")
-      : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(!caps.admin || !caps.write ? "syncNoRulesReadOnly" : caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
+      : this._syncEnvInstructionShown(caps)
+        ? ""
+        : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(!caps.admin || !caps.write ? "syncNoRulesReadOnly" : caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
       ${rules.map((rule) => this._syncGoneHtml(rule, caps)).join("")}
@@ -19646,10 +19690,18 @@ const shoppingSyncMethods = {
       ${caps.admin && rules.length < MAX_SYNC_RULES ? this._syncAddRuleHtml(caps) : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditLine(a, rules))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
+  // True when the account card carries the .env instruction (env credentials refused, admin who can act on it).
+  _syncEnvInstructionShown(caps) {
+    return Boolean(
+      caps.bringSetup && caps.bringEnv && caps.bringState === "reauth" && this._bwCanConnect(),
+    );
+  },
   // With env credentials and no connected account only the server's .env can fix the sign-in: Add stays, disabled.
   _syncAddRuleHtml(caps) {
     const envBlocked = caps.bringSetup && caps.bringEnv && caps.bringState !== "connected";
     const label = `${icon("plus", 14)} ${esc(this.t("syncAddRule"))}`;
+    if (envBlocked && this._syncEnvInstructionShown(caps))
+      return `<div class="form-actions"><button class="btn primary" data-action="sync-bw-open" data-value="" disabled aria-describedby="bw-account-text">${label}</button></div>`;
     if (envBlocked)
       return `<div class="form-actions"><button class="btn primary" data-action="sync-bw-open" data-value="" disabled aria-describedby="sync-add-hint">${label}</button></div><p class="sync-muted" id="sync-add-hint" role="note">${esc(this.t(caps.admin ? "bwSessionExpiredEnv" : "bwSessionExpiredEnvAskAdmin"))}</p>`;
     return `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${label}</button></div>`;
@@ -21066,7 +21118,7 @@ const bringWizardMethods = {
           : "bwReauthTextNoRules";
       // With env credentials the .env file is the only place to fix them, so no sign-in form competes with the text.
       action = caps.bringEnv
-        ? `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}`
+        ? `<p class="bw-text" id="bw-account-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}`
         : `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
       // The privacy line promises a disconnect, so the way to do it sits right there (not with env credentials).
       if (!caps.bringEnv) action += disconnectHtml(false);
@@ -23834,6 +23886,13 @@ Object.assign(MealieAtelierCard.prototype, {
     ).length;
     return `<section class="studio-daily ds-surface"><div><span class="eyebrow">${this.t("studioDailyEyebrow")} · ${morning ? this.t("studioDailyMorningLabel") : evening ? this.t("studioDailyEveningLabel") : this.t("studioDailyOverviewLabel")}</span><h2>${esc(greeting)}</h2><p>${soon ? this.t(soon === 1 ? "studioDailyExpiringOne" : "studioDailyExpiring", { count: soon }) : this.t("studioDailyDiscover")}</p></div><div class="studio-daily-actions"><button class="btn primary" data-action="nav" data-value="discover">${icon("spark", 15)} ${this.t("discover")}</button><button class="btn" data-action="nav" data-value="pantry">${icon("cart", 15)} ${this.t("studioDailyPantry")}</button></div></section>`;
   },
+  // Only the count takes the UI face: the serif's old-style zero reads as the letter o.
+  _bookCountHtml(count) {
+    return esc(this.tp("cookbookSelected", count)).replace(
+      /\d+/,
+      (n) => `<span class="at-numeral">${n}</span>`,
+    );
+  },
   _studioDiscover() {
     const p = this._studio.profile || {};
     const d = (this._discoverDraft = atDiscoverDraft(this._studio, this._discoverDraft));
@@ -24047,7 +24106,7 @@ Object.assign(MealieAtelierCard.prototype, {
           .join("") ||
         AtelierUI.empty({ title: this.t("cookbookEmpty"), description: this.t("cookbookLoadHint") })
       }</div></section>
-      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2 data-book-selected-count>${this.tp("cookbookSelected", selected.size)}</h2></div>
+      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookBookKicker")}</span><h2 data-book-selected-count>${this._bookCountHtml(selected.size)}</h2></div>
       <form class="studio-form" data-form="studio-book"><label>${this.t("cookbookTitleLabel")}<input name="title" maxlength="100" value="${this.t("cookbookTitleDefault")}" required></label><label>${this.t("cookbookSubtitleLabel")}<input name="subtitle" maxlength="160" value="${this.t("cookbookSubtitleDefault")}"></label>
       <label class="studio-inline"><input type="checkbox" name="photos"> ${this.t("cookbookPhotos")}</label>
       <button class="btn primary" type="submit" ${!selected.size ? "disabled" : ""}>${icon("print", 15)} ${this.t("cookbookPrint")}</button></form>
@@ -24781,25 +24840,20 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         const speech = String(e.results?.[0]?.[0]?.transcript || "").toLocaleLowerCase(
           this._locale || "en",
         );
-        if (isGerman ? /weiter|nächster/.test(speech) : /next|forward|continue/.test(speech)) {
-          this._stopReading();
-          this._voiceStep(1);
-        } else if (isGerman ? /zurück/.test(speech) : /back|previous/.test(speech)) {
-          this._stopReading();
-          this._voiceStep(-1);
-        } else if (isGerman ? /vorlesen|lesen/.test(speech) : /read|read aloud/.test(speech)) {
-          const b = this.shadowRoot.querySelector('[data-action="studio-read-step"]');
-          b?.click();
-        } else if (/wie viel|wieviel|wie viele|how much|how many/.test(speech)) {
+        // Word boundaries keep "bread", "spread" or "weiterverarbeitet" from matching a command word.
+        // JS \b is ASCII only, so German words with umlauts use explicit letter lookarounds.
+        const word = (list) => new RegExp(`(?<![\\p{L}])(?:${list})(?![\\p{L}])`, "u");
+        const ask = /wie viel|wieviel|wie viele|how much|how many/.test(speech);
+        if (ask) {
           const rows = asArray(this._detail?.recipeIngredient);
-          const ask = AtelierStudio.clean(
+          const query = AtelierStudio.clean(
             speech.replace(
               /\b(?:wie viele?|wieviel|brauche ich|how much|how many|do i need|need)\b/g,
               "",
             ),
           );
           const matched = rows.find((row) =>
-            AtelierStudio.similarity(AtelierStudio.ingredient(row), ask),
+            AtelierStudio.similarity(AtelierStudio.ingredient(row), query),
           );
           const answer = matched
             ? AtelierStudio.ingredient(matched)
@@ -24811,6 +24865,23 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             u.lang = this.t(isGerman ? "studioSpeechDe" : "studioSpeechEn");
             speechSynthesis.speak(u);
           }
+        } else if (
+          isGerman
+            ? word("weiter|nächster|nächste").test(speech)
+            : word("next|forward|continue").test(speech)
+        ) {
+          this._stopReading();
+          this._voiceStep(1);
+        } else if (isGerman ? word("zurück").test(speech) : word("back|previous").test(speech)) {
+          this._stopReading();
+          this._voiceStep(-1);
+        } else if (
+          isGerman
+            ? word("vorlesen").test(speech) || /\blies\b.*\bvor\b/.test(speech)
+            : word("read( aloud)?").test(speech)
+        ) {
+          const b = this.shadowRoot.querySelector('[data-action="studio-read-step"]');
+          b?.click();
         } else this._flash(this.t("studioVoiceUnknown", { command: speech }), "error");
         this._render();
       };
@@ -25110,7 +25181,7 @@ MealieAtelierCard.prototype._handleInput = function (event) {
     else this._bookSelected.delete(event.target.dataset.book);
     const count = this.shadowRoot.querySelector("[data-book-selected-count]");
     if (this._view === "cookbook" && count)
-      count.textContent = this.tp("cookbookSelected", this._bookSelected.size);
+      count.innerHTML = this._bookCountHtml(this._bookSelected.size);
     const submit = this.shadowRoot.querySelector('[data-form="studio-book"] button[type="submit"]');
     if (submit) submit.disabled = !this._bookSelected.size;
     return;

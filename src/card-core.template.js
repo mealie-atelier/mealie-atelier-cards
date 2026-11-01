@@ -1112,7 +1112,7 @@ class MealieAtelierCard extends HTMLElement {
     return AtelierUI.metric({ value: number, label, graphic: ico, target });
   }
   _stepEditRow(value = "", index = 0, id = "") {
-    const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count">${index + 1}</span>
+    const row = `<div class="editor-step" data-editor-step data-step-id="${esc(id)}"><span class="step-count at-numeral">${index + 1}</span>
       <textarea data-step-text maxlength="2000" rows="2" aria-label="${this.t("uiStep")} ${index + 1}" placeholder="${this.t("uiDescribeThisStep")}">${esc(value)}</textarea>
       <div class="step-buttons"><button type="button" data-action="step-up" aria-label="${this.t("uiMoveUp")}" title="${this.t("uiMoveUp")}">↑</button><button type="button" data-action="step-down" aria-label="${this.t("uiMoveDown")}" title="${this.t("uiMoveDown")}">↓</button><button type="button" data-action="step-remove" aria-label="${this.t("uiRemoveStep")}" title="${this.t("uiRemove")}">×</button></div></div>`;
     // BEGIN feature B: step photo thumbnails inside the step row
