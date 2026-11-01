@@ -12,9 +12,9 @@ const manifest = JSON.parse(readText("demo/showcase/manifest.json"));
 // was captured with. A release bumps package.json, which fails this test until each image is recaptured (see the
 // capture scripts named in `script`) and its recorded version is updated here.
 const VERSIONED = {
-  "app-desktop-mealplan": { version: "0.12.1", script: "capture-app-showcase.py" },
-  "app-desktop-shopping": { version: "0.12.1", script: "capture-app-showcase.py" },
-  "ha-integration": { version: "0.12.1", script: "capture-ha-showcase.py" },
+  "app-desktop-mealplan": { version: "0.12.2", script: "capture-app-showcase.py" },
+  "app-desktop-shopping": { version: "0.12.2", script: "capture-app-showcase.py" },
+  "ha-integration": { version: "0.12.2", script: "capture-ha-showcase.py" },
 };
 
 test("every showcase image with a visible version was captured with the current package version", () => {
