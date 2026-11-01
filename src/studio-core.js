@@ -499,7 +499,8 @@ const AtelierStudio = (() => {
           .replace(/^[,;\s]+/, "")
           .trim() || raw;
     // Missing units, spoons and unknown units are never silently converted to g/ml.
-    // Quantity without a unit means pieces, but is explicitly marked estimated.
+    // Quantity without a unit means pieces, but is explicitly marked estimated (typed lines without a counted
+    // food word, and linked foods whose row names no unit).
     const unit = !source.unit && quantity !== null ? "stück" : source.unit;
     return {
       label,
@@ -509,7 +510,7 @@ const AtelierStudio = (() => {
       estimated:
         !quantity ||
         !["g", "ml", "stück"].includes(unit) ||
-        (unit === "stück" && !structured && !m?.[3]) ||
+        (unit === "stück" && (structured ? !source.unit : !m?.[3])) ||
         ["el", "tl"].includes(unit),
     };
   }
@@ -518,14 +519,21 @@ const AtelierStudio = (() => {
       " ",
     ),
   );
-  // "Ei" is shorter than the three letters a word needs, and "Eier" keeps its r after the suffix cut, so the
-  // egg is folded by hand.
+  // Same words as words(), but the egg is folded by hand before the suffix cut: "Ei" is shorter than the three
+  // letters a word needs and "Eier" keeps its r, while "Eis" (ice cream) would be cut to "ei" and must stay apart.
   const identity = (name) =>
-    words(name)
-      .filter((w) => !prepWords.has(w))
-      .map((w) => (w === "eier" ? "ei" : w))
+    clean(name)
+      .split(" ")
+      .filter((w) => w && !stop.has(w))
+      .map((w) => {
+        if (/^ei(?:er|ern)?$/.test(w)) return "ei";
+        if (w.length <= 2) return "";
+        const stem = w.replace(/(en|ern|e|n|s)$/, "");
+        return stem === "ei" ? w : stem;
+      })
+      .filter((w) => w && !prepWords.has(w))
       .sort()
-      .join("|") || (/^ei(?:er)?$/.test(clean(name)) ? "ei" : "");
+      .join("|");
   const sameFood = (a, b) => !!identity(a) && identity(a) === identity(b);
   const goodStock = (row, today) =>
     row &&
@@ -1097,6 +1105,7 @@ const AtelierStudio = (() => {
     becher: ["Becher", "Becher"],
     glas: ["Glas", "Gläser"],
     gläser: ["Glas", "Gläser"],
+    glaser: ["Glas", "Gläser"],
     zweig: ["Zweig", "Zweige"],
     zweige: ["Zweig", "Zweige"],
     dose: ["Dose", "Dosen"],
@@ -1135,7 +1144,7 @@ const AtelierStudio = (() => {
   // German foods counted in pieces: singular and plural display form. One row per food across recipes.
   const foodForms = Object.fromEntries(
     [
-      ["Ei", "Eier"],
+      ["Ei", "Eier", "Eiern"],
       ["Zwiebel", "Zwiebeln"],
       ["Karotte", "Karotten"],
       ["Möhre", "Möhren"],

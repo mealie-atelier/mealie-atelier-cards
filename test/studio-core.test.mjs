@@ -1059,3 +1059,58 @@ test("German count words before the food become the unit, not part of the food",
   const garlic = Studio.shoppingNeeds([recipe("G", ["2 Knoblauchzehen", "1 Zehe Knoblauch"])], []);
   assert.equal(garlic.length, 1);
 });
+
+test("ice cream never merges with eggs or stands in for them in the pantry", () => {
+  const rows = Studio.shoppingNeeds(
+    [recipe("A", ["2 Eier", "1 Eis"]), recipe("B", ["1 Eiern"])],
+    [],
+  );
+  const eggs = rows.find((x) => x.name === "Eier");
+  assert.equal(eggs?.needed, 3);
+  assert.ok(
+    rows.find((x) => x.name === "Eis"),
+    "Eis keeps its own row",
+  );
+  const stocked = Studio.shoppingNeeds(
+    [recipe("A", ["2 Eier"])],
+    [{ name: "Eis", amount: 4, unit: "stück" }],
+  );
+  assert.equal(
+    stocked.find((x) => x.name === "Eier")?.needed,
+    2,
+    "ice cream in stock does not cover eggs",
+  );
+  assert.equal(
+    Studio.pantryCoverage(["2 Eier"], [{ name: "Eis", amount: 4, unit: "stück" }])[0].covered,
+    false,
+  );
+});
+
+test("a linked food with an amount but no unit stays marked as an estimate", () => {
+  const linked = (quantity, food, note = "") => ({
+    quantity,
+    food: { name: food },
+    unit: null,
+    note,
+  });
+  const rows = Studio.shoppingNeeds(
+    [
+      {
+        ...recipe("A", []),
+        recipeIngredient: [
+          linked(200, "Mehl"),
+          linked(1, "Salz", "Prise"),
+          linked(4, "Scheiben Knäckebrot"),
+        ],
+      },
+    ],
+    [],
+  );
+  const by = (name) => rows.find((x) => x.name === name);
+  assert.equal(by("Mehl")?.uncertain, true);
+  assert.equal(by("Salz")?.uncertain, true);
+  assert.deepEqual(
+    [by("Knäckebrot")?.needed, by("Knäckebrot")?.unit, !!by("Knäckebrot")?.uncertain],
+    [4, "Scheiben", false],
+  );
+});
