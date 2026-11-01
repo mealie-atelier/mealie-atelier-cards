@@ -262,6 +262,35 @@ const AtelierStudio = (() => {
         cans: ["can", "cans"],
       },
     };
+    // The number as the reader sees it ("1", "1¼", "1,5", "⅚"): agreement follows the shown amount, not the raw one.
+    const GLYPHS = {
+      "¼": 0.25,
+      "½": 0.5,
+      "¾": 0.75,
+      "⅓": 1 / 3,
+      "⅔": 2 / 3,
+      "⅕": 0.2,
+      "⅖": 0.4,
+      "⅗": 0.6,
+      "⅘": 0.8,
+      "⅙": 1 / 6,
+      "⅚": 5 / 6,
+      "⅛": 0.125,
+      "⅜": 0.375,
+      "⅝": 0.625,
+      "⅞": 0.875,
+    };
+    const shown = (text) => {
+      const s = String(text).trim();
+      const glyph = s.match(/^(\d*)\s*([¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])$/);
+      if (glyph) return Number(glyph[1] || 0) + GLYPHS[glyph[2]];
+      const slash = s.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);
+      if (slash) return Number(slash[1] || 0) + Number(slash[2]) / Number(slash[3]);
+      const n = Number(
+        locale === "en" ? s.replace(/,/g, "") : s.replace(/\./g, "").replace(",", "."),
+      );
+      return Number.isFinite(n) ? n : NaN;
+    };
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
       const word = unitWord(rest);
@@ -280,8 +309,8 @@ const AtelierStudio = (() => {
         high = Number(range[4].replace(",", "."));
       if (high >= low && !/^\s+[x×]\s*\d/i.test(range[5])) {
         const unit = unitWord(range[5]);
-        const hi = (high * target) / base;
-        return `${range[1]}${kitchen((low * target) / base, unit, "decimal")}${range[3]}${kitchen(hi, unit, "decimal")}${agree(range[5], hi)}`;
+        const hi = kitchen((high * target) / base, unit, "decimal");
+        return `${range[1]}${kitchen((low * target) / base, unit, "decimal")}${range[3]}${hi}${agree(range[5], shown(hi))}`;
       }
       return raw;
     }
@@ -295,7 +324,8 @@ const AtelierStudio = (() => {
     // A source fraction off the quarter and third grid (fifths, sixths) keeps its exact value when it stays exact.
     if (q.style !== "decimal" && !onGrid(q.value)) scaled = formatFraction(amount, true);
     if (scaled === null) scaled = kitchen(amount, unit, q.style);
-    return `${q.lead}${scaled}${agree(q.rest, amount)}`;
+    const seen = shown(scaled);
+    return `${q.lead}${scaled}${agree(q.rest, Number.isFinite(seen) ? seen : amount)}`;
   }
   // Treat a pantry match as a verified quantity claim, not just a shared word.
   // Mealie has both structured foods/units and legacy display-only ingredients.

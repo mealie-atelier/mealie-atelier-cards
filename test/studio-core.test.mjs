@@ -832,4 +832,11 @@ test("scaled amounts read like a kitchen: rounding, glyph fractions, unit agreem
   assert.equal(s("¼ l Milch", 6, 2), "¾ l Milch");
   assert.equal(s("2 Eier", 2, 2), "2 Eier");
   assert.equal(s("1 Tassen Mehl", 2, 2), "1 Tassen Mehl");
+  // Agreement follows the amount as shown: a raw 1.05 that reads "1" stays singular.
+  assert.equal(s("1 Tasse Mehl", 21, 20), "1 Tasse Mehl");
+  assert.equal(s("1 Ei", 21, 20), "1 Ei");
+  assert.equal(s("1 Zehe Knoblauch", 9, 8), "1 Zehe Knoblauch");
+  assert.equal(s("1 cup flour", 11, 10, "en"), "1 cup flour");
+  assert.equal(s("2-4 Eier", 1, 4), "½-1 Ei");
+  assert.equal(s("2 Tassen Mehl", 4, 3), "2⅔ Tassen Mehl");
 });
