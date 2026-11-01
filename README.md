@@ -10,11 +10,8 @@
 <a href="https://hacs.xyz"><img alt="HACS Dashboard" src="https://img.shields.io/badge/HACS-Dashboard-41BDF5?style=flat-square"></a>
 <img alt="Home Assistant 2026.10 or newer" src="https://img.shields.io/badge/Home%20Assistant-2026.10%2B-41BDF5?style=flat-square">
 <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/mealie-atelier/mealie-atelier-cards?style=flat-square"></a>
+<br>
 <a href="https://github.com/mealie-atelier/mealie-atelier-cards/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/mealie-atelier/mealie-atelier-cards?style=flat-square&color=3e6b48"></a>
-<a href="https://github.com/orgs/mealie-atelier/discussions"><img alt="Discussions" src="https://img.shields.io/badge/discussions-ask%20%26%20share-3e6b48?style=flat-square&logo=github"></a>
-</p>
-
-<p align="center">
 <a href="https://github.com/mealie-recipes/mealie"><img alt="Mealie 3.x" src="https://img.shields.io/badge/Mealie-3.x-E58325?style=flat-square"></a>
 <img alt="Languages: German and English" src="https://img.shields.io/badge/languages-DE%20%C2%B7%20EN-555?style=flat-square">
 <a href="https://ko-fi.com/allesautomatisch"><img alt="Support on Ko-fi" src="https://img.shields.io/badge/Ko--fi-support-FF5E5B?style=flat-square&logo=kofi&logoColor=white"></a>
