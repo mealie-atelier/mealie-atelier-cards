@@ -45,8 +45,8 @@ function everyday(ctx) {
       "Cooking mode on a tablet with step, photo and kitchen timer",
     ),
     family: t(
-      "Gemeinsam kochen in der einfachen Helferansicht: Alex und ein Küchenhelfer im Helfermodus",
-      "Cook together in the simple helper view: Alex and a little helper in helper mode",
+      "Gemeinsam kochen in der einfachen Helferansicht: Alex und ein Küchenhelfer mit dem Kind-Tag",
+      "Cook together in the simple helper view: Alex and a little helper tagged as child",
     ),
     pantry: t(
       "Einkaufsassistent: was für die geplanten Gerichte wirklich fehlt, sortiert nach Kühlregal, Vorrat und Gemüse",

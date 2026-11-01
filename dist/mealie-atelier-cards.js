@@ -13414,6 +13414,7 @@ ha-card {
   box-sizing: border-box;
   max-width: min(75%, calc(100% - 27px - var(--at-close-reserve)));
   overflow-wrap: anywhere;
+  text-wrap: balance;
   hyphens: manual;
   /* The title sits on the photo's bottom edge, so a long one would grow upward out of the clipped strip: three lines,
      then an ellipsis; the full name stays in the title attribute. */

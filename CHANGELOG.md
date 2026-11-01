@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Cooking mode: a long recipe title over the photo breaks into balanced lines instead of leaving a single word on the last line.
+
 ## [0.12.1] - 2026-11-01
 
 ### Fixed
