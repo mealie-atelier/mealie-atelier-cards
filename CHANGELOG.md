@@ -4,8 +4,13 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Added
+
+- Product page: a film section with the product trailer (German and English, captions, chapters) and VideoObject data for search engines.
+
 ### Fixed
 
+- Nutrition lab: the "Sources & coverage" line names the nutrients in the card language and in the order of the values above it, instead of the raw keys (calories, carbohydrate).
 - Cooking mode: a long recipe title over the photo breaks into balanced lines instead of leaving a single word on the last line.
 - Cooking mode on a phone: the tool buttons and the timer list take less height, so the step text keeps its room.
 - Cooking mode on a phone: the newest timer card is no longer cut off in its list, the timer card is compact, a short phone (375x667) gets a slimmer photo band so the step text keeps at least 140px, and the tool buttons step aside while the timer form is open.
