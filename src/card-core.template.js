@@ -963,6 +963,32 @@ class MealieAtelierCard extends HTMLElement {
     input.removeAttribute("aria-describedby");
     input.closest?.("label")?.querySelector?.("[data-servings-error]")?.remove();
   }
+  /** Inline name error of the edit form: a toast re-renders the form and would drop every typed edit. */
+  _showNameError(form, key) {
+    const input = form?.querySelector?.('input[name="name"]');
+    if (!input?.setAttribute) return;
+    input.setAttribute("aria-invalid", "true");
+    const label = input.closest?.("label") || input.parentNode;
+    let note = label?.querySelector?.("[data-name-error]");
+    if (!note && label) {
+      note = document.createElement("span");
+      note.className = "field-error";
+      note.dataset.nameError = "";
+      note.id = "name-error";
+      note.setAttribute("role", "alert");
+      input.insertAdjacentElement("afterend", note);
+    }
+    if (note) note.textContent = this.t(key);
+    input.setAttribute("aria-describedby", "name-error");
+    input.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    input.focus?.({ preventScroll: true });
+  }
+  _clearNameError(input) {
+    if (input?.getAttribute?.("aria-invalid") !== "true") return;
+    input.removeAttribute("aria-invalid");
+    input.removeAttribute("aria-describedby");
+    input.closest?.("label")?.querySelector?.("[data-name-error]")?.remove();
+  }
   _flash(text, kind = "status") {
     this._toast = String(text || "").slice(0, 500);
     this._toastKind = kind;
@@ -1682,17 +1708,18 @@ class MealieAtelierCard extends HTMLElement {
     const rec = this._detail;
     if (!form || !rec) return false;
     const field = (name) => form.querySelector?.(`[name="${name}"]`)?.value;
+    // Compare with what the fields render: a textarea turns CRLF into LF.
+    const eol = (t) => String(t ?? "").replace(/\r\n?/g, "\n");
     const name = field("name"),
       description = field("description"),
       servings = field("servings");
     if (name !== undefined && String(name) !== String(rec.name ?? "")) return true;
-    if (description !== undefined && String(description) !== String(rec.description ?? ""))
-      return true;
+    if (description !== undefined && eol(description) !== eol(rec.description)) return true;
     if (servings !== undefined) {
-      const saved = Number(rec.recipeServings) > 0 ? Math.max(1, Number(rec.recipeServings)) : "";
+      const saved = Number(rec.recipeServings) > 0 ? String(Number(rec.recipeServings)) : "";
       if (String(servings).trim() !== String(saved)) return true;
     }
-    const clean = (list) => list.map((t) => String(t).trim()).filter(Boolean);
+    const clean = (list) => list.map((t) => eol(t).trim()).filter(Boolean);
     const now = clean(Array.from(form.querySelectorAll("[data-step-text]"), (el) => el.value));
     const before = clean(asArray(rec.recipeInstructions).map(instructionText));
     if (now.length !== before.length || now.some((t, i) => t !== before[i])) return true;
@@ -2813,6 +2840,8 @@ class MealieAtelierCard extends HTMLElement {
       this._autosizeSteps({ querySelectorAll: () => [event.target] });
     if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     if (event.target?.matches?.('input[name="servings"]')) this._clearServingsError(event.target);
+    if (event.target?.matches?.('form[data-form="edit"] input[name="name"]'))
+      this._clearNameError(event.target);
     // BEGIN feature B: recipe editor inputs
     if (this._editorInput(event)) return;
     // END feature B
@@ -3063,6 +3092,10 @@ class MealieAtelierCard extends HTMLElement {
     const blank = Array.from(
       form.querySelectorAll?.("input[required], textarea[required]") || [],
     ).find((field) => typeof field.value === "string" && !field.value.trim());
+    if (blank && form.dataset.form === "edit" && blank.name === "name") {
+      this._showNameError(form, "fieldRequired");
+      return;
+    }
     if (blank) {
       this._flash(this.t("fieldRequired"));
       blank.focus?.();
@@ -3185,7 +3218,7 @@ class MealieAtelierCard extends HTMLElement {
           const name = String(values.name || "").trim();
           const nameChanged = name !== String(this._detail.name || "").trim();
           if (nameChanged && name.length > 120) {
-            this._flash(this.t("editorNameTooLong"), "error");
+            this._showNameError(form, "editorNameTooLong");
             break;
           }
           // Servings are sent only when the user changed them: a saved value outside the limits

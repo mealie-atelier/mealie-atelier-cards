@@ -123,3 +123,51 @@ test("light scheme defines a darker negative token and the inline error uses it"
   );
   assert.match(components, /\.field-error[^{]*\{[^}]*var\(--ds-negative\)/);
 });
+
+test("a blank or too long name shows an inline error and never flashes", async () => {
+  for (const [values, d, field] of [
+    [{ name: "  ", description: "typed", servings: "2" }, detail, "  "],
+    [{ name: "x".repeat(121), description: "typed", servings: "2" }, detail, "x".repeat(121)],
+  ]) {
+    const doc = { createElement: () => fakeEl({ dataset: {}, textContent: "" }) };
+    const card = makeCard(loadCards({ globals: { FormData: FakeFormData, document: doc } }));
+    card._detail = d;
+    const flashes = [];
+    let renders = 0;
+    card._flash = (t) => flashes.push(t);
+    card._render = () => renders++;
+    card._mutate = async () => true;
+    const label = fakeEl({ note: null });
+    const input = fakeEl({
+      name: "name",
+      value: field,
+      closest: () => label,
+      insertAdjacentElement: (_w, el) => (label.note = el),
+      scrollIntoView() {
+        input.scrolled = true;
+      },
+      focus() {
+        input.focused = true;
+      },
+    });
+    label.querySelector = () => label.note;
+    const form = {
+      dataset: { form: "edit" },
+      querySelectorAll: () => [input],
+      querySelector: (sel) => (sel.includes('"name"') ? input : fakeEl()),
+    };
+    formValues = values;
+    await card._handleSubmit({ target: { closest: () => form }, preventDefault() {} });
+    assert.equal(flashes.length, 0);
+    assert.equal(renders, 0);
+    assert.equal(input.getAttribute("aria-invalid"), "true");
+    assert.equal(label.note.getAttribute("role"), "alert");
+    assert.match(label.note.textContent, /\S/);
+    assert.equal(input.focused, true);
+    assert.equal(input.scrolled, true);
+    label.note.remove = () => (label.note = null);
+    card._clearNameError(input);
+    assert.equal(input.getAttribute("aria-invalid"), null);
+    assert.equal(label.note, null);
+  }
+});

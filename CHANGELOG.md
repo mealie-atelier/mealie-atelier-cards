@@ -9,6 +9,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Fixed
 
 - The web app no longer retries a refused Bring! password on every status call and starts listening before the Bring! sign-in check finishes.
+- Recipe editor: an empty or too long name now shows an error at the field and keeps everything you typed, and the discard prompt no longer appears on an untouched recipe with fewer than one serving or Windows line breaks.
 - Cooking Studio voice: "how much bread do I need" answers the ingredient question instead of reading the step aloud; command words match whole words only.
 - Recipe editor: the restore confirm in the version history scrolls above the sticky save bar.
 - Shopping sync with refused BRING_EMAIL and BRING_PASSWORD shows the .env instruction once, on the account card.

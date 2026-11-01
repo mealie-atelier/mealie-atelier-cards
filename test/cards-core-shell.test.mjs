@@ -253,6 +253,26 @@ test("editor is not dirty when a recipe without servings is left untouched", () 
   assert.equal(asked.length, 0);
 });
 
+test("editor is not dirty for fractional servings and CRLF text", () => {
+  const { card } = editCard(false);
+  card._detail.recipeServings = 0.5;
+  card._detail.description = "a\r\nb";
+  card._detail.recipeInstructions = [{ text: "x\r\ny" }];
+  card.shadowRoot.querySelector = (s) =>
+    s === 'form[data-form="edit"]'
+      ? {
+          querySelector: (q) =>
+            ({
+              name: { value: "Pancakes" },
+              description: { value: "a\nb" },
+              servings: { value: "0.5" },
+            })[/name="(\w+)"/.exec(q)?.[1]],
+          querySelectorAll: () => [{ value: "x\ny" }],
+        }
+      : null;
+  assert.equal(card._editDraftDirty(), false);
+});
+
 test("discard dialog labels both buttons", async () => {
   const { card, asked } = editCard(true);
   await card._requestCloseModal();
