@@ -585,7 +585,7 @@ export const bringWizardMethods = {
           : "bwReauthTextNoRules";
       // With env credentials the .env file is the only place to fix them, so no sign-in form competes with the text.
       action = caps.bringEnv
-        ? `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}`
+        ? `<p class="bw-text" id="bw-account-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}`
         : `<p class="bw-text">${esc(this.t(key))}</p>${this._bwLoginErrorHtml()}${this._bwLoginFormHtml({ again: true })}`;
       // The privacy line promises a disconnect, so the way to do it sits right there (not with env credentials).
       if (!caps.bringEnv) action += disconnectHtml(false);

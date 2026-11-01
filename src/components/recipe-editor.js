@@ -471,6 +471,21 @@ export const recipeEditorMethods = {
   _editorPaintHistory(focusSelector = "") {
     this._editorPaint("[data-editor-history]", this._editorHistoryHtml(), focusSelector);
   },
+  /** Scrolls the restore confirm above the sticky save bar once it is painted; focus stays on its button. */
+  _editorRevealConfirm() {
+    const reveal = () => {
+      const root = this.shadowRoot;
+      const confirm = root?.querySelector?.("[data-editor-history] .ed-confirm");
+      if (!confirm) return;
+      const footer = root.querySelector(".editor-footer");
+      const scroller = confirm.closest?.(".modal");
+      if (footer && scroller?.style)
+        scroller.style.setProperty("--ed-footer-height", `${footer.offsetHeight}px`);
+      confirm.scrollIntoView?.({ block: "nearest" });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(reveal);
+    else reveal();
+  },
   _editorPaintSteps() {
     for (const box of this.shadowRoot.querySelectorAll("[data-ed-step-photos]")) {
       const id = box.dataset.edStepPhotos;
@@ -742,6 +757,7 @@ export const recipeEditorMethods = {
       case "ed-restore-ask":
         state.history.confirm = el.dataset.value || "";
         this._editorPaintHistory('[data-action="ed-restore-do"]');
+        this._editorRevealConfirm();
         break;
       case "ed-restore-cancel":
         state.history.confirm = "";

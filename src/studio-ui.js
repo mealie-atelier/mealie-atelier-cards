@@ -1462,25 +1462,20 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         const speech = String(e.results?.[0]?.[0]?.transcript || "").toLocaleLowerCase(
           this._locale || "en",
         );
-        if (isGerman ? /weiter|nächster/.test(speech) : /next|forward|continue/.test(speech)) {
-          this._stopReading();
-          this._voiceStep(1);
-        } else if (isGerman ? /zurück/.test(speech) : /back|previous/.test(speech)) {
-          this._stopReading();
-          this._voiceStep(-1);
-        } else if (isGerman ? /vorlesen|lesen/.test(speech) : /read|read aloud/.test(speech)) {
-          const b = this.shadowRoot.querySelector('[data-action="studio-read-step"]');
-          b?.click();
-        } else if (/wie viel|wieviel|wie viele|how much|how many/.test(speech)) {
+        // Word boundaries keep "bread", "spread" or "weiterverarbeitet" from matching a command word.
+        // JS \b is ASCII only, so German words with umlauts use explicit letter lookarounds.
+        const word = (list) => new RegExp(`(?<![\\p{L}])(?:${list})(?![\\p{L}])`, "u");
+        const ask = /wie viel|wieviel|wie viele|how much|how many/.test(speech);
+        if (ask) {
           const rows = asArray(this._detail?.recipeIngredient);
-          const ask = AtelierStudio.clean(
+          const query = AtelierStudio.clean(
             speech.replace(
               /\b(?:wie viele?|wieviel|brauche ich|how much|how many|do i need|need)\b/g,
               "",
             ),
           );
           const matched = rows.find((row) =>
-            AtelierStudio.similarity(AtelierStudio.ingredient(row), ask),
+            AtelierStudio.similarity(AtelierStudio.ingredient(row), query),
           );
           const answer = matched
             ? AtelierStudio.ingredient(matched)
@@ -1492,6 +1487,23 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
             u.lang = this.t(isGerman ? "studioSpeechDe" : "studioSpeechEn");
             speechSynthesis.speak(u);
           }
+        } else if (
+          isGerman
+            ? word("weiter|nächster|nächste").test(speech)
+            : word("next|forward|continue").test(speech)
+        ) {
+          this._stopReading();
+          this._voiceStep(1);
+        } else if (isGerman ? word("zurück").test(speech) : word("back|previous").test(speech)) {
+          this._stopReading();
+          this._voiceStep(-1);
+        } else if (
+          isGerman
+            ? word("vorlesen").test(speech) || /\blies\b.*\bvor\b/.test(speech)
+            : word("read( aloud)?").test(speech)
+        ) {
+          const b = this.shadowRoot.querySelector('[data-action="studio-read-step"]');
+          b?.click();
         } else this._flash(this.t("studioVoiceUnknown", { command: speech }), "error");
         this._render();
       };

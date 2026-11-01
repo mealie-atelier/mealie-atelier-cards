@@ -270,3 +270,9 @@
     transition: none !important;
   }
 }
+
+/* The Save bar is sticky at the bottom of the scrolling dialog: anything scrolled into view (the restore confirm,
+   keyboard focus) must land above it. The editor measures the bar and sets its height; 96px is the fallback. */
+.atelier .modal:has(.atelier-editor .editor-footer) {
+  scroll-padding-bottom: var(--ed-footer-height, 96px);
+}

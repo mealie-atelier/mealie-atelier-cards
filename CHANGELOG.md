@@ -8,6 +8,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Cooking Studio voice: "how much bread do I need" answers the ingredient question instead of reading the step aloud; command words match whole words only.
+- Recipe editor: the restore confirm in the version history scrolls above the sticky save bar.
+- Shopping sync with refused BRING_EMAIL and BRING_PASSWORD shows the .env instruction once, on the account card.
 - English wording: ticked shopping items read "Done" everywhere (section heading, "Clear done", "Clear done items?" and its confirmation).
 - The visual editor uses the Design Studio labels for photo crop (Tall, Square, Wide) and corner style (Round, Soft, Square) in German and English. The plan dialog eyebrow shows the view name.
 - Sync setup: the empty preview notice keeps its check icon and text on one line on phones.

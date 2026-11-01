@@ -175,7 +175,10 @@ test("env mode with a refused account keeps the dialog and disables Add with the
     const html = card._syncSyncHtml();
     if (admin) {
       assert.match(html, /data-action="sync-bw-open" data-value="" disabled/);
-      assert.ok(html.includes(plain(en[key])));
+      // The account card is the single place for the .env instruction; Add points at it.
+      assert.ok(!html.includes(plain(en[key])), "no repeated paragraph under Add");
+      assert.match(html, /disabled aria-describedby="bw-account-text"/);
+      assert.ok(html.includes(plain(en.bwReauthTextEnv)));
       assert.ok(html.includes(plain(en.bwStateReauth)));
     }
     card._bwOpen();

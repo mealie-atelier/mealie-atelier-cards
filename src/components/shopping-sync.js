@@ -596,9 +596,12 @@ export const shoppingSyncMethods = {
         ? `<p class="sync-sr">${esc(sync.result)}</p>`
         : `<p class="sync-result">${sync.resultIcon || icon("check", 15)} ${esc(sync.result)}</p>`
       : "";
+    // The account card already tells what to fix in the server's .env, so no "no rule yet" card repeats it.
     const body = rules.length
       ? rules.map((rule) => this._syncRuleHtml(rule, caps)).join("")
-      : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(!caps.admin || !caps.write ? "syncNoRulesReadOnly" : caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
+      : this._syncEnvInstructionShown(caps)
+        ? ""
+        : `<section class="editor-card"><div class="notice">${icon("cart")} ${esc(sync.loadFailed ? this.t("syncLoadFailed") : sync.state ? this.t(!caps.admin || !caps.write ? "syncNoRulesReadOnly" : caps.bringSetup ? "bwNoRules" : "syncNoRules") : this.t("loading"))}</div></section>`;
     return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}
       ${sync.error ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(sync.error)}</span></div>` : ""}
       ${rules.map((rule) => this._syncGoneHtml(rule, caps)).join("")}
@@ -610,10 +613,18 @@ export const shoppingSyncMethods = {
       ${caps.admin && rules.length < MAX_SYNC_RULES ? this._syncAddRuleHtml(caps) : ""}
       ${audit.length ? `<section class="editor-card sync-audit"><h3>${esc(this.t("syncAuditTitle"))}</h3><ul class="sync-list">${audit.map((a) => `<li>${this._syncOutcomeIcon(a.outcome)} ${esc(this._syncAuditLine(a, rules))}</li>`).join("")}</ul></section>` : ""}</div>`;
   },
+  // True when the account card carries the .env instruction (env credentials refused, admin who can act on it).
+  _syncEnvInstructionShown(caps) {
+    return Boolean(
+      caps.bringSetup && caps.bringEnv && caps.bringState === "reauth" && this._bwCanConnect(),
+    );
+  },
   // With env credentials and no connected account only the server's .env can fix the sign-in: Add stays, disabled.
   _syncAddRuleHtml(caps) {
     const envBlocked = caps.bringSetup && caps.bringEnv && caps.bringState !== "connected";
     const label = `${icon("plus", 14)} ${esc(this.t("syncAddRule"))}`;
+    if (envBlocked && this._syncEnvInstructionShown(caps))
+      return `<div class="form-actions"><button class="btn primary" data-action="sync-bw-open" data-value="" disabled aria-describedby="bw-account-text">${label}</button></div>`;
     if (envBlocked)
       return `<div class="form-actions"><button class="btn primary" data-action="sync-bw-open" data-value="" disabled aria-describedby="sync-add-hint">${label}</button></div><p class="sync-muted" id="sync-add-hint" role="note">${esc(this.t(caps.admin ? "bwSessionExpiredEnv" : "bwSessionExpiredEnvAskAdmin"))}</p>`;
     return `<div class="form-actions"><button class="btn primary" data-action="${caps.bringSetup ? "sync-bw-open" : "sync-setup-open"}" data-value="">${label}</button></div>`;
