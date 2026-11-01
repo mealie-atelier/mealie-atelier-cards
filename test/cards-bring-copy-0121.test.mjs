@@ -16,7 +16,7 @@ const ruleHtml = (fromEnv) => {
       {
         entry_id: "e1",
         features: { shopping_sync: true, bring_setup: true },
-        permissions: {},
+        permissions: { can_admin: true },
         bring: { state: "reauth", from_env: fromEnv },
       },
     ],

@@ -380,7 +380,9 @@ export const shoppingSyncMethods = {
     return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp" aria-hidden="true">${icon("cart", 26)}</div></div>`;
   },
   _syncInfoHtml() {
-    return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}<section class="editor-card"><p class="sync-explain" role="status">${icon("leaf", 16)} ${esc(this.t("syncStandaloneExplain"))}</p></section>${this._syncBringHtml(this._syncCaps())}</div>`;
+    const caps = this._syncCaps();
+    const envBroken = caps.bringSetup && caps.bringEnv && caps.bringState !== "connected";
+    return `<div class="modal-content sync-panel">${this._syncLead(this.t("syncTitle"))}<section class="editor-card"><p class="sync-explain" role="status">${icon("leaf", 16)} ${esc(this.t(envBroken ? "bwSessionExpiredEnv" : "syncStandaloneExplain"))}</p></section>${this._syncBringHtml(this._syncCaps())}</div>`;
   },
   // Web app only: why the connection is not available to this user, and what is stored.
   _syncBringHtml(caps) {
@@ -680,7 +682,15 @@ export const shoppingSyncMethods = {
           ].join(". ")
         : "",
       bringAuth
-        ? this.t(caps.bringEnv ? "bwSessionExpiredEnv" : "bwSessionExpired")
+        ? this.t(
+            caps.bringEnv
+              ? caps.admin
+                ? "bwSessionExpiredEnv"
+                : "bwSessionExpiredEnvAskAdmin"
+              : caps.admin
+                ? "bwSessionExpired"
+                : "bwSessionExpiredAskAdmin",
+          )
         : bringUnreachable
           ? open
             ? this.tp("bwUnreachable", open, { count: open })
@@ -966,7 +976,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       : d.preview
         ? `${lines.length && d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
             lines.length
-              ? `<p>${esc(this.tp(this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal", d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><div><strong>${esc(String(l.title || "").trim() || this.t("syncItemUntitled"))}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</div><div><span class="sync-record-state">${icon(["send", "merge"].includes(l.action) ? "arrow" : "close", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></div></li>`).join("")}</ul>`
+              ? `<p>${esc(this.tp(`${this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal"}${(d.preview.total_candidates ?? lines.length) <= lines.length ? "All" : ""}`, d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><div><strong>${esc(String(l.title || "").trim() || this.t("syncItemUntitled"))}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</div><div><span class="sync-record-state">${icon(["send", "merge"].includes(l.action) ? "arrow" : "close", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></div></li>`).join("")}</ul>`
               : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
           }`
         : "";

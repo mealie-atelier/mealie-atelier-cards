@@ -8,6 +8,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Shopping sync dialog: the preview no longer mentions a first batch when every open item is shown. With env Bring! credentials that Bring! refuses, adding a rule explains the .env fix instead of opening a sign-in form. The expired-session hint now fits the role: non-administrators are asked to have an administrator sign in again or fix the server credentials.
 - Cooking mode: "Set a timer" and the timer presets no longer focus the minutes field on touch devices, so the on-screen keyboard stays down. Mouse and keyboard users still get the focus.
 - Web app with Bring! credentials from `.env`: a refused sign-in points to `BRING_EMAIL` and `BRING_PASSWORD` in the server's `.env` instead of a sign-in form that env mode does not show.
 - Cooking mode: a shared timer is shown once and counted once in the active badge, not again as a local timer from its notification alarm.
