@@ -3751,7 +3751,8 @@ html.js .film-cover {
 .film-disc .i {
   width: 40%;
   height: 40%;
-  margin-left: 6%;
+  /* The play glyph spans x 8 to 20.5 of its 24 box: pull it back so it sits optically centred in the disc. */
+  transform: translateX(-7%);
 }
 .film-cover:hover .film-disc {
   transform: scale(1.06);
@@ -3892,7 +3893,7 @@ html.js .film-cover {
 .film-link .i {
   width: 14px;
   height: 14px;
-  margin-left: 2px;
+  transform: translateX(-7%);
 }
 .film-link:focus-visible {
   outline: 2px solid var(--mint);

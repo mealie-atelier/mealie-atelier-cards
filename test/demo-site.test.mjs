@@ -2238,3 +2238,23 @@ test("the film is described as a VideoObject with absolute URLs when a base URL 
   const local = landing(builds.local, "de");
   assert.ok(!local.includes("VideoObject"), "relative builds emit no structured video");
 });
+
+test("the play glyph sits centred in its circle in the film disc and the hero film link", () => {
+  const css = read(new URL("../demo/live-demo.css", import.meta.url));
+  const icons = read(new URL("../demo/site/chrome.mjs", import.meta.url));
+  const path = icons.match(/play: `<path d="([^"]+)"/)[1];
+  // The glyph spans x 8 to 20.5 of its 24 box (bounding box centre 14.25, two units right of the middle).
+  assert.match(path, /^M8 5\.5v13a1 1 0 0 0 1\.5\.86l10\.5-6\.5/);
+  const glyphCentre = (8 + 20.5) / 2;
+  for (const selector of [".film-disc .i", ".film-link .i"]) {
+    const rule = css.match(new RegExp(`${selector.replace(/\./g, "\\.")} \\{([^}]*)\\}`))[1];
+    assert.doesNotMatch(rule, /margin-left/, `${selector} has no margin pushing the glyph right`);
+    const shift = Number(rule.match(/translateX\((-?[\d.]+)%\)/)?.[1] ?? 0) / 100;
+    const offset = (glyphCentre - 12) / 24 + shift;
+    // The pulled-back box centre may stay right of the middle (the triangle centroid sits left of it), never more than 1 of 24 units.
+    assert.ok(
+      offset > 0 && offset <= 1 / 24,
+      `${selector} glyph is ${(offset * 24).toFixed(2)} units off centre`,
+    );
+  }
+});

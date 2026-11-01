@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Product page: the play triangle sits in the middle of its circle on the film play button and the hero film link instead of to the right.
+
 ## [0.12.2] - 2026-11-01
 
 ### Added
