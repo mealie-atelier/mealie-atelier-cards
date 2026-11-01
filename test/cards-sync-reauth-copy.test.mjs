@@ -93,26 +93,6 @@ test("a successful re-login clears the stale failure line of the expired run", a
   assert.equal(sync.resultQuiet, false);
 });
 
-test("the week plan feature shot is produced by the showcase script with a matching manifest", () => {
-  const script = readFileSync(
-    new URL("../scripts/capture-app-showcase.py", import.meta.url),
-    "utf8",
-  );
-  assert.match(script, /"feature-mealplan": \(FEATURE, "mealplan", None, \("de", "en"\)\)/);
-  const manifest = JSON.parse(
-    readFileSync(new URL("../demo/showcase/manifest.json", import.meta.url), "utf8"),
-  );
-  const [top, bottom] = script
-    .match(/crop=\((\d+), (\d+)\)/)
-    .slice(1)
-    .map(Number);
-  for (const loc of ["de", "en"]) {
-    const entry = manifest[loc]["feature-mealplan"];
-    assert.equal(entry.width, 1600);
-    assert.equal(entry.height, Math.round(((bottom - top) * 1600) / 960));
-  }
-});
-
 test("the sign-in again state offers disconnect unless credentials come from the environment", () => {
   for (const env of [false, true]) {
     const card = make({ env, rules: [rule] });

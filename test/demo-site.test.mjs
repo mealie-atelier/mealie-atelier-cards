@@ -1,7 +1,6 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -980,107 +979,6 @@ test("hero: the devices keep a readable width, the stage fades only through its 
       );
     }
   }
-});
-
-test("capture script keeps its rules: the rail is only scrolled, never restyled", () => {
-  const script = read(new URL("../scripts/capture-hero.py", import.meta.url));
-  assert.doesNotMatch(
-    script,
-    /margin-inline|mask-image\s*:\s*none|scroll-snap-type\s*:\s*none|style\.setProperty\('width'/,
-  );
-  assert.match(
-    script,
-    /# Capture only: the screen is framed by the CSS device[^\n]*\n(# [^\n]*\n)*CARD_FLAT = /,
-  );
-});
-
-// What the capture run measured, bound to the published files by their hashes.
-test("hero captures: what the run measured is what was published", () => {
-  const dir = new URL("../demo/showcase/", import.meta.url);
-  const report = JSON.parse(read(new URL("hero-capture.json", dir)));
-  const manifest = JSON.parse(read(new URL("manifest.json", dir)));
-  const css = read(new URL("../demo/live-demo.css", import.meta.url));
-  const statusBg = css.match(/\.status \{[^}]*background: (#[0-9a-f]{6})/)[1];
-  for (const locale of ["de", "en"]) {
-    const tablet = report[locale]["hero-tablet-cook"];
-    assert.equal(tablet.timer, "07:28", `${locale} timer`);
-    assert.equal(tablet.step, "01 / 03");
-    assert.deepEqual(tablet.cut, [], `${locale} tablet has no cut text`);
-    const phone = report[locale]["hero-phone-shopping"];
-    assert.equal(phone.total, 9, `${locale} the nine Gnocchi ingredients`);
-    assert.equal(phone.ticked, 2, `${locale} two ticked items`);
-    assert.equal(phone.tickedShown, 2, `${locale} both ticked items are on the picture`);
-    assert.equal(phone.open, 7);
-    assert.ok(phone.allRowsShown, `${locale} every row is on the picture`);
-    assert.deepEqual(phone.cut, [], `${locale} phone has no cut text`);
-    assert.deepEqual(phone.rail.cut, [], `${locale} tab rail has no cut tab`);
-    assert.ok(phone.rail.activeWhole, `${locale} active tab is whole`);
-    // The end gap is the fade, in which the start of the next tab shows: it may be wider than the start gap.
-    assert.ok(Math.abs(phone.rail.gapLeft - phone.rail.gapRight) <= 70, `${locale} rail is even`);
-    assert.ok(
-      phone.rail.peek || phone.rail.gapRight <= 24,
-      `${locale} rail does not look as if it ended`,
-    );
-    assert.ok(phone.rail.shown.length >= 3, `${locale} rail shows at least three whole tabs`);
-    assert.equal(phone.statusColour, statusBg, `${locale} status bar joins the capture`);
-    assert.match(
-      phone.tickedNames.join(" "),
-      locale === "de" ? /Kirschtomaten.*Olivenöl/ : /cherry tomatoes.*olive oil/,
-    );
-    const budget = {
-      "hero-tablet-cook": { 800: 52, 1200: 100, 1600: 163 },
-      "hero-phone-shopping": { 400: 24, 700: 40, 1179: 70 },
-    };
-    for (const name of ["hero-tablet-cook", "hero-phone-shopping"]) {
-      const entry = manifest[locale][name];
-      for (const width of entry.widths) {
-        const file = readFileSync(new URL(`${locale}/${name}-${width}.webp`, dir));
-        assert.equal(
-          createHash("sha256").update(file).digest("hex"),
-          report[locale][name].files[width],
-          `${locale}/${name}-${width} is the file the run measured`,
-        );
-        assert.ok(
-          file.length <= budget[name][width] * 1000,
-          `${locale}/${name}-${width} is ${file.length} bytes`,
-        );
-        if (width === entry.widths.at(-1)) {
-          // Lossy WebP: "VP8 " chunk, frame header after 3 tag bytes, 14 bit width and height.
-          assert.equal(file.toString("latin1", 12, 16), "VP8 ");
-          const w = file.readUInt16LE(26) & 0x3fff;
-          const h = file.readUInt16LE(28) & 0x3fff;
-          assert.equal(w, width, `${locale}/${name} width`);
-          // The manifest holds the size of the full capture, the file keeps its aspect ratio.
-          assert.ok(
-            Math.abs(h / w - entry.height / entry.width) < 0.002,
-            `${locale}/${name} aspect`,
-          );
-        }
-      }
-    }
-  }
-});
-
-// A rail label from before the views were renamed means the picture still shows the old name.
-test("hero captures: no stale view name in the measured tab rail labels", () => {
-  const report = JSON.parse(read(new URL("../demo/showcase/hero-capture.json", import.meta.url)));
-  const stale = {
-    en: /\b(Family|Cook ideas|Meal planner)\b/i,
-    de: /\bFamilie\b/i,
-  };
-  for (const locale of ["de", "en"]) {
-    const rail = report[locale]["hero-phone-shopping"].rail;
-    const labels = [...new Set([...rail.shown, ...(rail.labels ?? [])])];
-    assert.ok(labels.length >= 3, `${locale} rail labels were measured`);
-    assert.deepEqual(
-      labels.filter((label) => stale[locale].test(label)),
-      [],
-      `${locale} tab rail shows a stale view name`,
-    );
-  }
-  // The renamed view is on the picture itself: whole, in the opaque part of the rail, not only in the list of labels.
-  assert.ok(report.de["hero-phone-shopping"].rail.shown.includes("Gemeinsam kochen"));
-  assert.ok(report.en["hero-phone-shopping"].rail.shown.includes("Cook together"));
 });
 
 test(

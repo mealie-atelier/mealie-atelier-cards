@@ -27,7 +27,7 @@ const PHONE_SIZES =
 const GIF_BLANK = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
 // Kitchen tablet in cooking mode behind, phone with the shopping list in front. Both are real
-// captures (scripts/capture-hero.py). The timer is part of the tablet screen, not a floating toast.
+// captures of the demo. The timer is part of the tablet screen, not a floating toast.
 function heroStage(ctx) {
   const t = translator(ctx.locale);
   const tablet = shotSources(ctx, "hero-tablet-cook");
