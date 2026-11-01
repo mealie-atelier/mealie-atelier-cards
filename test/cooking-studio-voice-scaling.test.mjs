@@ -180,11 +180,11 @@ test("scaleIngredient scales each alternative around oder and or", () => {
 test("scaleIngredient keeps a parenthesized pack size fixed", () => {
   assert.equal(
     Studio.scaleIngredient("1 Dose (400 g) Tomaten", 6, 3, "de"),
-    "2 Dose (400 g) Tomaten",
+    "2 Dosen (400 g) Tomaten",
   );
   assert.equal(
     Studio.scaleIngredient("1 can (14 oz) tomatoes or 2 fresh (200 g)", 4, 2, "en"),
-    "2 can (14 oz) tomatoes or 4 fresh (200 g)",
+    "2 cans (14 oz) tomatoes or 4 fresh (200 g)",
   );
 });
 
@@ -193,6 +193,6 @@ test("scaleIngredient leaves unchanged lines and words containing oder untouched
   assert.equal(Studio.scaleIngredient("2 Eier", 4, 2, "de"), "4 Eier");
   assert.equal(
     Studio.scaleIngredient("1 Prise Salz oder Pfeffer", 4, 2, "de"),
-    "2 Prise Salz oder Pfeffer",
+    "2 Prisen Salz oder Pfeffer",
   );
 });

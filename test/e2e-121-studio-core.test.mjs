@@ -26,7 +26,7 @@ const motion = readFileSync(new URL("../src/design-system/motion.css", import.me
 test("ranges scale on both ends and keep their separator", () => {
   assert.equal(Studio.scaleIngredient("2-3 Zweige", 4, 2, "de"), "4-6 Zweige");
   assert.equal(Studio.scaleIngredient("2–3 Zweige", 4, 2, "de"), "4–6 Zweige");
-  assert.equal(Studio.scaleIngredient("1 - 2 EL Öl", 3, 2, "de"), "1,5 - 3 EL Öl");
+  assert.equal(Studio.scaleIngredient("1 - 2 EL Öl", 3, 2, "de"), "1½ - 3 EL Öl");
   assert.equal(Studio.scaleIngredient("1-2 tbsp oil", 4, 2, "en"), "2-4 tbsp oil");
 });
 

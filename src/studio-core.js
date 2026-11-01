@@ -199,9 +199,78 @@ const AtelierStudio = (() => {
     )
       return raw;
     const fmt = (n) =>
-      Number(n.toFixed(2)).toLocaleString(locale === "en" ? "en-US" : "de-DE", {
-        maximumFractionDigits: 2,
-      });
+      n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumFractionDigits: 2 });
+    const unitWord = (rest) => (rest.match(/^\s*([^\s\d(]+)/) || [])[1] || "";
+    // Kitchen rounding: metric masses and volumes to sensible steps, everything else to quarters and thirds.
+    const kitchen = (value, unit, style) => {
+      const u = unit.toLowerCase().replace(/\.$/, "");
+      if (["g", "gramm", "gram", "grams", "ml", "milliliter"].includes(u)) {
+        const step = value < 10 ? 0.5 : value < 250 ? 5 : 10;
+        return fmt(Math.max(step, Math.round(value / step) * step));
+      }
+      if (["kg", "l", "liter", "litre", "dl", "cl"].includes(u) && style === "decimal")
+        return fmt(Math.max(0.05, Math.round(value * 20) / 20));
+      if (value >= 10) return fmt(Math.round(value));
+      const grid = [0, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1];
+      const whole = Math.floor(value);
+      const frac = value - whole;
+      const near = grid.reduce((x, y) => (Math.abs(y - frac) < Math.abs(x - frac) ? y : x));
+      let total = whole + near;
+      if (total === 0) total = 0.25;
+      const w = Math.floor(total + 1e-9);
+      const f = total - w;
+      if (f < 0.01) return fmt(w);
+      const glyph =
+        Math.abs(f - 0.25) < 0.01
+          ? "¼"
+          : Math.abs(f - 0.5) < 0.01
+            ? "½"
+            : Math.abs(f - 0.75) < 0.01
+              ? "¾"
+              : Math.abs(f - 1 / 3) < 0.01
+                ? "⅓"
+                : "⅔";
+      return `${w || ""}${glyph}`;
+    };
+    const onGrid = (v) => {
+      const f = v - Math.floor(v);
+      return [0, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1].some((g) => Math.abs(f - g) < 0.005);
+    };
+    const NOUNS = {
+      de: {
+        tasse: ["Tasse", "Tassen"],
+        tassen: ["Tasse", "Tassen"],
+        prise: ["Prise", "Prisen"],
+        prisen: ["Prise", "Prisen"],
+        zehe: ["Zehe", "Zehen"],
+        zehen: ["Zehe", "Zehen"],
+        ei: ["Ei", "Eier"],
+        eier: ["Ei", "Eier"],
+        dose: ["Dose", "Dosen"],
+        dosen: ["Dose", "Dosen"],
+      },
+      en: {
+        cup: ["cup", "cups"],
+        cups: ["cup", "cups"],
+        pinch: ["pinch", "pinches"],
+        pinches: ["pinch", "pinches"],
+        clove: ["clove", "cloves"],
+        cloves: ["clove", "cloves"],
+        egg: ["egg", "eggs"],
+        eggs: ["egg", "eggs"],
+        can: ["can", "cans"],
+        cans: ["can", "cans"],
+      },
+    };
+    // Singular up to 1, plural above, for the small table of common units; unknown words stay.
+    const agree = (rest, amount) => {
+      const word = unitWord(rest);
+      const forms = (NOUNS[locale === "en" ? "en" : "de"] || {})[word.toLowerCase()];
+      if (!forms) return rest;
+      const next = forms[amount <= 1 + 1e-9 ? 0 : 1];
+      const keepCase = word[0] === word[0].toLowerCase() ? next.toLowerCase() : next;
+      return rest.replace(word, keepCase);
+    };
     // A range such as "2-3", "2–3" or "1 bis 2" scales on both ends and keeps its separator.
     const range = raw.match(
       /^(\s*)(\d+(?:[.,]\d+)?)(\s*[-–]\s*|\s+(?:bis|to)\s+)(\d+(?:[.,]\d+)?)(\s+.*)$/,
@@ -209,8 +278,11 @@ const AtelierStudio = (() => {
     if (range) {
       const low = Number(range[2].replace(",", ".")),
         high = Number(range[4].replace(",", "."));
-      if (high >= low && !/^\s+[x×]\s*\d/i.test(range[5]))
-        return `${range[1]}${fmt((low * target) / base)}${range[3]}${fmt((high * target) / base)}${range[5]}`;
+      if (high >= low && !/^\s+[x×]\s*\d/i.test(range[5])) {
+        const unit = unitWord(range[5]);
+        const hi = (high * target) / base;
+        return `${range[1]}${kitchen((low * target) / base, unit, "decimal")}${range[3]}${kitchen(hi, unit, "decimal")}${agree(range[5], hi)}`;
+      }
       return raw;
     }
     const q = leadingQuantity(raw);
@@ -218,9 +290,12 @@ const AtelierStudio = (() => {
     // "1 x 400 g" is a pack count, not an amount: scaling it would give "1,5 x 400 g".
     if (/^\s+[x×]\s*\d/i.test(q.rest)) return raw;
     const amount = (q.value * target) / base;
-    let scaled = q.style === "decimal" ? null : formatFraction(amount, q.style === "glyph");
-    if (scaled === null) scaled = fmt(amount);
-    return `${q.lead}${scaled}${q.rest}`;
+    const unit = unitWord(q.rest);
+    let scaled = null;
+    // A source fraction off the quarter and third grid (fifths, sixths) keeps its exact value when it stays exact.
+    if (q.style !== "decimal" && !onGrid(q.value)) scaled = formatFraction(amount, true);
+    if (scaled === null) scaled = kitchen(amount, unit, q.style);
+    return `${q.lead}${scaled}${agree(q.rest, amount)}`;
   }
   // Treat a pantry match as a verified quantity claim, not just a shared word.
   // Mealie has both structured foods/units and legacy display-only ingredients.

@@ -10,9 +10,9 @@ const Studio = vm.runInNewContext(
 );
 
 test("word ranges scale on both ends in German", () => {
-  assert.equal(Studio.scaleIngredient("1 bis 2 Zehen", 6, 4, "de"), "1,5 bis 3 Zehen");
-  assert.equal(Studio.scaleIngredient("1 bis 2 Zehen", 7, 2, "de"), "3,5 bis 7 Zehen");
-  assert.equal(Studio.scaleIngredient("1 bis 2 Zehen", 1, 4, "de"), "0,25 bis 0,5 Zehen");
+  assert.equal(Studio.scaleIngredient("1 bis 2 Zehen", 6, 4, "de"), "1½ bis 3 Zehen");
+  assert.equal(Studio.scaleIngredient("1 bis 2 Zehen", 7, 2, "de"), "3½ bis 7 Zehen");
+  assert.equal(Studio.scaleIngredient("1 bis 2 Zehen", 1, 4, "de"), "¼ bis ½ Zehe");
 });
 
 test("word ranges scale on both ends in English", () => {

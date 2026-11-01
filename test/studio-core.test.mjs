@@ -803,3 +803,33 @@ test("fifth and sixth unicode fractions scale like their neighbours", () => {
   assert.equal(Studio.scaleIngredient("⅖ Tasse Milch", 4, 2), "⅘ Tasse Milch");
   assert.equal(Studio.scaleIngredient("1⅗ Tassen Wasser", 2, 2), "1⅗ Tassen Wasser");
 });
+
+test("scaled amounts read like a kitchen: rounding, glyph fractions, unit agreement", () => {
+  const s = (row, to, from, loc = "de") => Studio.scaleIngredient(row, to, from, loc);
+  assert.equal(s("200 g Butter oder Margarine", 5, 3), "330 g Butter oder Margarine");
+  assert.equal(s("200 g Butter", 1, 3), "65 g Butter");
+  assert.equal(s("2,5 EL Olivenöl", 5, 3), "4¼ EL Olivenöl");
+  assert.equal(s("2,5 EL Olivenöl", 1, 3), "¾ EL Olivenöl");
+  assert.equal(s("1 Prise Pfeffer", 5, 3), "1⅔ Prisen Pfeffer");
+  assert.equal(s("1 Prise Pfeffer", 1, 3), "⅓ Prise Pfeffer");
+  assert.equal(s("1-2 Zwiebeln", 5, 3), "1⅔-3⅓ Zwiebeln");
+  assert.equal(s("5/6 TL Salz", 2, 1), "1⅔ TL Salz");
+  assert.equal(s("2 1/2 Tassen Mehl", 1, 3), "¾ Tasse Mehl");
+  assert.equal(s("1 Tasse Mehl", 3, 2), "1½ Tassen Mehl");
+  assert.equal(s("2 Tassen Mehl", 1, 2), "1 Tasse Mehl");
+  assert.equal(s("2 Eier", 3, 2), "3 Eier");
+  assert.equal(s("2 Eier", 1, 2), "1 Ei");
+  assert.equal(s("1 Zehe Knoblauch", 3, 1), "3 Zehen Knoblauch");
+  assert.equal(s("1 Bund Petersilie", 3, 1), "3 Bund Petersilie");
+  assert.equal(s("0,1 g Safran", 1, 3), "0,5 g Safran");
+  assert.equal(s("1,2 g Safran", 5, 3, "en"), "2 g Safran");
+  assert.equal(s("2.5 g Salt", 5, 3, "en"), "4 g Salt");
+  assert.equal(s("2 cups flour", 3, 2, "en"), "3 cups flour");
+  assert.equal(s("2 cups flour", 1, 2, "en"), "1 cup flour");
+  assert.equal(s("1 clove garlic", 3, 1, "en"), "3 cloves garlic");
+  assert.equal(s("2 eggs", 1, 2, "en"), "1 egg");
+  assert.equal(s("1 pinch salt", 5, 3, "en"), "1⅔ pinches salt");
+  assert.equal(s("¼ l Milch", 6, 2), "¾ l Milch");
+  assert.equal(s("2 Eier", 2, 2), "2 Eier");
+  assert.equal(s("1 Tassen Mehl", 2, 2), "1 Tassen Mehl");
+});

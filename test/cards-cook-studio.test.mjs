@@ -30,13 +30,13 @@ test("substitutions know English names and report the typed word", () => {
 
 test("scaleIngredient handles mixed numbers, fractions and the locale", () => {
   const s = (row, locale) => Studio.scaleIngredient(row, 6, 4, locale);
-  assert.equal(s("1 1/2 cups all-purpose flour", "en"), "2 1/4 cups all-purpose flour");
-  assert.equal(s("1/2 cup cold butter, cubed", "en"), "3/4 cup cold butter, cubed");
-  assert.equal(s("1.5 cups buttermilk", "en"), "2.25 cups buttermilk");
-  assert.equal(s("1.5 cups buttermilk", "de"), "2,25 cups buttermilk");
-  assert.equal(s("1.5 cups buttermilk"), "2,25 cups buttermilk");
+  assert.equal(s("1 1/2 cups all-purpose flour", "en"), "2¼ cups all-purpose flour");
+  assert.equal(s("1/2 cup cold butter, cubed", "en"), "¾ cup cold butter, cubed");
+  assert.equal(s("1.5 cups buttermilk", "en"), "2¼ cups buttermilk");
+  assert.equal(s("1.5 cups buttermilk", "de"), "2¼ cups buttermilk");
+  assert.equal(s("1.5 cups buttermilk"), "2¼ cups buttermilk");
   assert.equal(s("1 x 400 g Dose", "de"), "1 x 400 g Dose");
-  assert.equal(s("1 pinch salt", "en"), "1.5 pinch salt");
+  assert.equal(s("1 pinch salt", "en"), "1½ pinches salt");
   assert.equal(Studio.scaleIngredient("1½ Tassen Mehl", 4, 2), "3 Tassen Mehl");
   assert.equal(Studio.scaleIngredient("½ Zitrone", 6, 4), "¾ Zitrone");
 });
@@ -147,9 +147,9 @@ test("the editor serving preview formats quantities in the UI language", () => {
   const card = makeCard(cards);
   card._ed = { servings: 4, preview: 6 };
   card._hass.language = "en";
-  assert.equal(card._editorScaled({ quantityText: "1.5" }), "2.25");
+  assert.equal(card._editorScaled({ quantityText: "1.5" }), "2¼");
   card._hass.language = "de";
-  assert.equal(card._editorScaled({ quantityText: "1.5" }), "2,25");
+  assert.equal(card._editorScaled({ quantityText: "1.5" }), "2¼");
 });
 
 test("family timer rows show mm:ss and flip to a done state when the timer ends", () => {
@@ -296,5 +296,5 @@ test("the recipe dialog scales ingredients in the UI language", () => {
   card._discoverSelected = "pancakes";
   card._discoverDraft = { people: 6 };
   const html = card._modalHtml();
-  assert.match(html, /2\.25 cups buttermilk/);
+  assert.match(html, /2¼ cups buttermilk/);
 });
