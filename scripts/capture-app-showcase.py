@@ -4,7 +4,7 @@
   tablet    app-tablet-today, app-tablet-mealplan
   feature   feature-mealplan (the product page "Wochenplan" card: a narrow window, so four whole days read at 580 px)
   phone     app-phone-cookbook, app-phone-discover, app-phone-family, app-phone-family-helper,
-            app-phone-mealplan, app-phone-shopping (English only: the German phone shots carry no stale names)
+            app-phone-mealplan, app-phone-shopping (German and English)
 
 The shots come from the real card with the fixture data of the demo and a frozen clock (Thursday, October 29).
 Nothing is retouched. A gate fails the run when a shot shows a navigation name the card no longer uses
@@ -57,12 +57,12 @@ SHOTS = {
     "app-tablet-today": (TABLET, "today", None, ("de", "en")),
     "app-tablet-mealplan": (TABLET, "mealplan", None, ("de", "en")),
     "feature-mealplan": (FEATURE, "mealplan", None, ("de", "en")),
-    "app-phone-cookbook": (PHONE, "cookbook", None, ("en",)),
-    "app-phone-discover": (PHONE, "discover", None, ("en",)),
-    "app-phone-family": (PHONE, "family", None, ("en",)),
-    "app-phone-family-helper": (PHONE, "family", "adult-view", ("en",)),
-    "app-phone-mealplan": (PHONE, "mealplan", None, ("en",)),
-    "app-phone-shopping": (PHONE, "shopping", None, ("en",)),
+    "app-phone-cookbook": (PHONE, "cookbook", None, ("de", "en")),
+    "app-phone-discover": (PHONE, "discover", None, ("de", "en")),
+    "app-phone-family": (PHONE, "family", None, ("de", "en")),
+    "app-phone-family-helper": (PHONE, "family", "adult-view", ("de", "en")),
+    "app-phone-mealplan": (PHONE, "mealplan", None, ("de", "en")),
+    "app-phone-shopping": (PHONE, "shopping", None, ("de", "en")),
 }
 
 FILL = (
@@ -73,7 +73,9 @@ FILL = (
 # Capture only: the screen has no frame of its own, so the card draws no border and fills the whole viewport.
 CARD_FLAT = ".atelier{border:0!important;border-radius:0!important;box-shadow:none!important;min-height:100vh!important}"
 WHOLE_NAMES = ".atelier *{hyphens:manual!important;-webkit-hyphens:manual!important}"
-STALE = re.compile(r"Cook ideas|Meal planner|Family cooking")
+# Old navigation names and the old family names (tag "Helfermodus" / "Helper mode", button "Einfache Helferansicht" /
+# "Simple helper view"). The card now says "Helferansicht" / "Helper view" and tags the person "Kind" / "Child".
+STALE = re.compile(r"Cook ideas|Meal planner|Family cooking|Helfermodus|[Hh]elper mode|Einfache Helferansicht|Simple helper view")
 ENGLISH_LEAK = re.compile(r"KITCHEN STUDIO|\bMENU\b|\b(Overview|Today|Recipes|Shopping|Cookbook|Manage|Quick actions)\b")
 GERMAN_LEAK = re.compile(r"KÜCHENSTUDIO|\bMENÜ\b|\b(Übersicht|Heute|Rezepte|Einkaufsliste|Kochbuch|Verwalten|Schnellzugriff)\b")
 EXPECTED = {

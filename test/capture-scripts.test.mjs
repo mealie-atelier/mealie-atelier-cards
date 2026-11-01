@@ -55,3 +55,26 @@ test("the week plan feature shot is a cropped narrow window without automatic hy
   assert.match(source, /WHOLE_NAMES = "\.atelier \*\{hyphens:manual!important/);
   assert.match(source, /device\.get\("whole_names"\)/);
 });
+
+test("the showcase gate rejects the old family names and captures the family shots in both languages", () => {
+  const source = read("capture-app-showcase.py");
+  const stale = source.match(/^STALE = re\.compile\(r"([^"]+)"\)/m)[1];
+  const re = new RegExp(stale);
+  for (const old of [
+    "Helfermodus",
+    "Helper mode",
+    "helper mode",
+    "Einfache Helferansicht",
+    "Simple helper view",
+  ]) {
+    assert.match(old, re);
+  }
+  for (const current of ["Helferansicht", "Helper view", "Kind", "Child"]) {
+    assert.doesNotMatch(current, re);
+  }
+  assert.match(source, /"app-phone-family": \(PHONE, "family", None, \("de", "en"\)\)/);
+  assert.match(
+    source,
+    /"app-phone-family-helper": \(PHONE, "family", "adult-view", \("de", "en"\)\)/,
+  );
+});
