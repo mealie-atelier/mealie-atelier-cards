@@ -214,6 +214,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--shell-space-2);
+  white-space: nowrap;
   padding: 10px 15px;
   border: 1px solid color-mix(in srgb, var(--shell-accent) 28%, var(--shell-line));
   border-radius: 999px;
@@ -300,7 +301,7 @@
     padding: 15px;
   }
   .a-actions button {
-    flex: 1 1 132px;
+    flex: 1 1 auto;
   }
   .a-conflict,
   .a-alarm {

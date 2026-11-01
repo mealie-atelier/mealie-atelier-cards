@@ -217,3 +217,10 @@ test("final control tokens outrank legacy select rules and preserve decorative i
   assert.match(editor, /min-height:\s*48px/);
   assert.match(shell, /--shell-control:\s*48px/);
 });
+
+test("offline panel action buttons stay on one line and share one flex basis on phones", () => {
+  const shell = source("web/public/shell.css");
+  const base = shell.match(/\.atelier-connectivity button\s*\{[^}]*\}/)[0];
+  assert.match(base, /white-space:\s*nowrap/);
+  assert.match(shell, /\.a-actions button\s*\{\s*flex:\s*1 1 auto;\s*\}/);
+});
