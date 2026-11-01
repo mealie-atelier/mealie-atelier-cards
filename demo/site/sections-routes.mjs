@@ -154,7 +154,7 @@ function install(ctx) {
       "btn btn-primary",
     ),
     ext(
-      links.webApp,
+      links.cards,
       `${icon("github")}${t("Web-App auf GitHub", "Web app on GitHub")}`,
       "btn btn-ghost",
     ),

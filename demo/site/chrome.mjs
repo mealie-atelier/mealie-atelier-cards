@@ -4,7 +4,6 @@
 export const links = {
   cards: "https://github.com/mealie-atelier/mealie-atelier-cards",
   bridge: "https://github.com/mealie-atelier/mealie-atelier-bridge",
-  webApp: "https://github.com/mealie-atelier/mealie-atelier-cards/tree/main/web#readme",
   changelog: "https://github.com/mealie-atelier/mealie-atelier-cards/blob/main/CHANGELOG.md",
   discussions: "https://github.com/orgs/mealie-atelier/discussions",
   guide: "https://alles-automatisch.de/lernen/mealie-atelier",

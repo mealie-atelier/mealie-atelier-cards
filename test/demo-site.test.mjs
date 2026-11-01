@@ -93,6 +93,24 @@ test("each demo page is pinned to its own language", () => {
   }
 });
 
+test("GitHub links on the landing pages point at a repository root, never into a subfolder", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const repoLinks = [
+      ...html.matchAll(/href="(https:\/\/github\.com\/mealie-atelier\/[^"]*)"/g),
+    ].map((m) => m[1]);
+    assert.ok(repoLinks.length > 0, `${locale} links its repositories`);
+    for (const href of repoLinks) {
+      assert.doesNotMatch(href, /\/tree\//, `${locale} links ${href}`);
+    }
+    const webAppButton = html.match(
+      /<a [^>]*href="([^"]+)"[^>]*>(?:(?!<\/a>).)*(?:Web-App auf GitHub|Web app on GitHub)/,
+    );
+    assert.ok(webAppButton, `${locale} has the web app GitHub button`);
+    assert.equal(webAppButton[1], links.cards);
+  }
+});
+
 test("both landing pages carry every product section and the live card", () => {
   for (const locale of ["de", "en"]) {
     const html = landing(builds.local, locale);
