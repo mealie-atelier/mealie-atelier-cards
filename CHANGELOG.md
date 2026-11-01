@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.5] - 2026-11-02
+
 ### Fixed
 
 - Shopping note in German: an amount in cups reads "Tasse" or "Tassen" instead of "cups".
@@ -549,7 +551,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.4...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.5...HEAD
+[0.12.5]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.4...v0.12.5
 [0.12.4]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.3...v0.12.4
 [0.12.3]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.2...v0.12.3
 [0.12.2]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.1...v0.12.2

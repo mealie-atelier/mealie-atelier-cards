@@ -1,6 +1,6 @@
 # Mealie Atelier design system
 
-**Binding design and implementation rules for the standalone web app, the Home Assistant cards and the Bridge.** Valid for release 0.12.4 and newer; changes per version are in the [changelog](../CHANGELOG.md). The shorter [control system note](CONTROL_SYSTEM.md) covers the shared controls.
+**Binding design and implementation rules for the standalone web app, the Home Assistant cards and the Bridge.** Valid for release 0.12.5 and newer; changes per version are in the [changelog](../CHANGELOG.md). The shorter [control system note](CONTROL_SYSTEM.md) covers the shared controls.
 
 ## 1. Principles
 
