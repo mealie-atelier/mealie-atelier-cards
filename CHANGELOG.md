@@ -8,6 +8,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Card option `show_images: false` is now honored in every view (command palette, recipe picker, cooking photo, today, discover, cookbook and meal plan thumbnails).
+- Cooking mode: a live language change re-renders the whole open dialog and keeps the step and timers. Invalid timer minutes show one inline error instead of the same text again in a toast over the Back buttons.
 - Shopping sync dialog: the preview no longer mentions a first batch when every open item is shown. With env Bring! credentials that Bring! refuses, adding a rule is disabled in place, with the .env fix as its hint, and the dialog keeps the account state and the rules. The expired-session hint now fits the role: non-administrators are asked to have an administrator sign in again or fix the server credentials.
 - Shopping sync: saving and sending a rule moves to the status view at once and shows the rule as "Wird gesendet …" / "Sending…" until the send returns. A scheduled debounced send shows "Wird gleich gesendet" / "Sending shortly" in the Waiting row instead of "Nothing waiting". A rule whose Mealie list was deleted shows the missing-list warning without a manual run. Wrapped rule action buttons align left.
 - Recipe editor: an invalid or emptied servings value now shows an inline error under the field, focuses it and keeps the typed text, instead of a toast that reset the field. Clearing the servings of a recipe that has servings no longer reports "Saved" while keeping the old value.

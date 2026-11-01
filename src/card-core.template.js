@@ -403,14 +403,17 @@ class MealieAtelierCard extends HTMLElement {
     this._offlineOnHass(value);
     // END feature H
     const darkBefore = this._hass?.themes?.darkMode;
+    const languageBefore = this._language;
     this._hass = value;
     if (this.isConnected && !this._didLoad) {
       this._didLoad = true;
       this._refresh();
     } else if (
       this.isConnected &&
-      this._design.theme === "auto" &&
-      darkBefore !== value?.themes?.darkMode
+      ((this._design.theme === "auto" && darkBefore !== value?.themes?.darkMode) ||
+        // A live language switch re-renders everything, an open cook dialog included. The cook
+        // dialog is patched in place, so its step, timers and scroll position stay.
+        languageBefore !== this._language)
     )
       this._render();
   }
@@ -2355,10 +2358,12 @@ class MealieAtelierCard extends HTMLElement {
       const minutes = Number(rawMinutes);
       if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) {
         const rawLabel = this.shadowRoot.querySelector("[data-timer-label]")?.value;
-        // The toast sits behind the cooking dialog, so the range message is also shown inside the form.
+        // The range message is always shown inside the form (role="alert"). Outside the cooking
+        // dialog a toast repeats it; in cooking mode the toast would only cover the Back buttons.
         this._timerError = this.t("uiTimerMinutesRange");
-        this._flash(this._timerError, "error");
-        // The flash re-renders the card: mark and focus the new input and keep what was typed.
+        if (this._modal === "cook") this._render();
+        else this._flash(this._timerError, "error");
+        // The re-render replaces the input: mark and focus the new one and keep what was typed.
         const fresh = this.shadowRoot.querySelector("[data-timer-minutes]");
         if (fresh) {
           if (rawMinutes !== undefined) fresh.value = rawMinutes;
