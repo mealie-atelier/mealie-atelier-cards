@@ -2601,6 +2601,37 @@
     align-items: stretch;
   }
 }
+/* Exactly seven days in the wrapped 4 column layout would leave a hole in the second row. On a 12 column grid the
+   first four days span 3 columns and the last three span 4, so both rows are full. Other day counts keep 4 columns.
+   The ranges stop below the seven column breakpoints (1400px with a sidebar, 1100px without). */
+@container atelier-card (min-width: 920px) and (max-width: 1399px) {
+  .atelier .shell:not(.single) .week-grid:has(> .day:nth-child(7):last-child) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .atelier
+    .shell:not(.single)
+    .week-grid:has(> .day:nth-child(7):last-child)
+    > .day:nth-child(-n + 4) {
+    grid-column: span 3;
+  }
+  .atelier
+    .shell:not(.single)
+    .week-grid:has(> .day:nth-child(7):last-child)
+    > .day:nth-child(n + 5) {
+    grid-column: span 4;
+  }
+}
+@container atelier-card (min-width: 761px) and (max-width: 1099px) {
+  .atelier .shell.single .week-grid:has(> .day:nth-child(7):last-child) {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .atelier .shell.single .week-grid:has(> .day:nth-child(7):last-child) > .day:nth-child(-n + 4) {
+    grid-column: span 3;
+  }
+  .atelier .shell.single .week-grid:has(> .day:nth-child(7):last-child) > .day:nth-child(n + 5) {
+    grid-column: span 4;
+  }
+}
 @container atelier-card (min-width: 761px) {
   .atelier .week-grid > .day:has(> .day-empty) {
     min-height: 0;

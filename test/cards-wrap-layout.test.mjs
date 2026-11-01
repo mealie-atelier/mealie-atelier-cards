@@ -40,6 +40,27 @@ test("the week grid wraps into rows instead of squeezing seven narrow columns", 
   assert.doesNotMatch(polish, /Tablet week strip/, "no 11px name for seven squeezed columns");
 });
 
+test("seven days in the wrapped layout fill both rows on a 12 column grid", () => {
+  const seven = ":has(> .day:nth-child(7):last-child)";
+  for (const [shell, range] of [
+    [".shell:not(.single)", "min-width: 920px\\) and \\(max-width: 1399px"],
+    [".shell.single", "min-width: 761px\\) and \\(max-width: 1099px"],
+  ]) {
+    const esc = shell.replace(/[.()]/g, "\\$&");
+    const sevenEsc = seven.replace(/[.()>]/g, "\\$&");
+    const open = new RegExp(`@container atelier-card \\(${range}\\) \\{([\\s\\S]*?)\n\\}\n`);
+    const body = polish.match(open)?.[1] ?? "";
+    assert.match(
+      body,
+      new RegExp(
+        `${esc} \\.week-grid${sevenEsc} \\{\\s*grid-template-columns: repeat\\(12, minmax\\(0, 1fr\\)\\)`,
+      ),
+    );
+    assert.match(body, /nth-child\(-n \+ 4\) \{\s*grid-column: span 3/);
+    assert.match(body, /nth-child\(n \+ 5\) \{\s*grid-column: span 4/);
+  }
+});
+
 test("the week grid rules cannot override the narrow carousel container rules", () => {
   const layout = read("src/design-system/layout.css");
   const narrow = [

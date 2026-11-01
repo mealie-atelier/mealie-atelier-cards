@@ -2,10 +2,11 @@
 
 Run: uv run --with playwright python web/test/week-grid-browser.py [chromium|webkit] [--shots <folder>]
 
-Rules under test, in the live demo (1440x900) and in the web app (1440x900, 1180x820, 1194x834, 1024x768, 390x844):
+Rules under test, in the live demo (1440x900) and in the web app (1440x900, 1180x820, 1194x834, 1024x768, 820x1180, 390x844):
 - a name word of up to 12 letters (a German "Kürbissuppe") always fits the width of its name box;
 - no word is split across lines unless the break is a real hyphenation (hyphens: auto with the card language set);
-- no text in the grid, a day card or a meal button is wider than its box, and no meal button leaves its day card.
+- no text in the grid, a day card or a meal button is wider than its box, and no meal button leaves its day card;
+- a wrapped week grid has no hole: in every row the right edge of the last day is at the grid's right edge (2 px).
 SIZES overrides the web app sizes (for example SIZES=1194x834).
 """
 
@@ -50,6 +51,25 @@ CHECK = """() => {
     info.columns = getComputedStyle(grid).gridTemplateColumns.split(" ").length;
     const wrapped = [...grid.querySelectorAll(".day")].map((d) => Math.round(d.getBoundingClientRect().top));
     info.rows = new Set(wrapped).size;
+    // Wrapped rows (not the sideways carousel) must be full: the last cell of each row ends at the grid's right edge.
+    const scrolls = grid.scrollWidth > grid.clientWidth + 1;
+    if (info.rows > 1 && !scrolls) {
+      const g = grid.getBoundingClientRect();
+      const pad = parseFloat(getComputedStyle(grid).paddingRight) || 0;
+      const rows = new Map();
+      for (const d of grid.querySelectorAll(".day")) {
+        const r = d.getBoundingClientRect();
+        const key = Math.round(r.top / 8);
+        rows.set(key, Math.max(rows.get(key) ?? 0, r.right));
+      }
+      info.holes = 0;
+      for (const right of rows.values()) {
+        if (Math.abs(right - (g.right - pad)) > 2) {
+          info.holes++;
+          problems.push(`week grid row ends at ${Math.round(right)} but the grid ends at ${Math.round(g.right - pad)} (hole)`);
+        }
+      }
+    }
     // Text boxes that are wider than themselves are clipped or run out of their card.
     for (const el of grid.querySelectorAll(".day, .day-meal, .day-meal-name, .day-head, .day-head span, .day-head b, .day-meal small, .day-empty")) {
       if (el.scrollWidth > el.clientWidth + 1) problems.push(`${el.className || el.tagName} overflows ${el.scrollWidth} > ${el.clientWidth}`);
@@ -141,7 +161,7 @@ try:
         run(page, f"{browser_name}-demo-1440x900", "mealplan")
         ctx.close()
 
-        sizes = [tuple(int(v) for v in z.split("x")) for z in os.environ.get("SIZES", "1440x900,1180x820,1194x834,1024x768,390x844").split(",")]
+        sizes = [tuple(int(v) for v in z.split("x")) for z in os.environ.get("SIZES", "1440x900,1180x820,1194x834,1024x768,820x1180,390x844").split(",")]
         for width, height in sizes:
             phone = width < 600
             ctx = browser.new_context(http_credentials={"username": "atelier", "password": "test-pass-week-1"}, locale="de-DE",
