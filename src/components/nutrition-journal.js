@@ -22,7 +22,7 @@ export const nutritionJournalMethods = {
     );
     const report = n.report;
     return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div><div class="editor-stamp">${icon("leaf", 27)}</div></div>
-      <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong>${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.tp("uiServing", Number(n.preview.servings) || 0))}</span></div>
+      <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong class="at-numeral">${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.tp("uiServing", Number(n.preview.servings) || 0))}</span></div>
       ${!n.preview.fdc_enabled ? `<div class="nutri-alert">${this.t(this._isWebApp ? "uiUsdaKeyMissingWeb" : "nutriUsdaKeyMissingHa")}</div>` : ""}
       ${existing ? `<div class="nutri-alert">${this.t("uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt")}</div>` : ""}
       <div class="nutri-tools"><button class="btn" data-action="nutri-ai" ${!n.preview.ai_enabled || n.busy ? "disabled" : ""}>${icon("spark", 16)} ${esc(this.t("nutriAi"))}</button><span>${n.preview.ai_enabled ? this.t("uiSendsIngredientTextToAIProviderNoInventedMacros") : this.t("uiOptionalConfigureAIAPIKey")}</span></div>
@@ -32,7 +32,7 @@ export const nutritionJournalMethods = {
           (
             row,
             i,
-          ) => `<div class="nutri-row"><div class="nutri-row-head"><span class="nutri-number">${String(i + 1).padStart(2, "0")}</span><strong>${esc(row.text)}</strong><span class="nutri-state ${row.selected ? "matched" : ""}">${row.selected ? "✓ USDA" : this.t("uiNotMatched")}</span></div>
+          ) => `<div class="nutri-row"><div class="nutri-row-head"><span class="nutri-number at-numeral">${String(i + 1).padStart(2, "0")}</span><strong>${esc(row.text)}</strong><span class="nutri-state ${row.selected ? "matched" : ""}">${row.selected ? "✓ USDA" : this.t("uiNotMatched")}</span></div>
         <div class="nutri-row-fields"><label><span>${esc(this.t("nutriGrams"))}</span><input type="number" min="0.01" max="50000" step="0.1" data-nutri-grams="${i}" value="${row.grams ?? ""}" placeholder="${esc(this.t("nutriGramsPlaceholder"))}" aria-label="${esc(this.t("nutriGrams"))} ${i + 1}"></label>
         <label class="nutri-query"><span>${this.t("uiFoodSearchQuery")}</span><input data-nutri-query="${i}" maxlength="100" value="${esc(row.query)}" aria-label="${this.t("uiFindFood")} ${i + 1}"></label>
         <button class="btn tiny" data-action="nutri-search" data-index="${i}" ${!n.preview.fdc_enabled || n.busy ? "disabled" : ""}>${icon("search", 14)} ${esc(this.t("nutriSearch"))}</button></div>
@@ -40,7 +40,7 @@ export const nutritionJournalMethods = {
         ${n.active === i ? `<div class="nutri-choices">${n.choices.length ? n.choices.map((choice) => `<button data-action="nutri-select" data-index="${i}" data-value="${esc(choice.id)}"><strong>${esc(choice.name)}</strong><small>${esc(choice.data_type || "")} · ${Number(choice.per_100g.calories).toFixed(0)} kcal/100 g</small></button>`).join("") : `<p>${this.t("uiNoCompleteNutritionEntriesFoundTryAnotherQuery")}</p>`}</div>` : ""}</div>`,
         )
         .join("")}</div>
-      <div class="nutri-result"><div class="eyebrow">02 / ${esc(this.t("nutriResult")).toUpperCase()}</div><div class="nutri-stats">${nutrients.map(([key, label, unit]) => `<div class="nutri-stat"><span>${esc(label)}</span><strong>${report && report.per_portion[key] != null ? esc(report.per_portion[key]) : "—"}</strong><small>${esc(unit)}</small></div>`).join("")}</div>
+      <div class="nutri-result"><div class="eyebrow">02 / ${esc(this.t("nutriResult")).toUpperCase()}</div><div class="nutri-stats">${nutrients.map(([key, label, unit]) => `<div class="nutri-stat"><span>${esc(label)}</span><strong class="at-numeral">${report && report.per_portion[key] != null ? esc(report.per_portion[key]) : "—"}</strong><small>${esc(unit)}</small></div>`).join("")}</div>
       <p class="nutri-subnote">${this.t("uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates")}</p>
       ${
         report

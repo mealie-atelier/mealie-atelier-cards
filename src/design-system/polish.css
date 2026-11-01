@@ -2683,3 +2683,17 @@
 .atelier .modal:has(.cook-layout) .cook-track.is-cut {
   visibility: hidden;
 }
+
+/* Georgia sets old-style figures, so a zero reads as the letter o. Numbers shown in
+   the serif display face use the UI face with lining, tabular figures instead. The
+   studio-ui markup is not editable here, so its number displays are matched by selector. */
+.atelier .at-numeral.at-numeral,
+.atelier .studio-head h2[data-book-selected-count],
+.atelier .stat strong,
+.atelier .studio-counter output {
+  font-family: var(--ds-font-ui);
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings:
+    "lnum" 1,
+    "tnum" 1;
+}

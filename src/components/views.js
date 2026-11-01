@@ -132,7 +132,7 @@ export const viewMethods = {
         const day = addDays(this._weekStart, i),
           ymd = dateYmd(day),
           todays = this._sortMeals(all.filter((m) => m.date === ymd));
-        return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b>${day.getDate()}</b></div>
+        return `<div class="day ${ymd === today ? "today" : ""}"><div class="day-head"><span>${esc(dayString(this._locale, day, { weekday: "short" }))}</span><b class="at-numeral">${day.getDate()}</b></div>
       ${todays
         .map((meal) => {
           const photo = this._photo(meal.recipe || {});

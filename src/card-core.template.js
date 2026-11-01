@@ -26,6 +26,7 @@ const HOST_SPECIFIC_ERRORS = [
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 // Result cap of the official Home Assistant provider; hitting it means the list may be cut off.
 const NATIVE_RESULT_LIMIT = 500;
+const GRID_OPTIONS = Object.freeze({ columns: 12, rows: 10, min_columns: 4, min_rows: 3 });
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",
@@ -264,7 +265,11 @@ class MealieAtelierCard extends HTMLElement {
     };
   }
   static getGridOptions() {
-    return { columns: 12, rows: 10, min_columns: 4, min_rows: 3 };
+    return { ...GRID_OPTIONS };
+  }
+  // Home Assistant reads the grid options from the card instance, not the class.
+  getGridOptions() {
+    return { ...GRID_OPTIONS };
   }
 
   constructor() {
