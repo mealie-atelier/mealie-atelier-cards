@@ -31,6 +31,31 @@ const atExpiry = (d) => {
   );
   return days < 0 ? "expired" : days < 4 ? "soon" : "";
 };
+// The discover draft starts from the saved profile. A draft built from the placeholder state (before the first
+// studio_state, revision 0) that the user has not touched is rebuilt once the real state arrives.
+const atDiscoverDraft = (studio, existing) => {
+  const real = Number(studio?.revision) > 0;
+  if (existing && !(existing.placeholder && real && !existing.touched)) return existing;
+  const p = studio?.profile || {};
+  return {
+    step: existing?.step || 0,
+    placeholder: !real,
+    touched: false,
+    mealStyle:
+      p.mealStyle ||
+      (p.diets?.includes("vegan")
+        ? "vegan"
+        : p.diets?.includes("vegetarian")
+          ? "vegetarian"
+          : "any"),
+    cookbooks: [...(p.cookbooks || [])],
+    kidFriendly: p.kidFriendly === true,
+    people: Number(p.people) || 2,
+    maxMinutes: AtelierStudio.discoverMinutes(p.maxMinutes),
+    usePantry: p.usePantry !== false,
+    exclude: [...(p.exclude || [])],
+  };
+};
 const atQty = (n, locale = "en-US") =>
   n == null ? "?" : Number(n).toLocaleString(locale, { maximumFractionDigits: 1 });
 const atInitially = () => ({
@@ -492,24 +517,7 @@ Object.assign(MealieAtelierCard.prototype, {
   },
   _studioDiscover() {
     const p = this._studio.profile || {};
-    const d =
-      this._discoverDraft ||
-      (this._discoverDraft = {
-        step: 0,
-        mealStyle:
-          p.mealStyle ||
-          (p.diets?.includes("vegan")
-            ? "vegan"
-            : p.diets?.includes("vegetarian")
-              ? "vegetarian"
-              : "any"),
-        cookbooks: [...(p.cookbooks || [])],
-        kidFriendly: p.kidFriendly === true,
-        people: Number(p.people) || 2,
-        maxMinutes: AtelierStudio.discoverMinutes(p.maxMinutes),
-        usePantry: p.usePantry !== false,
-        exclude: [...(p.exclude || [])],
-      });
+    const d = (this._discoverDraft = atDiscoverDraft(this._studio, this._discoverDraft));
     const choices = [
       ["any", this.t("studioDiscoverAny")],
       ["vegetarian", this.t("studioDiscoverVegetarian")],
@@ -1114,6 +1122,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-discover-choice") {
       const draft = this._discoverDraft;
       if (!draft) return;
+      draft.touched = true;
       const key = el.dataset.key;
       if (key === "people")
         draft.people = Math.max(1, Math.min(20, Number(draft.people || 2) + Number(value)));
@@ -1167,7 +1176,9 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         cookbooks: d.cookbooks,
       };
       if (!this._fullCatalog?.length) await this._studioCatalog();
-      if (this._permissions.can_write) await this._studioWrite("profile_set", profile);
+      // Placeholder values never reach profile_set: only a draft from real state or a touched one is saved.
+      if (this._permissions.can_write && !(d.placeholder && !d.touched))
+        await this._studioWrite("profile_set", profile);
       this._discoverCandidates = AtelierStudio.suggest(
         this._fullCatalog || asArray(this._data.recipes?.items),
         profile,

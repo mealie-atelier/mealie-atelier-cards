@@ -1533,8 +1533,15 @@ ha-card {
 .atelier .print-option .print-symbol {
   border-radius: 9px;
   background: var(--at-panel2);
-  padding: 10px;
+  box-sizing: border-box;
+  inline-size: 44px;
+  block-size: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
   font-size: 20px;
+  line-height: 1;
 }
 .atelier .print-paper {
   background: #fffefb;

@@ -176,3 +176,8 @@
     font-size: 29px;
   }
 }
+
+/* The check row sits directly above the first step card; its margin reset must not remove the gap. */
+.atelier .editor-card .editor-check + .editor-steps {
+  margin-top: var(--ds-space-3);
+}

@@ -179,3 +179,18 @@
 .atelier .sync-panel input[data-input="sync-name"] {
   text-overflow: ellipsis;
 }
+
+/* Long unbroken rule names and item titles wrap inside the dialog instead of widening it. */
+.atelier .sync-list > li,
+.atelier .sync-record,
+.atelier .sync-audit {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.atelier .sync-record > div {
+  min-width: 0;
+}
+.atelier .modal .editor-lead p,
+.atelier .sync-record strong {
+  overflow-wrap: anywhere;
+}

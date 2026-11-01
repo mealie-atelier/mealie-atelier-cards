@@ -462,11 +462,17 @@
   background: var(--ds-brand);
   animation: at-timer-live var(--ds-motion-loading) ease-in-out infinite;
 }
-.atelier .cook-timer-card.is-done .cook-timer-status {
+.atelier .cook-timer-card.is-done .cook-timer-status,
+.atelier .studio-timer-row.is-done .cook-timer-status {
   color: var(--ds-brand-text);
 }
-.atelier .cook-timer-card.is-done .cook-timer-status::before {
+.atelier .cook-timer-card.is-done .cook-timer-status::before,
+.atelier .studio-timer-row.is-done .cook-timer-status::before {
   animation: none;
+}
+.atelier .studio-timer-row.is-done b {
+  color: var(--ds-brand-text);
+  font-weight: 800;
 }
 .atelier .cook-timer-copy strong {
   color: var(--ds-text);

@@ -4,10 +4,15 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
-## [0.12.1] - 2026-10-31
+## [0.12.1] - 2026-11-01
 
 ### Fixed
 
+- Print dialog: the three style tiles (Editorial, Compact, Ink saver) share one fixed size, so their titles start at the same x on every width and scheme.
+- Recipe editor: the "apply edited steps" option keeps a normal gap to the first step card.
+- Discover: the people count and the other answers start from the saved profile when the page loads directly. A draft built from placeholder state is rebuilt when the first real state arrives and is never saved by itself.
+- Cook together: a finished shared timer row looks finished (brand text color, steady dot, emphasized time) like a finished timer in the cook dialog.
+- Shopping sync dialog: long unbroken rule names and item titles wrap on a phone instead of overflowing the review panel and the recent runs list.
 - Card option `show_images: false` is now honored in every view (command palette, recipe picker, cooking photo, today, discover, cookbook and meal plan thumbnails).
 - Cooking mode: a live language change re-renders the whole open dialog and keeps the step and timers. Invalid timer minutes show one inline error instead of the same text again in a toast over the Back buttons.
 - Shopping sync dialog: the preview no longer mentions a first batch when every open item is shown. With env Bring! credentials that Bring! refuses, adding a rule is disabled in place, with the .env fix as its hint, and the dialog keeps the account state and the rules. The expired-session hint now fits the role: non-administrators are asked to have an administrator sign in again or fix the server credentials.
