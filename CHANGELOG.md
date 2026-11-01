@@ -7,6 +7,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Fixed
 
 - Cooking mode: a long recipe title over the photo breaks into balanced lines instead of leaving a single word on the last line.
+- Cooking mode on a phone: the tool buttons and the timer list take less height, so the step text keeps its room.
+- Recipe editor: the servings preview field shows the value that is actually used (1 to 100) after you leave it.
+- Recipe editor: the version history button reads "Versionsverlauf anzeigen" / "Show version history", matching the hide label.
 
 ## [0.12.1] - 2026-11-01
 

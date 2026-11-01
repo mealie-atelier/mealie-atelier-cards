@@ -598,6 +598,18 @@
   }
 }
 
+/* Phone: the tool buttons and the timer list take less height (the tools still wrap, so every button stays visible),
+   so the step text keeps its room instead of shrinking to one line. */
+@media (min-height: 641px) and (max-width: 600px) {
+  .atelier .modal.large:has(.cook-layout) .studio-cook-tools .btn {
+    min-height: 32px;
+    padding-block: 2px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timers {
+    max-height: 56px;
+  }
+}
+
 /* The step text comes before the timer extras: the form with the quick presets folds behind its button at every size
    of the bounded dialog and opens on demand. While it is open the text gives up more room, a deliberate trade. */
 @media (min-height: 641px) {

@@ -1385,7 +1385,7 @@
   "syncLastError_destination_unavailableBring": "Bring! was unreachable.",
   "syncLastError_ambiguousBring": "Several items on the Bring! list match. Decide whether to send it again.",
   "journalFavoriteChip": "Favorite recipe",
-  "editorHistoryShow": "Show versions",
+  "editorHistoryShow": "Show version history",
   "studioMealieConnection": "Mealie connection",
   "offlineAlarmStatusUnavailable": "The timer status could not be loaded.",
   "syncOutcomeSourceMissing": "Mealie list no longer exists",

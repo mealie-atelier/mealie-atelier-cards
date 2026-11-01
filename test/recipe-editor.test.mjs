@@ -734,3 +734,27 @@ test("version history builds a localized summary with plurals and falls back to 
     "Old stored text",
   ]);
 });
+
+test("the servings preview field is normalized to the clamped value on change", async () => {
+  const { card } = editor();
+  card._editorOpen();
+  await card._editorLoad();
+  for (const [typed, shown] of [
+    ["150", "100"],
+    ["0", String(card._ed.servings)],
+    ["-3", "1"],
+  ]) {
+    const target = { dataset: { edInput: "servings" }, value: typed, matches: () => false };
+    card._editorInput({ type: "input", target });
+    assert.equal(target.value, typed);
+    card._editorFocusEvent({ type: "change", target });
+    assert.equal(target.value, shown);
+  }
+});
+
+test("the version history toggle uses one term for show and hide", () => {
+  const de = JSON.parse(readFileSync(new URL("../src/i18n/de.json", import.meta.url), "utf8"));
+  const en = JSON.parse(readFileSync(new URL("../src/i18n/en.json", import.meta.url), "utf8"));
+  assert.equal(de.editorHistoryShow, "Versionsverlauf anzeigen");
+  assert.equal(en.editorHistoryShow, "Show version history");
+});

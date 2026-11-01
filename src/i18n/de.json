@@ -1385,7 +1385,7 @@
   "syncLastError_destination_unavailableBring": "Bring! war nicht erreichbar.",
   "syncLastError_ambiguousBring": "Mehrere Artikel auf der Bring!-Liste passen. Entscheide, ob du ihn erneut sendest.",
   "journalFavoriteChip": "Lieblingsrezept",
-  "editorHistoryShow": "Versionen anzeigen",
+  "editorHistoryShow": "Versionsverlauf anzeigen",
   "studioMealieConnection": "Mealie-Verbindung",
   "offlineAlarmStatusUnavailable": "Der Timer-Status konnte nicht geladen werden.",
   "syncOutcomeSourceMissing": "Mealie-Liste existiert nicht mehr",

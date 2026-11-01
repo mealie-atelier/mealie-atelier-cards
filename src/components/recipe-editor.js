@@ -649,6 +649,10 @@ export const recipeEditorMethods = {
       if (file) this._editorUploadFlow(file);
       return;
     }
+    if (event.type === "change" && el?.dataset?.edInput === "servings") {
+      el.value = String(state.preview);
+      return;
+    }
     if (
       event.type === "change" &&
       el?.dataset?.edInput &&

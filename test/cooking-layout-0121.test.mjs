@@ -282,3 +282,11 @@ test("the timer toggle opens the form, keeps its state over a render and folds a
   german._hass = { language: "de", callWS: async () => ({}) };
   assert.match(german._modalHtml(), />Timer stellen<\/button>/);
 });
+
+test("on a phone the tool buttons shrink and the timer list shows one compact card", () => {
+  const flat = refinement.replace(/\s+/g, " ");
+  assert.match(
+    flat,
+    /@media \(min-height: 641px\) and \(max-width: 600px\) \{[^@]*\.studio-cook-tools \.btn \{ min-height: 32px;[^@]*\.cook-timers \{ max-height: 56px; \}/,
+  );
+});
