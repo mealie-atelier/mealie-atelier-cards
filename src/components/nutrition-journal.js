@@ -44,11 +44,9 @@ export const nutritionJournalMethods = {
       <p class="nutri-subnote">${this.t("uiBasedOnSelectedUSDAEntriesPer100gCookingYieldsAndMissingNutrientsAffectAccuracyValuesAreEstimates")}</p>
       ${
         report
-          ? `<div class="nutri-provenance"><strong>${this.t("uiSourcesCoverage")}</strong> ${Object.entries(
-              report.coverage || {},
-            )
-              .slice(0, 4)
-              .map(([k, v]) => `${esc(k)} ${esc(v)}`)
+          ? `<div class="nutri-provenance"><strong>${esc(this.t("uiSourcesCoverage"))}</strong> ${nutrients
+              .filter(([key]) => report.coverage?.[key] != null)
+              .map(([key, label]) => `${esc(label)} ${esc(report.coverage[key])}`)
               .join(
                 " · ",
               )} ${report.ingredients.map((row) => `<a href="${esc(row.source_url)}" target="_blank" rel="noopener noreferrer">FDC ${esc(row.fdc_id)}</a>`).join(" ")}</div>`

@@ -171,7 +171,7 @@ test("replacing a shared session offers a local-only choice and focuses Cancel",
   assert.ok(calls.dialogs[0].secondaryLabel);
 });
 
-function nutritionHtml(language, { web = false, servings = 4, fdc = false } = {}) {
+function nutritionHtml(language, { web = false, servings = 4, fdc = false, report = null } = {}) {
   const hass = { language, callWS: async () => ({}) };
   if (web) hass.atelierOfflineHost = true;
   const card = makeCard(loadCards(), { hass });
@@ -179,7 +179,7 @@ function nutritionHtml(language, { web = false, servings = 4, fdc = false } = {}
     busy: false,
     notice: "",
     rows: [],
-    report: null,
+    report,
     preview: { name: "Soup", servings, fdc_enabled: fdc, ai_enabled: false, slug: "s", hash: "h" },
   };
   return card._nutritionMarkup();
@@ -204,4 +204,32 @@ test("the missing USDA key hint matches where the key is set", () => {
     /USDA_FDC_API_KEY in der \.env-Datei des Servers/,
   );
   assert.doesNotMatch(nutritionHtml("en", { fdc: true }), /USDA API key/);
+});
+
+test("the coverage line names nutrients in the card language, in the order of the stats", () => {
+  const report = {
+    per_portion: { calories: 410, protein: 12, carbohydrate: 50, fat: 9 },
+    // The Bridge reports eight nutrients in its own key order.
+    coverage: {
+      calories: "5/5",
+      protein: "5/5",
+      fat: "4/5",
+      carbohydrate: "5/5",
+      fiber: "3/5",
+      sugar: "2/5",
+      sodium: "5/5",
+      saturated_fat: "1/5",
+    },
+    ingredients: [],
+  };
+  const de = nutritionHtml("de", { fdc: true, report });
+  assert.match(
+    de,
+    /Quellen &amp; Abdeckung<\/strong> Kalorien 5\/5 · Eiweiß 5\/5 · Kohlenhydrate 5\/5 · Fett 4\/5/,
+  );
+  assert.doesNotMatch(de, /calories|carbohydrate|saturated_fat/);
+  assert.match(
+    nutritionHtml("en", { fdc: true, report }),
+    /Calories 5\/5 · Protein 5\/5 · Carbohydrates 5\/5 · Fat 4\/5/,
+  );
 });
