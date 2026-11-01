@@ -10,6 +10,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Cooking mode on a phone: the tool buttons and the timer list take less height, so the step text keeps its room.
 - Recipe editor: the servings preview field shows the value that is actually used (1 to 100) after you leave it.
 - Recipe editor: the version history button reads "Versionsverlauf anzeigen" / "Show version history", matching the hide label.
+- Sync rules with nothing waiting no longer say "Sending shortly" after Resume; the Waiting row reads "Checking shortly" until the catch-up run finishes.
+- German sync dialog: the Waiting row says "ausstehend" like the result line.
 
 ## [0.12.1] - 2026-11-01
 

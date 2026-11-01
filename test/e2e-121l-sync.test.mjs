@@ -125,7 +125,8 @@ test("a scheduled debounced send is announced in the Waiting row and re-rendered
   const { card } = make({ rules: [rule({ next_run_at: at })] });
   card._syncData().state = { rules: [rule({ next_run_at: at })], audit: [] };
   const html = card._syncSyncHtml();
-  assert.ok(html.includes(en.syncNextRun));
+  assert.ok(html.includes(en.syncChecking));
+  assert.ok(!html.includes("Sending shortly"));
   assert.ok(!html.includes(en.syncPendingNone));
   card._syncAfterRender();
   assert.ok(card._syncNextTimer, "timer armed");
@@ -140,8 +141,10 @@ test("a scheduled debounced send is announced in the Waiting row and re-rendered
   const past = make({ rules: [rule({ next_run_at: new Date(Date.now() - 5000).toISOString() })] });
   assert.ok(past.card._syncSyncHtml().includes(en.syncPendingNone));
   const waiting = make({ rules: [rule({ next_run_at: at, counts: { pending: 2 } })] });
-  assert.ok(!waiting.card._syncSyncHtml().includes(en.syncNextRun));
-  assert.equal(de.syncNextRun, "Wird gleich gesendet");
+  assert.ok(!waiting.card._syncSyncHtml().includes(en.syncChecking));
+  assert.equal(de.syncChecking, "Wird geprüft");
+  assert.equal(de["syncPending.other"], "{count} ausstehend");
+  assert.equal(de["syncPending.one"], "1 ausstehend");
   assert.equal(de.syncSending, "Wird gesendet …");
 });
 

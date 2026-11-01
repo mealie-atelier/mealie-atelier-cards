@@ -422,8 +422,8 @@ test("pending, preview total and poll hint use singular wording for one", async 
   ])
     assert.match(env.card.tp(key, count, { total: count, interval: count, shown: 1 }), pattern);
   env.card._local = { language: "de" };
-  assert.equal(env.card.tp("syncPending", 1), "1 wartet");
-  assert.equal(env.card.tp("syncPending", 3), "3 warten");
+  assert.equal(env.card.tp("syncPending", 1), "1 ausstehend");
+  assert.equal(env.card.tp("syncPending", 3), "3 ausstehend");
   assert.match(env.card.tp("syncPreviewTotal", 1, { total: 1, shown: 1 }), /^1 offener Artikel/);
   assert.match(env.card.tp("syncTriggerWatchHint", 1, { interval: 1 }), /1 Minute\.$/);
 });

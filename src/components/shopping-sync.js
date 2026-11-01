@@ -832,7 +832,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
             this._syncWaiting(rule)
               ? this.tp("syncPending", this._syncWaiting(rule))
               : this._syncNextRunAhead(rule)
-                ? this.t("syncNextRun")
+                ? this.t("syncChecking")
                 : this.t("syncPendingNone"),
           ),
         ],
