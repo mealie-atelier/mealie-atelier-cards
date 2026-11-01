@@ -1114,3 +1114,16 @@ test("a linked food with an amount but no unit stays marked as an estimate", () 
     [4, "Scheiben", false],
   );
 });
+
+test("compound words ending in a jar word stay one food, with or without the umlaut", () => {
+  for (const line of ["2 Weinglaser", "2 Einmachglaser", "2 Senfgläser"]) {
+    const row = Studio.shoppingNeeds([recipe("A", [line])], [])[0];
+    assert.equal(row.name, line.slice(2), line);
+  }
+  assert.deepEqual(
+    (({ name, unit }) => [name, unit])(
+      Studio.shoppingNeeds([recipe("A", ["2 Glaser Honig"])], [])[0],
+    ),
+    ["Honig", "Gläser"],
+  );
+});

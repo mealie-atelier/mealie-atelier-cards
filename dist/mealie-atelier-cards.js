@@ -23519,7 +23519,7 @@ const AtelierStudio = (() => {
     bunches: ["bunch", "bunches"],
   };
   // Words that only join a compound when they follow a food ("Joghurtbecher" stays one food label).
-  const looseCountUnits = new Set(["becher", "glas", "gläser"]);
+  const looseCountUnits = new Set(["becher", "glas", "gläser", "glaser"]);
   // German foods counted in pieces: singular and plural display form. One row per food across recipes.
   const foodForms = Object.fromEntries(
     [
