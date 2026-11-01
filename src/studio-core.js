@@ -200,36 +200,45 @@ const AtelierStudio = (() => {
       return raw;
     const fmt = (n) =>
       n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumFractionDigits: 2 });
-    const unitWord = (rest) => (rest.match(/^\s*([^\s\d(]+)/) || [])[1] || "";
-    // Kitchen rounding: metric masses and volumes to sensible steps, everything else to quarters and thirds.
+    // A tiny exact amount keeps one significant digit instead of reading "0".
+    const tiny = (n) =>
+      n >= 0.005
+        ? fmt(n)
+        : n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumSignificantDigits: 1 });
+    // The unit or noun right after the amount, without trailing punctuation ("Tassen," -> "Tassen").
+    const unitWord = (rest) => (rest.match(/^\s*([^\s\d(,;:!?)]+)/) || [])[1] || "";
+    // Kitchen rounding: metric masses and volumes to sensible steps, everything else to quarters and thirds
+    // (eighths below one). Small amounts are never pushed up: below the smallest step they stay exact.
     const kitchen = (value, unit, style) => {
       const u = unit.toLowerCase().replace(/\.$/, "");
       if (["g", "gramm", "gram", "grams", "ml", "milliliter"].includes(u)) {
+        if (value < 1) return tiny(value);
         const step = value < 10 ? 0.5 : value < 250 ? 5 : 10;
-        return fmt(Math.max(step, Math.round(value / step) * step));
+        return fmt(Math.round(value / step) * step);
       }
       if (["kg", "l", "liter", "litre", "dl", "cl"].includes(u) && style === "decimal")
-        return fmt(Math.max(0.05, Math.round(value * 20) / 20));
+        return value < 0.05 ? tiny(value) : fmt(Math.round(value * 20) / 20);
       if (value >= 10) return fmt(Math.round(value));
-      const grid = [0, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1];
       const whole = Math.floor(value);
+      const grid = whole
+        ? [0, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1]
+        : [0, 0.125, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1];
       const frac = value - whole;
       const near = grid.reduce((x, y) => (Math.abs(y - frac) < Math.abs(x - frac) ? y : x));
-      let total = whole + near;
-      if (total === 0) total = 0.25;
+      // A fraction source below one that the grid would move by more than 15 % keeps its exact fraction:
+      // halved 1/3 cup is ⅙ cup, not ⅛.
+      if (style !== "decimal" && value < 1 && Math.abs(near - value) > 0.15 * value) {
+        const exact = formatFraction(value, true);
+        if (exact !== null) return exact;
+      }
+      const total = whole + near;
+      if (total === 0) return tiny(value);
       const w = Math.floor(total + 1e-9);
       const f = total - w;
       if (f < 0.01) return fmt(w);
-      const glyph =
-        Math.abs(f - 0.25) < 0.01
-          ? "¼"
-          : Math.abs(f - 0.5) < 0.01
-            ? "½"
-            : Math.abs(f - 0.75) < 0.01
-              ? "¾"
-              : Math.abs(f - 1 / 3) < 0.01
-                ? "⅓"
-                : "⅔";
+      const glyph = ["⅛", "¼", "⅓", "½", "⅔", "¾"][
+        [0.125, 0.25, 1 / 3, 0.5, 2 / 3, 0.75].findIndex((g) => Math.abs(f - g) < 0.01)
+      ];
       return `${w || ""}${glyph}`;
     };
     const onGrid = (v) => {
@@ -297,7 +306,12 @@ const AtelierStudio = (() => {
       const forms = (NOUNS[locale === "en" ? "en" : "de"] || {})[word.toLowerCase()];
       if (!forms) return rest;
       const next = forms[amount <= 1 + 1e-9 ? 0 : 1];
-      const keepCase = word[0] === word[0].toLowerCase() ? next.toLowerCase() : next;
+      const keepCase =
+        word.length > 1 && word === word.toUpperCase()
+          ? next.toUpperCase()
+          : word[0] === word[0].toLowerCase()
+            ? next.toLowerCase()
+            : next;
       return rest.replace(word, keepCase);
     };
     // A range such as "2-3", "2–3" or "1 bis 2" scales on both ends and keeps its separator.
