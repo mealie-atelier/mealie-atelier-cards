@@ -369,8 +369,11 @@
   .atelier .form-actions {
     justify-content: stretch;
   }
+  /* The content width is the basis: two buttons share a row only when both labels fit on one line, otherwise
+     each takes its own full row, so a label never breaks into two lines next to a short one. */
   .atelier .form-actions .btn {
-    flex: 1 1 140px;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .step-buttons button {
     min-width: 44px;
@@ -1172,7 +1175,8 @@
     gap: 9px;
   }
   .atelier .form-actions .btn {
-    flex: 1 1 135px;
+    flex: 1 1 auto;
+    max-width: 100%;
   }
   .atelier .modal {
     border-radius: 19px;

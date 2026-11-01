@@ -631,12 +631,22 @@
   .atelier .modal.large:has(.cook-layout) .cook-timer-copy small {
     display: none;
   }
-  /* A short phone (iPhone SE class) also slims the photo band, the step text would otherwise get under 140px. */
+  /* A short phone (iPhone SE class) also slims the photo band, the step text would otherwise get under 140px. The
+     band is then 56px tall, so the close button and the strip title move up to a 6px inset: the button sits fully
+     inside the band (6px, 44px button, 6px) instead of hanging over its lower edge. */
   @media (max-height: 700px) {
     @container atelier-card (max-width: 760px) {
       .atelier .modal.large:has(.cook-layout) .cook-visual {
         height: 56px;
         min-height: 56px;
+      }
+      .atelier .modal.large:has(.cook-layout) > .modal-close {
+        top: 6px;
+        margin-top: 6px;
+        margin-bottom: calc(-6px - var(--at-close-size));
+      }
+      .atelier .modal.large:has(.cook-layout) > .modal-bar-title {
+        top: 6px;
       }
     }
   }

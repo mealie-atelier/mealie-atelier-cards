@@ -1568,8 +1568,11 @@ class MealieAtelierCard extends HTMLElement {
     // cook dialog, whose progress bar sits above the step heading and would otherwise peek out at the dialog's top edge.
     const anchor = modal.querySelector("[data-bar-anchor]") || heading;
     if (typeof IntersectionObserver === "undefined") return;
-    // The strip sits 20px below the dialog top; the heading is hidden once it is above the strip's lower edge.
-    const edge = 20 + (strip.offsetHeight || 48);
+    // The strip sits 20px below the dialog top (a short cook dialog moves it up, see control-refinement.css); the
+    // heading is hidden once it is above the strip's lower edge.
+    const stripTop =
+      typeof getComputedStyle === "function" ? parseFloat(getComputedStyle(strip)?.top) : NaN;
+    const edge = (Number.isFinite(stripTop) ? stripTop : 20) + (strip.offsetHeight || 48);
     // One judge for every trigger: the layout position of the heading (offsets, unaffected by the dialog's
     // entrance transform, whole pixels, so one pixel of rounding slack). The observer is only a trigger when the
     // layout cannot be read; then its entry decides.

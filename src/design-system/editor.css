@@ -782,6 +782,15 @@ input[type="checkbox"]:disabled {
 }
 .settings-top {
   align-items: center;
+  flex-wrap: wrap;
+}
+.settings-top > div {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.settings-top > .editor-secondary {
+  flex: none;
+  white-space: nowrap;
 }
 .setup-success {
   display: flex;
@@ -930,6 +939,9 @@ input[type="checkbox"]:disabled {
   .settings-top {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .settings-top > div {
+    flex: none;
   }
 }
 @media (max-width: 360px) {

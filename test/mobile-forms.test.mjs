@@ -313,6 +313,15 @@ test("only the known rules place the strip, its title and the close button, so t
       { position: "absolute", right: "18px", top: "18px", "z-index": "2" },
     ],
     ["motion.css|.atelier .modal-close|", { "z-index": "5" }],
+    // A short cook phone has a 56px photo band: the button and the title move up so they sit inside it.
+    [
+      "control-refinement.css|.atelier .modal.large:has(.cook-layout) > .modal-close|@media (min-height: 641px) and (max-width: 600px) | @media (max-height: 700px) | @container atelier-card (max-width: 760px)",
+      { top: "6px" },
+    ],
+    [
+      "control-refinement.css|.atelier .modal.large:has(.cook-layout) > .modal-bar-title|@media (min-height: 641px) and (max-width: 600px) | @media (max-height: 700px) | @container atelier-card (max-width: 760px)",
+      { top: "6px" },
+    ],
   ]);
   const seen = new Set();
   for (const file of readdirSync(dir).filter((name) => name.endsWith(".css"))) {

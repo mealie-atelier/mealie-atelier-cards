@@ -68,6 +68,7 @@
       .foot-copy {
         display: block;
         margin-bottom: 8px;
+        text-wrap: balance;
       }
       @media (max-width: 600px) {
         body {
@@ -85,7 +86,7 @@
       <mealie-atelier-card></mealie-atelier-card>
       <footer class="foot">
         <span class="foot-copy" id="foot-copy"
-          >MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT MEALIE</span
+          >MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT&nbsp;MEALIE</span
         >
         <button class="pwa-install-trigger" id="pwa-install-trigger" type="button" hidden>
           <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
@@ -201,8 +202,8 @@
         const foot = document.getElementById("foot-copy");
         if (foot)
           foot.textContent = isGerman
-            ? "MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT MEALIE"
-            : "MEALIE ATELIER · PRIVATE KITCHEN STUDIO · POWERED BY MEALIE";
+            ? "MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT\u00a0MEALIE"
+            : "MEALIE ATELIER · PRIVATE KITCHEN STUDIO · POWERED\u00a0BY\u00a0MEALIE";
         pwaInstall?.refresh(language);
       };
       syncShellLanguage(card._language);
