@@ -938,3 +938,45 @@ test("scaled amounts agree with more nouns, including German compounds", () => {
   assert.equal(Studio.scaleIngredient("2 tablespoons oil", 1, 2, "en"), "1 tablespoon oil");
   assert.equal(Studio.scaleIngredient("1 egg", 4, 1, "en"), "4 eggs");
 });
+test("English aisle words do not catch German or unrelated foods", () => {
+  const by = (line) => Studio.shoppingNeeds([recipe("x", [line])])[0];
+  assert.equal(by("200 g Beeren").category, "produce");
+  assert.equal(by("300 g Beerenmischung").category, "produce");
+  assert.equal(by("1 eggplant").category, "produce");
+  assert.equal(by("2 eggs").category, "chilled");
+  assert.equal(by("1 pack graham crackers").category, "pantry");
+  assert.equal(by("1 cup pepperoni").category, "protein");
+  assert.equal(by("1 tsp peppermint").category, "produce");
+  assert.equal(by("1 cup sugar snap peas").category, "produce");
+  assert.equal(by("1 jalapeno pepper").category, "produce");
+  assert.equal(by("1 red pepper").category, "produce");
+  assert.equal(by("1 tsp pepper").category, "spices");
+  assert.equal(by("1 tsp ground pepper").category, "spices");
+  assert.equal(by("salt and pepper").category, "spices");
+  assert.equal(by("1 tsp black pepper").category, "spices");
+  assert.equal(by("2 tbsp brown sugar").category, "spices");
+  assert.equal(by("2 minced garlic").category, "produce");
+});
+test("whole cloves stay a spice row while garlic cloves are a count unit", () => {
+  const rows = Studio.shoppingNeeds([recipe("x", ["4 whole cloves"])]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].name, "whole cloves");
+  assert.equal(rows[0].quantity, 4);
+  assert.equal(rows[0].category, "spices");
+  const garlic = Studio.shoppingNeeds([
+    recipe("y", ["2 garlic cloves", "1 clove garlic", "3 cloves of garlic"]),
+  ]);
+  assert.equal(garlic.length, 1);
+  assert.equal(garlic[0].name, "garlic");
+  assert.equal(garlic[0].quantity, 6);
+});
+test("German compound plurals agree on every counted tail", () => {
+  assert.equal(Studio.scaleIngredient("2 Rosmarinzweige", 1, 2), "1 Rosmarinzweig");
+  assert.equal(Studio.scaleIngredient("1 Rosmarinzweig", 2, 1), "2 Rosmarinzweige");
+  assert.equal(Studio.scaleIngredient("2 Knoblauchzehen", 1, 2), "1 Knoblauchzehe");
+  assert.equal(Studio.scaleIngredient("2 Brotscheiben", 1, 2), "1 Brotscheibe");
+  assert.equal(Studio.scaleIngredient("2 Gemüsezwiebeln", 1, 2), "1 Gemüsezwiebel");
+  assert.equal(Studio.scaleIngredient("2 Möhrenkarotten", 1, 2), "1 Möhrenkarotte");
+  assert.equal(Studio.scaleIngredient("2 Biolimetten", 1, 2), "1 Biolimette");
+  assert.equal(Studio.scaleIngredient("2 Lachsfilets", 1, 2), "1 Lachsfilet");
+});

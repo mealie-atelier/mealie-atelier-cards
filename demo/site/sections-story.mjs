@@ -29,7 +29,7 @@ function everyday(ctx) {
   // wide screens in the sticky stage. One large device per scene keeps the app UI readable.
   const alt = {
     mealplan: t(
-      "Wochenplan auf dem Smartphone: Donnerstag, der 29., mit Pfannen-Eier mit Tomaten und Basilikum zum Abendessen, der nächste Tag ist angeschnitten",
+      "Wochenplan auf dem Smartphone: Donnerstag, der 29., zum Abendessen Pfannen-Eier mit Tomaten und Basilikum, der nächste Tag ist angeschnitten",
       "Meal plan on a phone: Thursday the 29th with skillet eggs with tomatoes and basil for dinner, the next day cut off at the edge",
     ),
     discover: t(

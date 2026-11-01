@@ -645,3 +645,27 @@ test("the shopping print line says 1 item in the singular", () => {
     assert.match(written.join(""), expected, language);
   }
 });
+
+test("the shopping note keeps the original amount and the reader's unit", async () => {
+  for (const [language, expected] of [
+    ["en", ["2 tbsp olive oil (check amount)", "1 cup flour (check amount)", "3 kg rice"]],
+    ["de", ["2 EL olive oil (check amount)", "1 cup flour (check amount)", "3 kg rice"]],
+  ]) {
+    const { card } = permissionCard(grants(true, true, false), language);
+    const notes = [];
+    card._hass.callWS = async (message) => {
+      if (message.action === "shopping_add") notes.push(message.payload.note);
+      return {};
+    };
+    card._atelierDialog = async () => true;
+    card._loadShopping = async () => {};
+    card._grocery = [
+      { name: "olive oil", unit: "el", quantity: 2, needed: null, uncertain: true },
+      { name: "flour", unit: "cup", quantity: 1, needed: null, uncertain: true },
+      { name: "rice", unit: "kg", quantity: 3, needed: 3 },
+    ];
+    card.t = (key) => (key === "studioShoppingUncertain" ? "check amount" : key);
+    await card._studioSendGroceries();
+    assert.deepEqual(notes, expected, language);
+  }
+});

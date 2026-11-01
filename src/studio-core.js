@@ -345,7 +345,7 @@ const AtelierStudio = (() => {
       let prefix = "";
       let forms = table[lower];
       if (!forms && locale !== "en") {
-        const tail = COMPOUND_TAILS.flatMap((t) => [t + "n", t + "s", t]).find(
+        const tail = COMPOUND_TAILS.flatMap((t) => [t + "n", t + "s", t + "e", t]).find(
           (t) => lower.length >= t.length + 3 && lower.endsWith(t) && table[t],
         );
         if (tail) {
@@ -1023,19 +1023,19 @@ const AtelierStudio = (() => {
   const aisleStems = [
     [
       "chilled",
-      /^(milch|kase|kaese|joghurt|yoghurt|quark|sahne|butter|feta|mozzarella|parmesan|mascarpone|ricotta|schmand|ei$|eier|frischkase|creme|milk|cheese|yogurt|cream|egg|cheddar)/,
+      /^(milch|kase|kaese|joghurt|yoghurt|quark|sahne|butter|feta|mozzarella|parmesan|mascarpone|ricotta|schmand|ei$|eier|frischkase|creme|(?:milk|cheese|yogurt|cream|cheddar)s?$|eggs?$)/,
     ],
     [
       "protein",
-      /^(fleisch|wurst|fisch|tofu|tempeh|hahnchen|hanchen|huhn|hahn|rind|ochsen|schwein|hack$|hackfleisch|speck|schinken|lachs|thunfisch|garnele|lamm|pute|truthahn|salami|chicken|beef|pork|bacon|ham$|lamb|turkey|sausage|salmon|tuna|shrimp|prawn|fish|steak|mince|duck|tofu)/,
+      /^(fleisch|wurst|fisch|tofu|tempeh|hahnchen|hanchen|huhn|hahn|rind|ochsen|schwein|hack$|hackfleisch|speck|schinken|lachs|thunfisch|garnele|lamm|pute|truthahn|salami|(?:chicken|beef|pork|bacon|lamb|turkey|sausage|salmon|tuna|shrimp|prawn|fish|steak|duck)s?$|ham$|mince$|pepperoni)/,
     ],
     [
       "pantry",
-      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon|flour|bread|rice|pasta|penne|spaghetti|noodle|oat|lentil|bean|chickpea|wine|beer|stock|broth)/,
+      /^(brot|sauerteig|mehl|nudel|pasta|reis|hafer|linsen|bohnen|kichererbse|wein$|rotwein|weisswein|bier|bruh|bouillon|(?:flour|bread|rice|pasta|penne|spaghetti|noodle|oat|oatmeal|lentil|bean|chickpea|wine|beer|stock|broth|cracker|graham)s?$)/,
     ],
     [
       "spices",
-      /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$|salt|pepper|oil|vinegar|sugar|cinnamon|thyme$)/,
+      /^(gewurz|salz|pfeffer|ol$|olivenol|rapsol|sonnenblumenol|essig|zucker|paprikapulver|zimt|curry|oregano|thymian$|(?:salt|oil|vinegar|sugar|cinnamon|clove)s?$|thyme$|peppercorns?$)/,
     ],
   ];
   // Foods whose name starts like a spice or pantry stem but are something else (Zuckerschoten, Pfefferminze).
@@ -1045,20 +1045,33 @@ const AtelierStudio = (() => {
       /^(zuckerschote|zuckererbse|zuckermais|zuckerruebe|zuckerrube|zuckerhut|pfefferminz|pfefferoni)/,
     ],
     ["pantry", /^(gewurzgurke|gewurzgurken)/],
-    // "red bell pepper" and "roasted peppers" are vegetables, not spices.
-    ["produce", /^(bell|peppers)$/],
   ];
+  // "pepper" is a seasoning only next to one of these words or on its own; "red pepper" and
+  // "jalapeno pepper" are vegetables. Garlic cloves are produce, "whole cloves" a spice.
+  const pepperSeasoning =
+    /^(black|white|ground|cracked|cayenne|lemon|freshly|salt|and|flakes?|pinch|powder)$/;
+  const pepperSlot = /^peppers?$/;
+  const cloveSlot = /^cloves?$/;
+  const garlicWord = /^(garlic|knoblauch)/;
   const aisleSuffixes = [
     ["chilled", /(milch|sahne|kase|kaese|joghurt|quark|butter|milk|cheese|yogurt|cream)$/],
-    ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein|sausage|bacon|ham)$/],
+    ["protein", /(wurst|fleisch|fisch|schinken|speck|schwein|sausage|bacon)$/],
     [
       "pantry",
-      /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon|flour|bread|rice|stock|broth)$/,
+      /(mehl|brot|reis|nudeln|wein|bruhe|bruhe?(wurfel|pulver|paste)|fond|bouillon|flour|bread|rice|stock|broth|cracker)$/,
     ],
-    ["spices", /(salz|zucker|essig|pfeffer|ol|salt|sugar|vinegar|pepper|oil)$/],
+    ["spices", /(salz|zucker|essig|pfeffer|ol|salt|sugar|vinegar|oil)$/],
   ];
   const category = (name) => {
-    const tokens = clean(name).split(" ").filter(Boolean);
+    const cleaned = clean(name);
+    let tokens = cleaned.split(" ").filter(Boolean);
+    // Sugar snap peas are a vegetable, not sugar.
+    if (/\bsugar snap|\bsnap peas?\b/.test(cleaned)) return "produce";
+    if (tokens.some((w) => pepperSlot.test(w)) && tokens.length > 1) {
+      if (tokens.some((w) => pepperSeasoning.test(w))) return "spices";
+      tokens = tokens.filter((w) => !pepperSlot.test(w));
+    } else if (tokens.length === 1 && tokens[0] === "pepper") return "spices";
+    if (tokens.some((w) => garlicWord.test(w))) tokens = tokens.filter((w) => !cloveSlot.test(w));
     for (const [aisle, exception] of aisleExceptions)
       if (tokens.some((w) => exception.test(w))) return aisle;
     for (const [aisle, suffix] of aisleSuffixes)
@@ -1113,6 +1126,8 @@ const AtelierStudio = (() => {
   };
   // English tails of a label that name the counting word ("garlic cloves").
   const countTail = /^(.+?)\s+(cloves?|sprigs?|stalks?)$/i;
+  // Only garlic cloves count as a unit; "whole cloves" are the spice.
+  const garlicLabel = /(garlic|knoblauch)$/i;
   function shoppingNeeds(recipes, pantry = [], profile = {}) {
     const combined = [];
     for (const recipe of recipes) {
@@ -1134,11 +1149,21 @@ const AtelierStudio = (() => {
         const lead = sized.match(/^(\S+)\s+(.+)$/);
         const counted = lead && countUnits[lead[1].toLocaleLowerCase("de")];
         const tail = ing.label.match(countTail);
-        if (counted && ing.quantity !== null && ing.unit === "stück") {
+        if (
+          counted &&
+          ing.quantity !== null &&
+          ing.unit === "stück" &&
+          (!/^cloves?$/i.test(lead[1]) || garlicLabel.test(lead[2].replace(/^(?:of|von)\s+/i, "")))
+        ) {
           ing.unit = counted[0].toLocaleLowerCase("de");
           ing.label = lead[2].replace(/^(?:of|von)\s+/i, "");
           ing.estimated = false;
-        } else if (tail && ing.quantity !== null && ing.unit === "stück") {
+        } else if (
+          tail &&
+          ing.quantity !== null &&
+          ing.unit === "stück" &&
+          (!/^cloves?$/i.test(tail[2]) || garlicLabel.test(tail[1]))
+        ) {
           // "2 garlic cloves" and "1 clove garlic" merge into one row.
           ing.unit = countUnits[tail[2].toLowerCase()][0];
           ing.label = tail[1];
