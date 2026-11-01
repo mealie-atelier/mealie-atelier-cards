@@ -845,6 +845,10 @@ test("scaled amounts read like a kitchen: rounding, glyph fractions, unit agreem
   assert.equal(s("1 Prise Salz", 1, 8), "⅛ Prise Salz");
   assert.equal(s("0,5 l Milch", 1, 7), "0,071 l Milch");
   assert.equal(s("0,5 l Milch", 1, 4), "0,13 l Milch");
+  assert.equal(s("1-2 TL Salz", 1, 6), "0,17-0,33 TL Salz");
+  assert.equal(s("1 to 2 cups milk", 1, 6, "en"), "0.17 to 0.33 cup milk");
+  assert.equal(s("1-2 TL Salz", 1, 4), "¼-½ TL Salz");
+  assert.equal(s("1/16 TL Salz", 1, 8), "0,0078 TL Salz");
   assert.equal(s("1,2 g Safran", 5, 3, "en"), "2 g Safran");
   assert.equal(s("2.5 g Salt", 5, 3, "en"), "4 g Salt");
   assert.equal(s("2 cups flour", 3, 2, "en"), "3 cups flour");

@@ -22595,7 +22595,7 @@ const AtelierStudio = (() => {
       // was one and it has a clean one (halved 1/3 cup is ⅙ cup), else as a decimal (0,3 TL / 4 is 0,08 TL).
       if (value < 1 && Math.abs(near - value) > 0.15 * value) {
         const exact = style === "decimal" ? null : formatFraction(value, true);
-        return exact !== null ? exact : tiny(value);
+        return exact !== null && exact !== "0" ? exact : tiny(value);
       }
       const total = whole + near;
       if (total === 0) return tiny(value);
@@ -22689,8 +22689,18 @@ const AtelierStudio = (() => {
         high = Number(range[4].replace(",", "."));
       if (high >= low && !/^\s+[x×]\s*\d/i.test(range[5])) {
         const unit = unitWord(range[5]);
-        const hi = kitchen((high * target) / base, unit, "decimal");
-        return `${range[1]}${kitchen((low * target) / base, unit, "decimal")}${range[3]}${hi}${agree(range[5], shown(hi))}`;
+        const lowValue = (low * target) / base,
+          highValue = (high * target) / base;
+        let lo = kitchen(lowValue, unit, "decimal"),
+          hi = kitchen(highValue, unit, "decimal");
+        // Both ends in one notation: "0,17-0,33 TL", never "0,17-⅓ TL".
+        const glyphEnd = (x) => /[¼½¾⅓⅔⅛⅙⅚⅕⅖⅗⅘⅜⅝⅞]/.test(x),
+          decimalEnd = (x) => /\d[.,]\d/.test(x);
+        if ((glyphEnd(lo) && decimalEnd(hi)) || (decimalEnd(lo) && glyphEnd(hi))) {
+          lo = tiny(lowValue);
+          hi = tiny(highValue);
+        }
+        return `${range[1]}${lo}${range[3]}${hi}${agree(range[5], shown(hi))}`;
       }
       return raw;
     }
@@ -22703,6 +22713,8 @@ const AtelierStudio = (() => {
     let scaled = null;
     // A source fraction off the quarter and third grid (fifths, sixths) keeps its exact value when it stays exact.
     if (q.style !== "decimal" && !onGrid(q.value)) scaled = formatFraction(amount, true);
+    // An off-grid fraction that would read "0" goes through the kitchen rules instead.
+    if (scaled === "0") scaled = null;
     if (scaled === null) scaled = kitchen(amount, unit, q.style);
     const seen = shown(scaled);
     return `${q.lead}${scaled}${agree(q.rest, Number.isFinite(seen) ? seen : amount)}`;
