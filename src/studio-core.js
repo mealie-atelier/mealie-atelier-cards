@@ -271,9 +271,23 @@ const AtelierStudio = (() => {
     }
     return Number(t.replace(",", "."));
   }
+  const superDigits = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const subDigits = "₀₁₂₃₄₅₆₇₈₉";
+  // "¹/₂", "¹⁄₂" and "2 ¹/₂" become "1/2" and "2 1/2" so one amount pattern covers every fraction form.
+  function normalizeFractions(text) {
+    const digit = (c) => {
+      const i = superDigits.indexOf(c);
+      return String(i >= 0 ? i : subDigits.indexOf(c));
+    };
+    return String(text).replace(
+      new RegExp(`([${superDigits}${subDigits}]+)\\s?[/⁄]\\s?([${superDigits}${subDigits}]+)`, "g"),
+      (_, n, d) => `${[...n].map(digit).join("")}/${[...d].map(digit).join("")}`,
+    );
+  }
   function parseIngredient(row) {
     const raw = typeof row === "string" ? row : ingredient(row);
-    const m = raw.trim().match(ingredientAmount);
+    const normalized = normalizeFractions(raw).trim();
+    const m = normalized.match(ingredientAmount);
     const structured =
       typeof row === "object" &&
       row !== null &&
@@ -286,10 +300,16 @@ const AtelierStudio = (() => {
       ? Math.round(row.quantity * source.factor * 1000) / 1000
       : m
         ? Math.round(amountValue(m[2] || m[1]) * source.factor * 1000) / 1000
-        : null;
+        : // Rows without a linked food still carry a numeric quantity from Mealie.
+          typeof row === "object" &&
+            row !== null &&
+            Number.isFinite(row.quantity) &&
+            row.quantity > 0
+          ? Math.round(row.quantity * source.factor * 1000) / 1000
+          : null;
     const label = structured
       ? String(row.food.name).trim()
-      : raw
+      : normalized
           .slice(m ? m[0].length : 0)
           .replace(/^[,;\s]+/, "")
           .trim() || raw;

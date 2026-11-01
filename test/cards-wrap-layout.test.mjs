@@ -24,8 +24,8 @@ test("the week grid wraps into rows instead of squeezing seven narrow columns", 
     );
   assert.match(rule(920)?.[1] ?? "", /repeat\(4, minmax\(0, 1fr\)\)/, "4 + 3 rows from 920px");
   assert.match(
-    rule(1480)?.[1] ?? "",
-    /repeat\(7, minmax\(150px, 1fr\)\)/,
+    rule(1400)?.[1] ?? "",
+    /repeat\(7, minmax\(140px, 1fr\)\)/,
     "seven columns with room",
   );
   assert.match(
@@ -34,7 +34,7 @@ test("the week grid wraps into rows instead of squeezing seven narrow columns", 
   );
   assert.match(
     polish,
-    /min-width: 1260px\) \{\s*\.atelier \.shell\.single \.week-grid \{[^}]*repeat\(7, minmax\(150px/,
+    /min-width: 1100px\) \{\s*\.atelier \.shell\.single \.week-grid \{[^}]*repeat\(7, minmax\(140px/,
   );
   assert.doesNotMatch(polish, /@media \(min-width: 1081px\) \{\s*\.atelier \.week-grid/);
   assert.doesNotMatch(polish, /Tablet week strip/, "no 11px name for seven squeezed columns");

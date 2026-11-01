@@ -875,7 +875,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         ? ""
         : this._syncBringT(`syncLastError_${record.last_error}`)
       : "";
-    // Every row has the same two buttons, so each one names its item.
+    // A removed item cannot be sent again, so its row only offers Dismiss. Each button names its item.
     const button = (action, label) =>
       `<button class="btn tiny" data-action="${action}" data-value="${key}" data-rule="${esc(ruleId)}" aria-label="${esc(`${label}: ${record.title}`)}" title="${esc(`${label}: ${record.title}`)}"${caps.write ? "" : ' aria-disabled="true"'}>${esc(label)}</button>`;
     // After a change in Mealie the bridge may report the current title: show old → new.
@@ -884,7 +884,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       record.state === "changed_after_send" && current && current !== record.title
         ? `${record.title} → ${current}`
         : record.title;
-    return `<li class="sync-record"><div><strong>${esc(shown)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
+    return `<li class="sync-record"><div><strong>${esc(shown)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${record.state === "removed_after_send" ? "" : button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
   },
 
   _syncDraftRequest(draft) {

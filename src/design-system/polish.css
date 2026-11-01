@@ -2576,22 +2576,34 @@
   .atelier .week-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     overflow-x: auto;
+    /* Wrapped rows: an empty day keeps its own compact height instead of stretching to the tallest day in its row. */
+    align-items: start;
   }
 }
-@container atelier-card (min-width: 1480px) {
+/* Seven columns as one row. With a sidebar the grid loses about 280px to it, so the card needs 1400px; without one
+   1100px give every day 140px or more (a name box of at least 110px). */
+@container atelier-card (min-width: 1400px) {
   .atelier .week-grid {
-    grid-template-columns: repeat(7, minmax(150px, 1fr));
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    align-items: stretch;
   }
 }
 /* Without a sidebar the grid has the whole card. */
 @container atelier-card (min-width: 761px) {
   .atelier .shell.single .week-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
   }
 }
-@container atelier-card (min-width: 1260px) {
+@container atelier-card (min-width: 1100px) {
   .atelier .shell.single .week-grid {
-    grid-template-columns: repeat(7, minmax(150px, 1fr));
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+    align-items: stretch;
+  }
+}
+@container atelier-card (min-width: 761px) {
+  .atelier .week-grid > .day:has(> .day-empty) {
+    min-height: 0;
   }
 }
 
