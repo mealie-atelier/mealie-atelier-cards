@@ -138,3 +138,16 @@ test("the fixes ship in the bundle", () => {
   assert.ok(bundle.includes(".atelier .modal .cook-visual .cook-brand"));
   assert.ok(bundle.includes("repeat(4, minmax(0, 1fr))"));
 });
+
+test("the shopping list filter stacks the pill below the select in narrow cards", () => {
+  const m = polish.match(
+    /@container atelier-card \(max-width: 360px\) \{\s*(?:\/\*[^]*?\*\/\s*)?\.atelier \.shopping-list-filter \{([^}]*)\}/,
+  );
+  assert.match(m?.[1] ?? "", /grid-template-columns:\s*minmax\(0, 1fr\);/);
+  assert.match(block(polish, ".atelier .shopping-list-filter {"), /minmax\(0, 1fr\) auto/);
+  // The 430px block also sets two columns; the 360px block must come after it to win the cascade.
+  const narrow = polish.indexOf("@container atelier-card (max-width: 360px)");
+  const lastWide = polish.lastIndexOf("@container atelier-card (max-width: 430px)");
+  assert.ok(narrow > lastWide, "the 360px shopping filter rule must follow the last 430px block");
+  assert.match(bundle, /max-width: 360px\) \{[^}]*\.shopping-list-filter/);
+});

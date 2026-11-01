@@ -8863,6 +8863,15 @@ ha-card {
     min-height: 44px;
   }
 }
+@container atelier-card (max-width: 360px) {
+  /* Narrow columns (after the 430px block so it wins the cascade): the progress pill drops below the select so the list name stays readable. */
+  .atelier .shopping-list-filter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .atelier .shopping-list-filter .pill {
+    justify-self: start;
+  }
+}
 .atelier .btn.primary {
   color: var(--ds-brand-foreground, #12221b);
   font-weight: 770;
