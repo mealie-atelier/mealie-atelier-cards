@@ -8,6 +8,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 - Cooking mode: a long recipe title over the photo breaks into balanced lines instead of leaving a single word on the last line.
 - Cooking mode on a phone: the tool buttons and the timer list take less height, so the step text keeps its room.
+- Cooking mode on a phone: the newest timer card is no longer cut off in its list, the timer card is compact, a short phone (375x667) gets a slimmer photo band so the step text keeps at least 140px, and the tool buttons step aside while the timer form is open.
 - Recipe editor: the servings preview field shows the value that is actually used (1 to 100) after you leave it.
 - Recipe editor: the version history button reads "Versionsverlauf anzeigen" / "Show version history", matching the hide label.
 - Sync rules with nothing waiting no longer say "Sending shortly" after Resume; the Waiting row reads "Checking shortly" until the catch-up run finishes.

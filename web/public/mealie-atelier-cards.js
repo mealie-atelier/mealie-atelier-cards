@@ -11788,8 +11788,49 @@ ha-card {
     min-height: 32px;
     padding-block: 2px;
   }
+  /* The newest timer card fits the list whole (dial 40px, no second text line), older ones scroll inside it. */
   .atelier .modal.large:has(.cook-layout) .cook-timers {
-    max-height: 56px;
+    max-height: 62px;
+    padding-block-start: 6px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-card {
+    grid-template-columns: 40px minmax(0, 1fr) 36px;
+    padding: 4px 8px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-dial {
+    inline-size: 40px;
+    block-size: 40px;
+    padding: 3px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-dial time {
+    font-size: 10px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-card .icon-btn {
+    min-inline-size: 36px;
+    inline-size: 36px;
+    min-block-size: 36px;
+    block-size: 36px;
+  }
+  .atelier .modal.large:has(.cook-layout) .cook-timer-copy small {
+    display: none;
+  }
+  /* A short phone (iPhone SE class) also slims the photo band, the step text would otherwise get under 140px. */
+  @media (max-height: 700px) {
+    @container atelier-card (max-width: 760px) {
+      .atelier .modal.large:has(.cook-layout) .cook-visual {
+        height: 56px;
+        min-height: 56px;
+      }
+    }
+  }
+  /* While the timer form is open on a short phone, the tool buttons step aside so the form and the bar stay on screen. */
+  @media (max-height: 700px) {
+    .atelier
+      .modal.large:has(.cook-layout)
+      .cook-utility[data-composing]
+      :is(.studio-cook-tools, .studio-shared-note) {
+      display: none;
+    }
   }
 }
 

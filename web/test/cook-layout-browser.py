@@ -9,6 +9,8 @@ the worst case for the tools row). Rules under test:
   (b) no button label or pill is clipped, tool button text is at least 12px, the sync chip sits on its own row on phones;
   (c) the step text shows at least 4 full lines whenever the step has that many;
   (d) a scrolling step text has a bottom fade and a visible scrollbar, and shows no cut line without that cue;
+  (f) on a phone (width up to 460px, height from 641px) the step text area is at least 140px high (or as high as its content) with a timer running
+      and the newest timer card is shown whole;
   (e) the timer list (its newest card in view, older ones scroll inside the list) and the Back and Next bar are on screen, and the cook-track hides when cut.
 """
 
@@ -27,7 +29,7 @@ if shots:
 
 BUNDLE = ROOT / "dist" / "mealie-atelier-cards.js"
 VIEWPORTS = [
-    (360, 780), (390, 844), (430, 932), (820, 1180), (1180, 820),
+    (360, 780), (375, 667), (390, 844), (430, 932), (820, 1180), (1180, 820),
     (1024, 768), (1440, 720), (1440, 900), (1600, 1000), (1920, 1080),
 ]
 SHORT = "Dice the onions."
@@ -88,6 +90,8 @@ MEASURE = """() => {
   const note = modal.querySelector(".studio-shared-note");
   const btns = [...modal.querySelectorAll(".studio-cook-tools .btn")];
   out.phone = vw <= 460;
+  out.viewportHeight = vh;
+  out.timersRunning = modal.querySelectorAll(".cook-timer-card").length;
   out.noteOwnRow = !!note && btns.every((b) => note.getBoundingClientRect().top >= b.getBoundingClientRect().bottom - 1);
   // (c) full lines of step text
   const stage = modal.querySelector(".cook-stage");
@@ -106,6 +110,8 @@ MEASURE = """() => {
     }
   }
   out.lines = { total, full };
+  out.stageHeight = stage.clientHeight;
+  out.stageScroll = stage.scrollHeight;
   // (d) scroll cue
   const cs = getComputedStyle(stage);
   const scrolls = stage.scrollHeight > stage.clientHeight + 1;
@@ -175,6 +181,12 @@ def judge(label, s, full_rules=True):
             check(cue["scrollbarWidth"] != "none", f"{label} (d) scrollbar not hidden", json.dumps(cue))
         else:
             check(s["lines"]["full"] == s["lines"]["total"], f"{label} (d) cut line without scrolling", json.dumps(s["lines"]))
+    # The open timer form is a deliberate trade, so (f) only judges the default state.
+    if full_rules:
+        check(not (s["phone"] and s["viewportHeight"] >= 641 and s["timersRunning"] > 0) or s["stageHeight"] >= min(140, s["stageScroll"]),
+              f"{label} (f) step text area height on a phone with a timer", str(s["stageHeight"]))
+        check(not (s["phone"] and s["timersRunning"] > 0) or all(s["timersVisible"][:1]),
+              f"{label} (f) newest timer card shown whole", json.dumps(s["timersVisible"]))
     check(s["barOk"], f"{label} (e) bar and panel on screen", json.dumps({"bar": s["bar"], "utility": s["utility"]}))
     check(all(s["timersVisible"][:1]) and s["timerListOnScreen"], f"{label} (e) timer list visible", json.dumps(s["timersVisible"]))
 

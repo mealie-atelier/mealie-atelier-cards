@@ -287,6 +287,6 @@ test("on a phone the tool buttons shrink and the timer list shows one compact ca
   const flat = refinement.replace(/\s+/g, " ");
   assert.match(
     flat,
-    /@media \(min-height: 641px\) and \(max-width: 600px\) \{[^@]*\.studio-cook-tools \.btn \{ min-height: 32px;[^@]*\.cook-timers \{ max-height: 56px; \}/,
+    /@media \(min-height: 641px\) and \(max-width: 600px\) \{[^@]*\.studio-cook-tools \.btn \{ min-height: 32px;[^@]*\.cook-timers \{ max-height: 62px;/,
   );
 });
