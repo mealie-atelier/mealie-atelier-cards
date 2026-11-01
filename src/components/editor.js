@@ -394,19 +394,19 @@ class MealieAtelierEditor extends HTMLElement {
           : tr(COLOR_NAMES[value]),
       ]),
     )}</div></div>
-    <div class="group"><label for="atelier-radius">${tr("editorCornerStyle")}</label>${choose(
+    <div class="group"><label for="atelier-radius">${tr("uiCornerStyle")}</label>${choose(
       "radius",
       [
-        ["large", tr("editorRounded")],
-        ["small", tr("editorSoft")],
-        ["square", tr("editorSquareEckig")],
+        ["large", tr("uiRound")],
+        ["small", tr("uiSoft")],
+        ["square", tr("uiSquareEckig")],
       ],
-    )}</div><div class="group"><label for="atelier-photo_ratio">${tr("editorFoodPhotographyCrop")}</label>${choose(
+    )}</div><div class="group"><label for="atelier-photo_ratio">${tr("uiPhotoCrop")}</label>${choose(
       "photo_ratio",
       [
-        ["portrait", tr("editorPortraitEditorial")],
-        ["square", tr("editorSquareQuadrat")],
-        ["landscape", tr("editorWide")],
+        ["portrait", tr("uiTall")],
+        ["square", tr("uiSquare")],
+        ["landscape", tr("uiWide")],
       ],
     )}</div>
     <label class="line"><input type="checkbox" data-key="show_images" ${c.show_images !== false ? "checked" : ""}> ${tr("editorShowRecipeImages")}</label>

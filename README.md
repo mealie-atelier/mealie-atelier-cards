@@ -166,7 +166,7 @@ The cooking actions only run when you press them. Nothing triggers automatically
 - **Print Studio:** A4 layouts for recipes, shopping lists, the week plan and a whole cookbook, in Editorial, Compact or Ink saver style.
 - **Nutrition Lab:** match ingredients against USDA data, confirm grams and store per-serving values in Mealie. AI name suggestions are optional and off by default.
 - **Smart Shopping Sync:** rule-based sync from a Mealie list to a Bring! list, with a preview before the first batch. Bring! sync works without Home Assistant: the [standalone web app](web/README.md#smart-shopping-sync-to-bring) connects a Bring! account directly. In Home Assistant it targets a To-do list through the Bridge.
-- **Offline shopping:** ticks, new items, edits, deletions and "clear ticked" made without a connection are kept on the device and replayed in order, exactly once, when the connection returns. Editing, deleting and clearing ticked items need Bridge 0.11 or newer.
+- **Offline shopping:** ticks, new items, edits, deletions and "clear done" made without a connection are kept on the device and replayed in order, exactly once, when the connection returns. Editing, deleting and clearing ticked items need Bridge 0.11 or newer.
 - **Accessibility:** keyboard navigation and focus management in every dialog, screen reader labels and reduced motion support.
 
 ## Standalone web app and demo

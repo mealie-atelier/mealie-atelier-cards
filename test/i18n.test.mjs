@@ -206,7 +206,6 @@ test("print dialog copy comes from shared locale resources instead of inline lan
 test("dialog section labels use shared locale resources", () => {
   const dialogs = readFileSync(new URL("../src/components/dialogs.js", import.meta.url), "utf8");
   for (const key of [
-    "dialogWeeklyMenu",
     "dialogYourMenu",
     "dialogPlanned",
     "dialogNewRecipe",
@@ -373,6 +372,7 @@ test("shopping sync keys from the contract exist in English and German with real
     "syncStandaloneExplain",
     "errSyncRuleNotFound",
     "errSyncDestinationUnsupported",
+    "errSyncDestinationMissing",
     "errSyncSourceTaken",
     "errSyncTooManyRules",
     "errSyncNotActivated",

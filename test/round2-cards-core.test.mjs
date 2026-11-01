@@ -327,7 +327,7 @@ test("each doc comment in the card template sits directly above the member it de
   );
 });
 
-test("shopping label groups sort by name and the done heading reads checked off", () => {
+test("shopping label groups sort by name and the done heading reads done", () => {
   const cards = loadCards();
   const card = makeCard(cards);
   const items = [
@@ -338,7 +338,7 @@ test("shopping label groups sort by name and the done heading reads checked off"
   ];
   const html = card._shoppingRows(items);
   const titles = [...html.matchAll(/shopping-group-title">([^<]+)</g)].map((m) => m[1]);
-  assert.deepEqual(titles, ["Äpfel", "Bakery", "Zeta", "Checked off"]);
+  assert.deepEqual(titles, ["Äpfel", "Bakery", "Zeta", "Done"]);
 });
 
 test("German settings copy matches the English preset wording", () => {

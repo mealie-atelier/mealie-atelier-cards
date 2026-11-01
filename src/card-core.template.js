@@ -21,6 +21,7 @@ const HOST_SPECIFIC_ERRORS = [
   "mealie_not_found",
   "sync_not_supported",
   "sync_destination_unsupported",
+  "sync_destination_missing",
 ];
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 // Result cap of the official Home Assistant provider; hitting it means the list may be cut off.

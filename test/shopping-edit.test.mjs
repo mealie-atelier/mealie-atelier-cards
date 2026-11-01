@@ -130,7 +130,7 @@ test("clear opens a confirm dialog with the count and only the confirm button se
   await click(card, { action: "shopping-clear-form" });
   assert.equal(card._modal, "shopping-clear");
   const dialog = card._modalHtml();
-  assert.match(dialog, /2 ticked items will be removed from this list/);
+  assert.match(dialog, /2 done items will be removed from this list/);
   assert.match(dialog, /data-action="shopping-clear-confirm"/);
   assert.equal(mutations().length, 0, "opening the dialog must not write");
   await click(card, { action: "shopping-clear-confirm" });

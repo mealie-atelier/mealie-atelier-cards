@@ -222,7 +222,6 @@ test("copy uses one term per setting, one Bridge name and the neuter Token", () 
   const de = i18n("de");
   assert.equal(de.editorComfortable, de.comfortable);
   assert.equal(de.editorMotionTransitions, de.uiMotionTransitions);
-  assert.equal(de.editorFoodPhotographyCrop, de.uiPhotoCrop);
   assert.doesNotMatch(JSON.stringify(de), /Mealie-Atelier-Bridge|den Zugriffstoken/);
   assert.match(de.errMealieAuth, /das API-Token/);
   for (const lang of ["de", "en"]) {
@@ -232,7 +231,6 @@ test("copy uses one term per setting, one Bridge name and the neuter Token", () 
   }
   assert.doesNotMatch(JSON.stringify(de), /API-Key/);
   assert.match(de.uiNoWriteGrant, /Home-Assistant-Nutzer/);
-  assert.equal(i18n("en").editorFoodPhotographyCrop, i18n("en").uiPhotoCrop);
 });
 
 test("every language names the Bridge in full and labels density once", () => {

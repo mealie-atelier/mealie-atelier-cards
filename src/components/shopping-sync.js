@@ -87,7 +87,15 @@ export const shoppingSyncMethods = {
   // The bridge schedules a debounced send: it is still ahead while next_run_at lies in the future.
   _syncNextRunAhead(rule) {
     const at = Date.parse(rule?.next_run_at || "");
-    return Number.isFinite(at) && at > Date.now();
+    if (!Number.isFinite(at) || at <= Date.now()) return false;
+    // Safety net: with nothing pending, a next_run_at that was scheduled before the last run finished
+    // (scheduled at about next_run_at minus the debounce) is a stale timer: that run took the items.
+    const lastRun = Date.parse(rule?.last_run?.at || "");
+    const debounce = Number(rule?.debounce_seconds);
+    const scheduledAt = at - (Number.isFinite(debounce) ? debounce : 30) * 1000;
+    if (!this._syncWaiting(rule) && Number.isFinite(lastRun) && lastRun >= scheduledAt)
+      return false;
+    return true;
   },
   // A rule whose Mealie list is not among the lists that loaded fine: the list was deleted.
   _syncSourceGone(rule) {
@@ -955,6 +963,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       destinations: [],
       destinationsLoaded: false,
       preview: null,
+      previewError: "",
       previewBusy: false,
       previewSeq: 0,
       saving: false,
@@ -1029,13 +1038,15 @@ ${this._syncRouteHtml(rule, destination, destName)}
       : "";
     const previewMarkup = d.previewBusy
       ? `<p>${esc(this.t("loading"))}</p>`
-      : d.preview
-        ? `${lines.length && d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
-            lines.length
-              ? `<p>${esc(this.tp(`${this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal"}${(d.preview.total_candidates ?? lines.length) <= lines.length ? "All" : ""}`, d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><div><strong>${esc(String(l.title || "").trim() || this.t("syncItemUntitled"))}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</div><div><span class="sync-record-state">${icon(["send", "merge"].includes(l.action) ? "arrow" : "close", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></div></li>`).join("")}</ul>`
-              : `<div class="notice">${icon("check", 16)} ${esc(this.t("syncPreviewEmpty"))}</div>`
-          }`
-        : "";
+      : d.previewError
+        ? `<div class="notice error" role="alert">${icon("bolt", 16)} <span>${esc(d.previewError)}</span></div>`
+        : d.preview
+          ? `${lines.length && d.preview.sample?.title ? `<p class="sync-sample">${esc(this.t("syncPreviewSample", { title: d.preview.sample.title }))}</p>` : ""}${
+              lines.length
+                ? `<p>${esc(this.tp(`${this._syncCaps().bringSetup ? "syncPreviewTotalBring" : "syncPreviewTotal"}${(d.preview.total_candidates ?? lines.length) <= lines.length ? "All" : ""}`, d.preview.total_candidates ?? lines.length, { total: d.preview.total_candidates ?? lines.length, shown: lines.length }))}</p><ul class="sync-list">${lines.map((l) => `<li><div><strong>${esc(String(l.title || "").trim() || this.t("syncItemUntitled"))}</strong>${l.description ? ` <span class="sync-muted">${esc(l.description)}</span>` : ""}</div><div><span class="sync-record-state">${icon(["send", "merge"].includes(l.action) ? "arrow" : "close", 14)} ${esc(this.t(actionLabel[l.action] || "syncActionSend"))}</span></div></li>`).join("")}</ul>`
+                : `<div class="notice">${icon("check", 16)} <span>${esc(this.t("syncPreviewEmpty"))}</span></div>`
+            }`
+          : "";
     // The real count is only known once a preview has run, so until then the label stays neutral.
     const confirmLabel =
       destination && d.preview && !d.previewBusy
@@ -1293,13 +1304,14 @@ ${this._syncRouteHtml(rule, destination, destName)}
     }
     d.previewBusy = true;
     d.error = "";
+    d.previewError = "";
     const seq = ++d.previewSeq;
     this._render();
     try {
       const preview = await this._ws("sync_preview", { rule: this._syncDraftRequest(d) });
       if (seq === d.previewSeq) d.preview = preview;
     } catch (err) {
-      if (seq === d.previewSeq) d.error = this._errorText(err);
+      if (seq === d.previewSeq) d.previewError = this._errorText(err);
     }
     if (seq === d.previewSeq) d.previewBusy = false;
     this._render();
@@ -1393,6 +1405,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     if (!type.startsWith("sync-") || !d) return false;
     const staleAndRender = () => {
       d.preview = null;
+      d.previewError = "";
       d.previewSeq++;
       d.previewBusy = false;
       this._render();
