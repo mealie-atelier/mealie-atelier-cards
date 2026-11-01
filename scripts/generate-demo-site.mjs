@@ -24,6 +24,7 @@ import {
   translator,
 } from "../demo/site/chrome.mjs";
 import { creditRow, photo, photoCaption } from "../demo/site/media.mjs";
+import { filmJsonLd } from "../demo/site/section-film.mjs";
 import { demoClose, renderIntro } from "../demo/site/sections-intro.mjs";
 import { renderClosing, renderDirectory, renderRoutes } from "../demo/site/sections-routes.mjs";
 import { renderStory } from "../demo/site/sections-story.mjs";
@@ -292,6 +293,11 @@ function applicationJsonLd(locale, pageUrl) {
   });
 }
 
+function videoJsonLd(locale) {
+  const video = filmJsonLd(locale, deploymentBase);
+  return video ? `<script type="application/ld+json">${safeJson(video)}</script>` : "";
+}
+
 function safeJson(value) {
   return JSON.stringify(value)
     .replace(/</g, "\\u003c")
@@ -458,6 +464,7 @@ function renderIndexPage(locale) {
     __ENGLISH_URL__: enUrl,
     __JSON_LD__: jsonLd,
     __APP_JSON_LD__: applicationJsonLd(locale, pageUrl),
+    __VIDEO_JSON_LD__: videoJsonLd(locale),
     __OG_URL_META__: pageUrl ? `<meta property="og:url" content="${escapeHtml(pageUrl)}" />` : "",
     __SITE_HEADER__: renderSiteHeader(ctx),
     __SECTIONS_BEFORE_DEMO__: renderIntro(ctx),
@@ -472,6 +479,7 @@ function renderIndexPage(locale) {
   const rawTokens = new Set([
     "__JSON_LD__",
     "__APP_JSON_LD__",
+    "__VIDEO_JSON_LD__",
     "__OG_URL_META__",
     "__OG_IMAGE_META__",
     "__SITE_HEADER__",
@@ -753,6 +761,17 @@ await mkdir(join(siteRoot, "data"), { recursive: true });
 await copyFile(styles, join(siteRoot, "assets/live-demo.css"));
 await copyFile(siteScript, join(siteRoot, "assets/site.js"));
 await cp(join(demoRoot, "showcase"), join(siteRoot, "showcase"), { recursive: true });
+// The trailer files are too large for the repository: they come from a folder outside it.
+const filmDir = process.env.ATELIER_FILM_DIR;
+if (filmDir) {
+  await mkdir(join(siteRoot, "film"), { recursive: true });
+  for (const entry of await readdir(filmDir, { withFileTypes: true })) {
+    if (entry.isFile())
+      await copyFile(join(filmDir, entry.name), join(siteRoot, "film", entry.name));
+  }
+} else {
+  console.log("ATELIER_FILM_DIR is not set: the film section is rendered without media files.");
+}
 // Photos and screenshots that left the sources must not linger in a reused output folder.
 await removeStaleFiles(join(demoRoot, "photos"), join(siteRoot, "photos"));
 await removeStaleFiles(join(demoRoot, "showcase"), join(siteRoot, "showcase"));

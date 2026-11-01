@@ -27,14 +27,21 @@ const links = {
 
 // Two builds: one relative (as served locally) and one with a deployment base URL.
 const builds = {};
-function generate(base, out = mkdtempSync(join(tmpdir(), "atelier-demo-"))) {
-  execFileSync("node", ["scripts/generate-demo-site.mjs"], {
-    env: { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: base },
-    stdio: "pipe",
-  });
+// The trailer is not in the repository: the builds get empty stand-ins for its files.
+const filmNames = ["av1.mp4", "hevc.mp4", "h264.mp4", "poster.webp", "poster.jpg"]
+  .flatMap((suffix) => ["de", "en"].map((locale) => `trailer-${locale}-${suffix}`))
+  .concat(["trailer-de.vtt", "trailer-en.vtt"]);
+let filmDir = "";
+function generate(base, out = mkdtempSync(join(tmpdir(), "atelier-demo-")), withFilm = true) {
+  const env = { ...process.env, ATELIER_DEMO_OUT_DIR: out, ATELIER_DEMO_BASE_URL: base };
+  if (withFilm) env.ATELIER_FILM_DIR = filmDir;
+  else delete env.ATELIER_FILM_DIR;
+  execFileSync("node", ["scripts/generate-demo-site.mjs"], { env, stdio: "pipe" });
   return out;
 }
 before(() => {
+  filmDir = mkdtempSync(join(tmpdir(), "atelier-film-"));
+  for (const name of filmNames) writeFileSync(join(filmDir, name), "stand-in");
   // The local build starts in a folder that still holds the page of a removed recipe.
   const stale = mkdtempSync(join(tmpdir(), "atelier-demo-"));
   for (const page of ["de/rezepte/shakshuka-mit-paprika", "en/recipes/shakshuka-with-peppers"]) {
@@ -56,6 +63,7 @@ before(() => {
   builds.deployed = generate(baseUrl);
 });
 after(() => {
+  rmSync(filmDir, { recursive: true, force: true });
   for (const out of Object.values(builds)) rmSync(out, { recursive: true, force: true });
 });
 
@@ -2148,4 +2156,85 @@ test("copy fixes: American English recipes and dates, neuter Token, role header,
     recipes,
     /coriander|spring onion|minced pork|plain flour|passata|the packet|kitchen paper|lengthways|to the boil/,
   );
+});
+
+test("the film section follows the hero, offers three sources, captions and ten chapters", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const heroAt = html.indexOf('<section class="hero"');
+    const filmAt = html.indexOf('<section class="sec film" id="film"');
+    const factsAt = html.indexOf('<section class="facts"');
+    assert.ok(heroAt >= 0 && heroAt < filmAt && filmAt < factsAt, `${locale} order`);
+    const film = html.slice(filmAt, html.indexOf("</section>", filmAt));
+    const types = [...film.matchAll(/<source src="([^"]+)" type='video\/mp4; codecs="([^"]+)"'>/g)];
+    assert.deepEqual(
+      types.map((m) => m[2]),
+      ["av01.0.08M.10", "hvc1", "avc1.640028"],
+    );
+    assert.deepEqual(
+      types.map((m) => m[1]),
+      ["av1", "hevc", "h264"].map((codec) => `../film/trailer-${locale}-${codec}.mp4`),
+    );
+    assert.match(
+      film,
+      /<video preload="none" playsinline controls poster="\.\.\/film\/trailer-\w\w-poster\.jpg">/,
+    );
+    assert.match(
+      film,
+      new RegExp(
+        `<track kind="captions" srclang="${locale}"[^>]* src="\\.\\./film/trailer-${locale}\\.vtt">`,
+      ),
+    );
+    assert.ok(!/<track[^>]* default/.test(film), "captions are not on by default");
+    assert.match(film, /<button class="film-cover" type="button" aria-label="[^"]+">/);
+    assert.equal((film.match(/data-film-chapter /g) ?? []).length, 10);
+    assert.deepEqual(
+      [...film.matchAll(/data-start="(\d+)"/g)].map((m) => Number(m[1])),
+      [0, 10, 17, 26, 40, 50, 66, 74, 90, 115],
+    );
+    assert.match(film, locale === "de" ? /Zweieinhalb Minuten\./ : /Two and a half minutes\./);
+    assert.ok(film.includes('href="#live-demo"'), "end card links to the live demo");
+    assert.match(html, /<a class="film-link[^"]*" href="#film">/);
+    assert.ok(heroAt < html.indexOf('class="film-link'), "hero link sits in the hero");
+    assert.ok(html.indexOf('class="film-link') < filmAt);
+    assert.ok(
+      existsSync(join(builds.local, "film", `trailer-${locale}-h264.mp4`)),
+      "media files are copied",
+    );
+  }
+});
+
+test("the film section renders without media files and the build says so", () => {
+  const out = generate("", mkdtempSync(join(tmpdir(), "atelier-demo-")), false);
+  try {
+    assert.ok(landing(out, "de").includes('id="film"'));
+    assert.ok(landing(out, "en").includes('id="film"'));
+    assert.ok(!existsSync(join(out, "film")));
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("the film is described as a VideoObject with absolute URLs when a base URL is known", () => {
+  for (const locale of ["de", "en"]) {
+    const blocks = [
+      ...landing(builds.deployed, locale).matchAll(
+        /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+      ),
+    ].map((block) => JSON.parse(block[1]));
+    const video = blocks.find((d) => d["@type"] === "VideoObject");
+    assert.ok(video, `${locale} VideoObject`);
+    assert.equal(
+      video.name,
+      locale === "de" ? "Mealie Atelier · Der Film" : "Mealie Atelier · The film",
+    );
+    assert.equal(video.duration, "PT2M25S");
+    assert.equal(video.uploadDate, "2026-11-01");
+    assert.equal(video.inLanguage, locale);
+    assert.equal(video.thumbnailUrl, `${baseUrl}film/trailer-${locale}-poster.jpg`);
+    assert.equal(video.contentUrl, `${baseUrl}film/trailer-${locale}-h264.mp4`);
+    assert.match(video.description, locale === "de" ? /^Vom Wochenplan/ : /^From the meal plan/);
+  }
+  const local = landing(builds.local, "de");
+  assert.ok(!local.includes("VideoObject"), "relative builds emit no structured video");
 });

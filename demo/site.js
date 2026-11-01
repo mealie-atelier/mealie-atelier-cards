@@ -304,3 +304,70 @@ if (sectionLinks.length) {
   addEventListener("hashchange", syncLanguageHash);
   syncLanguageHash();
 }
+
+// Film section: the cover starts the video with sound, chapters seek, the end card follows the last frame.
+const film = document.querySelector("[data-film]");
+const filmVideo = film?.querySelector("video");
+if (film && filmVideo) {
+  const cover = film.querySelector(".film-cover");
+  const cap = cover.querySelector(".film-cap");
+  const end = film.querySelector(".film-end");
+  const chapters = [...film.querySelectorAll("[data-film-chapter]")];
+  // Without this script the native controls stay on; with it the cover is the way in.
+  filmVideo.removeAttribute("controls");
+  const showCover = (replay) => {
+    cap.textContent = replay ? film.dataset.replayLabel : film.dataset.playLabel;
+    cover.classList.remove("off");
+    cover.tabIndex = 0;
+    cover.removeAttribute("aria-hidden");
+    end.classList.toggle("on", replay);
+    end.inert = !replay;
+    // The native bar would show through the translucent cover.
+    filmVideo.removeAttribute("controls");
+  };
+  const start = (from) => {
+    if (typeof from === "number") filmVideo.currentTime = from;
+    else if (filmVideo.ended) filmVideo.currentTime = 0;
+    filmVideo.setAttribute("controls", "");
+    cover.classList.add("off");
+    cover.tabIndex = -1;
+    cover.setAttribute("aria-hidden", "true");
+    end.classList.remove("on");
+    end.inert = true;
+    filmVideo.muted = false;
+    filmVideo.play()?.catch(() => {
+      // Autoplay refused: the native controls are visible, so one more tap starts it.
+    });
+  };
+  cover.addEventListener("click", () => start());
+  for (const chapter of chapters) {
+    // Seeks and, when the film is paused or not started yet, plays like the cover does.
+    chapter.addEventListener("click", () => start(Number(chapter.dataset.start)));
+  }
+  const paint = () => {
+    const now = filmVideo.currentTime;
+    for (const chapter of chapters) {
+      const from = Number(chapter.dataset.start);
+      const to = Number(chapter.dataset.end);
+      const share = Math.max(0, Math.min(1, (now - from) / (to - from)));
+      chapter.style.setProperty("--p", share.toFixed(3));
+      chapter.classList.toggle("current", now >= from && now < to);
+      chapter.classList.toggle("done", now >= to);
+    }
+  };
+  filmVideo.addEventListener("timeupdate", paint);
+  filmVideo.addEventListener("seeked", paint);
+  filmVideo.addEventListener("ended", () => {
+    paint();
+    showCover(true);
+  });
+  // Opening the film from the hero link: scroll to the section, then play.
+  document.querySelector(".film-link")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    film
+      .closest("section")
+      .scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
+    history.replaceState(null, "", "#film");
+    start();
+  });
+}

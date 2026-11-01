@@ -1,5 +1,6 @@
 // Landing page, first half: hero, facts, food, before/after and the opening of the live demo.
 import { escapeHtml, icon, sectionIds, translator } from "./chrome.mjs";
+import { renderFilm } from "./section-film.mjs";
 import { heroPhone, heroTablet, photo, shot, shotSources, weekDialRing } from "./media.mjs";
 
 export const bySlug = (ctx, slug) => {
@@ -55,7 +56,7 @@ function hero(ctx) {
   return `<section class="hero" aria-labelledby="hero-title"><div class="wrap hero-grid"><div class="hero-copy"><p class="kicker rv"><span class="dot"></span><span class="nw">${t("Für dein Mealie ·", "For your Mealie ·")}</span> <span class="nw">${t("mit oder ohne Home\u00a0Assistant", "with or without Home\u00a0Assistant")}</span></p><h1 id="hero-title" class="rv d1">${t("Gutes Essen.<br><em>Jeden Tag.</em>", "Good food.<br><em>Every day.</em>")}</h1><p class="lead rv d2">${t(
     "Mealie Atelier macht aus deinem selbst gehosteten Mealie eine ruhige, schöne Küche. Woche planen, einkaufen, Schritt für Schritt kochen: auf dem Handy, am Küchentablet und am großen Bildschirm.",
     "Mealie Atelier turns your self-hosted Mealie into a calm, beautiful kitchen. Plan the week, shop, cook step by step: on your phone, on the kitchen tablet and on the big screen.",
-  )}</p><div class="btn-row rv d3"><a class="btn btn-primary" href="#${id.demo}">${icon("play")}${t("Live-Demo ausprobieren", "Try the live demo")}</a><a class="btn btn-ghost" href="#${id.install}">${icon("download")}${t("Kostenlos installieren", "Install for free")}</a></div><ul class="hero-meta rv d3"><li>${icon("check")}${t("Open Source, MIT-Lizenz", "Open source, MIT license")}</li><li>${icon("check")}${t("Deutsch und Englisch", "English and German")}</li><li>${icon("check")}${t("Deine Daten bleiben bei dir", "Your data stays with you")}</li></ul></div>${heroStage(ctx)}</div></section>`;
+  )}</p><div class="btn-row rv d3"><a class="btn btn-primary" href="#${id.demo}">${icon("play")}${t("Live-Demo ausprobieren", "Try the live demo")}</a><a class="btn btn-ghost" href="#${id.install}">${icon("download")}${t("Kostenlos installieren", "Install for free")}</a></div><a class="film-link rv d3" href="#film"><span class="film-link-ico">${icon("play")}</span>${t("Den Film ansehen · 2:25", "Watch the film · 2:25")}</a><ul class="hero-meta rv d3"><li>${icon("check")}${t("Open Source, MIT-Lizenz", "Open source, MIT license")}</li><li>${icon("check")}${t("Deutsch und Englisch", "English and German")}</li><li>${icon("check")}${t("Deine Daten bleiben bei dir", "Your data stays with you")}</li></ul></div>${heroStage(ctx)}</div></section>`;
 }
 
 function facts(ctx) {
@@ -126,5 +127,5 @@ function demoOpen(ctx) {
 export const demoClose = () => `</div></div></section>`;
 
 export function renderIntro(ctx) {
-  return hero(ctx) + facts(ctx) + food(ctx) + compare(ctx) + demoOpen(ctx);
+  return hero(ctx) + renderFilm(ctx) + facts(ctx) + food(ctx) + compare(ctx) + demoOpen(ctx);
 }

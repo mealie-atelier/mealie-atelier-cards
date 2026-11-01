@@ -3639,3 +3639,307 @@ details[open] .chev {
 .credits-switch {
   margin-top: 28px;
 }
+
+/* Film section: a cover button over a native video, typographic chapters and an end card. */
+.film {
+  padding-top: clamp(24px, 4vw, 56px);
+  /* The glow behind the player reaches past the viewport edge, so it is cut there. */
+  overflow-x: clip;
+}
+.film .sec-head {
+  margin-bottom: clamp(32px, 4.5vw, 56px);
+}
+.film-stage {
+  position: relative;
+  isolation: isolate;
+  max-width: 1180px;
+  margin-inline: auto;
+}
+.film-stage::before {
+  content: "";
+  position: absolute;
+  inset: -8% -6% auto;
+  height: 80%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(50% 60% at 30% 40%, rgba(95, 156, 128, 0.3), transparent 72%),
+    radial-gradient(40% 50% at 78% 55%, rgba(184, 83, 46, 0.2), transparent 72%);
+  filter: blur(24px);
+}
+.film-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: #060807;
+  box-shadow: var(--shadow);
+}
+.film-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #060807;
+}
+.film-cover {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 20px);
+  padding: 0;
+  border: 0;
+  color: var(--ink);
+  background: radial-gradient(70% 70% at 50% 50%, rgba(6, 8, 7, 0.3), rgba(6, 8, 7, 0.62));
+  cursor: pointer;
+  transition:
+    opacity 0.45s var(--ease),
+    visibility 0.45s;
+  -webkit-tap-highlight-color: transparent;
+}
+html.js .film-cover {
+  display: flex;
+}
+.film-cover.off {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.film-play {
+  --disc: 112px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--disc) + 40px);
+  height: calc(var(--disc) + 40px);
+}
+.film-play .dial {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: film-turn 36s linear infinite;
+}
+.film-play .dial path {
+  fill: none;
+  stroke: rgba(242, 233, 216, 0.5);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+}
+.film-play .dial .today {
+  stroke: #b8532e;
+  stroke-opacity: 1;
+  stroke-width: 1.6;
+}
+.film-disc {
+  display: grid;
+  place-items: center;
+  width: var(--disc);
+  height: var(--disc);
+  border-radius: 50%;
+  background: var(--cream);
+  color: #10140f;
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  transition: transform 0.4s var(--spring);
+}
+.film-disc .i {
+  width: 40%;
+  height: 40%;
+  margin-left: 6%;
+}
+.film-cover:hover .film-disc {
+  transform: scale(1.06);
+}
+.film-cover:focus-visible {
+  outline: none;
+}
+.film-cover:focus-visible .film-disc {
+  outline: 3px solid var(--mint);
+  outline-offset: 6px;
+}
+.film-cap {
+  font: 600 13px/1.3 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
+}
+@keyframes film-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.film-end {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.5s var(--ease),
+    opacity 0.5s var(--ease);
+}
+.film-end.on {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.film-end-row {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  padding-inline: 4px;
+}
+.film-end.on .film-end-row {
+  padding-block: 28px 4px;
+}
+.film-chapters {
+  list-style: none;
+  margin: clamp(24px, 3vw, 40px) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 28px clamp(16px, 2vw, 28px);
+}
+.film-chapters button {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 16px 0 4px;
+  border: 0;
+  background: none;
+  color: var(--sub);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.film-chapters button::before,
+.film-chapters button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line2);
+}
+.film-chapters button::after {
+  background: var(--mint);
+  transform: scaleX(var(--p, 0));
+  transform-origin: left;
+}
+.film-time {
+  font: 500 12px/1.2 var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--sub);
+}
+.film-name {
+  font: 400 clamp(18px, 1.6vw, 21px) / 1.2 var(--serif);
+  color: var(--sub);
+  transition: color 0.25s var(--ease);
+}
+.film-chapters button:hover .film-name,
+.film-chapters button.current .film-name {
+  color: var(--ink);
+}
+.film-chapters button.done::after {
+  opacity: 0.4;
+}
+.film-chapters button:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.film-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: start;
+  min-height: 44px;
+  color: var(--sub);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.25s var(--ease);
+}
+.film-link:hover {
+  color: var(--ink);
+}
+.film-link-ico {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line2);
+  border-radius: 50%;
+  color: var(--mint);
+  transition:
+    border-color 0.25s var(--ease),
+    transform 0.3s var(--spring);
+}
+.film-link:hover .film-link-ico {
+  border-color: var(--mint);
+  transform: scale(1.08);
+}
+.film-link .i {
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+}
+.film-link:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+@media (min-width: 641px) and (max-width: 1179px) {
+  .film-link {
+    justify-self: center;
+  }
+}
+@media (max-width: 1000px) {
+  .film-chapters {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+}
+@media (max-width: 760px) {
+  .film-chapters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 20px;
+  }
+}
+@media (max-width: 640px) {
+  .film-link {
+    justify-self: center;
+  }
+  .film-frame {
+    border-radius: var(--r-lg);
+  }
+  .film-play {
+    --disc: 84px;
+  }
+  .film-cap {
+    font-size: 11px;
+  }
+  .film-end-row .btn {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-play .dial {
+    animation: none;
+  }
+  .film-end,
+  .film-cover,
+  .film-disc {
+    transition: none;
+  }
+}

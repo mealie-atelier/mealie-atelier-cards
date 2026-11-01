@@ -24,6 +24,7 @@ export const sectionIds = {
   de: {
     compare: "vergleich",
     demo: "live-demo",
+    film: "film",
     everyday: "alltag",
     features: "funktionen",
     devices: "geraete",
@@ -37,6 +38,7 @@ export const sectionIds = {
   en: {
     compare: "compare",
     demo: "live-demo",
+    film: "film",
     everyday: "everyday",
     features: "features",
     devices: "devices",
