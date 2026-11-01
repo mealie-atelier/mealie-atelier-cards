@@ -2156,3 +2156,18 @@ test("the play glyph sits centred in its circle in the film disc and the hero fi
     );
   }
 });
+
+test("meal plan alt texts describe what the captures show", () => {
+  for (const locale of ["de", "en"]) {
+    const html = landing(builds.local, locale);
+    const alts = [...html.matchAll(/<img\b[^>]*\balt="([^"]+)"/g)].map((m) => m[1]);
+    const plan = alts.filter((a) => /Wochenplan auf dem Smartphone|Meal plan on a phone/.test(a));
+    assert.equal(plan.length, 1, `${locale}: phone alt present`);
+    assert.match(plan[0], locale === "de" ? /Donnerstag.*Pfannen-Eier/ : /Thursday.*skillet eggs/);
+    assert.doesNotMatch(plan[0], /Gnocchi/, "the phone capture shows Thursday only");
+    const wide = alts.filter((a) => /Wochenplan am Tablet|Meal plan on a tablet/.test(a));
+    assert.equal(wide.length, 1, `${locale}: wide alt present`);
+    assert.match(wide[0], /Gnocchi/);
+    for (const alt of [...plan, ...wide]) assert.doesNotMatch(alt, /[–—]|,\s+und\b/);
+  }
+});

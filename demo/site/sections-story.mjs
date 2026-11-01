@@ -29,8 +29,8 @@ function everyday(ctx) {
   // wide screens in the sticky stage. One large device per scene keeps the app UI readable.
   const alt = {
     mealplan: t(
-      "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
-      "Meal plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
+      "Wochenplan auf dem Smartphone: Donnerstag, der 29., mit Pfannen-Eier mit Tomaten und Basilikum zum Abendessen, der nächste Tag ist angeschnitten",
+      "Meal plan on a phone: Thursday the 29th with skillet eggs with tomatoes and basil for dinner, the next day cut off at the edge",
     ),
     discover: t(
       "Kochinspo schlägt Pfannen-Eier mit Tomaten und Basilikum vor: 17 Minuten, für 2 Personen, aus deinen Rezepten",
@@ -208,8 +208,8 @@ function features(ctx) {
     t("Wochenplan", "Meal plan"),
     { wide: "feature-mealplan", phone: "app-phone-mealplan" },
     t(
-      "Wochenplan auf dem Smartphone: Montag Gnocchi alla Sorrentina mit Foto, daneben der nächste Tag",
-      "Meal plan on a phone: Monday Gnocchi alla Sorrentina with a photo, the next day beside it",
+      "Wochenplan am Tablet: Montag Gnocchi alla Sorrentina, Dienstag Kürbissuppe mit Feta und Kürbiskernen und Penne mit Artischocken, Mittwoch Zitronen-Focaccia mit Rosmarin, Donnerstag Pfannen-Eier mit Tomaten und Basilikum",
+      "Meal plan on a tablet: Monday Gnocchi alla Sorrentina, Tuesday pumpkin soup with feta and pumpkin seeds plus penne with artichokes, Wednesday lemon and rosemary focaccia, Thursday skillet eggs with tomatoes and basil",
     ),
   )}${imageTile(
     "cart",
