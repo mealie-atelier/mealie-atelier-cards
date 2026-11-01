@@ -1910,6 +1910,7 @@ ha-card {
 .atelier .identity span {
   font-size: 8px;
   letter-spacing: 2.25px;
+  white-space: nowrap;
   margin-top: 7px;
 }
 .atelier .nav-label {
@@ -16140,7 +16141,10 @@ class MealieAtelierCard extends HTMLElement {
         this._announceTimer(timer);
         if (armError) {
           // A refusal without a known code (default web app, read-only) is raw English: show the local notice.
-          const translated = this._errorText(armError) !== armError?.message;
+          // No alarm channel configured is the default web app setup, not a failure: stay neutral.
+          const translated =
+            armError?.code !== "no_notification_destination" &&
+            this._errorText(armError) !== armError?.message;
           this._flash(
             translated
               ? this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) })
@@ -19590,6 +19594,13 @@ const shoppingSyncMethods = {
     else if (type === "sync-bring-password") bring.password = String(el.value);
     return true;
   },
+  // The confirmation renders below the buttons, often past the dialog's fold: scroll it into view.
+  _syncRevealConfirm() {
+    const reveal = () =>
+      this.shadowRoot?.querySelector?.(".bw-confirm")?.scrollIntoView?.({ block: "nearest" });
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(reveal);
+    else reveal();
+  },
   async _syncBringConnect() {
     const sync = this._syncData();
     const bring = sync.bring;
@@ -20268,6 +20279,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       if (caps.bringSetup && caps.admin) {
         sync.bring.confirm = action === "sync-bring-disconnect-ask";
         this._render();
+        if (sync.bring.confirm) this._syncRevealConfirm();
       }
       return true;
     }
@@ -20304,6 +20316,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       if (caps.admin) {
         sync.confirmDelete = value;
         this._render();
+        this._syncRevealConfirm();
       }
       return true;
     }

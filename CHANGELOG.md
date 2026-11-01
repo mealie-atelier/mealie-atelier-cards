@@ -12,6 +12,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Recipe editor: the version history button reads "Versionsverlauf anzeigen" / "Show version history", matching the hide label.
 - Sync rules with nothing waiting no longer say "Sending shortly" after Resume; the Waiting row reads "Checking shortly" until the catch-up run finishes.
 - German sync dialog: the Waiting row says "ausstehend" like the result line.
+- Shopping sync: the delete rule and disconnect confirmations now scroll into view instead of appearing below the fold of the dialog.
+- Kitchen timer: starting a timer without a background alarm channel now shows the neutral "runs on this device only" notice instead of a success toast.
+- Web app sidebar: the English subtitle no longer wraps, so the menu sits at the same height as in German.
 
 ## [0.12.1] - 2026-11-01
 

@@ -1556,3 +1556,18 @@ test("web app: signing in again shows the address read-only and not twice", asyn
   assert.match(html, /name="username"[^>]*readonly/);
   assert.doesNotMatch(html, /<dt>Account<\/dt>/);
 });
+
+test("the delete and disconnect confirmations are scrolled into view", async () => {
+  const env = syncCard();
+  await openStatus(env, [withRule()]);
+  const scrolls = [];
+  const root = env.card.shadowRoot;
+  const original = root.querySelector?.bind(root);
+  root.querySelector = (selector) =>
+    selector === ".bw-confirm"
+      ? { scrollIntoView: (options) => scrolls.push(options) }
+      : original?.(selector);
+  await click(env.card, { action: "sync-delete", value: "r1" });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.deepEqual(JSON.parse(JSON.stringify(scrolls)), [{ block: "nearest" }]);
+});

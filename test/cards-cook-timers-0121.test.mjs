@@ -122,3 +122,24 @@ test("a timer preset fills the field and focuses it only with a fine pointer", (
   assert.deepEqual(preset(true), { focused: 1, value: "10" });
   assert.deepEqual(preset(false), { focused: 0, value: "10" });
 });
+
+test("a missing alarm channel shows the neutral local timer notice", async () => {
+  const cards = loadCards({ globals: { crypto: { randomUUID: () => "t-1" } } });
+  const card = makeCard(cards, { hass: { language: "en", callWS: async () => ({}) } });
+  card._modal = null;
+  card._persistTimers = () => {};
+  card._render = () => {};
+  card._ws = async () => {
+    throw Object.assign(new Error("No background notification destination."), {
+      code: "no_notification_destination",
+    });
+  };
+  const input = { value: "5" };
+  card.shadowRoot.querySelector = (sel) => (sel === "[data-timer-minutes]" ? input : null);
+  const flashes = [];
+  card._flash = (text, kind) => flashes.push([text, kind]);
+  card._announceTimer = () => {};
+  card._prepareAudio = () => {};
+  await card._handleClick({ target: { closest: () => ({ dataset: { action: "timer-start" } }) } });
+  assert.deepEqual(flashes, [["The timer runs on this device only.", undefined]]);
+});

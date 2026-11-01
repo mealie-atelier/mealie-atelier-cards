@@ -113,3 +113,10 @@ test("cook step eyebrow hyphenates a long word like the heading below it", () =>
   assert.match(block, /hyphens:\s*auto;/);
   assert.match(block, /overflow-wrap:\s*break-word;/);
 });
+
+test("the sidebar identity subtitle never wraps, so English and German align", async () => {
+  const { readFileSync } = await import("node:fs");
+  const css = readFileSync(new URL("../src/design-system/editorial.css", import.meta.url), "utf8");
+  const block = css.match(/\.atelier \.identity span \{[^}]*\}/)?.[0] || "";
+  assert.match(block, /white-space:\s*nowrap/);
+});

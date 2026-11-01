@@ -449,6 +449,13 @@ export const shoppingSyncMethods = {
     else if (type === "sync-bring-password") bring.password = String(el.value);
     return true;
   },
+  // The confirmation renders below the buttons, often past the dialog's fold: scroll it into view.
+  _syncRevealConfirm() {
+    const reveal = () =>
+      this.shadowRoot?.querySelector?.(".bw-confirm")?.scrollIntoView?.({ block: "nearest" });
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(reveal);
+    else reveal();
+  },
   async _syncBringConnect() {
     const sync = this._syncData();
     const bring = sync.bring;
@@ -1127,6 +1134,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       if (caps.bringSetup && caps.admin) {
         sync.bring.confirm = action === "sync-bring-disconnect-ask";
         this._render();
+        if (sync.bring.confirm) this._syncRevealConfirm();
       }
       return true;
     }
@@ -1163,6 +1171,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       if (caps.admin) {
         sync.confirmDelete = value;
         this._render();
+        this._syncRevealConfirm();
       }
       return true;
     }

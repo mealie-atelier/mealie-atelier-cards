@@ -2445,7 +2445,10 @@ class MealieAtelierCard extends HTMLElement {
         this._announceTimer(timer);
         if (armError) {
           // A refusal without a known code (default web app, read-only) is raw English: show the local notice.
-          const translated = this._errorText(armError) !== armError?.message;
+          // No alarm channel configured is the default web app setup, not a failure: stay neutral.
+          const translated =
+            armError?.code !== "no_notification_destination" &&
+            this._errorText(armError) !== armError?.message;
           this._flash(
             translated
               ? this.t("uiBackgroundTimerError", { error: this._errorSentence(armError) })
