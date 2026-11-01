@@ -22566,13 +22566,13 @@ const AtelierStudio = (() => {
       return raw;
     const fmt = (n) =>
       n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumFractionDigits: 2 });
-    // A tiny exact amount keeps one significant digit instead of reading "0".
+    // An exact small amount: two decimals, below 0.1 two significant digits so it never reads "0".
     const tiny = (n) =>
-      n >= 0.005
+      n >= 0.1
         ? fmt(n)
-        : n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumSignificantDigits: 1 });
+        : n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumSignificantDigits: 2 });
     // The unit or noun right after the amount, without trailing punctuation ("Tassen," -> "Tassen").
-    const unitWord = (rest) => (rest.match(/^\s*([^\s\d(,;:!?)]+)/) || [])[1] || "";
+    const unitWord = (rest) => (rest.match(/^\s*([^\s\d(,;:.!?)]+)/) || [])[1] || "";
     // Kitchen rounding: metric masses and volumes to sensible steps, everything else to quarters and thirds
     // (eighths below one). Small amounts are never pushed up: below the smallest step they stay exact.
     const kitchen = (value, unit, style) => {
@@ -22583,7 +22583,7 @@ const AtelierStudio = (() => {
         return fmt(Math.round(value / step) * step);
       }
       if (["kg", "l", "liter", "litre", "dl", "cl"].includes(u) && style === "decimal")
-        return value < 0.05 ? tiny(value) : fmt(Math.round(value * 20) / 20);
+        return value < 1 ? tiny(value) : fmt(Math.round(value * 20) / 20);
       if (value >= 10) return fmt(Math.round(value));
       const whole = Math.floor(value);
       const grid = whole
@@ -22591,11 +22591,11 @@ const AtelierStudio = (() => {
         : [0, 0.125, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1];
       const frac = value - whole;
       const near = grid.reduce((x, y) => (Math.abs(y - frac) < Math.abs(x - frac) ? y : x));
-      // A fraction source below one that the grid would move by more than 15 % keeps its exact fraction:
-      // halved 1/3 cup is ⅙ cup, not ⅛.
-      if (style !== "decimal" && value < 1 && Math.abs(near - value) > 0.15 * value) {
-        const exact = formatFraction(value, true);
-        if (exact !== null) return exact;
+      // Below one, an amount the grid would move by more than 15 % stays exact: as a fraction when the source
+      // was one and it has a clean one (halved 1/3 cup is ⅙ cup), else as a decimal (0,3 TL / 4 is 0,08 TL).
+      if (value < 1 && Math.abs(near - value) > 0.15 * value) {
+        const exact = style === "decimal" ? null : formatFraction(value, true);
+        return exact !== null ? exact : tiny(value);
       }
       const total = whole + near;
       if (total === 0) return tiny(value);

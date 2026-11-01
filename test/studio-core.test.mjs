@@ -822,7 +822,7 @@ test("scaled amounts read like a kitchen: rounding, glyph fractions, unit agreem
   assert.equal(s("1 Zehe Knoblauch", 3, 1), "3 Zehen Knoblauch");
   assert.equal(s("1 Bund Petersilie", 3, 1), "3 Bund Petersilie");
   // Small amounts are never rounded up: below the smallest step they stay exact, fractions halve to eighths.
-  assert.equal(s("0,1 g Safran", 1, 3), "0,03 g Safran");
+  assert.equal(s("0,1 g Safran", 1, 3), "0,033 g Safran");
   assert.equal(s("0,1 g Safran", 4, 2), "0,2 g Safran");
   assert.equal(s("0,3 g Safran", 2, 4), "0,15 g Safran");
   assert.equal(s("0,02 kg Hefe", 1, 2), "0,01 kg Hefe");
@@ -830,11 +830,21 @@ test("scaled amounts read like a kitchen: rounding, glyph fractions, unit agreem
   assert.equal(s("1/4 tsp cayenne", 1, 2, "en"), "⅛ tsp cayenne");
   assert.equal(s("1/3 cup sugar", 1, 2, "en"), "⅙ cup sugar");
   assert.equal(s("0,25 TL Salz", 1, 2), "⅛ TL Salz");
-  assert.equal(s("0,1 TL Salz", 1, 4), "0,03 TL Salz");
-  assert.equal(s("0,01 g Vanille", 1, 4), "0,003 g Vanille");
+  assert.equal(s("0,1 TL Salz", 1, 4), "0,025 TL Salz");
+  assert.equal(s("0,01 g Vanille", 1, 4), "0,0025 g Vanille");
   // Agreement sees through punctuation and keeps an all-caps word in caps.
   assert.equal(s("2 Tassen, gestrichen", 1, 2), "1 Tasse, gestrichen");
   assert.equal(s("2 EGGS", 1, 2, "en"), "1 EGG");
+  assert.equal(s("2 Tassen. Mehl", 1, 4), "½ Tasse. Mehl");
+  // Below one, the grid never moves an amount by more than 15 %: it stays exact instead.
+  assert.equal(s("⅕ TL Zimt", 1, 3), "0,067 TL Zimt");
+  assert.equal(s("0,3 TL Zimt", 1, 4), "0,075 TL Zimt");
+  assert.equal(s("1 EL Öl", 1, 12), "0,083 EL Öl");
+  assert.equal(s("⅙ cup oil", 1, 2, "en"), "0.083 cup oil");
+  assert.equal(s("1 Prise Salz", 1, 10), "0,1 Prise Salz");
+  assert.equal(s("1 Prise Salz", 1, 8), "⅛ Prise Salz");
+  assert.equal(s("0,5 l Milch", 1, 7), "0,071 l Milch");
+  assert.equal(s("0,5 l Milch", 1, 4), "0,13 l Milch");
   assert.equal(s("1,2 g Safran", 5, 3, "en"), "2 g Safran");
   assert.equal(s("2.5 g Salt", 5, 3, "en"), "4 g Salt");
   assert.equal(s("2 cups flour", 3, 2, "en"), "3 cups flour");
