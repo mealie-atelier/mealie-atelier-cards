@@ -94,7 +94,7 @@ test("the reauth paragraph sits clear of the account heading, tighter on a phone
   );
 });
 
-test("the cart glyph in the sync dialog header is centred on the close button, scoped to the sync panel", () => {
+test("the cart glyph in the sync dialog header is centered on the close button, scoped to the sync panel", () => {
   const rules = [...css.matchAll(/\n(\.atelier [^{]*\.editor-stamp)\s*\{([^}]*)\}/g)];
   const glyph = rules.find(
     ([, selector, body]) =>

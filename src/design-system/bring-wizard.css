@@ -486,9 +486,10 @@
   color: var(--ds-muted);
   opacity: 0.75;
 }
-/* The glyph's centre sits on the close button's centre (the sticky button is inset 20px from the dialog top and
-   --at-close-size tall), whatever the dialog padding: the header starts one padding below the top, so the glyph
-   is pulled up by the difference and by half its own height, which leaves the title where it was. */
+/* The glyph's center sits on the close button's center (the sticky button is inset 20px from the dialog top and
+   48px tall wherever the stamp shows; --at-close-size is set on the button itself, so the fallback applies),
+   whatever the dialog padding: the header starts one padding below the top, so the glyph is pulled up by the
+   difference and by half its own height, which leaves the title where it was. */
 .atelier .sync-panel .editor-stamp {
   --bw-glyph: 26px;
   block-size: var(--bw-glyph);
