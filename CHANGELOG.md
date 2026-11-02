@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.14] - 2026-11-02
+
 ### Fixed
 
 - Scaling: in the English interface, German compounds such as "1 Knoblauchzehe" ("2 Knoblauchzehen") and German nouns after an adjective ("2 große Zwiebeln") now agree too. Other German nouns ("1 Pfirsich", "1 Tomate") agree in the German interface only.
@@ -634,7 +636,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.13...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.14...HEAD
+[0.12.14]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.13...v0.12.14
 [0.12.13]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.12...v0.12.13
 [0.12.12]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.11...v0.12.12
 [0.12.11]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.10...v0.12.11
