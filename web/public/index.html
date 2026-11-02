@@ -153,8 +153,13 @@
       import { initPwaInstall } from "/pwa-install.js";
       const pwaInstall = initPwaInstall();
       await import("/mealie-atelier-cards.js?v=0.12.7");
-      const { AtelierOfflineClient, AtelierAlarmClient, attachOfflineUi, OFFLINE_ACTIONS } =
-        await import("/offline-client.js");
+      const {
+        AtelierOfflineClient,
+        AtelierAlarmClient,
+        attachOfflineUi,
+        reloadAfterReconnect,
+        OFFLINE_ACTIONS,
+      } = await import("/offline-client.js");
       const registrationPromise =
         "serviceWorker" in navigator
           ? navigator.serviceWorker.register("/sw.js").catch(() => null)
@@ -262,7 +267,10 @@
       attachOfflineUi(card, offline, alarms);
       // Native card and companion use the same timer implementation. No second click-handler
       // intercepts or duplicates the card's alarm creation/cancellation requests.
-      window.addEventListener("online", () => alarms.refresh().catch(() => {}));
+      window.addEventListener("online", () => {
+        alarms.refresh().catch(() => {});
+        reloadAfterReconnect(card, offline).catch(() => {});
+      });
       navigator.serviceWorker?.addEventListener("message", (event) => {
         if (event.data?.type === "TIMER_EXPIRED") alarms.refresh().catch(() => {});
       });

@@ -766,3 +766,33 @@ test("the German texts call a shopping item Artikel, never Eintrag", async () =>
   ])
     assert.doesNotMatch(de[key], /Eintr/, key);
 });
+
+test("reconnect reloads an errored or empty card after the sync, and leaves a healthy card alone", async () => {
+  globalThis.self ??= globalThis;
+  const channel = globalThis.BroadcastChannel;
+  globalThis.BroadcastChannel = undefined;
+  const { reloadAfterReconnect } = await import("../public/offline-client.js");
+  globalThis.BroadcastChannel = channel;
+  const run = async (card) => {
+    const order = [];
+    card._refresh = async () => order.push("refresh");
+    await reloadAfterReconnect(card, { sync: async () => order.push("sync") });
+    return order;
+  };
+  assert.deepEqual(await run({ _loadFailed: true, _error: "x", _data: { recipes: null } }), [
+    "sync",
+    "refresh",
+  ]);
+  assert.deepEqual(await run({ _loadFailed: false, _error: "", _data: { recipes: null } }), [
+    "sync",
+    "refresh",
+  ]);
+  assert.deepEqual(
+    await run({ _loadFailed: false, _error: "", _data: { recipes: { items: [] } } }),
+    ["sync"],
+  );
+  const html = await (
+    await import("node:fs/promises")
+  ).readFile(join(ROOT, "public/index.html"), "utf8");
+  assert.match(html, /reloadAfterReconnect\(card, offline\)/);
+});

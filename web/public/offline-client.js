@@ -179,7 +179,12 @@ export class AtelierOfflineClient {
     return { queued: true, id };
   }
   async sync() {
+    if (this.syncing && this._syncRun) return this._syncRun;
     if (!this.enabled || this.syncing || !navigator.onLine) return;
+    this._syncRun = this._sync();
+    return this._syncRun;
+  }
+  async _sync() {
     this.syncing = true;
     this.onChange();
     try {
@@ -192,6 +197,7 @@ export class AtelierOfflineClient {
       this.lastError = e.code || "offlineUnexpectedError";
     } finally {
       this.syncing = false;
+      this._syncRun = null;
       await this.reload();
       this.onChange();
     }
@@ -520,4 +526,18 @@ export function attachOfflineUi(card, offline, alarms) {
   });
   update();
   return panel;
+}
+
+/** True when the card shows its load-error banner or never received recipes. */
+export function cardNeedsReload(card) {
+  return Boolean(card?._loadFailed || card?._error || !card?._data?.recipes);
+}
+
+/**
+ * After the connection returns: let the offline sync resolve, then reload the card through its normal
+ * refresh path, but only when it is in an error or empty state. A healthy card is left alone.
+ */
+export async function reloadAfterReconnect(card, offline) {
+  await Promise.resolve(offline?.sync?.()).catch(() => {});
+  if (cardNeedsReload(card)) await card._refresh();
 }

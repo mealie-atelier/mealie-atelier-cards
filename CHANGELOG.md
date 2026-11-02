@@ -7,6 +7,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Fixed
 
 - Product page demo: the first shopping list item ("1 tbsp olive oil") no longer opens with quantity 2 in the edit dialog, which would have doubled it on save.
+- Standalone app: after reloading while offline, the app now reloads its data by itself once the connection returns and the offline sync finishes, so the error banner clears and the recipes fill in without pressing "Try again".
 
 ## [0.12.7] - 2026-11-02
 
