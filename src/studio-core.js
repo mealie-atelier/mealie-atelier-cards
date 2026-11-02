@@ -186,7 +186,9 @@ const AtelierStudio = (() => {
       .join("");
   }
   function scaleLeading(row, targetServings, baseServings, locale = "de") {
-    const raw = typeof row === "string" ? row : ingredient(row),
+    const original = typeof row === "string" ? row : ingredient(row),
+      // "¹/₂" and "1 ¹/₂" read as "1/2" and "1 1/2" before the amount is parsed.
+      raw = original ? normalizeFractions(original) : original,
       target = Number(targetServings),
       base = Number(baseServings);
     if (
@@ -197,7 +199,7 @@ const AtelierStudio = (() => {
       base < 1 ||
       target === base
     )
-      return raw;
+      return original;
     const fmt = (n) =>
       n.toLocaleString(locale === "en" ? "en-US" : "de-DE", { maximumFractionDigits: 2 });
     // An exact small amount: two decimals, below 0.1 two significant digits so it never reads "0".
@@ -355,13 +357,18 @@ const AtelierStudio = (() => {
       }
       if (!forms) return rest;
       const base = forms[plural];
-      const next = prefix ? base.toLowerCase() : base;
+      // After a hyphen ("Knoblauch-Zehen") the tail is its own word and keeps the casing it was written in.
+      const hyphenated = prefix.endsWith("-");
+      const tailStart = word[prefix.length] || word[0];
+      const next = prefix && !hyphenated ? base.toLowerCase() : base;
       const keepCase =
         word.length > 1 && word === word.toUpperCase()
           ? prefix + next.toUpperCase()
-          : prefix || word[0] === word[0].toLowerCase()
-            ? prefix + next.toLowerCase()
-            : next;
+          : hyphenated
+            ? prefix + (tailStart === tailStart.toLowerCase() ? next.toLowerCase() : next)
+            : prefix || word[0] === word[0].toLowerCase()
+              ? prefix + next.toLowerCase()
+              : next;
       return rest.replace(word, keepCase);
     };
     // A range such as "2-3", "1 1/2-2", "1½ bis 2" or "200 g - 250 g" scales on both ends and keeps its separator.
@@ -370,7 +377,7 @@ const AtelierStudio = (() => {
     const bound = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*[${glyphClass}]|\\d+(?:[.,]\\d+)?)`;
     const range = raw.match(
       new RegExp(
-        `^(\\s*)(${bound})(?:(\\s*)([a-zA-Zµ]+\\.?))?(\\s*[-–]\\s*|\\s+(?:bis|to)\\s+)(${bound})(\\s+.*)$`,
+        `^(\\s*)(${bound})(?:(\\s*)([a-zA-Zµ]+\\.?))?(\\s*[-–]\\s*|\\s+(?:bis|to)\\s+)(${bound})(\\s+.*|(?![x×])[a-zA-Zµ]+.*)$`,
       ),
     );
     const boundValue = (text) => {
@@ -381,8 +388,14 @@ const AtelierStudio = (() => {
       if (m) return Number(m[3]) > 0 ? Number(m[1] || 0) + Number(m[2]) / Number(m[3]) : NaN;
       return Number(t.replace(",", "."));
     };
-    const repeatedUnit =
-      range && range[4] && unitWord(range[7]).toLowerCase() === range[4].toLowerCase();
+    // The same unit word, or the singular and plural of one counted noun ("Prise" and "Prisen").
+    const sameUnit = (a, b) => {
+      const x = a.toLowerCase(),
+        y = b.toLowerCase(),
+        table = NOUNS[locale === "en" ? "en" : "de"] || {};
+      return x === y || (table[x] !== undefined && table[x][0] === table[y]?.[0]);
+    };
+    const repeatedUnit = range && range[4] && sameUnit(unitWord(range[7]), range[4]);
     if (range && (!range[4] || repeatedUnit)) {
       const low = boundValue(range[2]),
         high = boundValue(range[6]);
@@ -399,7 +412,7 @@ const AtelierStudio = (() => {
           lo = tiny(lowValue);
           hi = tiny(highValue);
         }
-        const lowUnit = range[4] ? `${range[3]}${range[4]}` : "";
+        const lowUnit = range[4] ? agree(`${range[3]}${range[4]}`, shown(lo)) : "";
         return `${range[1]}${lo}${lowUnit}${range[5]}${hi}${agree(range[7], shown(hi))}`;
       }
       return raw;

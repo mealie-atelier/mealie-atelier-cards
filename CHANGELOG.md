@@ -11,6 +11,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Sync dialog: the notice about the rule limit now has the same gap under the last rule card as the cards have between each other.
 - Sync rule dialog: a deleted destination reads "(missing)" like the rule card instead of "(unavailable)".
 - Sync: when several rules point at the same deleted Bring! list, each banner names its rule.
+- Scaling: superscript fractions such as "¹/₂", ranges without spaces such as "200g-250g", and ranges that change between singular and plural such as "1 Prise - 2 Prisen" now scale correctly, and a hyphenated compound such as "Knoblauch-Zehen" keeps its capital after the hyphen.
 
 ## [0.12.7] - 2026-11-02
 

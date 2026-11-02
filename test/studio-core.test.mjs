@@ -1139,3 +1139,30 @@ test("scaling a range handles mixed numbers, fractions, decimals and a repeated 
   assert.equal(s("2-3 Eier", 4, 2), "4-6 Eier");
   assert.equal(s("1 bis 2 Eier", 4, 2), "2 bis 4 Eier");
 });
+
+test("scaling reads superscript and subscript fractions", () => {
+  const s = (row, to, from, loc = "de") => Studio.scaleIngredient(row, to, from, loc);
+  assert.equal(s("¹/₂ Tasse Milch", 2, 1), "1 Tasse Milch");
+  assert.equal(s("1 ¹/₂ Esslöffel Öl", 3, 2), "2¼ Esslöffel Öl");
+  assert.equal(s("1 ¹/₂ tablespoons oil", 3, 2, "en"), "2¼ tablespoons oil");
+});
+
+test("scaling a range without spaces around the bounds or the unit", () => {
+  const s = (row, to, from, loc = "de") => Studio.scaleIngredient(row, to, from, loc);
+  assert.equal(s("200g-250g Mehl", 3, 2), "300g-380g Mehl");
+  assert.equal(s("200g - 250g Mehl", 3, 2), "300g - 380g Mehl");
+  assert.equal(s("200g-250g flour", 3, 2, "en"), "300g-380g flour");
+  assert.equal(s("1 x 2-3 cm", 4, 2), "1 x 2-3 cm");
+  assert.equal(s("2 Knoblauch-Zehen", 4, 2), "4 Knoblauch-Zehen");
+  assert.equal(s("1 Knoblauch-Zehe", 4, 2), "2 Knoblauch-Zehen");
+  assert.equal(s("2 Knoblauch-zehen", 4, 2), "4 Knoblauch-zehen");
+});
+
+test("scaling a range whose unit changes between singular and plural", () => {
+  const s = (row, to, from, loc = "de") => Studio.scaleIngredient(row, to, from, loc);
+  assert.equal(s("1 Prise - 2 Prisen Salz", 4, 2), "2 Prisen - 4 Prisen Salz");
+  assert.equal(s("1 Dose - 2 Dosen Tomaten", 4, 2), "2 Dosen - 4 Dosen Tomaten");
+  assert.equal(s("1 Prise - 2 Prisen Salz", 3, 2), "1½ Prisen - 3 Prisen Salz");
+  assert.equal(s("1 cup - 2 cups flour", 4, 2, "en"), "2 cups - 4 cups flour");
+  assert.equal(s("1 Prise - 2 Prisen Salz", 1, 2), "½ Prise - 1 Prise Salz");
+});
