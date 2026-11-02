@@ -968,7 +968,7 @@
   "editorHistoryLoading": "Versionen werden geladen …",
   "editorHistoryEmpty": "Noch keine Backups. Vor jeder Änderung wird eines angelegt.",
   "editorRestore": "Wiederherstellen",
-  "editorRestoreConfirm": "Die Version von {time} wiederherstellen? Der aktuelle Stand wird vorher gesichert. Ungespeicherte Änderungen in diesem Dialog gehen verloren.",
+  "editorRestoreConfirm": "Die Version vom {time} wiederherstellen? Der aktuelle Stand wird vorher gesichert. Ungespeicherte Änderungen in diesem Dialog gehen verloren.",
   "editorRestoreNow": "Diese Version wiederherstellen",
   "editorUndo": "Letzte Änderung rückgängig machen",
   "editorKindIngredients": "Zutaten",

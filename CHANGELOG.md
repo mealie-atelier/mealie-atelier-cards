@@ -4,6 +4,11 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Cooking mode on a phone: the "swipe" hint under the step is larger and no longer faded, so it is readable in both themes.
+- German recipe editor: the restore confirmation in the version history reads "Die Version vom …" instead of "von".
+
 ## [0.12.6] - 2026-11-02
 
 ### Fixed
