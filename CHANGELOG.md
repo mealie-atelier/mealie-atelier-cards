@@ -11,6 +11,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Recipe check: a range such as "200g-250g Butter" is no longer flagged as an unclear amount.
 - Scaling: "Kartoffel", "Packung", "Stange", "Stück" and the English "package" and "stalk" now agree with the scaled amount.
 - Scaling: German unit words such as "Prise" and "Dose" scale correctly when the card language is English. This includes ranges.
+- Shopping, pantry and nutrition: a range with a unit on both bounds such as "750 g - 1 kg" now counts the upper bound with its own unit.
 - Sync rule dialog: a destination whose entity is unavailable now reads "(unavailable)" in the destination list.
 - Sync rule dialog: a source list that was deleted in Mealie now shows its name with "(missing)" instead of a bare placeholder.
 - German Mealie token error: the text now says "melde die Integration neu an" like the Bridge message.
