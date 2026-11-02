@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Product page: opening a section link such as /de/#installieren on a fresh load lands on that section instead of 700 to 1000 px too far down, and stays there while images and content above it settle.
+
 ## [0.12.5] - 2026-11-02
 
 ### Fixed

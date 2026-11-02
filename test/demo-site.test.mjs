@@ -2171,3 +2171,25 @@ test("meal plan alt texts describe what the captures show", () => {
     for (const alt of [...plan, ...wide]) assert.doesNotMatch(alt, /[–—]|,\s+und\b/);
   }
 });
+
+test("deep links stay aligned to the target while the layout above it settles", () => {
+  const js = read(join(builds.local, "assets/site.js"));
+  const css = read(join(builds.local, "assets/live-demo.css"));
+  // The offset is the sticky header height the page already scrolls by for nav clicks.
+  assert.match(css, /html \{[^}]*scroll-padding-top: calc\(88px/);
+  const body = js.match(
+    /function holdHashTarget\(\) \{[\s\S]*?\n\}\nif \(location\.hash\) holdHashTarget\(\);/,
+  );
+  assert.ok(body, "the hash target is held on load");
+  // Jumps are instant so they do not chase content that is still moving under a smooth scroll.
+  assert.match(body[0], /behavior: "instant"/);
+  assert.match(body[0], /scrollPaddingTop/);
+  // Late layout shifts re-align; a settle window and a hard cap end the loop.
+  assert.match(body[0], /root\.scrollHeight !== height/);
+  assert.match(body[0], /ANCHOR_SETTLE_MS/);
+  assert.match(body[0], /ANCHOR_MAX_MS/);
+  // A reader who scrolls, touches, types or navigates is never pulled back.
+  for (const name of ["wheel", "touchstart", "keydown", "pointerdown", "hashchange"]) {
+    assert.match(body[0], new RegExp(`"${name}"|"${name}",`), `${name} ends the hold`);
+  }
+});

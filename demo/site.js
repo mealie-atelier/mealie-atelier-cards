@@ -291,6 +291,50 @@ if (liveFrame && liveCard && liveFullscreen) {
     });
 }
 
+// Deep links: the browser scrolls to #section once, before images and revealed content have settled, and
+// the smooth scroll of the page then lands far off. Align to the target without animation and keep it
+// aligned while the layout above it still changes. Any input from the reader ends this at once.
+const ANCHOR_SETTLE_MS = 1200;
+const ANCHOR_MAX_MS = 8000;
+function holdHashTarget() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const target = id ? document.getElementById(id) : null;
+  if (!target) return;
+  const offset = () => parseFloat(getComputedStyle(root).scrollPaddingTop) || 0;
+  const inputs = ["wheel", "touchstart", "keydown", "pointerdown"];
+  const started = performance.now();
+  let lastShift = started;
+  let height = root.scrollHeight;
+  let done = false;
+  const align = () => {
+    const delta = target.getBoundingClientRect().top - offset();
+    if (Math.abs(delta) < 1) return;
+    // "instant" ignores the smooth scroll-behavior of the page, so the jump does not chase moving content.
+    scrollTo({ top: scrollY + delta, behavior: "instant" });
+  };
+  const stop = () => {
+    done = true;
+    for (const name of inputs) removeEventListener(name, stop);
+    removeEventListener("hashchange", stop);
+  };
+  const check = () => {
+    if (done) return;
+    const now = performance.now();
+    if (root.scrollHeight !== height) {
+      height = root.scrollHeight;
+      lastShift = now;
+    }
+    align();
+    if (now - lastShift > ANCHOR_SETTLE_MS || now - started > ANCHOR_MAX_MS) stop();
+    else requestAnimationFrame(check);
+  };
+  for (const name of inputs) addEventListener(name, stop, { passive: true });
+  addEventListener("hashchange", stop);
+  align();
+  requestAnimationFrame(check);
+}
+if (location.hash) holdHashTarget();
+
 // The language switch keeps the section the reader is in: the other page opens at the same place.
 const sectionLinks = [...document.querySelectorAll("a[data-section-map]")];
 function syncLanguageHash() {
