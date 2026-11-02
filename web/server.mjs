@@ -857,7 +857,9 @@ function connectBring(msg) {
     if (!syncRunning) {
       await shoppingSync.start();
       syncRunning = true;
-    } else shoppingSync.bringReconnected();
+    }
+    // Also after a fresh start: an auth-expired outcome kept from the old session must not linger.
+    shoppingSync.bringReconnected();
     return { state: bringClient.state };
   });
 }

@@ -407,3 +407,45 @@ test("a Bring outage answers with a clear code and a wrong password never leaks"
     bring.close();
   }
 });
+
+test("connecting Bring! again after an expired session clears the auth-expired outcome", async () => {
+  const remote = await mealie();
+  const bring = await startFakeBring();
+  const { as, ...accountEnv } = await accounts();
+  const app = await launch(remote, bring, accountEnv);
+  try {
+    const list = bring.state.lists[0];
+    const rule = {
+      source_list_id: "list-a",
+      destination_entity_id: `bring:${list.listUuid}`,
+    };
+    const saved = await body(await app.call("mealie_atelier/sync_rule_save", { rule }, as.ada));
+    bring.state.rejectLogin = true;
+    bring.state.expireAccessTokens();
+    bring.state.refresh.clear();
+    const failed = await body(
+      await app.call(
+        "mealie_atelier/sync_run",
+        { rule_id: saved.rule.id, confirm_first_batch: true },
+        as.ada,
+      ),
+    );
+    assert.equal(failed.outcome, "destination_auth");
+    await app.call("mealie_atelier/bring_disconnect", {}, as.ada);
+    bring.state.rejectLogin = false;
+    const connected = await body(
+      await app.call(
+        "mealie_atelier/bring_connect",
+        { email: FAKE_EMAIL, password: FAKE_PASSWORD },
+        as.ada,
+      ),
+    );
+    assert.equal(connected.status, 200);
+    const state = await body(await app.call("mealie_atelier/sync_state", {}, as.ada));
+    assert.notEqual(state.rules[0].last_run?.outcome, "destination_auth");
+  } finally {
+    await app.stop();
+    remote.server.close();
+    bring.close();
+  }
+});
