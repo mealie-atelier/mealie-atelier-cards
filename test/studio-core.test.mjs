@@ -1187,3 +1187,13 @@ test("scales a range whose unit carries an umlaut", () => {
     "2 Stück - 4 Stück Ingwer",
   );
 });
+
+test("scales a superscript fraction in the upper bound of a range", () => {
+  assert.equal(Studio.scaleIngredient("1 ¹/₂-2 ¹/₂ EL", 4, 2), "3-5 EL");
+  assert.equal(Studio.scaleIngredient("1¹/₂-2¹/₂ EL", 4, 2), "3-5 EL");
+  assert.equal(Studio.scaleIngredient("1 ¹/₂ bis 2 ¹/₂ EL", 4, 2), "3 bis 5 EL");
+  assert.equal(Studio.scaleIngredient("1-1 ¹/₂ TL", 4, 2), "2-3 TL");
+  assert.equal(Studio.scaleIngredient("¹/₂ - ³/₄ TL", 4, 2), "1 - 1½ TL");
+  assert.equal(Studio.scaleIngredient("1 Tasse - 1 ¹/₂ Tassen", 4, 2), "2 Tassen - 3 Tassen");
+  assert.equal(Studio.scaleIngredient("1 ¹/₂-2 ¹/₂ EL", 1, 2), "¾-1¼ EL");
+});

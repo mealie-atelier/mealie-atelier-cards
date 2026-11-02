@@ -491,12 +491,21 @@ const AtelierStudio = (() => {
   // "¹/₂", "¹⁄₂" and "2 ¹/₂" become "1/2" and "2 1/2" so one amount pattern covers every fraction form.
   // "1¹/₂" must not turn into "11/2" (eleven halves): a whole number in front gets a space.
   function normalizeLeadingFraction(text) {
-    const glyphs = `${superDigits}${subDigits}`;
-    return String(text).replace(
-      new RegExp(`^(\\s*)(\\d+)?\\s?([${glyphs}]+)\\s?[/⁄]\\s?([${glyphs}]+)`),
-      (_, lead, whole, n, d) =>
+    const glyphs = `${superDigits}${subDigits}`,
+      amount = `(\\d+)?\\s?([${glyphs}]+)\\s?[/⁄]\\s?([${glyphs}]+)`,
+      fraction = (lead, whole, n, d) =>
         `${lead}${whole ? `${whole} ` : ""}${normalizeFractions(`${n}/${d}`)}`,
-    );
+      source = String(text);
+    if (!new RegExp(`^\\s*[\\d${glyphs}½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]`).test(source)) return source;
+    // The lower bound, then the upper bound of a leading range ("1 ¹/₂-2 ¹/₂ EL", "1 Tasse bis 1 ¹/₂ Tassen").
+    return source
+      .replace(new RegExp(`^(\\s*)${amount}`), (_, lead, whole, n, d) =>
+        fraction(lead, whole, n, d),
+      )
+      .replace(
+        new RegExp(`^([^,;(]*?(?:[-–]|\\sbis|\\sto)\\s*)${amount}`),
+        (_, lead, whole, n, d) => fraction(lead, whole, n, d),
+      );
   }
   function normalizeFractions(text) {
     const digit = (c) => {
