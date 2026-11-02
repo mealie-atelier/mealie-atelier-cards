@@ -1166,3 +1166,24 @@ test("scaling a range whose unit changes between singular and plural", () => {
   assert.equal(s("1 cup - 2 cups flour", 4, 2, "en"), "2 cups - 4 cups flour");
   assert.equal(s("1 Prise - 2 Prisen Salz", 1, 2), "½ Prise - 1 Prise Salz");
 });
+
+test("reads a whole number glued to a superscript fraction as a mixed amount", () => {
+  assert.equal(Studio.scaleIngredient("1¹/₂ Tassen Mehl", 4, 2), "3 Tassen Mehl");
+  assert.equal(Studio.scaleIngredient("1 ¹/₂ Tassen Mehl", 4, 2), "3 Tassen Mehl");
+  assert.equal(Studio.scaleIngredient("1¹/₂-2 Tassen Mehl", 4, 2), "3-4 Tassen Mehl");
+});
+
+test("keeps fraction glyphs after the leading amount untouched", () => {
+  assert.equal(Studio.scaleIngredient("Salz, ¹/₂ TL", 4, 2), "Salz, ¹/₂ TL");
+  assert.equal(
+    Studio.scaleIngredient("200 g Mehl, davon ¹/₂ zum Bestäuben", 4, 2),
+    "400 g Mehl, davon ¹/₂ zum Bestäuben",
+  );
+});
+
+test("scales a range whose unit carries an umlaut", () => {
+  assert.equal(
+    Studio.scaleIngredient("1 Stück - 2 Stück Ingwer", 4, 2),
+    "2 Stück - 4 Stück Ingwer",
+  );
+});

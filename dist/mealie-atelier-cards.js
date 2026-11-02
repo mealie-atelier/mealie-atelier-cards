@@ -22554,7 +22554,7 @@ const AtelierStudio = (() => {
         rest: m[3] || "",
       };
     // A unit may sit directly on the number ("200g Butter"); "2x" stays a pack count.
-    m = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)((?![x×])[a-zA-Zµ]+(?:\s+.*)?|\s+.*)?$/);
+    m = raw.match(/^(\s*)(\d+(?:[.,]\d+)?)((?![x×])[a-zA-ZäöüÄÖÜßµ]+(?:\s+.*)?|\s+.*)?$/);
     if (m)
       return {
         lead: m[1],
@@ -22593,8 +22593,9 @@ const AtelierStudio = (() => {
   }
   function scaleLeading(row, targetServings, baseServings, locale = "de") {
     const original = typeof row === "string" ? row : ingredient(row),
-      // "¹/₂" and "1 ¹/₂" read as "1/2" and "1 1/2" before the amount is parsed.
-      raw = original ? normalizeFractions(original) : original,
+      // A leading "¹/₂", "1 ¹/₂" or "1¹/₂" reads as "1/2" or "1 1/2" before the amount is parsed. Only the
+      // leading amount is rewritten: the rest of the row keeps its own fraction glyphs.
+      raw = original ? normalizeLeadingFraction(original) : original,
       target = Number(targetServings),
       base = Number(baseServings);
     if (
@@ -22783,7 +22784,7 @@ const AtelierStudio = (() => {
     const bound = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*[${glyphClass}]|\\d+(?:[.,]\\d+)?)`;
     const range = raw.match(
       new RegExp(
-        `^(\\s*)(${bound})(?:(\\s*)([a-zA-Zµ]+\\.?))?(\\s*[-–]\\s*|\\s+(?:bis|to)\\s+)(${bound})(\\s+.*|(?![x×])[a-zA-Zµ]+.*)$`,
+        `^(\\s*)(${bound})(?:(\\s*)([a-zA-ZäöüÄÖÜßµ]+\\.?))?(\\s*[-–]\\s*|\\s+(?:bis|to)\\s+)(${bound})(\\s+.*|(?![x×])[a-zA-ZäöüÄÖÜßµ]+.*)$`,
       ),
     );
     const boundValue = (text) => {
@@ -22894,6 +22895,15 @@ const AtelierStudio = (() => {
   const superDigits = "⁰¹²³⁴⁵⁶⁷⁸⁹";
   const subDigits = "₀₁₂₃₄₅₆₇₈₉";
   // "¹/₂", "¹⁄₂" and "2 ¹/₂" become "1/2" and "2 1/2" so one amount pattern covers every fraction form.
+  // "1¹/₂" must not turn into "11/2" (eleven halves): a whole number in front gets a space.
+  function normalizeLeadingFraction(text) {
+    const glyphs = `${superDigits}${subDigits}`;
+    return String(text).replace(
+      new RegExp(`^(\\s*)(\\d+)?\\s?([${glyphs}]+)\\s?[/⁄]\\s?([${glyphs}]+)`),
+      (_, lead, whole, n, d) =>
+        `${lead}${whole ? `${whole} ` : ""}${normalizeFractions(`${n}/${d}`)}`,
+    );
+  }
   function normalizeFractions(text) {
     const digit = (c) => {
       const i = superDigits.indexOf(c);
