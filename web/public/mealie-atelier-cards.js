@@ -22777,13 +22777,21 @@ const AtelierStudio = (() => {
       );
       return Number.isFinite(n) ? n : NaN;
     };
-    // Produce words come from the shared foodForms table so scaling and shopping lists stay in sync.
-    const produce = (lower) => foodForms[lower]?.slice(0, 2);
-    const noun = (lower) =>
-      NOUNS[locale === "en" ? "en" : "de"][lower] ??
-      NOUNS.de[lower] ??
-      NOUNS.en[lower] ??
-      produce(lower);
+    // German produce words come from the shared foodForms table so scaling and shopping lists stay in sync.
+    // Only a capitalized word in a German row counts: "1 orange" in English and the colour "orange" stay as they are.
+    const produce = (word) =>
+      locale !== "en" && /^[A-ZÄÖÜ]/.test(word)
+        ? foodForms[word.toLowerCase()]?.slice(0, 2)
+        : undefined;
+    const noun = (word) => {
+      const lower = word.toLowerCase();
+      return (
+        NOUNS[locale === "en" ? "en" : "de"][lower] ??
+        NOUNS.de[lower] ??
+        NOUNS.en[lower] ??
+        produce(word)
+      );
+    };
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
       const word = unitWord(rest);
@@ -22792,7 +22800,7 @@ const AtelierStudio = (() => {
       const plural = amount > 1 + 1e-9 ? 1 : 0;
       let prefix = "";
       // The word is looked up in both tables, whatever the locale, and inflected from the one it is found in.
-      let forms = noun(lower);
+      let forms = noun(word);
       if (!forms && locale !== "en") {
         const tail = COMPOUND_TAILS.flatMap((t) => [t + "n", t + "s", t + "e", t]).find(
           (t) => lower.length >= t.length + 3 && lower.endsWith(t) && table[t],
@@ -22839,7 +22847,7 @@ const AtelierStudio = (() => {
     const sameUnit = (a, b) => {
       const x = a.toLowerCase(),
         y = b.toLowerCase();
-      return x === y || (noun(x) !== undefined && noun(x)[0] === noun(y)?.[0]);
+      return x === y || (noun(a) !== undefined && noun(a)[0] === noun(b)?.[0]);
     };
     const repeatedUnit = range && range[4] && sameUnit(unitWord(range[7]), range[4]);
     // "750 g - 1 kg": two different measure units, each bound scales with its own unit.

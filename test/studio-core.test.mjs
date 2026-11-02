@@ -1259,3 +1259,12 @@ test("scaling a range with different units scales each bound with its own unit",
   assert.equal(Studio.scaleIngredient("200g-250g Mehl", 4, 2), "400g-500g Mehl");
   assert.equal(Studio.scaleIngredient("200 g - 250 g Mehl", 4, 2), "400 g - 500 g Mehl");
 });
+
+test("an English or lowercase 'orange' does not pick up the German produce plural", () => {
+  assert.equal(Studio.scaleIngredient("1 orange, juiced", 2, 1, "en"), "2 orange, juiced");
+  assert.equal(
+    Studio.scaleIngredient("1 orange Paprikaschote", 2, 1, "de"),
+    "2 orange Paprikaschote",
+  );
+  assert.equal(Studio.scaleIngredient("1 Orange", 2, 1, "de"), "2 Orangen");
+});
