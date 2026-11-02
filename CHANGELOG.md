@@ -4,6 +4,12 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Scaling: German produce such as "Banane", "Gurke", "Tomate" and "Apfel" now agrees with the scaled amount ("2 Bananen", "½ Banane").
+- Scaling: a range with a different unit on each bound such as "750 g - 1 kg" now scales both bounds ("1.500 g - 2 kg").
+- Sync rule dialog: a destination list that was deleted in Home Assistant keeps its name in the destination list and in the status notice instead of showing the raw entity id. This needs Bridge 0.12.5, which stores the name.
+
 ## [0.12.9] - 2026-11-02
 
 ### Fixed

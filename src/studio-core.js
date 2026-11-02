@@ -351,8 +351,13 @@ const AtelierStudio = (() => {
       );
       return Number.isFinite(n) ? n : NaN;
     };
+    // Produce words come from the shared foodForms table so scaling and shopping lists stay in sync.
+    const produce = (lower) => foodForms[lower]?.slice(0, 2);
     const noun = (lower) =>
-      NOUNS[locale === "en" ? "en" : "de"][lower] ?? NOUNS.de[lower] ?? NOUNS.en[lower];
+      NOUNS[locale === "en" ? "en" : "de"][lower] ??
+      NOUNS.de[lower] ??
+      NOUNS.en[lower] ??
+      produce(lower);
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
       const word = unitWord(rest);
@@ -411,14 +416,26 @@ const AtelierStudio = (() => {
       return x === y || (noun(x) !== undefined && noun(x)[0] === noun(y)?.[0]);
     };
     const repeatedUnit = range && range[4] && sameUnit(unitWord(range[7]), range[4]);
-    if (range && (!range[4] || repeatedUnit)) {
+    // "750 g - 1 kg": two different measure units, each bound scales with its own unit.
+    const measureUnit = /^(?:kg|g|gramm|mg|l|ml|dl|cl|el|tl|tbsp|tsp|cups?)$/i;
+    const mixedUnits =
+      range &&
+      range[4] &&
+      !repeatedUnit &&
+      measureUnit.test(range[4].replace(/\.$/, "")) &&
+      measureUnit.test(unitWord(range[7]));
+    if (range && (!range[4] || repeatedUnit || mixedUnits)) {
       const low = boundValue(range[2]),
         high = boundValue(range[6]);
-      if (Number.isFinite(low) && high >= low && !/^\s+[x×]\s*\d/i.test(range[7])) {
+      if (
+        Number.isFinite(low) &&
+        (mixedUnits ? high > 0 : high >= low) &&
+        !/^\s+[x×]\s*\d/i.test(range[7])
+      ) {
         const unit = unitWord(range[7]);
         const lowValue = (low * target) / base,
           highValue = (high * target) / base;
-        let lo = kitchen(lowValue, unit, "decimal"),
+        let lo = kitchen(lowValue, mixedUnits ? range[4] : unit, "decimal"),
           hi = kitchen(highValue, unit, "decimal");
         // Both ends in one notation: "0,17-0,33 TL", never "0,17-⅓ TL".
         const glyphEnd = (x) => /[¼½¾⅓⅔⅛⅙⅚⅕⅖⅗⅘⅜⅝⅞]/.test(x),

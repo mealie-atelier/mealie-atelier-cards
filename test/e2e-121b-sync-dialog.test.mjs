@@ -199,3 +199,72 @@ test("English list names use curly quotes and German uses the one term Artikel",
     if (/^(bw|sync|errSync)/.test(key)) assert.doesNotMatch(value, /Eintr(ag|äge)/, key);
   }
 });
+
+const goneDest = {
+  entity_id: "todo.e2e_ziel",
+  name: "todo.e2e_ziel",
+  platform: "local_todo",
+  available: false,
+};
+
+test("a removed destination uses the stored destination_name before the entity id", () => {
+  const r = rule({
+    name: "Weekly",
+    destination_entity_id: "todo.e2e_ziel",
+    destination: goneDest,
+    destination_name: "E2E Ziel",
+  });
+  const card = make({ entry: { features: { shopping_sync: true } }, rules: [r] });
+  assert.equal(card._syncRuleDestName(r), "E2E Ziel");
+});
+
+test("the picker reads a derived name, never the raw id, and prefers the stored name", async () => {
+  for (const [stored, expected] of [
+    [undefined, "E2e ziel"],
+    ["E2E Ziel", "E2E Ziel"],
+  ]) {
+    const r = rule({
+      name: "Weekly",
+      destination_entity_id: "todo.e2e_ziel",
+      destination: goneDest,
+      destination_name: stored,
+      activated: true,
+      last_run: { at: new Date().toISOString(), outcome: "destination_missing" },
+    });
+    const callWS = async (m) => {
+      const n = m.type.replace("mealie_atelier/", "");
+      if (n === "sync_state") return { supported: true, rules: [r], audit: [] };
+      if (n === "sync_destinations")
+        return { entities: [{ entity_id: "todo.x", name: "X", platform: "bring" }] };
+      return {};
+    };
+    const card = makeCard(loadCards(), { hass: { language: "en", callWS } });
+    card._status = {
+      entries: [
+        { entry_id: "e1", can_write: true, can_manage: true, features: { shopping_sync: true } },
+      ],
+    };
+    card._config = { ...card._config, entry_id: "e1" };
+    card._data.shopping = { lists: [{ id: "l1", name: "Weekly" }], items: [] };
+    card._activeList = "l1";
+    card._view = "shopping";
+    await card._syncLoad?.();
+    await card._syncSetupOpen("r1");
+    const html = card._syncSetupHtml();
+    assert.match(html, new RegExp(`selected>${expected} \\(missing\\)</option>`));
+    assert.doesNotMatch(html, /todo\.e2e_ziel \(missing\)/);
+  }
+});
+
+test("the missing notice keeps the stored destination name", () => {
+  const r = rule({
+    name: "Weekly",
+    destination_entity_id: "todo.e2e_ziel",
+    destination: goneDest,
+    destination_name: "E2E Ziel",
+    last_run: { at: new Date().toISOString(), outcome: "destination_missing" },
+  });
+  const card = make({ entry: { features: { shopping_sync: true } }, rules: [r] });
+  const html = card._syncRuleHtml(r, card._syncCaps());
+  assert.match(html, /E2E Ziel: Destination list missing\./);
+});

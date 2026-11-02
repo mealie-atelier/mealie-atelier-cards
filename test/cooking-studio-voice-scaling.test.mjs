@@ -169,7 +169,7 @@ test("scaling keeps leading-zero decimals with three decimals", () => {
 });
 
 test("scaleIngredient scales each alternative around oder and or", () => {
-  assert.equal(Studio.scaleIngredient("2 Eier oder 1 Banane", 6, 3, "de"), "4 Eier oder 2 Banane");
+  assert.equal(Studio.scaleIngredient("2 Eier oder 1 Banane", 6, 3, "de"), "4 Eier oder 2 Bananen");
   assert.equal(Studio.scaleIngredient("2 eggs or 1 banana", 4, 2, "en"), "4 eggs or 2 banana");
   assert.equal(
     Studio.scaleIngredient("1/2 Tasse Milch ODER 1 EL Öl", 4, 2, "de"),

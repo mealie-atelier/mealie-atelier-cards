@@ -1241,3 +1241,21 @@ test("a German unit word inflects and ranges scale under locale en", () => {
   assert.equal(Studio.scaleIngredient("1 Dose Tomaten", 3, 1, "en"), "3 Dosen Tomaten");
   assert.equal(Studio.scaleIngredient("1 cup flour", 2, 1, "en"), "2 cups flour");
 });
+
+test("scaling agrees German produce words with the shared food forms", () => {
+  assert.equal(Studio.scaleIngredient("1 Banane", 4, 2), "2 Bananen");
+  assert.equal(Studio.scaleIngredient("2 Bananen", 1, 4), "½ Banane");
+  assert.equal(Studio.scaleIngredient("1 Gurke", 6, 2), "3 Gurken");
+  assert.equal(Studio.scaleIngredient("4 Gurken", 1, 4), "1 Gurke");
+  assert.equal(Studio.scaleIngredient("1 Apfel", 4, 2), "2 Äpfel");
+  assert.equal(Studio.scaleIngredient("2 Äpfel", 1, 4), "½ Apfel");
+  assert.equal(Studio.scaleIngredient("1 Tomate", 4, 2), "2 Tomaten");
+  assert.equal(Studio.scaleIngredient("4 Tomaten", 1, 4), "1 Tomate");
+});
+
+test("scaling a range with different units scales each bound with its own unit", () => {
+  assert.equal(Studio.scaleIngredient("750 g - 1 kg Mehl", 4, 2), "1.500 g - 2 kg Mehl");
+  assert.equal(Studio.scaleIngredient("750 g - 1 kg Mehl", 1, 2), "380 g - 0,5 kg Mehl");
+  assert.equal(Studio.scaleIngredient("200g-250g Mehl", 4, 2), "400g-500g Mehl");
+  assert.equal(Studio.scaleIngredient("200 g - 250 g Mehl", 4, 2), "400 g - 500 g Mehl");
+});

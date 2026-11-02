@@ -19442,6 +19442,22 @@ const shoppingSyncMethods = {
   // Display name of a rule's destination. An unavailable or removed list has no name, and the raw
   // entity id is never shown: the result is empty then and callers fall back to the stored rule name.
   _syncRuleDestName(rule) {
+    const own = this._syncRuleDestNameLive(rule);
+    if (own) return own;
+    // The bridge stores the friendly name on the rule, so a removed destination keeps it.
+    const stored = String(rule.destination_name || "").trim();
+    const ids = [rule.destination?.entity_id, rule.destination_entity_id].filter(Boolean);
+    return stored && !ids.includes(stored) ? stored : "";
+  },
+  // Readable stand-in for an entity id: "todo.e2e_ziel" becomes "E2e ziel".
+  _syncReadableEntityId(entityId) {
+    const text = String(entityId || "")
+      .replace(/^todo\./, "")
+      .replace(/_/g, " ")
+      .trim();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  },
+  _syncRuleDestNameLive(rule) {
     const destination = rule.destination || {};
     const name = String(destination.name || "");
     const ids = [destination.entity_id, rule.destination_entity_id].filter(Boolean);
@@ -20204,7 +20220,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       originalSourceName: rule?.source_list_name || "",
       // Label for a stored destination that is not offered right now (unavailable entity).
       originalDestinationName: rule
-        ? this._syncRuleDestName(rule) || rule.destination_entity_id || ""
+        ? this._syncRuleDestName(rule) || this._syncReadableEntityId(rule.destination_entity_id)
         : "",
       // The deleted destination reads "missing" like the rule card, an unavailable one stays "unavailable".
       destinationGone: rule
@@ -20295,7 +20311,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       d.original?.destination === d.destination_entity_id &&
       !destination;
     const missingOption = storedMissing
-      ? `<option value="${esc(d.destination_entity_id)}" selected>${esc(this.t(d.destinationGone ? "syncDestinationMissingOption" : "syncDestinationUnavailableOption", { name: d.originalDestinationName || d.destination_entity_id }))}</option>`
+      ? `<option value="${esc(d.destination_entity_id)}" selected>${esc(this.t(d.destinationGone ? "syncDestinationMissingOption" : "syncDestinationUnavailableOption", { name: d.originalDestinationName || this._syncReadableEntityId(d.destination_entity_id) }))}</option>`
       : "";
     const previewMarkup = d.previewBusy
       ? `<p>${esc(this.t("loading"))}</p>`
@@ -22761,8 +22777,13 @@ const AtelierStudio = (() => {
       );
       return Number.isFinite(n) ? n : NaN;
     };
+    // Produce words come from the shared foodForms table so scaling and shopping lists stay in sync.
+    const produce = (lower) => foodForms[lower]?.slice(0, 2);
     const noun = (lower) =>
-      NOUNS[locale === "en" ? "en" : "de"][lower] ?? NOUNS.de[lower] ?? NOUNS.en[lower];
+      NOUNS[locale === "en" ? "en" : "de"][lower] ??
+      NOUNS.de[lower] ??
+      NOUNS.en[lower] ??
+      produce(lower);
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
       const word = unitWord(rest);
@@ -22821,14 +22842,26 @@ const AtelierStudio = (() => {
       return x === y || (noun(x) !== undefined && noun(x)[0] === noun(y)?.[0]);
     };
     const repeatedUnit = range && range[4] && sameUnit(unitWord(range[7]), range[4]);
-    if (range && (!range[4] || repeatedUnit)) {
+    // "750 g - 1 kg": two different measure units, each bound scales with its own unit.
+    const measureUnit = /^(?:kg|g|gramm|mg|l|ml|dl|cl|el|tl|tbsp|tsp|cups?)$/i;
+    const mixedUnits =
+      range &&
+      range[4] &&
+      !repeatedUnit &&
+      measureUnit.test(range[4].replace(/\.$/, "")) &&
+      measureUnit.test(unitWord(range[7]));
+    if (range && (!range[4] || repeatedUnit || mixedUnits)) {
       const low = boundValue(range[2]),
         high = boundValue(range[6]);
-      if (Number.isFinite(low) && high >= low && !/^\s+[x×]\s*\d/i.test(range[7])) {
+      if (
+        Number.isFinite(low) &&
+        (mixedUnits ? high > 0 : high >= low) &&
+        !/^\s+[x×]\s*\d/i.test(range[7])
+      ) {
         const unit = unitWord(range[7]);
         const lowValue = (low * target) / base,
           highValue = (high * target) / base;
-        let lo = kitchen(lowValue, unit, "decimal"),
+        let lo = kitchen(lowValue, mixedUnits ? range[4] : unit, "decimal"),
           hi = kitchen(highValue, unit, "decimal");
         // Both ends in one notation: "0,17-0,33 TL", never "0,17-⅓ TL".
         const glyphEnd = (x) => /[¼½¾⅓⅔⅛⅙⅚⅕⅖⅗⅘⅜⅝⅞]/.test(x),

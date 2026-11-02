@@ -213,6 +213,22 @@ export const shoppingSyncMethods = {
   // Display name of a rule's destination. An unavailable or removed list has no name, and the raw
   // entity id is never shown: the result is empty then and callers fall back to the stored rule name.
   _syncRuleDestName(rule) {
+    const own = this._syncRuleDestNameLive(rule);
+    if (own) return own;
+    // The bridge stores the friendly name on the rule, so a removed destination keeps it.
+    const stored = String(rule.destination_name || "").trim();
+    const ids = [rule.destination?.entity_id, rule.destination_entity_id].filter(Boolean);
+    return stored && !ids.includes(stored) ? stored : "";
+  },
+  // Readable stand-in for an entity id: "todo.e2e_ziel" becomes "E2e ziel".
+  _syncReadableEntityId(entityId) {
+    const text = String(entityId || "")
+      .replace(/^todo\./, "")
+      .replace(/_/g, " ")
+      .trim();
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  },
+  _syncRuleDestNameLive(rule) {
     const destination = rule.destination || {};
     const name = String(destination.name || "");
     const ids = [destination.entity_id, rule.destination_entity_id].filter(Boolean);
@@ -975,7 +991,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       originalSourceName: rule?.source_list_name || "",
       // Label for a stored destination that is not offered right now (unavailable entity).
       originalDestinationName: rule
-        ? this._syncRuleDestName(rule) || rule.destination_entity_id || ""
+        ? this._syncRuleDestName(rule) || this._syncReadableEntityId(rule.destination_entity_id)
         : "",
       // The deleted destination reads "missing" like the rule card, an unavailable one stays "unavailable".
       destinationGone: rule
@@ -1066,7 +1082,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       d.original?.destination === d.destination_entity_id &&
       !destination;
     const missingOption = storedMissing
-      ? `<option value="${esc(d.destination_entity_id)}" selected>${esc(this.t(d.destinationGone ? "syncDestinationMissingOption" : "syncDestinationUnavailableOption", { name: d.originalDestinationName || d.destination_entity_id }))}</option>`
+      ? `<option value="${esc(d.destination_entity_id)}" selected>${esc(this.t(d.destinationGone ? "syncDestinationMissingOption" : "syncDestinationUnavailableOption", { name: d.originalDestinationName || this._syncReadableEntityId(d.destination_entity_id) }))}</option>`
       : "";
     const previewMarkup = d.previewBusy
       ? `<p>${esc(this.t("loading"))}</p>`
