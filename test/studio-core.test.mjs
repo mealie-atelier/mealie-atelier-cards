@@ -1207,6 +1207,17 @@ test("recipe check reads an unspaced range with units on both bounds as a quanti
   }
   // Every spelling of the same range counts the same amount, the upper bound.
   assert.equal(Studio.parseIngredient("200-250 g Butter").quantity, 250);
+  // Each bound keeps its own unit: "750 g - 1 kg" is up to a kilogram, not "1 g".
+  for (const [row, quantity, unit] of [
+    ["750 g - 1 kg Kartoffeln", 1000, "g"],
+    ["800g-1kg Hackfleisch", 1000, "g"],
+    ["500 ml - 1 l Brühe", 1000, "ml"],
+    ["1 kg - 500 g Kartoffeln", 500, "g"],
+  ]) {
+    const parsed = Studio.parseIngredient(row);
+    assert.equal(parsed.quantity, quantity, row);
+    assert.equal(parsed.unit, unit, row);
+  }
   const r = recipe("range", ["200g-250g Butter"]);
   assert.ok(!Studio.audit(r).problems.some((p) => p.key === "studioAuditAmountUnclear"));
 });
