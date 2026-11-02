@@ -4,13 +4,15 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.6] - 2026-11-02
+
 ### Fixed
 
 - Product page: opening a section link such as /de/#installieren on a fresh load lands on that section instead of 700 to 1000 px too far down, and stays there while images and content above it settle.
 - Cooking mode on a short phone: a recipe title that wraps to two lines keeps the same small top inset in the photo band instead of touching the top edge of the dialog.
 - Shopping sync: signing in to Bring! again after the session expired now clears the "session expired" notice on the rules right away, also when the account was disconnected first.
 - Bring! connect wizard and Shopping sync dialog: the cart icon in the header is now vertically centered on the close button.
-- Web app: importing a recipe from a page Mealie cannot read (Mealie answers 400 or 422) now shows the "This URL could not be imported" hint instead of a bare "Mealie HTTP 422".
+- Web app: importing a recipe from a page Mealie cannot read (Mealie answers 422) now shows the "This URL could not be imported" hint instead of a bare "Mealie HTTP 422".
 
 ## [0.12.5] - 2026-11-02
 
@@ -559,7 +561,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.5...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.6...HEAD
+[0.12.6]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.5...v0.12.6
 [0.12.5]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.4...v0.12.5
 [0.12.4]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.3...v0.12.4
 [0.12.3]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.2...v0.12.3
