@@ -558,10 +558,14 @@ export class SyncManager {
     if (interrupted.length) await this.store.save();
     for (const rule of Object.values(this.rules)) {
       if (!rule.activated || rule.paused) continue;
+      const records = this.ruleRecords(rule.id);
       if (
-        this.ruleRecords(rule.id).some(
+        records.some(
           (record) => record.state === "needs_reconciliation" || record.completion_pending,
-        )
+        ) ||
+        // A queued "Send again" or debounced run lives in memory only.
+        (records.some((record) => record.state === "pending") &&
+          ["after_atelier_add", "watch"].some((name) => rule.triggers?.[name]))
       )
         this.scheduleRun(rule.id, "startup", this.startupDelay);
     }
@@ -1220,16 +1224,27 @@ export class SyncManager {
 
   // Rule management
 
+  /** Rules saved before `auto_name` existed count as auto when the old default name matches. */
+  isAutoName(rule, destinationName) {
+    if (typeof rule.auto_name === "boolean") return rule.auto_name;
+    const source = rule.source_list_name || "";
+    return [rule.destination_name, destinationName]
+      .filter(Boolean)
+      .some((name) => rule.name === `${source} → ${name}`.slice(0, 60).trim());
+  }
+
   async ruleStatus(rule) {
     const counts = Object.fromEntries(STATES.map((state) => [state, 0]));
     for (const record of this.ruleRecords(rule.id)) counts[record.state] += 1;
     const scheduled = this.scheduled.get(rule.id);
+    const destination = await this.describe(rule.destination_entity_id, rule.destination_name);
     return {
       ...structuredClone(rule),
+      auto_name: this.isAutoName(rule, destination?.name),
       counts,
       running: !!this.locks.get(rule.id)?.locked,
       next_run_at: scheduled ? scheduled.due.toISOString() : null,
-      destination: await this.describe(rule.destination_entity_id, rule.destination_name),
+      destination,
     };
   }
 
@@ -1284,6 +1299,8 @@ export class SyncManager {
     const sourceName = String(source.name || "").slice(0, 100);
     const at = now();
     const { name: draftName, ...rest } = fields;
+    // No typed name means the name follows the route and is regenerated on every save.
+    const autoName = !draftName;
     const name = draftName || `${sourceName} → ${destination.name}`.slice(0, 60).trim();
     let rule;
     if (!existing) {
@@ -1292,6 +1309,7 @@ export class SyncManager {
         id,
         revision: 1,
         name,
+        auto_name: autoName,
         source_list_name: sourceName,
         ...rest,
         destination_name: destination.name,
@@ -1311,12 +1329,14 @@ export class SyncManager {
         // stays released when only its Bring! list was replaced, never when the source changed.
         rule.last_run = null;
         this.store.data.audit = this.store.data.audit.filter((entry) => entry.rule_id !== rule.id);
+        rule.retargeted_at = at;
         if (!(keepActivated && existing.source_list_id === fields.source_list_id))
           rule.activated = false;
         this.cancelScheduled(rule.id);
       }
       Object.assign(rule, rest, {
         name,
+        auto_name: autoName,
         source_list_name: sourceName,
         destination_name: destination.name,
         revision: rule.revision + 1,

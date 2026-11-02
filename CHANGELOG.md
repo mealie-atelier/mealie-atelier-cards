@@ -4,6 +4,14 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Sections view: a card is as tall as its content, so on a phone a long card no longer runs under the next one.
+- Sync rule dialog: when the Bring! sign-in has expired, the destination list keeps the saved list and says to sign in again, instead of saying that no suitable list exists.
+- Shopping sync: the "Bring! nicht erreichbar" notice disappears once the sync has caught up on its own.
+- Shopping sync: a rule pointed at another list no longer shows the old list's last delivery, and a rule whose name was left empty shows its current lists in the card language. This needs Bridge 0.12.6 in Home Assistant.
+- Web app shopping sync: the same retarget and rule name fixes, and items waiting to be sent go out after the server restarts.
+
 ## [0.12.10] - 2026-11-02
 
 ### Fixed

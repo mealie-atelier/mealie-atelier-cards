@@ -1007,3 +1007,79 @@ test("pruning drops only old finished records of rules that still exist", () => 
   prune(data, { present: { r1: new Set(["old-done"]) } });
   assert.deepEqual(Object.keys(data.records).sort(), ["new-done", "old-done", "old-failed"]);
 });
+
+test("retargeting a rule stamps retargeted_at and drops its audit entries only", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save();
+    await confirm(env, ruleId);
+    env.manager.store.data.audit.push({ at: "", rule_id: "other", count: 1 });
+    assert.ok(env.manager.store.data.audit.some((entry) => entry.rule_id === ruleId));
+    const second = env.bring.state.lists[1];
+    const status = await env.manager.saveRule(
+      { source_list_id: "list-a", destination_entity_id: `bring:${second.listUuid}` },
+      { ruleId, expectedRevision: env.manager.rules[ruleId].revision, resetRecords: true },
+    );
+    assert.ok(!env.manager.store.data.audit.some((entry) => entry.rule_id === ruleId));
+    assert.ok(env.manager.store.data.audit.some((entry) => entry.rule_id === "other"));
+    assert.equal(status.retargeted_at, env.manager.rules[ruleId].updated_at);
+  } finally {
+    await env.close();
+  }
+});
+
+test("auto_name follows the route while no name is typed and typed names are custom", async () => {
+  const env = await setup();
+  try {
+    const ruleId = await env.save();
+    assert.equal((await env.manager.ruleStatus(env.manager.rules[ruleId])).auto_name, true);
+    const second = env.bring.state.lists[1];
+    const first = env.manager.rules[ruleId].name;
+    let status = await env.manager.saveRule(
+      { source_list_id: "list-a", destination_entity_id: `bring:${second.listUuid}` },
+      { ruleId, expectedRevision: 1, resetRecords: true },
+    );
+    assert.equal(status.auto_name, true);
+    assert.notEqual(status.name, first);
+    status = await env.manager.saveRule(
+      {
+        source_list_id: "list-a",
+        destination_entity_id: `bring:${second.listUuid}`,
+        name: "Mine",
+      },
+      { ruleId, expectedRevision: status.revision, resetRecords: false },
+    );
+    assert.equal(status.auto_name, false);
+    assert.equal(status.name, "Mine");
+    // A rule stored before the flag existed counts as auto only while its name is the old default.
+    delete env.manager.rules[ruleId].auto_name;
+    assert.equal((await env.manager.ruleStatus(env.manager.rules[ruleId])).auto_name, false);
+    env.manager.rules[ruleId].name =
+      `${env.manager.rules[ruleId].source_list_name} → ${status.destination.name}`;
+    assert.equal((await env.manager.ruleStatus(env.manager.rules[ruleId])).auto_name, true);
+  } finally {
+    await env.close();
+  }
+});
+
+test("a restart re-arms a run for pending records of a released rule with automatic triggers", async () => {
+  const env = await setup({ items: [item("a", { note: "Milch" })] });
+  try {
+    const ruleId = await env.save({ triggers: { after_atelier_add: true } });
+    await confirm(env, ruleId);
+    const file = join(env.dir, "shopping-sync.json");
+    const data = JSON.parse(await readFile(file, "utf8"));
+    data.records[`${ruleId}:a`].state = "pending";
+    await writeFile(file, JSON.stringify(data));
+    const restarted = await env.boot();
+    assert.equal(restarted.fakeTimers.live().length, 1);
+    assert.equal(restarted.scheduled.has(ruleId), true);
+    // A paused rule or one without automatic triggers stays quiet.
+    data.rules[ruleId].paused = true;
+    await writeFile(file, JSON.stringify(data));
+    const paused = await env.boot();
+    assert.equal(paused.fakeTimers.live().length, 0);
+  } finally {
+    await env.close();
+  }
+});

@@ -288,11 +288,27 @@ export const shoppingSyncMethods = {
       (result?.pending_left ?? 0) > 0
     );
   },
-  _syncShowResult(result) {
+  _syncShowResult(result, ruleId = "") {
     const sync = this._syncData();
+    sync.resultRuleId = String(result?.rule_id || ruleId || "");
     sync.result = this._syncResultText(result);
     sync.resultIcon = this._syncResultIcon(result);
     sync.resultQuiet = !this._syncResultNotable(result);
+  },
+
+  // A failure line stays only while its rule still has trouble: once the rule has nothing waiting
+  // and its last run was healthy, the sync recovered by itself and the line is stale.
+  _syncClearRecoveredResult() {
+    const sync = this._syncData();
+    if (!sync.result || !sync.resultRuleId) return false;
+    const rule = this._syncRules().find((r) => r.id === sync.resultRuleId);
+    const healthy = ["sent", "nothing_to_send", "reconciled"];
+    if (!rule || this._syncWaiting(rule) || !healthy.includes(rule.last_run?.outcome)) return false;
+    sync.result = "";
+    sync.resultIcon = "";
+    sync.resultQuiet = false;
+    sync.resultRuleId = "";
+    return true;
   },
 
   async _syncLoad({ quiet = false } = {}) {
@@ -309,8 +325,9 @@ export const shoppingSyncMethods = {
       if (changed) {
         sync.raw = raw;
         sync.state = state;
-        this._render();
       }
+      const cleared = this._syncClearRecoveredResult();
+      if (changed || cleared) this._render();
       this._syncCheckAuth();
     } catch (err) {
       const repeated = sync.loadFailed;
@@ -658,10 +675,16 @@ export const shoppingSyncMethods = {
     const rule = rules.length > 1 ? rules.find((r) => r.id === entry.rule_id) : null;
     return rule ? `${this._syncRuleLabel(rule)} · ${text}` : text;
   },
-  _syncLastHealthyAudit(ruleId) {
+  // Audit entries from before the rule was retargeted belong to the old list and are ignored.
+  _syncLastHealthyAudit(ruleId, retargetedAt = "") {
     const healthy = ["sent", "nothing_to_send", "reconciled"];
+    const since = Date.parse(retargetedAt || "");
+    const current = (entry) => !Number.isFinite(since) || !(Date.parse(entry.at) < since);
     const entries = asArray(this._syncData().state?.audit)
-      .filter((entry) => entry.rule_id === ruleId && entry.at && healthy.includes(entry.outcome))
+      .filter(
+        (entry) =>
+          entry.rule_id === ruleId && entry.at && healthy.includes(entry.outcome) && current(entry),
+      )
       .sort((x, y) => String(x.at).localeCompare(String(y.at)));
     const entry = entries.at(-1);
     return entry ? { at: entry.at, outcome: entry.outcome, count: entry.count || 0 } : null;
@@ -691,21 +714,33 @@ export const shoppingSyncMethods = {
       this._syncRules().length > 1 ? `<strong>${esc(this._syncRuleLabel(rule))}</strong>: ` : "";
     return `<p class="notice error bw-error" role="alert">${icon("bolt", 16)} <span>${prefix}${esc(this.t("bwListGone", { destination: name }))}</span>${pick}</p>`;
   },
-  // A rule named after the built-in list in either language ("Shopping list" or "Einkaufsliste")
-  // is titled with the route in the current UI language.
-  _syncRuleTitle(rule, destination, destName) {
+  // True when the rule's name is generated from its route. The bridge flags this with auto_name; a
+  // rule saved before that flag counts as auto when its name equals what the old default generator
+  // produced for the stored source and destination.
+  _syncRuleAuto(rule, destination, destName) {
+    if (typeof rule.auto_name === "boolean") return rule.auto_name;
     const prefix = `${rule.source_list_name} → `;
     const name = String(rule.name || "");
-    if (!destName) return rule.name;
     const plain = (v) =>
       String(v)
         .toLowerCase()
         .replace(/[^\p{L}\p{N}]/gu, "");
+    // A name in either language of the built-in list ("Shopping list" or "Einkaufsliste").
     const builtIn =
-      String(destination.platform) === "shopping_list" &&
+      String(destination?.platform) === "shopping_list" &&
       name.startsWith(prefix) &&
       SHOPPING_LIST_NAMES.includes(plain(name.slice(prefix.length)));
-    return builtIn || name === `${prefix}${destination.name}` ? `${prefix}${destName}` : rule.name;
+    if (builtIn) return true;
+    return [destination?.name, rule.destination_name, destName]
+      .filter(Boolean)
+      .some((n) => name === `${prefix}${n}`.slice(0, 60) || name === `${prefix}${n}`);
+  },
+  // An auto-named rule is titled from the current source and destination in the UI language.
+  _syncRuleTitle(rule, destination, destName) {
+    if (!destName) return rule.name;
+    return this._syncRuleAuto(rule, destination, destName)
+      ? `${rule.source_list_name} → ${destName}`
+      : rule.name;
   },
   // Route line "source → destination (platform)". When the rule is already named after the route
   // only the platform that the title does not show is kept.
@@ -740,7 +775,7 @@ export const shoppingSyncMethods = {
     const state = !rule.activated ? "NotActivated" : rule.paused ? "Paused" : "Active";
     const stateIcon = state === "Active" ? icon("check", 15) : icon("clock", 15);
     // The same source as the account row: a rule without a current run still shows its last healthy one.
-    const last = rule.last_run || this._syncLastHealthyAudit(rule.id);
+    const last = rule.last_run || this._syncLastHealthyAudit(rule.id, rule.retargeted_at);
     const open =
       this._syncWaiting(rule) + (counts.failed || 0) + (counts.needs_reconciliation || 0);
     const id = esc(rule.id);
@@ -932,18 +967,23 @@ ${this._syncRouteHtml(rule, destination, destName)}
     return `<li class="sync-record"><div><strong>${esc(shown)}</strong>${record.description ? ` <span class="sync-muted">${esc(record.description)}</span>` : ""}<br><span class="sync-record-state">${icon(["pending", "sending", "needs_reconciliation"].includes(record.state) ? "clock" : "bolt", 14)} ${esc(this.t(`syncRecordState_${record.state}`))}</span>${error ? ` <span class="sync-muted">${esc(error)}</span>` : ""}</div>${resolvable ? `<div class="sync-record-actions">${button("sync-dismiss", this.t("syncDismiss"))}${record.state === "removed_after_send" ? "" : button("sync-resend", this.t("syncResend"))}</div>` : ""}</li>`;
   },
 
-  _syncDraftRequest(draft) {
+  // The generated route name shown as the placeholder while the name field is empty.
+  _syncRouteName(draft) {
     const lists = asArray(this._data.shopping?.lists);
     const source = lists.find((l) => String(l.id) === draft.source_list_id);
     const destination = draft.destinations.find((e) => e.entity_id === draft.destination_entity_id);
+    return (
+      destination
+        ? `${source?.name || ""} → ${this._syncDestinationName(destination.name, destination.platform)}`
+        : source?.name || ""
+    ).slice(0, 60);
+  },
+  _syncDraftRequest(draft) {
     const name = String(draft.name || "").trim();
     return {
-      name: (
-        name ||
-        (destination
-          ? `${source?.name || ""} → ${this._syncDestinationName(destination.name, destination.platform)}`
-          : source?.name || "")
-      ).slice(0, 60),
+      // An empty name field means the name follows the route: the key is left out and the bridge
+      // generates and keeps regenerating it.
+      ...(name ? { name: name.slice(0, 60) } : {}),
       source_list_id: draft.source_list_id,
       destination_entity_id: draft.destination_entity_id,
       mode: draft.mode,
@@ -979,7 +1019,12 @@ ${this._syncRouteHtml(rule, destination, destName)}
       firstBatch: firstBatch && !!rule && rule.activated !== true,
       expected_revision: rule?.revision,
       activated: rule?.activated === true,
-      name: rule ? this._syncRuleLabel(rule) : "",
+      // An auto-named rule starts with an empty field, so saving keeps its name generated.
+      name: rule
+        ? this._syncRuleAuto(rule, rule.destination || {}, this._syncRuleDestName(rule))
+          ? ""
+          : String(rule.name || "")
+        : "",
       source_list_id: rule?.source_list_id || String(free[0]?.id || ""),
       destination_entity_id: rule?.destination_entity_id || "",
       mode: rule?.mode || "copy",
@@ -995,7 +1040,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
         : "",
       // The deleted destination reads "missing" like the rule card, an unavailable one stays "unavailable".
       destinationGone: rule
-        ? (rule.last_run || this._syncLastHealthyAudit(rule.id))?.outcome ===
+        ? (rule.last_run || this._syncLastHealthyAudit(rule.id, rule.retargeted_at))?.outcome ===
             "destination_missing" ||
           rule.destination?.reason === "missing" ||
           rule.destination?.exists === false
@@ -1007,6 +1052,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       free,
       destinations: [],
       destinationsLoaded: false,
+      loadFailed: false,
       preview: null,
       previewError: "",
       previewBusy: false,
@@ -1021,7 +1067,10 @@ ${this._syncRouteHtml(rule, destination, destName)}
       const result = await this._ws("sync_destinations");
       if (sync.setup) sync.setup.destinations = asArray(result?.entities);
     } catch (err) {
-      if (sync.setup) sync.setup.error = this._errorText(err);
+      if (sync.setup) {
+        sync.setup.error = this._errorText(err);
+        sync.setup.loadFailed = true;
+      }
     }
     if (sync.setup) sync.setup.destinationsLoaded = true;
     this._render();
@@ -1113,12 +1162,12 @@ ${this._syncRouteHtml(rule, destination, destName)}
             ? `<label class="field"><span class="sync-sr">${esc(this.t("syncSource"))}</span><select data-input="sync-source" data-autofocus>${sourceOptions}</select></label>`
             : `<p class="notice" role="status">${icon("cart", 16)} ${esc(this.t(lists.length ? "errSyncSourceTaken" : "addListFirst"))}</p>`
         }
-        <label class="field"><span>${esc(this.t("syncRuleName"))}</span><input data-input="sync-name" maxlength="60" value="${esc(d.name)}" placeholder="${esc(this._syncDraftRequest(d).name)}"></label></section>
+        <label class="field"><span>${esc(this.t("syncRuleName"))}</span><input data-input="sync-name" maxlength="60" value="${esc(d.name)}" placeholder="${esc(this._syncRouteName(d))}"></label></section>
       <section class="editor-card"><div class="eyebrow">02 / ${esc(destinationTitle.toUpperCase())}</div>
         ${
-          d.destinationsLoaded && !d.destinations.length
+          d.destinationsLoaded && !d.destinations.length && !d.loadFailed
             ? `<p class="notice" role="status">${icon("leaf", 16)} ${esc(this.t("syncNoDestinations"))}</p>`
-            : `<label class="field"><span class="sync-sr">${esc(destinationTitle)}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${missingOption}${destinationOptions}</select></label>`
+            : `<label class="field"><span class="sync-sr">${esc(destinationTitle)}</span><select data-input="sync-destination" ${d.destinationsLoaded ? "" : 'aria-busy="true"'}><option value="">${esc(this.t("selectList"))}</option>${missingOption}${destinationOptions}</select></label>${d.loadFailed ? `<p class="sync-muted" role="status">${esc(this._syncBringT("syncDestinationsLoadFailed"))}</p>` : ""}`
         }
         <p class="sync-capability" role="status" aria-live="polite">${destination ? `${icon(destination.supports?.description ? "check" : "close", 15)} ${esc(this.t("syncSupportsNotes", { answer: this.t(destination.supports?.description ? "syncYes" : "syncNo") }))}` : ""}</p></section>
       <section class="editor-card"><div class="eyebrow">03 / ${esc(this.t("syncStepMode").toUpperCase())}</div>
@@ -1251,7 +1300,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
     try {
       result = await this._ws(type, payload);
       if (show) {
-        this._syncShowResult(result);
+        this._syncShowResult(result, payload?.rule_id);
       } else sync.result = "";
     } catch (err) {
       sync.error = this._errorText(err);
@@ -1418,7 +1467,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       this._render();
       try {
         const result = await this._ws("sync_run", { rule_id: rule.id, confirm_first_batch: true });
-        this._syncShowResult(result);
+        this._syncShowResult(result, rule.id);
       } catch (err) {
         sync.error = this._errorText(err);
         this._syncRefetchStatus(err);

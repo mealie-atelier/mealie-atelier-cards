@@ -26,7 +26,8 @@ const HOST_SPECIFIC_ERRORS = [
 const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 // Result cap of the official Home Assistant provider; hitting it means the list may be cut off.
 const NATIVE_RESULT_LIMIT = 500;
-const GRID_OPTIONS = Object.freeze({ columns: 12, rows: 10, min_columns: 4, min_rows: 3 });
+// rows "auto" lets the section grow with the content; a fixed row count made tall cards overlap the next one.
+const GRID_OPTIONS = Object.freeze({ columns: 12, rows: "auto", min_columns: 4 });
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",

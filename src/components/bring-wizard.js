@@ -84,8 +84,10 @@ export const bringWizardMethods = {
     try {
       const toName = this._bwBringName(w);
       const draft = this._syncDraftRequest({
-        // The old name points at the deleted list, so the route is named again.
-        name: `${rule.source_list_name || ""} → ${toName}`.slice(0, 60),
+        // An auto-named rule stays auto (no name sent, the route is named again); a custom name stays.
+        name: this._syncRuleAuto(rule, rule.destination || {}, this._syncRuleDestName(rule))
+          ? ""
+          : rule.name,
         source_list_id: rule.source_list_id,
         destination_entity_id: w.bringList,
         destinations: w.lists,

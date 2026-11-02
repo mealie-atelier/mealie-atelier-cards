@@ -1004,6 +1004,51 @@ test("web app: a deleted Bring! list offers to pick another one and keeps the ru
   assert.equal(save.message.rule.source_list_id, "l1");
   assert.equal(save.message.rule.mode, "copy");
   assert.equal(save.message.reset_records, true);
+  assert.equal("name" in save.message.rule, false, "an auto-named rule stays auto");
+  assert.equal("auto_name" in save.message.rule, false);
+  assert.equal(env.card._modal, "sync");
+});
+
+test("replacing the Bring! list keeps a custom rule name", async () => {
+  const lists = {
+    entities: [
+      { entity_id: "bring:a", name: "Party", platform: "bring", available: true },
+      { entity_id: "bring:b", name: "Wochenmarkt", platform: "bring", available: true },
+    ],
+  };
+  const env = bringCard({
+    state: "connected",
+    handlers: { sync_destinations: () => lists },
+  });
+  env.card._status.entries[0].bring.default_list = "bring:b";
+  const rule = withRule({
+    name: "Mine",
+    auto_name: false,
+    destination: { ...RULE.destination, available: false, reason: "missing" },
+  });
+  await openStatus(env, [rule]);
+  env.setState({ supported: true, rules: [rule], audit: [] });
+  await click(env.card, { action: "sync-bw-pick-list", value: "r1" });
+  assert.equal(env.card._modal, "sync-wizard");
+  const w = env.card._bwData();
+  assert.equal(w.step, 2, "the wizard opens at the list step");
+  assert.equal(w.fixRule.id, "r1");
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.equal(w.bringList, "bring:b");
+  let html = markup(env.cards);
+  assert.match(html, /Choose another Bring! list/);
+  assert.match(html, /data-action="sync-bw-save-list"/);
+  assert.doesNotMatch(html, /bw-stepline/, "a one step change has no step list");
+  await click(env.card, { action: "sync-bw-save-list" });
+  const save = env.calls.find((c) => c.name === "sync_rule_save");
+  assert.equal(save.message.rule_id, "r1", "the existing rule is changed, not a new one made");
+  assert.equal(save.message.expected_revision, 2);
+  assert.equal(save.message.rule.destination_entity_id, "bring:b");
+  assert.equal(save.message.rule.source_list_id, "l1");
+  assert.equal(save.message.rule.mode, "copy");
+  assert.equal(save.message.reset_records, true);
+  assert.equal(save.message.rule.name, "Mine");
+  assert.equal("auto_name" in save.message.rule, false);
   assert.equal(env.card._modal, "sync");
 });
 
@@ -1136,7 +1181,10 @@ test("setup shows neutral text until a destination is chosen and never a danglin
   assert.match(html, /Save and send</);
   assert.doesNotMatch(html, /Save and send \d+ items?/);
   assert.doesNotMatch(html, /placeholder="[^"]*→/);
-  assert.equal(env.card._syncDraftRequest(env.card._syncData().setup).name, "Weekly groceries");
+  const request = env.card._syncDraftRequest(env.card._syncData().setup);
+  assert.equal("name" in request, false);
+  assert.equal("auto_name" in request, false);
+  assert.equal(env.card._syncRouteName(env.card._syncData().setup), "Weekly groceries");
 });
 
 test("destination labels use friendly platform names and drop a repeated platform", async () => {
@@ -1305,7 +1353,8 @@ test("setup in German names the built-in list in the default rule name and the s
   await click(env.card, { action: "sync-setup-open", value: "" });
   input(env.card, { input: "sync-destination" }, { value: "todo.sl" });
   const draft = env.card._syncData().setup;
-  assert.equal(env.card._syncDraftRequest(draft).name, "Weekly groceries → Einkaufsliste");
+  assert.equal(env.card._syncRouteName(draft), "Weekly groceries → Einkaufsliste");
+  assert.equal("name" in env.card._syncDraftRequest(draft), false);
   await click(env.card, { action: "sync-preview" });
   const html = markup(env.cards);
   assert.match(html, /an Einkaufsliste senden/);
@@ -1391,13 +1440,13 @@ const builtInRule = (name) =>
     },
   });
 
-test("the edit dialog prefills the localised rule name, not the raw English one", async () => {
+test("the edit dialog leaves an auto-named rule's name empty", async () => {
   const env = syncCard();
   env.card._hass.language = "de";
   await openStatus(env, [builtInRule("Weekly groceries → Shopping list")]);
   await click(env.card, { action: "sync-setup-open", value: "r1" });
-  assert.equal(env.card._syncData().setup.name, "Weekly groceries → Einkaufsliste");
-  assert.match(markup(env.cards), /value="Weekly groceries → Einkaufsliste"/);
+  assert.equal(env.card._syncData().setup.name, "");
+  assert.match(markup(env.cards), /data-input="sync-name" maxlength="60" value=""/);
 });
 
 test("a rule saved with the German list name shows one title in an English UI", async () => {
@@ -1415,6 +1464,7 @@ test("web app: replacing a deleted list keeps the release, renames the route and
   const env = bringCard({ state: "connected", handlers: { sync_destinations: () => lists } });
   const rule = withRule({
     name: "Weekly groceries → Einkauf",
+    auto_name: true,
     destination: { ...RULE.destination, available: false, reason: "missing" },
   });
   await openStatus(env, [rule]);
@@ -1425,11 +1475,8 @@ test("web app: replacing a deleted list keeps the release, renames the route and
   assert.match(html, /Use and send/);
   await click(env.card, { action: "sync-bw-save-list" });
   const save = env.calls.find((c) => c.name === "sync_rule_save");
-  assert.equal(
-    save.message.rule.name,
-    "Weekly groceries → Party",
-    "the old list is not in the name",
-  );
+  assert.equal("name" in save.message.rule, false, "the route stays auto-named");
+  assert.equal("auto_name" in save.message.rule, false);
   assert.equal(save.message.keep_activated, true);
   const order = env.calls.map((c) => c.name);
   assert.ok(order.indexOf("sync_run") > order.indexOf("sync_rule_save"), "it sends after saving");

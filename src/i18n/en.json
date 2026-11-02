@@ -1026,6 +1026,8 @@
   "syncDestinationMissingOption": "{name} (missing)",
   "syncSourceMissingOption": "{name} (missing)",
   "syncNoDestinations": "No suitable to-do list found. The destination must support adding items and must not be a Mealie list.",
+  "syncDestinationsLoadFailed": "The to-do lists could not be loaded. Once the connection works again, they load again.",
+  "syncDestinationsLoadFailedBring": "The Bring! lists could not be loaded. Sign in to Bring! again and they load again.",
   "syncSupportsNotes": "Supports notes: {answer}",
   "syncYes": "yes",
   "syncNo": "no",

@@ -9,7 +9,7 @@ test("card instances expose the declared grid options for Home Assistant", () =>
   assert.match(template, /\n {2}getGridOptions\(\) \{/);
   assert.match(
     template,
-    /GRID_OPTIONS = Object\.freeze\(\{ columns: 12, rows: 10, min_columns: 4, min_rows: 3 \}\)/,
+    /GRID_OPTIONS = Object\.freeze\(\{ columns: 12, rows: "auto", min_columns: 4 \}\)/,
   );
   const bundle = read("dist/mealie-atelier-cards.js");
   const instance = bundle.match(/\n {2}getGridOptions\(\) \{[^}]*\}/);
@@ -24,9 +24,8 @@ test("instance getGridOptions returns the declared object", async () => {
   const Cls = new Function(`${decl}\nreturn class {${body}};`)();
   assert.deepEqual(new Cls().getGridOptions(), {
     columns: 12,
-    rows: 10,
+    rows: "auto",
     min_columns: 4,
-    min_rows: 3,
   });
 });
 
