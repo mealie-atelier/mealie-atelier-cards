@@ -142,6 +142,12 @@ async function fixture({ legacyRecipeEndpoint = false } = {}) {
       Object.assign(items[0], body);
       return send(res, 200, items[0]);
     }
+    if (pathname === "/api/recipes/create/url" && req.method === "POST") {
+      if (String(body.url).includes("unscrapable"))
+        return send(res, 422, { detail: { message: "Recipe already exists or no recipe found" } });
+      if (String(body.url).includes("forbidden")) return send(res, 403, { detail: "Forbidden" });
+      return send(res, 201, '"imported-recipe"');
+    }
     if (pathname === "/api/media/recipes/recipe-1/images/min-original.webp")
       return send(res, 200, Buffer.from("RIFFaaaaWEBP"), "image/webp");
     if (pathname === "/api/media/recipes/recipe-1/assets/step-1.jpg") {
@@ -321,6 +327,23 @@ await test("private web companion responds to real-shaped Mealie calls", async (
       payload: { list_id: "../", recipe_id: "recipe-1" },
     });
     assert.equal(invalidIdentifier.status, 400);
+    const imported = await bridge("mealie_atelier/mutate", {
+      action: "recipe_import",
+      payload: { url: "https://example.com/soup" },
+    });
+    assert.equal(imported.status, 200);
+    const unscrapable = await bridge("mealie_atelier/mutate", {
+      action: "recipe_import",
+      payload: { url: "https://example.com/unscrapable" },
+    });
+    assert.equal(unscrapable.status, 400, "a page Mealie cannot read is a bad URL, not an outage");
+    assert.equal((await unscrapable.json()).code, "invalid_request");
+    const forbidden = await bridge("mealie_atelier/mutate", {
+      action: "recipe_import",
+      payload: { url: "https://example.com/forbidden" },
+    });
+    assert.equal(forbidden.status, 403, "a token without rights stays a permission problem");
+    assert.notEqual((await forbidden.json()).code, "invalid_request");
     assert.ok(remote.reads() > 0);
   } finally {
     child.kill("SIGTERM");

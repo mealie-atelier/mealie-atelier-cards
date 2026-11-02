@@ -778,7 +778,15 @@ async function mutate(action, payload, req) {
       }
       if (!["http:", "https:"].includes(url.protocol) || url.username || url.password)
         throw bad("Invalid recipe URL");
-      return mealie("POST", "/api/recipes/create/url", { url: raw });
+      try {
+        return await mealie("POST", "/api/recipes/create/url", { url: raw });
+      } catch (err) {
+        // Mealie answers a page it cannot scrape with a 4xx (often 422). That is a problem with the
+        // URL, not with the connection, so it gets the same code as the Bridge sends.
+        if (err.status >= 400 && err.status < 500 && ![401, 403].includes(err.status))
+          throw bad("Mealie could not import this recipe URL");
+        throw err;
+      }
     }
     default:
       throw bad("Unknown operation");

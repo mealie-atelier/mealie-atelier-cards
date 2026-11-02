@@ -10,6 +10,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Cooking mode on a short phone: a recipe title that wraps to two lines keeps the same small top inset in the photo band instead of touching the top edge of the dialog.
 - Shopping sync: signing in to Bring! again after the session expired now clears the "session expired" notice on the rules right away, also when the account was disconnected first.
 - Bring! connect wizard and Shopping sync dialog: the cart icon in the header is now vertically centered on the close button.
+- Web app: importing a recipe from a page Mealie cannot read now says the URL could not be imported instead of claiming Mealie is unreachable.
 
 ## [0.12.5] - 2026-11-02
 
