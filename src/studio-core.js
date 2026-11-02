@@ -491,9 +491,10 @@ const AtelierStudio = (() => {
     `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(${amountUnits})?(?:\\s+|$)`,
     "i",
   );
-  // A range with the unit on both bounds ("200g-250g", "200 g - 250 g"): the lower bound with its unit.
+  // A range with the unit on both bounds ("200g-250g", "200 g - 250 g") reads like "200-250 g", so the
+  // upper bound counts, as it does for every other range.
   const unitRange = new RegExp(
-    `^(${amountPattern})\\s*(${amountUnits})\\s*[-–]\\s*${amountPattern}\\s*(?:${amountUnits})(?:\\s+|$)`,
+    `^(${amountPattern})\\s*(${amountUnits})\\s*[-–]\\s*(${amountPattern})\\s*(?:${amountUnits})(?:\\s+|$)`,
     "i",
   );
   function amountValue(text) {
@@ -543,7 +544,7 @@ const AtelierStudio = (() => {
     const flat = normalizeFractions(raw).trim();
     const bounds = flat.match(unitRange);
     const normalized = bounds
-      ? `${bounds[1]} ${bounds[2]} ${flat.slice(bounds[0].length)}`.trim()
+      ? `${bounds[1]}-${bounds[3]} ${bounds[2]} ${flat.slice(bounds[0].length)}`.trim()
       : flat;
     const m = normalized.match(ingredientAmount);
     const structured =

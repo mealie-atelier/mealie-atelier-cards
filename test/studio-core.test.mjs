@@ -1201,10 +1201,12 @@ test("scales a superscript fraction in the upper bound of a range", () => {
 test("recipe check reads an unspaced range with units on both bounds as a quantity", () => {
   for (const row of ["200g-250g Butter", "200 g-250 g Butter", "200 g - 250 g Butter"]) {
     const parsed = Studio.parseIngredient(row);
-    assert.equal(parsed.quantity, 200, row);
+    assert.equal(parsed.quantity, 250, row);
     assert.equal(parsed.unit, "g", row);
     assert.equal(parsed.label, "Butter", row);
   }
+  // Every spelling of the same range counts the same amount, the upper bound.
+  assert.equal(Studio.parseIngredient("200-250 g Butter").quantity, 250);
   const r = recipe("range", ["200g-250g Butter"]);
   assert.ok(!Studio.audit(r).problems.some((p) => p.key === "studioAuditAmountUnclear"));
 });
