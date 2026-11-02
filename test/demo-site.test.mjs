@@ -2193,3 +2193,12 @@ test("deep links stay aligned to the target while the layout above it settles", 
     assert.match(body[0], new RegExp(`"${name}"|"${name}",`), `${name} ends the hold`);
   }
 });
+
+test("demo shopping items keep quantity 1, because their note already carries the amount", () => {
+  // The edit dialog shows note and quantity side by side: "1 EL Olivenöl" with Menge 2 would double the oil.
+  const preview = read("demo/preview.html");
+  const seed = preview.slice(preview.indexOf("let shoppingItems = recipeStories"));
+  const block = seed.slice(0, seed.indexOf("}));"));
+  assert.match(block, /quantity: 1,/);
+  assert.doesNotMatch(block, /quantity: i ===/);
+});

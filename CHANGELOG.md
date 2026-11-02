@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Product page demo: the first shopping list item ("1 tbsp olive oil") no longer opens with quantity 2 in the edit dialog, which would have doubled it on save.
+
 ## [0.12.7] - 2026-11-02
 
 ### Fixed
