@@ -486,6 +486,17 @@
   color: var(--ds-muted);
   opacity: 0.75;
 }
+/* The glyph's centre sits on the close button's centre (the sticky button is inset 20px from the dialog top and
+   --at-close-size tall), whatever the dialog padding: the header starts one padding below the top, so the glyph
+   is pulled up by the difference and by half its own height, which leaves the title where it was. */
+.atelier .sync-panel .editor-stamp {
+  --bw-glyph: 26px;
+  block-size: var(--bw-glyph);
+  margin-block-start: calc(
+    20px + var(--at-close-size, 48px) / 2 - var(--bw-pad, clamp(24px, 3.1cqi, 45px)) -
+      var(--bw-glyph) / 2
+  );
+}
 
 /* Compact dialog header for the wizard so the first screen holds the step and its actions. */
 .atelier .bw-wizard .editor-lead {
