@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.9] - 2026-11-02
+
 ### Fixed
 
 - Recipe check: a range such as "200g-250g Butter" is no longer flagged as an unclear amount.
@@ -590,7 +592,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.8...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.9...HEAD
+[0.12.9]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.8...v0.12.9
 [0.12.8]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.7...v0.12.8
 [0.12.7]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.6...v0.12.7
 [0.12.6]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.5...v0.12.6
