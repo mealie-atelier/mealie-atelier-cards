@@ -781,9 +781,9 @@ async function mutate(action, payload, req) {
       try {
         return await mealie("POST", "/api/recipes/create/url", { url: raw });
       } catch (err) {
-        // Mealie answers a page it cannot scrape with a 4xx (often 422). That is a problem with the
-        // URL, not with the connection, so it gets the same code as the Bridge sends.
-        if (err.status >= 400 && err.status < 500 && ![401, 403].includes(err.status))
+        // Mealie answers a page it cannot scrape with 400 or 422: a bad URL, not an outage, so it gets
+        // the same code as the Bridge sends. A 404, 408 or 429 keeps its own error.
+        if (err.status === 400 || err.status === 422)
           throw bad("Mealie could not import this recipe URL");
         throw err;
       }

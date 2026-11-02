@@ -146,6 +146,7 @@ async function fixture({ legacyRecipeEndpoint = false } = {}) {
       if (String(body.url).includes("unscrapable"))
         return send(res, 422, { detail: { message: "Recipe already exists or no recipe found" } });
       if (String(body.url).includes("forbidden")) return send(res, 403, { detail: "Forbidden" });
+      if (String(body.url).includes("busy")) return send(res, 429, { detail: "Slow down" });
       return send(res, 201, '"imported-recipe"');
     }
     if (pathname === "/api/media/recipes/recipe-1/images/min-original.webp")
@@ -344,6 +345,12 @@ await test("private web companion responds to real-shaped Mealie calls", async (
     });
     assert.equal(forbidden.status, 403, "a token without rights stays a permission problem");
     assert.notEqual((await forbidden.json()).code, "invalid_request");
+    const busy = await bridge("mealie_atelier/mutate", {
+      action: "recipe_import",
+      payload: { url: "https://example.com/busy" },
+    });
+    assert.equal(busy.status, 429, "a rate limit is worth a retry, not a bad URL");
+    assert.notEqual((await busy.json()).code, "invalid_request");
     assert.ok(remote.reads() > 0);
   } finally {
     child.kill("SIGTERM");
