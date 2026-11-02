@@ -8,6 +8,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 - Product page demo: the first shopping list item ("1 tbsp olive oil") no longer opens with quantity 2 in the edit dialog, which would have doubled it on save.
 - Standalone app: after reloading while offline, the app now reloads its data by itself once the connection returns and the offline sync finishes, so the error banner clears and the recipes fill in without pressing "Try again".
+- Sync dialog: the notice about the rule limit now has the same gap under the last rule card as the cards have between each other.
+- Sync rule dialog: a deleted destination reads "(missing)" like the rule card instead of "(unavailable)".
+- Sync: when several rules point at the same deleted Bring! list, each banner names its rule.
 
 ## [0.12.7] - 2026-11-02
 

@@ -1023,6 +1023,7 @@
   "syncDestination": "Destination list in Home Assistant",
   "syncDestinationOption": "{name} · {platform}",
   "syncDestinationUnavailableOption": "{name} (unavailable)",
+  "syncDestinationMissingOption": "{name} (missing)",
   "syncNoDestinations": "No suitable to-do list found. The destination must support adding items and must not be a Mealie list.",
   "syncSupportsNotes": "Supports notes: {answer}",
   "syncYes": "yes",

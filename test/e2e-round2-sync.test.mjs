@@ -148,3 +148,55 @@ test("README and CHANGELOG use American spelling", () => {
     assert.doesNotMatch(text, /colour|behaviour|licence|centred/i, file);
   }
 });
+
+test("the rule limit notice sits one card gap under the last rule card", () => {
+  const block = css.match(/\.sync-panel \.editor-card \+ \.editor-card,[^{]*\{[^}]*\}/);
+  assert.ok(block, "card spacing rule exists");
+  assert.match(block[0], /\.sync-panel \.editor-card \+ \.notice/);
+  assert.match(block[0], /margin-block-start:\s*var\(--ds-space-3\)/);
+});
+
+test("the edit dialog calls a deleted destination missing and an unavailable one unavailable", async () => {
+  const gone = { entity_id: "todo.gone", name: "Alte Liste", platform: "bring", available: false };
+  const missing = env({
+    rules: [
+      rule({
+        destination_entity_id: "todo.gone",
+        destination: gone,
+        last_run: { at: new Date().toISOString(), outcome: "destination_missing" },
+      }),
+    ],
+  });
+  await click(missing.card, { action: "sync-open" });
+  await click(missing.card, { action: "sync-setup-open", value: "r1" });
+  assert.match(missing.html(), /Alte Liste \(missing\)<\/option>/);
+  assert.doesNotMatch(missing.html(), /Alte Liste \(unavailable\)/);
+
+  const off = env({
+    rules: [rule({ destination_entity_id: "todo.gone", destination: gone })],
+  });
+  await click(off.card, { action: "sync-open" });
+  await click(off.card, { action: "sync-setup-open", value: "r1" });
+  assert.match(off.html(), /Alte Liste \(unavailable\)<\/option>/);
+  assert.equal(de.syncDestinationMissingOption, "{name} (fehlt)");
+});
+
+test("banners for a deleted Bring! list name their rule once there are several rules", async () => {
+  const dest = {
+    entity_id: "todo.b",
+    name: "Gone",
+    platform: "bring",
+    available: false,
+    reason: "missing",
+  };
+  const a = rule({ id: "r1", name: "Alpha", source_list_id: "l1", destination: dest });
+  const b = rule({ id: "r2", name: "Beta", source_list_id: "l2", destination: dest });
+  const caps = { bringSetup: true, admin: false };
+  const one = env({ rules: [a] });
+  await click(one.card, { action: "sync-open" });
+  assert.doesNotMatch(one.card._syncGoneHtml(a, caps), /Alpha/);
+  const two = env({ rules: [a, b] });
+  await click(two.card, { action: "sync-open" });
+  assert.match(two.card._syncGoneHtml(a, caps), /Alpha<\/strong>: The Bring! list/);
+  assert.match(two.card._syncGoneHtml(b, caps), /Beta<\/strong>: The Bring! list/);
+});

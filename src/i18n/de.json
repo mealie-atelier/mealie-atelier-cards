@@ -1019,6 +1019,7 @@
   "syncDestination": "Zielliste in Home Assistant",
   "syncDestinationOption": "{name} · {platform}",
   "syncDestinationUnavailableOption": "{name} (nicht erreichbar)",
+  "syncDestinationMissingOption": "{name} (fehlt)",
   "syncNoDestinations": "Keine passende To-do-Liste gefunden. Das Ziel muss das Hinzufügen von Artikeln unterstützen und darf keine Mealie-Liste sein.",
   "syncSupportsNotes": "Unterstützt Notizen: {answer}",
   "syncYes": "ja",
