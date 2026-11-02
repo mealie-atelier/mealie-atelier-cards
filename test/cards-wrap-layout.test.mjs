@@ -147,8 +147,15 @@ test("the shopping list filter stacks the pill below the select in narrow cards"
   assert.match(block(polish, ".atelier .shopping-list-filter {"), /minmax\(0, 1fr\) auto/);
   // The 430px block also sets two columns; the 360px block must come after it to win the cascade.
   const narrow = polish.indexOf("@container atelier-card (max-width: 360px)");
-  const lastWide = polish.lastIndexOf("@container atelier-card (max-width: 430px)");
-  assert.ok(narrow > lastWide, "the 360px shopping filter rule must follow the last 430px block");
+  const wideFilterBlocks = [
+    ...polish.matchAll(/@container atelier-card \(max-width: 430px\) \{[^@]*?\n\}/g),
+  ].filter((m) => m[0].includes(".shopping-list-filter"));
+  assert.ok(wideFilterBlocks.length > 0, "a 430px block sets the shopping filter columns");
+  const lastWide = wideFilterBlocks.at(-1).index;
+  assert.ok(
+    narrow > lastWide,
+    "the 360px shopping filter rule must follow the last 430px block that sets it",
+  );
   assert.match(bundle, /max-width: 360px\) \{[^}]*\.shopping-list-filter/);
 });
 

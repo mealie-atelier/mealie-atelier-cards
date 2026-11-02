@@ -9088,6 +9088,7 @@ ha-card {
   background: transparent;
   border: 0;
   padding: 12px 0;
+  text-overflow: ellipsis;
   font-size: 15px;
   min-height: 44px;
   box-shadow: none;
@@ -9706,16 +9707,19 @@ ha-card {
     min-height: 210px;
   }
 }
-@container atelier-card (max-width: 390px) {
-  .atelier {
-    --ds-page-gutter: 15px;
-    --ds-panel-padding: 17px;
-  }
+/* Phone width: the search field gets its own row so the whole placeholder stays visible. */
+@container atelier-card (max-width: 430px) {
   .atelier .recipe-tools {
     grid-template-columns: minmax(0, 1fr);
   }
   .atelier .recipe-tools .btn {
     justify-self: start;
+  }
+}
+@container atelier-card (max-width: 390px) {
+  .atelier {
+    --ds-page-gutter: 15px;
+    --ds-panel-padding: 17px;
   }
   .atelier .studio-actions > .btn {
     flex: 1 1 auto;

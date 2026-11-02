@@ -345,3 +345,17 @@ test("the cook progress bar hides while the scrolled step column cuts it", () =>
     /this\._modalBarListeners\.push\(\{ el: column, type: "scroll", fn: peek \}\)/,
   );
 });
+
+test("recipe tools stack at 430px and the search input ellipsizes its placeholder", () => {
+  const polish = css("polish.css");
+  assert.match(
+    polish,
+    /@container atelier-card \(max-width: 430px\) \{\s*\.atelier \.recipe-tools \{\s*grid-template-columns: minmax\(0, 1fr\);/,
+  );
+  assert.doesNotMatch(
+    polish,
+    /max-width: 390px\) \{[^@]*\.atelier \.recipe-tools \{\s*grid-template-columns: minmax\(0, 1fr\);/,
+  );
+  const rule = polish.match(/\.atelier \.search input:not\(\[type="checkbox"\]\) \{([^}]*)\}/)[1];
+  assert.match(rule, /text-overflow: ellipsis/);
+});
