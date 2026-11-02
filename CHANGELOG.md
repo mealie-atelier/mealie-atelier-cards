@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.13] - 2026-11-02
+
 ### Fixed
 
 - Scaling servings now also scales an alternative in parentheses, so "250 g Zucker (oder 200 g Honig)" no longer keeps the honey amount fixed.
@@ -622,7 +624,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.12...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.13...HEAD
+[0.12.13]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.12...v0.12.13
 [0.12.12]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.11...v0.12.12
 [0.12.11]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.10...v0.12.11
 [0.12.10]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.9...v0.12.10
