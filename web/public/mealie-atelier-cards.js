@@ -22682,6 +22682,14 @@ const AtelierStudio = (() => {
         zitronen: ["Zitrone", "Zitronen"],
         filet: ["Filet", "Filets"],
         filets: ["Filet", "Filets"],
+        kartoffel: ["Kartoffel", "Kartoffeln"],
+        kartoffeln: ["Kartoffel", "Kartoffeln"],
+        packung: ["Packung", "Packungen"],
+        packungen: ["Packung", "Packungen"],
+        stange: ["Stange", "Stangen"],
+        stangen: ["Stange", "Stangen"],
+        stück: ["Stück", "Stück"],
+        stücke: ["Stück", "Stück"],
       },
       en: {
         cup: ["cup", "cups"],
@@ -22712,6 +22720,10 @@ const AtelierStudio = (() => {
         pieces: ["piece", "pieces"],
         fillet: ["fillet", "fillets"],
         fillets: ["fillet", "fillets"],
+        package: ["package", "packages"],
+        packages: ["package", "packages"],
+        stalk: ["stalk", "stalks"],
+        stalks: ["stalk", "stalks"],
       },
     };
     // German compounds ending in a counted noun (Knoblauchzehen, Hähnchenbrustfilets) agree on the last part.
@@ -22745,14 +22757,17 @@ const AtelierStudio = (() => {
       );
       return Number.isFinite(n) ? n : NaN;
     };
+    const noun = (lower) =>
+      NOUNS[locale === "en" ? "en" : "de"][lower] ?? NOUNS.de[lower] ?? NOUNS.en[lower];
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
       const word = unitWord(rest);
-      const table = NOUNS[locale === "en" ? "en" : "de"] || {};
+      const table = NOUNS.de;
       const lower = word.toLowerCase();
       const plural = amount > 1 + 1e-9 ? 1 : 0;
       let prefix = "";
-      let forms = table[lower];
+      // The word is looked up in both tables, whatever the locale, and inflected from the one it is found in.
+      let forms = noun(lower);
       if (!forms && locale !== "en") {
         const tail = COMPOUND_TAILS.flatMap((t) => [t + "n", t + "s", t + "e", t]).find(
           (t) => lower.length >= t.length + 3 && lower.endsWith(t) && table[t],
@@ -22798,9 +22813,8 @@ const AtelierStudio = (() => {
     // The same unit word, or the singular and plural of one counted noun ("Prise" and "Prisen").
     const sameUnit = (a, b) => {
       const x = a.toLowerCase(),
-        y = b.toLowerCase(),
-        table = NOUNS[locale === "en" ? "en" : "de"] || {};
-      return x === y || (table[x] !== undefined && table[x][0] === table[y]?.[0]);
+        y = b.toLowerCase();
+      return x === y || (noun(x) !== undefined && noun(x)[0] === noun(y)?.[0]);
     };
     const repeatedUnit = range && range[4] && sameUnit(unitWord(range[7]), range[4]);
     if (range && (!range[4] || repeatedUnit)) {
@@ -22877,8 +22891,15 @@ const AtelierStudio = (() => {
   };
   // One amount: "1 1/2", "1/3", "1½", "½", "1,5" or "2".
   const amountPattern = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*\\s?[${Object.keys(fractionChars).join("")}]|\\d+(?:[.,]\\d+)?)`;
+  const amountUnits =
+    "kg|g|gramm|ml|l|stück|stueck|stk|el|tl|tbsp|tsp|tablespoons?|teaspoons?|cups?";
   const ingredientAmount = new RegExp(
-    `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(kg|g|gramm|ml|l|stück|stueck|stk|el|tl|tbsp|tsp|tablespoons?|teaspoons?|cups?)?(?:\\s+|$)`,
+    `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(${amountUnits})?(?:\\s+|$)`,
+    "i",
+  );
+  // A range with the unit on both bounds ("200g-250g", "200 g - 250 g"): the lower bound with its unit.
+  const unitRange = new RegExp(
+    `^(${amountPattern})\\s*(${amountUnits})\\s*[-–]\\s*${amountPattern}\\s*(?:${amountUnits})(?:\\s+|$)`,
     "i",
   );
   function amountValue(text) {
@@ -22925,7 +22946,11 @@ const AtelierStudio = (() => {
   }
   function parseIngredient(row) {
     const raw = typeof row === "string" ? row : ingredient(row);
-    const normalized = normalizeFractions(raw).trim();
+    const flat = normalizeFractions(raw).trim();
+    const bounds = flat.match(unitRange);
+    const normalized = bounds
+      ? `${bounds[1]} ${bounds[2]} ${flat.slice(bounds[0].length)}`.trim()
+      : flat;
     const m = normalized.match(ingredientAmount);
     const structured =
       typeof row === "object" &&

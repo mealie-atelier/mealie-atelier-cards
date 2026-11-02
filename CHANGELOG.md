@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Recipe check and scaling: "200g-250g Butter" is no longer flagged as unclear, "Kartoffel", "Packung", "Stange" and "Stück/Stücke" (and package, stalk) now agree with the scaled amount, and German unit words such as "Prise" and "Dose" scale correctly, ranges included, when the language is English.
+
 ## [0.12.8] - 2026-11-02
 
 ### Fixed

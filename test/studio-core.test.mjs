@@ -1197,3 +1197,34 @@ test("scales a superscript fraction in the upper bound of a range", () => {
   assert.equal(Studio.scaleIngredient("1 Tasse - 1 ¹/₂ Tassen", 4, 2), "2 Tassen - 3 Tassen");
   assert.equal(Studio.scaleIngredient("1 ¹/₂-2 ¹/₂ EL", 1, 2), "¾-1¼ EL");
 });
+
+test("recipe check reads an unspaced range with units on both bounds as a quantity", () => {
+  for (const row of ["200g-250g Butter", "200 g-250 g Butter", "200 g - 250 g Butter"]) {
+    const parsed = Studio.parseIngredient(row);
+    assert.equal(parsed.quantity, 200, row);
+    assert.equal(parsed.unit, "g", row);
+    assert.equal(parsed.label, "Butter", row);
+  }
+  const r = recipe("range", ["200g-250g Butter"]);
+  assert.ok(!Studio.audit(r).problems.some((p) => p.key === "studioAuditAmountUnclear"));
+});
+
+test("scaling inflects Kartoffel, Packung, Stange and Stück/Stücke", () => {
+  assert.equal(Studio.scaleIngredient("1 Kartoffel", 2, 1), "2 Kartoffeln");
+  assert.equal(Studio.scaleIngredient("1 Packung Nudeln", 2, 1), "2 Packungen Nudeln");
+  assert.equal(Studio.scaleIngredient("1 Stange Sellerie", 2, 1), "2 Stangen Sellerie");
+  assert.equal(Studio.scaleIngredient("2 Stücke Ingwer", 1, 2), "1 Stück Ingwer");
+  assert.equal(Studio.scaleIngredient("1 Stück Ingwer", 3, 1), "3 Stück Ingwer");
+  assert.equal(Studio.scaleIngredient("2 Stück Ingwer", 3, 2), "3 Stück Ingwer");
+  assert.equal(Studio.scaleIngredient("1 package pasta", 2, 1, "en"), "2 packages pasta");
+  assert.equal(Studio.scaleIngredient("1 stalk celery", 2, 1, "en"), "2 stalks celery");
+});
+
+test("a German unit word inflects and ranges scale under locale en", () => {
+  assert.equal(
+    Studio.scaleIngredient("1 Prise - 2 Prisen Salz", 1, 2, "en"),
+    "½ Prise - 1 Prise Salz",
+  );
+  assert.equal(Studio.scaleIngredient("1 Dose Tomaten", 3, 1, "en"), "3 Dosen Tomaten");
+  assert.equal(Studio.scaleIngredient("1 cup flour", 2, 1, "en"), "2 cups flour");
+});
