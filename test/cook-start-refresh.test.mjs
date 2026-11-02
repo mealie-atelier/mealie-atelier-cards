@@ -5,6 +5,7 @@ import { loadCards, makeCard } from "./support/card-harness.mjs";
 function setup(wsImpl) {
   const card = makeCard(loadCards());
   card._detail = { slug: "pancakes", name: "Pancakes", recipeInstructions: [{ text: "Mix" }] };
+  card._modal = "recipe";
   card._studio = { revision: 1, family: { session: null }, journal: {} };
   card._ws = wsImpl;
   card._render = () => {};
@@ -46,6 +47,46 @@ test("cook start still works when the refresh hangs", async () => {
   await click(card);
   assert.equal(dialogs.length, 0);
   assert.equal(card._modal, "cook");
+});
+
+for (const [label, leave] of [
+  ["the recipe was closed", (card) => (card._modal = null)],
+  [
+    "another recipe was opened",
+    (card) =>
+      (card._detail = { slug: "soup", name: "Soup", recipeInstructions: [{ text: "Stir" }] }),
+  ],
+  ["the card left the page", (card) => (card.isConnected = false)],
+]) {
+  test(`cook start starts nothing when ${label} during the refresh`, async () => {
+    let release;
+    const { card, dialogs } = setup(
+      () =>
+        new Promise(
+          (resolve) =>
+            (release = () => resolve({ revision: 2, family: { session: null }, journal: {} })),
+        ),
+    );
+    const writes = [];
+    card._studioWrite = async (kind, payload) => writes.push([kind, payload]);
+    const pending = click(card);
+    await new Promise((resolve) => setImmediate(resolve));
+    leave(card);
+    release();
+    await pending;
+    assert.notEqual(card._modal, "cook");
+    assert.deepEqual(writes, []);
+    assert.equal(dialogs.length, 0);
+  });
+}
+
+test("cook start opens cook mode and starts the shared session when the recipe stays open", async () => {
+  const { card } = setup(async () => ({ revision: 2, family: { session: null }, journal: {} }));
+  const writes = [];
+  card._studioWrite = async (kind, payload) => writes.push([kind, payload.slug]);
+  await click(card);
+  assert.equal(card._modal, "cook");
+  assert.deepEqual(writes, [["session_start", "pancakes"]]);
 });
 
 test("German shopping note renders cups as Tasse and Tassen", () => {

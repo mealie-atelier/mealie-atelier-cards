@@ -142,6 +142,14 @@ test("a scheduled debounced send is announced in the Waiting row and re-rendered
   assert.ok(past.card._syncSyncHtml().includes(en.syncPendingNone));
   const waiting = make({ rules: [rule({ next_run_at: at, counts: { pending: 2 } })] });
   assert.ok(!waiting.card._syncSyncHtml().includes(en.syncChecking));
+  // No card of this test may keep a send timer alive after it (the file would wait a minute for it).
+  // Let queued renders run first: they arm the timer again while the sync dialog is open.
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  for (const each of [card, past.card, waiting.card]) {
+    each._modal = null;
+    each._syncPollStop();
+    assert.equal(each._syncNextTimer, null);
+  }
   assert.equal(de.syncChecking, "Wird gleich geprüft");
   assert.equal(en.offlineEnableConfirmAction, "Enable offline");
   assert.equal(de["syncPending.other"], "{count} ausstehend");

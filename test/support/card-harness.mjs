@@ -105,7 +105,7 @@ export function makeCard(
 ) {
   const card = new (cards.registry.get("mealie-atelier-card"))();
   card.setConfig({ type: "custom:mealie-atelier-card" });
-  Object.defineProperty(card, "isConnected", { value: true });
+  Object.defineProperty(card, "isConnected", { value: true, writable: true });
   card._status = { entries: [{ entry_id: "e1", ...permissions }] };
   card._hass = hass || { language: "en", callWS: async () => ({}) };
   card.renders = 0;

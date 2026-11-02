@@ -6,6 +6,7 @@ function cookCard(session) {
   const cards = loadCards();
   const card = makeCard(cards);
   const steps = ["Mix", "Whisk", "Bake"].map((text) => ({ text }));
+  card._modal = "recipe"; // the start button lives in the recipe dialog
   card._detail = { slug: "pancakes", name: "Pancakes", recipeInstructions: steps };
   card._studio = { revision: 4, family: { session } };
   card._ws = async () => ({ revision: 4, family: { session }, journal: {} });

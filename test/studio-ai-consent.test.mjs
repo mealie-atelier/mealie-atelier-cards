@@ -11,6 +11,7 @@ const click = (card, action, dataset = {}) => {
 function setup(language, entry = {}) {
   const card = makeCard(loadCards(), { hass: { language, callWS: async () => ({}) } });
   card._status = { entries: [{ entry_id: "e1", can_write: true, can_manage: true, ...entry }] };
+  card._modal = "recipe"; // the start button lives in the recipe dialog
   card._detail = { slug: "soup", name: "Suppe" };
   card._render = () => {};
   const calls = { ws: [], dialogs: [], flashed: [] };

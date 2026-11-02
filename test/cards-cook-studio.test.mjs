@@ -49,6 +49,7 @@ test("formatTime uses lowercase min in German", () => {
 function cookCard(session, steps = 4) {
   const cards = loadCards();
   const card = makeCard(cards);
+  card._modal = "recipe"; // the start button lives in the recipe dialog
   card._detail = {
     slug: "pancakes",
     name: "Pancakes",

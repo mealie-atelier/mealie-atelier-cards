@@ -6,6 +6,7 @@ import { loadCards, makeCard } from "./support/card-harness.mjs";
 function cookCard(dialogAnswer) {
   const cards = loadCards();
   const card = makeCard(cards);
+  card._modal = "recipe"; // the start button lives in the recipe dialog
   card._detail = { slug: "gnocchi", name: "Gnocchi" };
   card._studio = { family: { session: { slug: "pancakes", name: "Pancakes" } } };
   card._render = () => {};

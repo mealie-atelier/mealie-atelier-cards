@@ -9,7 +9,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Fixed
 
 - Shopping note in German: an amount in cups reads "Tasse" or "Tassen" instead of "cups".
-- Cooking mode: starting to cook reloads the shared session first, so a second device no longer asks to replace a session that has already ended, and a double tap on the start button starts only once.
+- Cooking mode: starting to cook reloads the shared session first, so a second device no longer asks to replace a session that has already ended. A double tap on the start button starts only once, and closing the recipe or opening another one during that short reload starts nothing.
 - Bring! sync in German: the waiting row reads "Wird gleich geprüft", matching the English "Checking shortly".
 - Web app in English: the offline confirm button reads "Enable offline" and fits on one line on a phone.
 - Product page: the shopping list feature image shows the current list design, and the English Discover results image shows the same recipe data as the live demo.

@@ -1667,6 +1667,9 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       el.disabled = false;
       el.removeAttribute?.("aria-busy");
     }
+    // The wait leaves the recipe usable: if it was closed, another recipe was opened or the card left the
+    // page meanwhile, start nothing (no cook view, no shared session for a recipe nobody is looking at).
+    if (!this.isConnected || this._modal !== "recipe" || this._detail?.slug !== slug) return;
     const active = this._studio?.family?.session;
     const existed = active?.slug === slug;
     // Starting a different recipe must never destroy shared tasks/timers silently.
