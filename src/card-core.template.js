@@ -1,5 +1,5 @@
 /* Mealie Atelier: zero-dependency web components for Home Assistant (version in VERSION). */
-const VERSION = "0.12.6";
+const VERSION = "0.12.7";
 const MODES = [
   "dashboard",
   "today",
