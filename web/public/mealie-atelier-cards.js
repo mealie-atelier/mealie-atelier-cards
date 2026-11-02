@@ -2649,7 +2649,6 @@ ha-card {
     border-radius: 0;
     border-left: 0;
     border-right: 0;
-    min-height: 100vh;
   }
   .atelier .shell {
     display: flex;
@@ -5770,7 +5769,6 @@ ha-card {
     border-radius: 0;
     border-left: 0;
     border-right: 0;
-    min-height: 100vh;
   }
   .atelier .shell {
     display: flex;

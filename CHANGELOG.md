@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Sections and masonry views: the Today, Shopping and Meal plan cards are as tall as their content instead of at least one screen, so tablets and phones in landscape no longer show large blank areas.
+
 ## [0.12.11] - 2026-11-02
 
 ### Fixed
