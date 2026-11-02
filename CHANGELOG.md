@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.8] - 2026-11-02
+
 ### Fixed
 
 - Product page demo: the first shopping list item ("1 tbsp olive oil") no longer opens with quantity 2 in the edit dialog, which would have doubled it on save.
@@ -578,7 +580,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.7...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.8...HEAD
+[0.12.8]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.7...v0.12.8
 [0.12.7]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.6...v0.12.7
 [0.12.6]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.5...v0.12.6
 [0.12.5]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.4...v0.12.5
