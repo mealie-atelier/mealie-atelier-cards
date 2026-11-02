@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.11] - 2026-11-02
+
 ### Fixed
 
 - Sections view: a card is as tall as its content, so on a phone a long card no longer runs under the next one.
@@ -609,7 +611,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.10...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.11...HEAD
+[0.12.11]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.10...v0.12.11
 [0.12.10]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.9...v0.12.10
 [0.12.9]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.8...v0.12.9
 [0.12.8]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.7...v0.12.8
