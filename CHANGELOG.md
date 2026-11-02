@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Scaling servings now also scales an alternative in parentheses, so "250 g Zucker (oder 200 g Honig)" no longer keeps the honey amount fixed.
+
 ## [0.12.12] - 2026-11-02
 
 ### Fixed

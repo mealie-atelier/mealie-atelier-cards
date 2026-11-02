@@ -176,12 +176,12 @@ const AtelierStudio = (() => {
     }
     return null;
   }
-  /** Scales every alternative of "2 Eier oder 1 Banane" on its own; a pack size in parentheses stays fixed. */
+  /** Scales every alternative of "2 Eier oder 1 Banane" on its own; a pack size in parentheses stays fixed, but "(oder 200 g Honig)" is an alternative and scales. */
   function scaleIngredient(row, targetServings, baseServings, locale = "de") {
     const raw = typeof row === "string" ? row : ingredient(row);
     if (!raw) return raw;
     return raw
-      .split(/(\s+(?:oder|or)\s+)/i)
+      .split(/(\s+\(?(?:oder|or)\s+)/i)
       .map((part, i) => (i % 2 ? part : scaleLeading(part, targetServings, baseServings, locale)))
       .join("");
   }

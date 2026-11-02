@@ -1268,3 +1268,14 @@ test("an English or lowercase 'orange' does not pick up the German produce plura
   );
   assert.equal(Studio.scaleIngredient("1 Orange", 2, 1, "de"), "2 Orangen");
 });
+
+test("a parenthesized alternative scales like an inline one, a pack size stays fixed", () => {
+  const s = (row, to, from, loc = "de") => Studio.scaleIngredient(row, to, from, loc);
+  assert.equal(s("250 g Zucker (oder 200 g Honig)", 8, 2), "1.000 g Zucker (oder 800 g Honig)");
+  assert.equal(s("250 g sugar (or 200 g honey)", 8, 2, "en"), "1,000 g sugar (or 800 g honey)");
+  assert.equal(s("1 Dose (400 g) Tomaten", 2, 1), "2 Dosen (400 g) Tomaten");
+  assert.equal(
+    s("400 g Rinderhack (oder Sojagranulat)", 2, 1),
+    "800 g Rinderhack (oder Sojagranulat)",
+  );
+});
