@@ -22759,15 +22759,30 @@ const AtelierStudio = (() => {
             : next;
       return rest.replace(word, keepCase);
     };
-    // A range such as "2-3", "2–3" or "1 bis 2" scales on both ends and keeps its separator.
+    // A range such as "2-3", "1 1/2-2", "1½ bis 2" or "200 g - 250 g" scales on both ends and keeps its separator.
+    // Each end is a mixed number, fraction, unicode fraction or decimal; a unit repeated on the low end is kept.
+    const glyphClass = Object.keys(UNICODE_FRACTIONS).join("");
+    const bound = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*[${glyphClass}]|\\d+(?:[.,]\\d+)?)`;
     const range = raw.match(
-      /^(\s*)(\d+(?:[.,]\d+)?)(\s*[-–]\s*|\s+(?:bis|to)\s+)(\d+(?:[.,]\d+)?)(\s+.*)$/,
+      new RegExp(
+        `^(\\s*)(${bound})(?:(\\s*)([a-zA-Zµ]+\\.?))?(\\s*[-–]\\s*|\\s+(?:bis|to)\\s+)(${bound})(\\s+.*)$`,
+      ),
     );
-    if (range) {
-      const low = Number(range[2].replace(",", ".")),
-        high = Number(range[4].replace(",", "."));
-      if (high >= low && !/^\s+[x×]\s*\d/i.test(range[5])) {
-        const unit = unitWord(range[5]);
+    const boundValue = (text) => {
+      const t = text.trim();
+      const g = t.match(new RegExp(`^(\\d*)([${glyphClass}])$`));
+      if (g) return Number(g[1] || 0) + UNICODE_FRACTIONS[g[2]][0] / UNICODE_FRACTIONS[g[2]][1];
+      const m = t.match(/^(?:(\d+)\s+)?(\d+)\/(\d+)$/);
+      if (m) return Number(m[3]) > 0 ? Number(m[1] || 0) + Number(m[2]) / Number(m[3]) : NaN;
+      return Number(t.replace(",", "."));
+    };
+    const repeatedUnit =
+      range && range[4] && unitWord(range[7]).toLowerCase() === range[4].toLowerCase();
+    if (range && (!range[4] || repeatedUnit)) {
+      const low = boundValue(range[2]),
+        high = boundValue(range[6]);
+      if (Number.isFinite(low) && high >= low && !/^\s+[x×]\s*\d/i.test(range[7])) {
+        const unit = unitWord(range[7]);
         const lowValue = (low * target) / base,
           highValue = (high * target) / base;
         let lo = kitchen(lowValue, unit, "decimal"),
@@ -22779,7 +22794,8 @@ const AtelierStudio = (() => {
           lo = tiny(lowValue);
           hi = tiny(highValue);
         }
-        return `${range[1]}${lo}${range[3]}${hi}${agree(range[5], shown(hi))}`;
+        const lowUnit = range[4] ? `${range[3]}${range[4]}` : "";
+        return `${range[1]}${lo}${lowUnit}${range[5]}${hi}${agree(range[7], shown(hi))}`;
       }
       return raw;
     }

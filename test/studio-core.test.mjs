@@ -1127,3 +1127,15 @@ test("compound words ending in a jar word stay one food, with or without the uml
     ["Honig", "Gläser"],
   );
 });
+
+test("scaling a range handles mixed numbers, fractions, decimals and a repeated unit", () => {
+  const s = (row, to, from, loc = "de") => Studio.scaleIngredient(row, to, from, loc);
+  assert.equal(s("1 1/2-2 Tassen Mehl", 3, 2), "2¼-3 Tassen Mehl");
+  assert.equal(s("1 1/2-2 cups flour", 3, 2, "en"), "2¼-3 cups flour");
+  assert.equal(s("1½-2 Tassen Mehl", 3, 2), "2¼-3 Tassen Mehl");
+  assert.equal(s("1,5-2,5 EL Öl", 3, 2), "2¼-3¾ EL Öl");
+  // The upper bound follows the usual kitchen rounding for grams (375 rounds to 380).
+  assert.equal(s("200 g - 250 g Mehl", 3, 2), "300 g - 380 g Mehl");
+  assert.equal(s("2-3 Eier", 4, 2), "4-6 Eier");
+  assert.equal(s("1 bis 2 Eier", 4, 2), "2 bis 4 Eier");
+});

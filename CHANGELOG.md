@@ -8,6 +8,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 - Cooking mode on a phone: the "swipe" hint under the step is larger and no longer faded, so it is readable in both themes.
 - German recipe editor: the restore confirmation in the version history reads "Die Version vom …" instead of "von".
+- Scaling: an ingredient with a range such as "1 1/2-2 cups" or "200 g - 250 g" now scales both ends instead of garbling the amount.
 
 ## [0.12.6] - 2026-11-02
 
