@@ -1261,10 +1261,10 @@ test("scaling a range with different units scales each bound with its own unit",
 });
 
 test("an English or lowercase 'orange' does not pick up the German produce plural", () => {
-  assert.equal(Studio.scaleIngredient("1 orange, juiced", 2, 1, "en"), "2 orange, juiced");
+  assert.equal(Studio.scaleIngredient("1 orange, juiced", 2, 1, "en"), "2 oranges, juiced");
   assert.equal(
     Studio.scaleIngredient("1 orange Paprikaschote", 2, 1, "de"),
-    "2 orange Paprikaschote",
+    "2 orange Paprikaschoten",
   );
   assert.equal(Studio.scaleIngredient("1 Orange", 2, 1, "de"), "2 Orangen");
 });

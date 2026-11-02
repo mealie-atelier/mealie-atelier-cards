@@ -22656,16 +22656,157 @@ const AtelierStudio = (() => {
     }
     return null;
   }
+  // English words that agree with the amount, keyed by both forms. A measure word agrees as the first word after
+  // the amount ("2 bunches parsley"), a food as the last word of a short noun phrase ("2 red onions"). Words that
+  // are not listed (pint, dozen, shrimp, black pepper) stay as written.
+  const enPairs = (list) =>
+    Object.fromEntries(
+      list.flatMap(([one, many]) => [
+        [one, [one, many]],
+        [many, [one, many]],
+      ]),
+    );
+  const EN_MEASURES = enPairs([
+    ["cup", "cups"],
+    ["pinch", "pinches"],
+    ["clove", "cloves"],
+    ["can", "cans"],
+    ["tablespoon", "tablespoons"],
+    ["teaspoon", "teaspoons"],
+    ["slice", "slices"],
+    ["sprig", "sprigs"],
+    ["rasher", "rashers"],
+    ["piece", "pieces"],
+    ["fillet", "fillets"],
+    ["package", "packages"],
+    ["stalk", "stalks"],
+    ["bunch", "bunches"],
+    ["head", "heads"],
+    ["stick", "sticks"],
+    ["handful", "handfuls"],
+    ["envelope", "envelopes"],
+    ["leaf", "leaves"],
+    ["shot", "shots"],
+    ["bar", "bars"],
+    ["sachet", "sachets"],
+    ["packet", "packets"],
+    ["bulb", "bulbs"],
+    ["loaf", "loaves"],
+    ["glass", "glasses"],
+    ["jar", "jars"],
+    ["tin", "tins"],
+  ]);
+  const EN_FOODS = enPairs([
+    ["egg", "eggs"],
+    ["onion", "onions"],
+    ["carrot", "carrots"],
+    ["apple", "apples"],
+    ["tomato", "tomatoes"],
+    ["potato", "potatoes"],
+    ["lemon", "lemons"],
+    ["lime", "limes"],
+    ["orange", "oranges"],
+    ["cherry", "cherries"],
+    ["peach", "peaches"],
+    ["pear", "pears"],
+    ["banana", "bananas"],
+    ["chili", "chilies"],
+    ["chilli", "chillies"],
+    ["pepper", "peppers"],
+    ["shallot", "shallots"],
+    ["avocado", "avocados"],
+    ["mango", "mangoes"],
+    ["aubergine", "aubergines"],
+    ["champignon", "champignons"],
+    ["breast", "breasts"],
+    ["thigh", "thighs"],
+    ["yolk", "yolks"],
+    ["clove", "cloves"],
+  ]);
+  // Words that may stand before an English food in a phrase that agrees: size, colour, freshness, the kind of
+  // food ("chicken breasts", "egg yolks") and the cut. "black pepper" and "pint cherry tomatoes" do not qualify.
+  const EN_LEAD = new Set(
+    "small medium large big fresh ripe red green yellow chicken egg garlic bell cherry chopped diced sliced minced".split(
+      " ",
+    ),
+  );
+  // The words of an all-lowercase English phrase up to a comma or bracket ("red onions, sliced"), else null.
+  const enPhrase = (text) => {
+    const words = String(text)
+      .split(/[,;()]/)[0]
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    return words.length && words.length <= 4 && words.every((w) => /^[a-z]+$/.test(w))
+      ? words
+      : null;
+  };
+  // Index and forms of the word in an English phrase that agrees with the amount, else null.
+  const enAgreeing = (words) => {
+    if (!words) return null;
+    if (EN_MEASURES[words[0]]) return { index: 0, forms: EN_MEASURES[words[0]] };
+    const last = words.length - 1;
+    return EN_FOODS[words[last]] && words.slice(0, last).every((w) => EN_LEAD.has(w))
+      ? { index: last, forms: EN_FOODS[words[last]] }
+      : null;
+  };
+  // German words that mark a row as German, so English agreement leaves it as written ("1 orange, ausgepresst").
+  const GERMAN_WORDS = new Set(
+    "ausgepresst saft abrieb schale scheiben spalten ringe stücke und oder mit ohne nur von davon zum zur etwa nach belieben frisch frische fein grob reif reife ganz ganze halbe klein kleine rot rote gelb gelbe kalt bio saftig unbehandelt".split(
+      " ",
+    ),
+  );
+  // A row with an umlaut or ß, a capitalised word after the first one ("1 orange (Saft und Abrieb)"), a common
+  // German word or a German participle ("verquirlt", "geraspelt", "püriert") reads as German.
+  const germanRow = (text) =>
+    /[äöüßÄÖÜ]/.test(text) ||
+    String(text)
+      .split(/[^A-Za-z]+/)
+      .filter(Boolean)
+      .some(
+        (w, i) =>
+          (i > 0 && /^[A-Z][a-z]/.test(w)) ||
+          GERMAN_WORDS.has(w.toLowerCase()) ||
+          /^(?:ge|ver|zer|ent|unbe)[a-z]{4,}(?:t|en)$|[a-z]{3}iert$|kochend$/.test(w.toLowerCase()),
+      );
+  // A hedge before the amount ("ca. 200 g", "about 2 cups", "~2 cups") stays and the amount behind it scales.
+  const HEDGE =
+    /^(\s*(?:ca\.|circa|etwa|ungefähr|approximately|approx\.|about|~)\s*)(?=[\d½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])/i;
   /** Scales every alternative of "2 Eier oder 1 Banane" on its own; a pack size in parentheses stays fixed, but "(oder 200 g Honig)" is an alternative and scales. */
   function scaleIngredient(row, targetServings, baseServings, locale = "de") {
     const raw = typeof row === "string" ? row : ingredient(row);
     if (!raw) return raw;
-    return raw
-      .split(/(\s+\(?(?:oder|or)\s+)/i)
-      .map((part, i) => (i % 2 ? part : scaleLeading(part, targetServings, baseServings, locale)))
+    // English words agree only in the English UI and only in a row without German words: a German row keeps
+    // "2 orange, ausgepresst" as written.
+    const english = /^en/i.test(String(locale)) && !germanRow(raw);
+    const parts = raw.split(/(\s+\(?(?:oder|or)\s+)/i);
+    // One plain " or " before a lowercase word without an amount joins one English phrase ("1 lemon or lime"),
+    // so both foods agree with the amount.
+    if (english && parts.length === 3 && /^\s+or\s+$/.test(parts[1]) && /^[a-z]/.test(parts[2]))
+      parts.splice(0, 3, parts.join(""));
+    return parts
+      .map((part, i) => {
+        if (i % 2) return part;
+        // A lowercase "orange" right before "oder", or before "or" and a pepper, is the colour, never the
+        // fruit: the amount scales and the word stays ("2 orange oder rote Paprikaschote").
+        const colour = part.match(/^(.*\S)(\s+orange)$/);
+        if (
+          colour &&
+          parts[i + 1] &&
+          (/oder/i.test(parts[i + 1]) || /\b(?:peppers?|paprika\w*)\b/i.test(parts[i + 2]))
+        )
+          return scaleLeading(colour[1], targetServings, baseServings, locale, english) + colour[2];
+        return scaleLeading(part, targetServings, baseServings, locale, english);
+      })
       .join("");
   }
-  function scaleLeading(row, targetServings, baseServings, locale = "de") {
+  function scaleLeading(row, targetServings, baseServings, locale = "de", englishRow = false) {
+    const hedge = typeof row === "string" && row.match(HEDGE);
+    if (hedge)
+      return (
+        hedge[1] +
+        scaleLeading(row.slice(hedge[1].length), targetServings, baseServings, locale, englishRow)
+      );
     const original = typeof row === "string" ? row : ingredient(row),
       // A leading "¹/₂", "1 ¹/₂" or "1¹/₂" reads as "1/2" or "1 1/2" before the amount is parsed. Only the
       // leading amount is rewritten: the rest of the row keeps its own fraction glyphs.
@@ -22764,6 +22905,19 @@ const AtelierStudio = (() => {
         stangen: ["Stange", "Stangen"],
         stück: ["Stück", "Stück"],
         stücke: ["Stück", "Stück"],
+        kugel: ["Kugel", "Kugeln"],
+        kugeln: ["Kugel", "Kugeln"],
+        tüte: ["Tüte", "Tüten"],
+        tüten: ["Tüte", "Tüten"],
+        flasche: ["Flasche", "Flaschen"],
+        flaschen: ["Flasche", "Flaschen"],
+        rolle: ["Rolle", "Rollen"],
+        rollen: ["Rolle", "Rollen"],
+        tafel: ["Tafel", "Tafeln"],
+        tafeln: ["Tafel", "Tafeln"],
+        // "2 Glas Honig" stays as written; only "Gläser" turns singular at one ("1 Glas Honig").
+        glas: ["Glas", "Glas"],
+        gläser: ["Glas", "Gläser"],
       },
       en: {
         cup: ["cup", "cups"],
@@ -22800,8 +22954,23 @@ const AtelierStudio = (() => {
         stalks: ["stalk", "stalks"],
       },
     };
-    // German compounds ending in a counted noun (Knoblauchzehen, Hähnchenbrustfilets) agree on the last part.
-    const COMPOUND_TAILS = ["zehe", "scheibe", "zweig", "zwiebel", "karotte", "limette", "filet"];
+    // German compounds ending in a counted noun (Knoblauchzehen, Lorbeerblätter) agree on the last part. A tail
+    // only counts behind at least three letters, so "4 Blatt Gelatine" keeps its measure word.
+    const COMPOUND_TAILS = Object.fromEntries(
+      [
+        ["Zehe", "Zehen"],
+        ["Scheibe", "Scheiben"],
+        ["Zweig", "Zweige"],
+        ["Zwiebel", "Zwiebeln"],
+        ["Karotte", "Karotten"],
+        ["Limette", "Limetten"],
+        ["Filet", "Filets"],
+        ["Blatt", "Blätter"],
+        ["Schote", "Schoten"],
+        ["Stange", "Stangen"],
+        ["Gurke", "Gurken"],
+      ].flatMap((pair) => pair.map((word) => [word.toLowerCase(), pair])),
+    );
     // The number as the reader sees it ("1", "1¼", "1,5", "⅚"): agreement follows the shown amount, not the raw one.
     const GLYPHS = {
       "¼": 0.25,
@@ -22846,39 +23015,77 @@ const AtelierStudio = (() => {
         produce(word)
       );
     };
+    // The forms of a word, looked up in both tables whatever the locale, or of the tail of a German compound.
+    const lookup = (word) => {
+      const forms = noun(word);
+      if (forms) return { forms, prefix: "" };
+      const lower = word.toLowerCase();
+      const tail = Object.keys(COMPOUND_TAILS)
+        .filter((t) => lower.length >= t.length + 3 && lower.endsWith(t))
+        .sort((a, b) => b.length - a.length)[0];
+      return tail
+        ? { forms: COMPOUND_TAILS[tail], prefix: word.slice(0, word.length - tail.length) }
+        : null;
+    };
     // Singular up to 1, plural above, for the small table of common units; unknown words stay.
     const agree = (rest, amount) => {
-      const word = unitWord(rest);
-      const table = NOUNS.de;
-      const lower = word.toLowerCase();
       const plural = amount > 1 + 1e-9 ? 1 : 0;
-      let prefix = "";
-      // The word is looked up in both tables, whatever the locale, and inflected from the one it is found in.
-      let forms = noun(word);
-      if (!forms && locale !== "en") {
-        const tail = COMPOUND_TAILS.flatMap((t) => [t + "n", t + "s", t + "e", t]).find(
-          (t) => lower.length >= t.length + 3 && lower.endsWith(t) && table[t],
+      // German adjectives in front of a feminine noun keep their form ("2 große Zwiebeln", "2 orange
+      // Paprikaschoten"), so the noun behind them agrees. Masculine and neuter phrases stay as written.
+      const adjective = rest.match(/^(\s+(?:[a-zäöüß]+e\s+){1,2})([A-ZÄÖÜ][^\s\d(,;:.!?)]*)/);
+      const feminine = adjective && lookup(adjective[2]);
+      if (
+        feminine &&
+        [feminine.forms[0] + "n", feminine.forms[0] + "en"].includes(feminine.forms[1])
+      )
+        return (
+          adjective[1] + inflect(adjective[2], feminine, plural) + rest.slice(adjective[0].length)
         );
-        if (tail) {
-          forms = table[tail];
-          prefix = word.slice(0, word.length - tail.length);
+      // An English phrase agrees on its measure word or on the food at its end ("2 red onions, sliced").
+      const phrase = englishRow ? enPhrase(rest) : null;
+      // Two foods joined by "or" agree together ("2 lemons or limes", "2 red onions or shallots").
+      const or = phrase ? phrase.indexOf("or") : -1;
+      if (or > 0 && or < phrase.length - 1) {
+        const ends = [or - 1, phrase.length - 1];
+        const sides = [phrase.slice(0, or), phrase.slice(or + 1)].map(enAgreeing);
+        // "orange or red pepper" names two colours of one pepper: "orange" stays, only the pepper agrees.
+        if (or === 1 && phrase[0] === "orange" && /^peppers?$/.test(phrase[phrase.length - 1]))
+          sides[0] = { index: 0, forms: ["orange", "orange"] };
+        if (sides.every((side, i) => side && side.index === ends[i] - (i ? or + 1 : 0))) {
+          let index = -1;
+          return rest.replace(/[^\s,;()]+/g, (w) => {
+            index += 1;
+            const side = ends.indexOf(index);
+            return side < 0 ? w : sides[side].forms[plural];
+          });
         }
       }
-      if (!forms) return rest;
+      const english = enAgreeing(phrase);
+      if (english) {
+        const next = english.forms[plural];
+        return rest.replace(
+          new RegExp(`^(\\s*(?:\\S+\\s+){${english.index}})[a-z]+`),
+          (_, lead) => lead + next,
+        );
+      }
+      const word = unitWord(rest);
+      const hit = lookup(word);
+      return hit ? rest.replace(word, inflect(word, hit, plural)) : rest;
+    };
+    // The word in the form for the amount, in the casing it was written in.
+    const inflect = (word, { forms, prefix }, plural) => {
       const base = forms[plural];
       // After a hyphen ("Knoblauch-Zehen") the tail is its own word and keeps the casing it was written in.
       const hyphenated = prefix.endsWith("-");
       const tailStart = word[prefix.length] || word[0];
       const next = prefix && !hyphenated ? base.toLowerCase() : base;
-      const keepCase =
-        word.length > 1 && word === word.toUpperCase()
-          ? prefix + next.toUpperCase()
-          : hyphenated
-            ? prefix + (tailStart === tailStart.toLowerCase() ? next.toLowerCase() : next)
-            : prefix || word[0] === word[0].toLowerCase()
-              ? prefix + next.toLowerCase()
-              : next;
-      return rest.replace(word, keepCase);
+      return word.length > 1 && word === word.toUpperCase()
+        ? prefix + next.toUpperCase()
+        : hyphenated
+          ? prefix + (tailStart === tailStart.toLowerCase() ? next.toLowerCase() : next)
+          : prefix || word[0] === word[0].toLowerCase()
+            ? prefix + next.toLowerCase()
+            : next;
     };
     // A range such as "2-3", "1 1/2-2", "1½ bis 2" or "200 g - 250 g" scales on both ends and keeps its separator.
     // Each end is a mixed number, fraction, unicode fraction or decimal; a unit repeated on the low end is kept.
@@ -22962,7 +23169,7 @@ const AtelierStudio = (() => {
     if (["ml", "milliliter", "milliliters", "millilitre"].includes(s))
       return { unit: "ml", factor: 1 };
     if (["l", "liter", "litre", "liters"].includes(s)) return { unit: "ml", factor: 1000 };
-    if (["stück", "stuck", "stueck", "stk", "piece", "pieces"].includes(s))
+    if (["stück", "stuck", "stueck", "stk", "piece", "pieces", "pc", "pcs"].includes(s))
       return { unit: "stück", factor: 1 };
     // English spoons read like EL and TL: a volume that is never converted to ml.
     if (["tbsp", "tablespoon", "tablespoons"].includes(s)) return { unit: "el", factor: 1 };
@@ -22991,7 +23198,7 @@ const AtelierStudio = (() => {
   // One amount: "1 1/2", "1/3", "1½", "½", "1,5" or "2".
   const amountPattern = `(?:\\d+\\s+\\d+\\/\\d+|\\d+\\/\\d+|\\d*\\s?[${Object.keys(fractionChars).join("")}]|\\d+(?:[.,]\\d+)?)`;
   const amountUnits =
-    "kg|g|gramm|ml|l|stück|stueck|stk|el|tl|tbsp|tsp|tablespoons?|teaspoons?|cups?";
+    "kg|g|gramm|ml|l|stück|stueck|stk|pcs?|el|tl|tbsp|tsp|tablespoons?|teaspoons?|cups?";
   const ingredientAmount = new RegExp(
     `^(${amountPattern})(?:\\s*[-–]\\s*(${amountPattern}))?\\s*(${amountUnits})?(?:\\s+|$)`,
     "i",
@@ -23106,14 +23313,20 @@ const AtelierStudio = (() => {
       .filter((w) => w && !stop.has(w))
       .map((w) => {
         if (/^ei(?:er|ern)?$/.test(w)) return "ei";
+        // "1 lb onions" is a weight, never the same row as "1 onion".
+        if (/^(?:lb|oz)$/.test(w)) return w;
         if (w.length <= 2) return "";
+        // English singular and plural are one food ("1 onion" and "2 onions").
+        w = EN_FOODS[w]?.[0] ?? w;
         const stem = w.replace(/(en|ern|e|n|s)$/, "");
         return stem === "ei" ? w : stem;
       })
       .filter((w) => w && !prepWords.has(w))
       .sort()
       .join("|");
-  const sameFood = (a, b) => !!identity(a) && identity(a) === identity(b);
+  // A food of two letters ("Öl") has no identity words and only matches itself.
+  const sameFood = (a, b) =>
+    identity(a) ? identity(a) === identity(b) : !!clean(a) && !identity(b) && clean(a) === clean(b);
   const goodStock = (row, today) =>
     row &&
     (!row.expires || row.expires >= today) &&
@@ -23717,12 +23930,52 @@ const AtelierStudio = (() => {
     stalks: ["stalk", "stalks"],
     bunch: ["bunch", "bunches"],
     bunches: ["bunch", "bunches"],
+    kugel: ["Kugel", "Kugeln"],
+    kugeln: ["Kugel", "Kugeln"],
+    tasse: ["Tasse", "Tassen"],
+    tassen: ["Tasse", "Tassen"],
+    würfel: ["Würfel", "Würfel"],
+    jar: ["jar", "jars"],
+    jars: ["jar", "jars"],
+    tin: ["tin", "tins"],
+    tins: ["tin", "tins"],
   };
-  // Words that only join a compound when they follow a food ("Joghurtbecher" stays one food label).
-  const looseCountUnits = new Set(["becher", "glas", "gläser", "glaser"]);
+  // Words that only join a compound when they follow a food ("Joghurtbecher", "Eiswürfel" stay one food label).
+  const looseCountUnits = new Set([
+    "becher",
+    "glas",
+    "gläser",
+    "glaser",
+    "kugel",
+    "kugeln",
+    "tasse",
+    "tassen",
+    "würfel",
+  ]);
+  // Food in a can or jar is a pantry product, whatever the food ("1 can black beans", "1 Dose Tomaten").
+  const pantryContainer = /^(?:cans?|tins?|jars?|dosen?)$/;
+  // Processed tomatoes by weight or in a container name another product than the fresh food: they keep the form
+  // and never merge with plain tomatoes ("400 g gehackte Tomaten"). A bare count stays fresh, and other foods
+  // merge as before ("1 EL gehackte Petersilie" and "2 EL Petersilie", "1 Dose gehackte Zwiebeln" and "1 Dose Zwiebeln").
+  const processedForm =
+    /^(?:(gehackt|gewurfelt|geschalt|passiert|stuckig|puriert)(?:e|en|er|es)?|(chopped|diced|peeled|crushed|strained|pureed|stewed))$/;
   // German foods counted in pieces: singular and plural display form. One row per food across recipes.
-  const foodForms = Object.fromEntries(
-    [
+  const pairsByWord = (pairs) =>
+    Object.fromEntries(
+      pairs.flatMap((pair) => pair.map((word) => [word.toLocaleLowerCase("de"), pair])),
+    );
+  // Foods that read like English words ("mango", "avocado") only take these forms when written capitalised.
+  const capitalFoodForms = pairsByWord([
+    ["Bohne", "Bohnen"],
+    ["Schalotte", "Schalotten"],
+    ["Pfirsich", "Pfirsiche"],
+    ["Avocado", "Avocados"],
+    ["Aubergine", "Auberginen"],
+    ["Mango", "Mangos"],
+    ["Champignon", "Champignons"],
+  ]);
+  const foodForms = {
+    ...pairsByWord([
       ["Ei", "Eier", "Eiern"],
       ["Zwiebel", "Zwiebeln"],
       ["Karotte", "Karotten"],
@@ -23738,13 +23991,15 @@ const AtelierStudio = (() => {
       ["Birne", "Birnen"],
       ["Apfel", "Äpfel"],
       ["Paprikaschote", "Paprikaschoten"],
-    ].flatMap((pair) => pair.map((word) => [word.toLocaleLowerCase("de"), pair])),
-  );
+    ]),
+    ...capitalFoodForms,
+  };
   // English tails of a label that name the counting word ("garlic cloves").
   const countTail = /^(.+?)\s+(cloves?|sprigs?|stalks?)$/i;
   // Only garlic cloves count as a unit; "whole cloves" are the spice.
   const garlicLabel = /(garlic|knoblauch)$/i;
   function shoppingNeeds(recipes, pantry = [], profile = {}) {
+    const enUi = /^en/i.test(String(profile.locale || ""));
     const combined = [];
     for (const recipe of recipes) {
       const factor = Math.max(
@@ -23808,22 +24063,39 @@ const AtelierStudio = (() => {
           }
         }
         if (ing.quantity !== null) ing.quantity = Math.round(ing.quantity * factor * 100) / 100;
+        const labelWords = clean(ing.label).split(" ");
+        const canned =
+          pantryContainer.test(ing.unit) || labelWords.some((w) => pantryContainer.test(w));
+        const tomato = labelWords.some((w) => /^tomat/.test(w));
+        const formWord = labelWords.map((w) => w.match(processedForm)).find(Boolean);
+        const form =
+          formWord && tomato && (canned || ing.unit !== "stück") ? formWord[1] || formWord[2] : "";
         const found = combined.find(
           (x) =>
             sameFood(x.name, ing.label) &&
             x.unit === ing.unit &&
+            x.form === form &&
             // Identical lines without an amount ("Salt and black pepper" x4) collapse to one row.
             (x.quantity === null) === (ing.quantity === null),
         );
+        // A row with German words keeps the German display name, also in the English UI.
+        const german = !enUi || germanRow(row);
+        // Every source row free of German words: the name follows the amount in English in either UI.
+        const englishRows = !germanRow(row);
         if (found) {
           if (ing.quantity !== null) found.quantity += ing.quantity;
           found.recipeNames.push(recipe.name);
+          found.german ||= german;
+          found.englishRows &&= englishRows;
         } else
           combined.push({
             name: ing.label,
             quantity: ing.quantity,
             unit: ing.unit,
-            category: category(ing.label),
+            form,
+            german,
+            englishRows,
+            category: canned || form ? "pantry" : category(ing.label),
             recipeNames: [recipe.name],
             uncertain: ing.estimated,
           });
@@ -23858,12 +24130,37 @@ const AtelierStudio = (() => {
         if (needed !== null && (item.unit === "stück" || counted))
           needed = Math.ceil(needed - 1e-9);
         if (s && !s.staple && needed !== null) s.amount = Math.max(0, s.amount - item.quantity);
-        // A food counted in pieces reads in the form that matches the amount ("1 Ei", "5 Eier").
-        const forms = item.unit === "stück" ? foodForms[item.name.toLocaleLowerCase("de")] : null;
+        // A food counted in pieces reads in the form that matches the amount ("1 Ei", "5 Eier", "3 onions").
+        // An English name keeps English forms: "orange" never becomes the German "Orangen".
+        // In the English UI a capitalised English food ("Aubergine", "Orange") keeps English forms as well.
+        // A German row, or any row in the German UI, keeps the German display forms ("1 orange" x2 is "Orangen").
+        // In the German UI, rows that are all English and have no German form agree in English as well, so
+        // "1 onion" and "2 onions" read "onions" whichever row came first.
+        const lower = item.name.toLocaleLowerCase("de");
+        const germanForms =
+          (/^[A-ZÄÖÜ]/.test(item.name) || !capitalFoodForms[lower]) && foodForms[lower];
+        const english =
+          item.unit === "stück" && (!item.german || (item.englishRows && !germanForms))
+            ? enAgreeing(enPhrase(item.name))
+            : null;
+        const enCapital =
+          item.unit === "stück" && !english && !item.german && /^[A-Z][a-z]+$/.test(item.name)
+            ? EN_FOODS[item.name.toLowerCase()]
+            : null;
+        const forms = item.unit === "stück" && !english && !enCapital ? germanForms || null : null;
         const amount = needed ?? item.quantity;
+        const words = item.name.split(" ");
+        if (english && amount !== null && english.index === words.length - 1)
+          words[english.index] = english.forms[amount === 1 ? 0 : 1];
+        const { form, german, englishRows, ...shown } = item;
         return {
-          ...item,
-          name: forms && amount !== null ? forms[amount === 1 ? 0 : 1] : item.name,
+          ...shown,
+          name:
+            forms && amount !== null
+              ? forms[amount === 1 ? 0 : 1]
+              : enCapital && amount !== null
+                ? item.name[0] + enCapital[amount === 1 ? 0 : 1].slice(1)
+                : words.join(" "),
           unit: counted && needed !== null ? counted[needed === 1 ? 0 : 1] : item.unit,
           have,
           needed,
@@ -24805,7 +25102,10 @@ Object.assign(MealieAtelierCard.prototype, {
         );
       if (!likelyLeftover) recipes.push(r);
     }
-    this._grocery = AtelierStudio.shoppingNeeds(recipes, this._studio.pantry, this._studio.profile);
+    this._grocery = AtelierStudio.shoppingNeeds(recipes, this._studio.pantry, {
+      ...this._studio.profile,
+      locale: this._language,
+    });
     this._view = "pantry";
     this._render();
     if (!recipes.length) this._flash(this.t("studioNoPlannedIngredients"));

@@ -4,6 +4,16 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Scaling: in the English interface, German compounds such as "1 Knoblauchzehe" ("2 Knoblauchzehen") and German nouns after an adjective ("2 große Zwiebeln") now agree too. Other German nouns ("1 Pfirsich", "1 Tomate") agree in the German interface only.
+- Scaling: in the English interface, English ingredients agree with the new amount, for example "2 oranges, juiced", "1 lime", "2 red onions", "1 garlic clove", "2 handfuls basil" and "2 lemons or limes". Unknown measure words such as "pint" or "dozen" leave the food as written, and a row with German words ("1 orange, ausgepresst") stays as written in both languages.
+- Scaling: a German noun behind an adjective agrees ("2 orange Paprikaschoten", "2 große Zwiebeln"), more German counting words agree (Kugeln, Flaschen, Tüten, Rollen, Tafeln, Lorbeerblätter), and in the German interface Bohnen and Pfirsiche agree as well. "4 Blatt Gelatine", "2 Glas Honig" and "2 Kopf Salat" stay as written.
+- Scaling: a hedge before the amount ("ca. 200 g Mehl", "about 2 cups milk") no longer stops the row from scaling.
+- Shopping list: in the English interface, English rows keep English names, so two "1 orange" rows read "oranges" instead of "Orangen" and two "1 Aubergine" rows read "Aubergines", and "1 onion" and "2 onions" merge into "3 onions". The German list and rows with German words keep the German names ("Orangen"), and in the German list too, merged lowercase English rows follow the total ("1 egg" and "2 eggs" read "3 eggs").
+- Shopping list: "Kugeln", "Tassen", "Würfel", jars and tins count as units, "pc" and "pcs" count as pieces, and two rows of "Öl" merge.
+- Shopping list: canned food and chopped, peeled or strained tomatoes by weight, by volume or in a can go to the pantry aisle and stay apart from fresh tomatoes. Other chopped or peeled food still merges with the plain food, also in a can ("1 EL gehackte Petersilie" and "2 EL Petersilie", "1 Dose gehackte Zwiebeln" and "1 Dose Zwiebeln"), and a row in lb or oz no longer merges with a piece count.
+
 ## [0.12.13] - 2026-11-02
 
 ### Fixed

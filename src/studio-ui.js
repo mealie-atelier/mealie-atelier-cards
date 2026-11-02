@@ -787,7 +787,10 @@ Object.assign(MealieAtelierCard.prototype, {
         );
       if (!likelyLeftover) recipes.push(r);
     }
-    this._grocery = AtelierStudio.shoppingNeeds(recipes, this._studio.pantry, this._studio.profile);
+    this._grocery = AtelierStudio.shoppingNeeds(recipes, this._studio.pantry, {
+      ...this._studio.profile,
+      locale: this._language,
+    });
     this._view = "pantry";
     this._render();
     if (!recipes.length) this._flash(this.t("studioNoPlannedIngredients"));

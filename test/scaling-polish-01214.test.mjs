@@ -52,13 +52,17 @@ scaleCases("an English orange takes the English plural", "en", [
 scaleCases("the uninflected colour orange is skipped and the noun agrees", "de", [
   ["1 orange Paprikaschote", 2, 1, "2 orange Paprikaschoten"],
 ]);
-for (const locale of ["en", "de"])
-  test(`a lowercase English orange stays English on the ${locale} shopping list`, () => {
-    const rows = needs(locale, "1 orange", "1 orange");
-    assert.equal(rows.length, 1);
-    assert.match(rows[0][0], /^oranges?$/);
-    assert.equal(rows[0][1], 2);
-  });
+test("a lowercase English orange stays English on the en shopping list", () => {
+  const rows = needs("en", "1 orange", "1 orange");
+  assert.equal(rows.length, 1);
+  assert.match(rows[0][0], /^oranges?$/);
+  assert.equal(rows[0][1], 2);
+});
+// Release review: the German shopping list keeps the German display name, as on main.
+test("a lowercase orange keeps the German display name on the de shopping list", () => {
+  assert.deepEqual(needs("de", "1 orange", "1 orange"), [["Orangen", 2, "stück", "produce"]]);
+  assert.deepEqual(needs("de", "1 orange"), [["Orange", 1, "stück", "produce"]]);
+});
 
 scaleCases("English nouns agree with the amount", "en", [
   ["2 apples", 1, 2, "1 apple"],
@@ -192,6 +196,21 @@ for (const [locale, a, b] of [
 test("shopping: English singular and plural merge and the name follows the amount", () => {
   assert.deepEqual(needs("en", "1 onion", "2 onions"), [["onions", 3, "stück", "produce"]]);
   assert.deepEqual(needs("en", "2 tomatoes", "1 tomato"), [["tomatoes", 3, "stück", "produce"]]);
+});
+for (const locale of ["de", "en"])
+  test(`shopping: ${locale} UI, merged English rows take the form of the amount, not of the first row`, () => {
+    assert.deepEqual(needs(locale, "1 onion", "2 onions"), [["onions", 3, "stück", "produce"]]);
+    assert.deepEqual(needs(locale, "1 chili", "2 chilies"), [["chilies", 3, "stück", "produce"]]);
+    assert.deepEqual(needs(locale, "1 egg", "2 eggs"), [["eggs", 3, "stück", "chilled"]]);
+    assert.deepEqual(needs(locale, "1 onion"), [["onion", 1, "stück", "produce"]]);
+  });
+test("shopping: de UI, English rows with a German form and German rows keep the German names", () => {
+  assert.deepEqual(needs("de", "1 orange", "1 orange"), [["Orangen", 2, "stück", "produce"]]);
+  assert.deepEqual(needs("de", "1 Zwiebel", "2 Zwiebeln"), [["Zwiebeln", 3, "stück", "produce"]]);
+  assert.deepEqual(needs("de", "1 egg", "2 Eier"), [
+    ["egg", 1, "stück", "chilled"],
+    ["Eier", 2, "stück", "chilled"],
+  ]);
 });
 test("shopping: a bare count of chopped tomatoes merges singular and plural", () => {
   assert.deepEqual(needs("en", "3 chopped tomatoes", "1 chopped tomato"), [
@@ -469,4 +488,125 @@ for (const [locale, line, category] of [
   });
 test("whole cloves stay one spice row", () => {
   assert.deepEqual(needs("en", "4 whole cloves"), [["whole cloves", 4, "stück", "spices"]]);
+});
+
+// ---------------------------------------------------------------------------------------------------------
+// Part 3: release review of 0.12.14
+// ---------------------------------------------------------------------------------------------------------
+
+// Only tomatoes and canned food keep a processed form apart; other chopped, diced or peeled food merges as on main.
+for (const [a, b, name, quantity, unit] of [
+  ["1 EL gehackte Petersilie", "2 EL Petersilie", "gehackte Petersilie", 3, "el"],
+  ["200 g gewürfelte Zwiebeln", "300 g Zwiebeln", "gewürfelte Zwiebeln", 500, "g"],
+  ["500 g geschälte Kartoffeln", "300 g Kartoffeln", "geschälte Kartoffeln", 800, "g"],
+  ["50 g gehackte Mandeln", "100 g Mandeln", "gehackte Mandeln", 150, "g"],
+])
+  test(`processed forms of other foods merge with the plain food: ${a} + ${b}`, () => {
+    const rows = needs("de", a, b);
+    assert.equal(rows.length, 1);
+    assert.deepEqual(rows[0].slice(0, 3), [name, quantity, unit]);
+    assert.notEqual(rows[0][3], "pantry");
+  });
+scaleCases("Two English foods joined by or agree together", "en", [
+  ["1 lemon or lime", 4, 2, "2 lemons or limes"],
+  ["2 lemons or limes", 1, 2, "1 lemon or lime"],
+  ["1 lemon or lime, juiced", 4, 2, "2 lemons or limes, juiced"],
+  ["1 red onion or shallot", 4, 2, "2 red onions or shallots"],
+  ["1 lemon or 2 limes", 4, 2, "2 lemons or 4 limes"],
+  ["2 cups milk or water", 4, 2, "4 cups milk or water"],
+  ["1 Zitrone oder Limette", 4, 2, "2 Zitronen oder Limette"],
+]);
+// A capitalised English food on an English shopping list never takes the German display form.
+for (const [line, plural] of [
+  ["1 Aubergine", "Aubergines"],
+  ["1 Orange", "Oranges"],
+])
+  test(`German display forms never appear for ${line} on an English shopping list`, () => {
+    assert.deepEqual(needs("en", line, line), [[plural, 2, "stück", "produce"]]);
+    assert.deepEqual(needs("en", line), [[line.slice(2), 1, "stück", "produce"]]);
+  });
+test("a German shopping list keeps the German display forms", () => {
+  assert.deepEqual(needs("de", "1 Aubergine", "1 Aubergine"), [
+    ["Auberginen", 2, "stück", "produce"],
+  ]);
+  assert.deepEqual(needs("de", "1 Orange", "1 Orange"), [["Orangen", 2, "stück", "produce"]]);
+});
+test("processed food in a can merges with the plain canned food unless it is tomatoes", () => {
+  assert.deepEqual(needs("de", "1 Dose gehackte Zwiebeln", "1 Dose Zwiebeln"), [
+    ["gehackte Zwiebeln", 2, "Dosen", "pantry"],
+  ]);
+  assert.equal(needs("de", "1 Dose gehackte Tomaten", "1 Dose Tomaten").length, 2);
+});
+scaleCases("orange before oder is the German colour and never takes an English plural", "de", [
+  ["1 orange oder rote Paprikaschote", 2, 1, "2 orange oder rote Paprikaschote"],
+  ["1 orange oder gelbe Paprika", 2, 1, "2 orange oder gelbe Paprika"],
+  ["1 orange oder 1 Zitrone", 2, 1, "2 orange oder 2 Zitronen"],
+]);
+scaleCases("orange before or and a pepper is the colour, only the pepper agrees", "en", [
+  ["1 orange or red pepper", 2, 1, "2 orange or red peppers"],
+  ["1 orange or yellow pepper", 2, 1, "2 orange or yellow peppers"],
+  ["1 orange or green pepper", 2, 1, "2 orange or green peppers"],
+  ["1 orange or red pepper, sliced", 2, 1, "2 orange or red peppers, sliced"],
+  ["1 orange or lemon", 2, 1, "2 oranges or lemons"],
+]);
+
+// Release review: a German row never takes an English form, whatever the UI language. English agreement only
+// applies in the English UI to a row without German words.
+const germanOrangeRows = [
+  "1 orange, ausgepresst",
+  "1 orange, in Scheiben geschnitten",
+  "1 orange (Saft und Abrieb)",
+  "1 orange, geschält und filetiert",
+];
+for (const locale of ["de", "en"])
+  scaleCases("a German row keeps orange as written", locale, [
+    ...germanOrangeRows.map((row) => [row, 2, 1, row.replace(/^1/, "2")]),
+    ["1 mango, geschält", 2, 1, "2 mango, geschält"],
+    ["1 avocado, halbiert", 2, 1, "2 avocado, halbiert"],
+    ["1 lime (Saft und Abrieb)", 2, 1, "2 lime (Saft und Abrieb)"],
+    ["1 apple, gerieben", 2, 1, "2 apple, gerieben"],
+    ["2 tomato, gehackt", 2, 1, "4 tomato, gehackt"],
+    ["1 chili, entkernt und gehackt", 2, 1, "2 chili, entkernt und gehackt"],
+    ["1 avocado oder 1 mango", 2, 1, "2 avocado oder 2 mango"],
+    ["1 lime oder Zitrone", 2, 1, "2 lime oder Zitrone"],
+    ["1 potato, mehligkochend", 2, 1, "2 potato, mehligkochend"],
+    ["1 orange, unbehandelt", 2, 1, "2 orange, unbehandelt"],
+  ]);
+scaleCases("the German UI never inflects an English food", "de", [
+  ["1 orange", 2, 1, "2 orange"],
+  ["1 lemon or lime", 2, 1, "2 lemon or lime"],
+]);
+scaleCases("an English row in the English UI still agrees", "en", [
+  ["1 orange, juiced", 2, 1, "2 oranges, juiced"],
+  ["1 orange", 2, 1, "2 oranges"],
+  ["1 lemon or lime", 2, 1, "2 lemons or limes"],
+]);
+for (const locale of ["de", "en"])
+  for (const row of germanOrangeRows) {
+    // The bracket stays part of the name, exactly as on main.
+    const [one, many] = row.includes("(")
+      ? ["orange (Saft und Abrieb)", "orange (Saft und Abrieb)"]
+      : ["Orange", "Orangen"];
+    test(`a German orange row keeps the German shopping name on the ${locale} list: ${row}`, () => {
+      assert.deepEqual(needs(locale, row, row)[0].slice(0, 2), [many, 2]);
+      assert.deepEqual(needs(locale, row)[0].slice(0, 2), [one, 1]);
+    });
+  }
+for (const locale of ["de", "en"])
+  for (const [rows, name] of [
+    [["1 mango, geschält", "1 mango, geschält"], "mango"],
+    [["1 Mango, reif", "1 Mango, reif"], "Mangos"],
+    [["1 egg, verquirlt", "1 egg, verquirlt"], "egg"],
+    [["1 Chili, rot", "1 Chili, rot"], "Chili"],
+    [["2 tomato, gehackt"], "tomato"],
+  ])
+    test(`a German row never takes an English shopping name on the ${locale} list: ${rows[0]}`, () => {
+      assert.equal(needs(locale, ...rows)[0][0], name);
+    });
+test("an English capitalised orange keeps the English plural only in a row without German words", () => {
+  assert.deepEqual(needs("en", "1 Orange", "1 Orange")[0].slice(0, 2), ["Oranges", 2]);
+  assert.deepEqual(needs("en", "1 Orange, ausgepresst", "1 Orange, ausgepresst")[0].slice(0, 2), [
+    "Orangen",
+    2,
+  ]);
 });
