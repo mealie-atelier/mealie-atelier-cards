@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.12] - 2026-11-02
+
 ### Fixed
 
 - Sections and masonry views: the Today, Shopping and Meal plan cards are as tall as their content instead of at least one screen, so tablets and phones in landscape no longer show large blank areas. On phones the standalone web app now ends with its content as well.
@@ -615,7 +617,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.11...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.12...HEAD
+[0.12.12]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.11...v0.12.12
 [0.12.11]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.10...v0.12.11
 [0.12.10]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.9...v0.12.10
 [0.12.9]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.8...v0.12.9
