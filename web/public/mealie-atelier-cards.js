@@ -11849,6 +11849,11 @@ ha-card {
       .atelier .modal.large:has(.cook-layout) > .modal-bar-title {
         top: 6px;
       }
+      /* The photo title is anchored to the band's bottom edge. Two lines of it (44px) fill the 56px band between the
+         same 6px insets, so a wrapped title no longer grows past the top edge of the dialog. */
+      .atelier .modal.large:has(.cook-layout) .cook-visual .cook-brand {
+        bottom: 6px;
+      }
     }
   }
   /* While the timer form is open on a short phone, the tool buttons step aside so the form and the bar stay on screen. */

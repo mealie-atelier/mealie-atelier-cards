@@ -7,6 +7,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Fixed
 
 - Product page: opening a section link such as /de/#installieren on a fresh load lands on that section instead of 700 to 1000 px too far down, and stays there while images and content above it settle.
+- Cooking mode on a short phone: a recipe title that wraps to two lines keeps the same small top inset in the photo band instead of touching the top edge of the dialog.
 
 ## [0.12.5] - 2026-11-02
 
