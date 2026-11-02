@@ -972,6 +972,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       debounce_seconds: rule?.debounce_seconds ?? 30,
       poll_minutes: Math.round((rule?.poll_interval_seconds ?? 120) / 60),
       duplicate_policy: rule?.duplicate_policy || "skip_exact",
+      originalSourceName: rule?.source_list_name || "",
       // Label for a stored destination that is not offered right now (unavailable entity).
       originalDestinationName: rule
         ? this._syncRuleDestName(rule) || rule.destination_entity_id || ""
@@ -1040,7 +1041,7 @@ ${this._syncRouteHtml(rule, destination, destName)}
       `<label class="field"><span>${esc(this.t(labelKey))}</span><input type="text" inputmode="numeric" data-input="sync-${key}" value="${esc(d[field])}" ${errors[errorKey] ? `aria-invalid="true" aria-describedby="sync-${key}-error"` : ""}>${errors[errorKey] ? `<span id="sync-${key}-error" class="sync-field-error" role="alert">${esc(this.t("syncInvalidNumber", errors[errorKey]))}</span>` : ""}</label>`;
     const sourceOptions = `${
       d.source_list_id && !d.free.some((l) => String(l.id) === d.source_list_id)
-        ? `<option value="" disabled selected>${esc(this.t("selectList"))}</option>`
+        ? `<option value="" disabled selected>${esc(d.originalSourceName ? this.t("syncSourceMissingOption", { name: d.originalSourceName }) : this.t("selectList"))}</option>`
         : ""
     }${d.free
       .map(
@@ -1049,10 +1050,13 @@ ${this._syncRouteHtml(rule, destination, destName)}
       )
       .join("")}`;
     const destinationOptions = d.destinations
-      .map(
-        (e) =>
-          `<option value="${esc(e.entity_id)}" ${e.entity_id === d.destination_entity_id ? "selected" : ""}>${esc(this._syncDestinationLabel(e.name, e.platform))}</option>`,
-      )
+      .map((e) => {
+        const label = this._syncDestinationLabel(e.name, e.platform);
+        const stored = e.entity_id === d.destination_entity_id;
+        const off = e.available === false;
+        // An unavailable entity can only stay as the stored destination, it cannot be newly picked.
+        return `<option value="${esc(e.entity_id)}" ${stored ? "selected" : ""} ${off && !stored ? "disabled" : ""}>${esc(off ? this.t("syncDestinationUnavailableOption", { name: label }) : label)}</option>`;
+      })
       .join("");
     // A stored destination that is not offered right now (unavailable todo entity) stays selected,
     // so the rule keeps its target and can be saved unchanged.

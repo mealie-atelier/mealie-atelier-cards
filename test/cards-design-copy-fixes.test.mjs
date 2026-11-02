@@ -103,7 +103,7 @@ test("the mealie_auth text names the server token in the web app and the setting
   for (const [language, web, expected] of [
     ["de", true, /MEALIE_API_TOKEN/],
     ["en", true, /MEALIE_API_TOKEN/],
-    ["de", false, /authentifiziere die Integration neu/],
+    ["de", false, /melde die Integration neu an/],
     ["en", false, /re-authenticate the integration/],
   ]) {
     const card = makeCard(loadCards(), {

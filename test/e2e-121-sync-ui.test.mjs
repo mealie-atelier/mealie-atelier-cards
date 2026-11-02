@@ -121,7 +121,7 @@ test("a healthy rule keeps run and pause with Edit secondary", async () => {
 
 test("editing a rule whose source list is gone shows a placeholder and blocks saving", async () => {
   const e = env({
-    rules: [rule({ source_list_id: "deleted" })],
+    rules: [rule({ source_list_id: "deleted", source_list_name: "" })],
     lists: [{ id: "other", name: "Other list" }],
   });
   await click(e.card, { action: "sync-open" });

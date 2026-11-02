@@ -41,14 +41,14 @@ const PREVIEW = {
   total_candidates: 1,
 };
 
-function env({ rules = [], audit = [] } = {}) {
+function env({ rules = [], audit = [], destinations = DESTINATIONS } = {}) {
   const calls = [];
   const cards = loadCards();
   const callWS = async (message) => {
     const name = message.type.replace("mealie_atelier/", "");
     calls.push(name);
     if (name === "sync_state") return { supported: true, rules, audit };
-    if (name === "sync_destinations") return DESTINATIONS;
+    if (name === "sync_destinations") return destinations;
     if (name === "sync_preview") return PREVIEW;
     return {};
   };
@@ -199,4 +199,24 @@ test("banners for a deleted Bring! list name their rule once there are several r
   await click(two.card, { action: "sync-open" });
   assert.match(two.card._syncGoneHtml(a, caps), /Alpha<\/strong>: The Bring! list/);
   assert.match(two.card._syncGoneHtml(b, caps), /Beta<\/strong>: The Bring! list/);
+});
+
+test("the destination list marks an unavailable entity and only the stored one stays selectable", async () => {
+  const off = { entity_id: "todo.off", name: "Offline", platform: "bring", available: false };
+  const on = rule().destination;
+  const e = env({ rules: [rule()], destinations: { entities: [on, off] } });
+  await click(e.card, { action: "sync-open" });
+  await click(e.card, { action: "sync-setup-open", value: "r1" });
+  assert.match(
+    e.html(),
+    /<option value="todo\.off"\s+disabled>Offline[^<]*\(unavailable\)<\/option>/,
+  );
+});
+
+test("the source list shows a deleted stored source as a disabled missing option", async () => {
+  const e = env({ rules: [rule({ source_list_id: "gone", source_list_name: "Alte Quelle" })] });
+  await click(e.card, { action: "sync-open" });
+  await click(e.card, { action: "sync-setup-open", value: "r1" });
+  assert.match(e.html(), /<option value="" disabled selected>Alte Quelle \(missing\)<\/option>/);
+  assert.equal(de.syncSourceMissingOption, "{name} (fehlt)");
 });
