@@ -7,7 +7,7 @@
 <p align="center">
 <a href="https://github.com/mealie-atelier/mealie-atelier-cards/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/mealie-atelier/mealie-atelier-cards?style=flat-square&color=3e6b48"></a>
 <a href="https://github.com/mealie-atelier/mealie-atelier-cards/actions/workflows/validate.yml"><img alt="Validate" src="https://img.shields.io/github/actions/workflow/status/mealie-atelier/mealie-atelier-cards/validate.yml?branch=main&style=flat-square&label=validate"></a>
-<a href="https://hacs.xyz"><img alt="HACS Dashboard" src="https://img.shields.io/badge/HACS-Dashboard-41BDF5?style=flat-square"></a>
+<a href="https://hacs.xyz"><img alt="HACS default catalog: Dashboard" src="https://img.shields.io/badge/HACS-default%20%C2%B7%20Dashboard-41BDF5?style=flat-square"></a>
 <img alt="Home Assistant 2026.10 or newer" src="https://img.shields.io/badge/Home%20Assistant-2026.10%2B-41BDF5?style=flat-square">
 <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/mealie-atelier/mealie-atelier-cards?style=flat-square"></a>
 <br>
@@ -52,13 +52,15 @@
 
 ### 1. Install the cards
 
-Mealie Atelier Cards is submitted to the default catalog (`hacs/default`) that the Home Assistant Marketplace and HACS both read. Pick one route:
+Mealie Atelier Cards is listed in the default catalog (`hacs/default`) that the Home Assistant Marketplace and HACS both read. Pick one route:
 
-- **Home Assistant Marketplace** (Home Assistant 2026.11 and newer): open the Marketplace (**Settings → Marketplace**, route `/marketplace/browse`), search for **Mealie Atelier Cards** and download it. Available as soon as the catalog listing is merged. Until then, use **Add from link**, paste `https://github.com/mealie-atelier/mealie-atelier-cards` and complete the one-time **Connect GitHub** login (a free GitHub account is needed).
-- **HACS** (classic): add the repository as a custom repository of type **Dashboard**, then download it.
+- **Home Assistant Marketplace** (Home Assistant 2026.11 and newer): open **Settings → Marketplace**, tab **Browse** (route `/marketplace/browse`), search for **Mealie Atelier Cards**, open it and choose **Install**.
+- **HACS** (classic): search for **Mealie Atelier Cards** in HACS, open it and choose **Download**.
 - **Manual**: download `mealie-atelier-cards.js` from the [latest release](https://github.com/mealie-atelier/mealie-atelier-cards/releases/latest) and copy it to the `www/community/mealie-atelier-cards/` folder of your Home Assistant config. Then register it as a resource, either [in the UI](#ui-resource) or [in YAML](#yaml-resource).
 
-The button below opens the add dialog for this repository (it still needs the GitHub connection on Home Assistant 2026.11).
+New catalog entries take a while to reach every Home Assistant. If the search does not find the cards yet, add them by link: in the Marketplace choose **Add from link**, paste `https://github.com/mealie-atelier/mealie-atelier-cards` and complete the one-time **Connect GitHub** login (a free GitHub account is needed); in classic HACS add the repository as a custom repository of type **Dashboard**.
+
+The button below opens the cards in your Home Assistant. While they are not in your catalog yet, it opens the add dialog, which needs the GitHub connection on Home Assistant 2026.11.
 
 [![Open the repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mealie-atelier&repository=mealie-atelier-cards&category=plugin)
 

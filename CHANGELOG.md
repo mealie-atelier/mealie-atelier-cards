@@ -4,6 +4,14 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Changed
+
+- Docs: the cards are listed in the default catalog (`hacs/default`), so the README, the FAQ, the distribution notes and the product page lead with searching for **Mealie Atelier Cards** in the Marketplace or HACS. Adding them by link or as a custom repository stays as the fallback while the catalog update reaches Home Assistant. The Bridge still installs by link until its own listing is merged.
+
+### Fixed
+
+- Product page: the German install steps name the German Home Assistant button **Über Link hinzufügen** instead of the English "Add from link".
+
 ## [0.12.14] - 2026-11-02
 
 ### Fixed

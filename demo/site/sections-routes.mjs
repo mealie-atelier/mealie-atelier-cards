@@ -1,7 +1,7 @@
 // Landing page, second half: Home Assistant, the standalone web app, AI helpers, open source,
 // install routes and the closing call to action. Facts follow README.md, web/README.md and the
-// Bridge README: the hacs/default listing is submitted, not merged; today HACS installs it as a
-// custom repository.
+// Bridge README: the cards are listed in hacs/default, the Bridge listing is submitted, not merged,
+// so the Bridge still installs by link or as a custom repository.
 import { escapeHtml, ext, icon, links, sectionIds, translator } from "./chrome.mjs";
 import { browser, host, phone, photo, shot, tablet } from "./media.mjs";
 import { bySlug } from "./sections-intro.mjs";
@@ -31,8 +31,8 @@ function homeAssistant(ctx) {
     "Wenn ein Küchentimer abläuft, schickt Home Assistant eine Nachricht über deinen Benachrichtigungsdienst, zum Beispiel an die Home-Assistant-App auf dem Handy. Auch wenn der Browser längst zu ist.",
     "When a kitchen timer ends, Home Assistant sends a message through your notify service, for example to the Home Assistant app on your phone. Even when the browser has long been closed.",
   )}</p><div class="notif-phone" aria-hidden="true"><div class="clock">18:42</div><div class="date">${t("Mittwoch, 28. Oktober", "Wednesday, October 28")}</div>${notification(timerTitle, timerDone(t("Tomatensauce", "Tomato sauce")), t("jetzt", "now"))}${notification(timerTitle, timerDone("Gnocchi"), t("vor 6 Min.", "6 min ago"))}${notification(timerTitle, timerDone(t("Ofen", "Oven")), t("vor 25 Min.", "25 min ago"))}</div></article><article class="card c-install rv"><p class="kicker">${t("Installation", "Installation")}</p><h3>${t("Installieren wie jede andere Erweiterung.", "Install it like any other extension.")}</h3><p>${t(
-    "Cards und Bridge sind für den Standardkatalog eingereicht, aus dem der Home Assistant Marketplace (ab Home Assistant 2026.11) und HACS lesen. Bis der Eintrag freigeschaltet ist, installierst du beide im Marketplace über „Add from link“ (ab Home Assistant 2026.11) oder in HACS als benutzerdefiniertes Repository (Home Assistant 2026.10).",
-    "Cards and Bridge are submitted to the default catalog that the Home Assistant Marketplace (Home Assistant 2026.11 and newer) and HACS both read. Until the listing is merged, you install both in the Marketplace through “Add from link” (Home Assistant 2026.11 and newer) or in HACS as a custom repository (Home Assistant 2026.10).",
+    "Die Cards stehen im Standardkatalog, aus dem der Home Assistant Marketplace (ab Home Assistant 2026.11) und HACS lesen. Du findest sie dort über die Suche. Neue Einträge brauchen eine Weile, bis sie in jedem Home Assistant ankommen. Findet die Suche sie noch nicht, gehen sie den Weg der Bridge. Die Bridge ist eingereicht und wartet noch auf die Prüfung. Bis sie aufgenommen ist, installierst du sie im Marketplace über „Über Link hinzufügen“ (ab Home Assistant 2026.11) oder in HACS als benutzerdefiniertes Repository (Home Assistant 2026.10).",
+    "The Cards are listed in the default catalog that the Home Assistant Marketplace (Home Assistant 2026.11 and newer) and HACS both read, so you find them by search. New entries take a while to reach every Home Assistant: if the search does not find them yet, they take the Bridge route. The Bridge is submitted and still waits for review. Until it is listed, you install it in the Marketplace through “Add from link” (Home Assistant 2026.11 and newer) or in HACS as a custom repository (Home Assistant 2026.10).",
   )}</p><div class="btn-row">${ext(links.hacsCards, t("Cards in HACS öffnen", "Open Cards in HACS"), "btn btn-ghost")}${ext(links.hacsBridge, t("Bridge in HACS öffnen", "Open Bridge in HACS"), "btn btn-ghost")}</div>${browser("Home Assistant", shot(ctx, "ha-integration", t("Integrationsseite der Mealie Atelier Bridge in Home Assistant mit einem verbundenen Dienst", "Integration page of the Mealie Atelier Bridge in Home Assistant with one connected service"), "(max-width: 1000px) 90vw, 480px", { className: "crop-top" }))}</article><article class="card c-rights rv d1"><p class="kicker">${t("Rechte pro Person", "Rights per person")}</p><h3>${t("Alle sehen die Küche. Ändern darf, wer soll.", "Everyone sees the kitchen. Only the right people change it.")}</h3><p>${t(
     "Die Bridge prüft jede Änderung auf dem Server, nicht nur in der Oberfläche. Ausgeblendete Knöpfe sind hier Komfort, keine Sicherheit.",
     "The Bridge checks every change on the server, not just in the interface. Hidden buttons are a convenience here, not the security.",
@@ -112,12 +112,12 @@ function install(ctx) {
     t("Karten und Bridge", "Cards and Bridge"),
     [
       t(
-        "<b>Bridge installieren</b> im Marketplace über „Add from link“ (ab Home Assistant 2026.11) oder in HACS als benutzerdefiniertes Repository (2026.10) und mit Mealie-Adresse und API-Token verbinden.",
+        "<b>Bridge installieren</b> im Marketplace über „Über Link hinzufügen“ (ab Home Assistant 2026.11) oder in HACS als benutzerdefiniertes Repository (2026.10) und mit Mealie-Adresse und API-Token verbinden.",
         "<b>Install the Bridge</b> in the Marketplace through “Add from link” (Home Assistant 2026.11 and newer) or in HACS as a custom repository (2026.10) and connect it with your Mealie address and API token.",
       ),
       t(
-        "<b>Cards installieren</b> auf demselben Weg. Sobald der Katalogeintrag freigeschaltet ist, auch direkt im Marketplace.",
-        "<b>Install the Cards</b> the same way. Once the catalog listing is merged, straight from the Marketplace too.",
+        "<b>Cards installieren</b> direkt aus dem Katalog: im Marketplace oder in HACS nach „Mealie Atelier Cards“ suchen. Findet die Suche sie noch nicht, geht es wie bei der Bridge.",
+        "<b>Install the Cards</b> straight from the catalog: search for “Mealie Atelier Cards” in the Marketplace or in HACS. If the search does not find them yet, it works as for the Bridge.",
       ),
       t(
         "<b>Karte hinzufügen.</b> Der visuelle Editor findet die Bridge von selbst.",

@@ -141,8 +141,15 @@ test("landing pages state the install route and setup facts correctly", () => {
   const en = landing(builds.local, "en");
   assert.match(
     de,
-    /„Add from link“ \(ab Home Assistant 2026\.11\) oder in HACS als benutzerdefiniertes Repository/,
+    /„Über Link hinzufügen“ \(ab Home Assistant 2026\.11\) oder in HACS als benutzerdefiniertes Repository/,
   );
+  assert.match(de, /im Marketplace oder in HACS nach „Mealie Atelier Cards“ suchen/);
+  // The catalog feed lags behind the merge, so the install card keeps a fallback for the Cards.
+  assert.match(de, /Findet die Suche sie noch nicht, gehen sie den Weg der Bridge\./);
+  assert.match(en, /if the search does not find them yet, they take the Bridge route\./);
+  // The German page uses the German Home Assistant label, never the English one.
+  assert.doesNotMatch(de, /Add from link/);
+  assert.match(en, /search for “Mealie Atelier Cards” in the Marketplace or in HACS/);
   assert.match(
     en,
     /“Add from link” \(Home Assistant 2026\.11 and newer\) or in HACS as a custom repository/,
@@ -153,8 +160,12 @@ test("landing pages state the install route and setup facts correctly", () => {
     assert.match(html, /docker compose up -d --build/);
     assert.match(html, /OpenAI/);
     assert.match(html, /Anthropic/);
-    // The listing is submitted, not merged, so nothing may promise it is live today.
+    // The Bridge listing is submitted, not merged, so nothing may promise it is live today.
     assert.doesNotMatch(html, /jetzt im Marketplace|now in the Marketplace/i);
+    assert.doesNotMatch(
+      html,
+      /Cards und Bridge sind für den Standardkatalog eingereicht|Cards and Bridge are submitted/,
+    );
   }
   // The language feature tile must not talk about colour themes.
   for (const [html, word] of [
@@ -2023,7 +2034,18 @@ test("the web app quick starts say where to run the commands", () => {
 
 test("the install docs name the Marketplace location and the Bridge version for shopping edits", () => {
   const readme = read("README.md");
-  assert.match(readme, /open the Marketplace \(\*\*Settings → Marketplace\*\*/);
+  assert.match(
+    readme,
+    /open \*\*Settings → Marketplace\*\*, tab \*\*Browse\*\* \(route `\/marketplace\/browse`\)/,
+  );
+  // The cards are listed in hacs/default: search first, the link route only as the fallback.
+  assert.match(
+    readme,
+    /search for \*\*Mealie Atelier Cards\*\*, open it and choose \*\*Install\*\*/,
+  );
+  assert.match(readme, /If the search does not find the cards yet, add them by link/);
+  assert.doesNotMatch(readme, /submitted to the default catalog/);
+  assert.doesNotMatch(read("docs/FAQ.md"), /submitted to the default catalog|Once they are listed/);
   assert.match(readme, /need Bridge 0\.11 or newer/);
   assert.match(read("CHANGELOG.md"), /needs Bridge 0\.11 or newer/);
   assert.match(read("web/README.md"), /any browser on iOS 16\.4 or later/);

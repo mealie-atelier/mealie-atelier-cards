@@ -1,6 +1,6 @@
 # Distribution
 
-Mealie Atelier Cards is built for the Home Assistant Marketplace (Home Assistant 2026.11 and newer), which is HACS moved into core and reads the `hacs/default` catalog. Both packages are submitted to that catalog; until they are listed, use **Add from link** with the repository URL (this needs the one-time GitHub connection) or add them to HACS as custom repositories. HACS stays supported as a second route and works on older Home Assistant versions. The card bundle installs to `/local/community/mealie-atelier-cards/`, and on UI-managed dashboards the Lovelace resource is registered automatically.
+Mealie Atelier Cards is built for the Home Assistant Marketplace (Home Assistant 2026.11 and newer), which is HACS moved into core and reads the `hacs/default` catalog. The cards are listed in that catalog, so the Marketplace and HACS find them by name. The Bridge is submitted and waits for review. Until a package shows up in the search, use **Add from link** with the repository URL (this needs the one-time GitHub connection) or add it to HACS as a custom repository. HACS stays supported as a second route and works on older Home Assistant versions. The card bundle installs to `/local/community/mealie-atelier-cards/`, and on UI-managed dashboards the Lovelace resource is registered automatically.
 
 ## Packages
 
@@ -18,7 +18,6 @@ The standalone web app (`web/`) and the demo (`demo/`) live in the Cards reposit
 - [ ] Create a GitHub release whose tag matches the package version.
 - [ ] Run the live rig in the Bridge repository (`tests/live/`) against the supported Home Assistant (stable and beta) and Mealie versions: `smoke.py` and `ui_smoke.py` must pass.
 - [ ] Verify a clean install through the Marketplace or HACS and add a card from the card picker.
-- [ ] For a first listing, open or update the `hacs/default` pull request with a link to a passing `Validate` run.
 
 ## Help and documentation
 
