@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.15] - 2026-11-04
+
 ### Changed
 
 - Docs: the cards are listed in the default catalog (`hacs/default`), so the README, the FAQ, the distribution notes and the product page lead with searching for **Mealie Atelier Cards** in the Marketplace or HACS. Adding them by link or as a custom repository stays as the fallback while the catalog update reaches Home Assistant. The Bridge still installs by link until its own listing is merged.
@@ -644,7 +646,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.14...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.15...HEAD
+[0.12.15]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.14...v0.12.15
 [0.12.14]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.13...v0.12.14
 [0.12.13]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.12...v0.12.13
 [0.12.12]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.11...v0.12.12
