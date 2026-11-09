@@ -12544,7 +12544,7 @@ ha-card {
 /* Kochinspo: every idea takes the same room, so the page below never moves. */
 @container atelier-card (min-width: 761px) {
   .atelier .studio-discover-hero {
-    min-height: 25rem;
+    min-height: 400px;
   }
 }
 .atelier .studio-discover-hero-copy :is(h2, h3) {
@@ -13906,6 +13906,9 @@ ha-card {
 }
 .atelier .recipe-book-filter {
   min-inline-size: 12rem;
+}
+.atelier .recipe-tools:has(.recipe-book-filter) {
+  align-items: flex-end;
 }
 @container atelier-card (max-width: 520px) {
   .atelier .studio-book-shelf-list {

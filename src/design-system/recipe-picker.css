@@ -218,6 +218,9 @@
 .atelier .recipe-book-filter {
   min-inline-size: 12rem;
 }
+.atelier .recipe-tools:has(.recipe-book-filter) {
+  align-items: flex-end;
+}
 @container atelier-card (max-width: 520px) {
   .atelier .studio-book-shelf-list {
     grid-template-columns: 1fr;

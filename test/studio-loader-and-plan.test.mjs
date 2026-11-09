@@ -271,11 +271,22 @@ test("icon and label sit on one centre line inside a pill", () => {
 test("every Kochinspo idea takes the same room on a wide card", () => {
   assert.match(
     css,
-    /min-width: 761px\) \{\s*\.atelier \.studio-discover-hero \{\s*min-height: 25rem/,
+    /min-width: 761px\) \{\s*\.atelier \.studio-discover-hero \{\s*min-height: 400px/,
   );
   assert.match(
     rule(css, ".atelier .studio-discover-hero-copy :is(h2, h3)"),
     /-webkit-line-clamp: 3/,
+  );
+});
+
+test("the search, the labelled cookbook field and the button sit on one line", () => {
+  const picker = readFileSync(
+    new URL("../src/design-system/recipe-picker.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    rule(picker, ".atelier .recipe-tools:has(.recipe-book-filter)"),
+    /align-items: flex-end/,
   );
 });
 

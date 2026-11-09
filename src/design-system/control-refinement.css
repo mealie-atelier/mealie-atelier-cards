@@ -1353,7 +1353,7 @@
 /* Kochinspo: every idea takes the same room, so the page below never moves. */
 @container atelier-card (min-width: 761px) {
   .atelier .studio-discover-hero {
-    min-height: 25rem;
+    min-height: 400px;
   }
 }
 .atelier .studio-discover-hero-copy :is(h2, h3) {
