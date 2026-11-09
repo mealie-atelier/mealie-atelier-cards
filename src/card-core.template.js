@@ -325,6 +325,7 @@ class MealieAtelierCard extends HTMLElement {
     this._error = "";
     this._toast = "";
     this._toastKind = "status";
+    this._toastAction = null;
     /** Text of the polite live region inside the cooking dialog (timer started). */
     this._timerAnnouncement = "";
     this._providerTruncated = false;
@@ -395,6 +396,9 @@ class MealieAtelierCard extends HTMLElement {
     this._boundTileMove = this._tileMove.bind(this);
     this._boundTileCancel = this._tileCancel.bind(this);
     this._boundTileMenu = this._tileMenu.bind(this);
+    this._drag = null;
+    this._renderDeferred = false;
+    this._boundDragDown = this._planDragDown.bind(this);
     this._cookGesture = null;
     this._lastRenderedView = null;
     this._lastRenderedModal = null;
@@ -517,6 +521,7 @@ class MealieAtelierCard extends HTMLElement {
       passive: true,
     });
     this.shadowRoot.addEventListener("contextmenu", this._boundTileMenu);
+    this.shadowRoot.addEventListener("pointerdown", this._boundDragDown);
     window.addEventListener?.("scroll", this._boundTileCancel, { capture: true, passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
     this.shadowRoot.addEventListener("focusin", this._boundCookBarFocus);
@@ -567,6 +572,8 @@ class MealieAtelierCard extends HTMLElement {
     this.shadowRoot.removeEventListener("pointercancel", this._boundTileCancel);
     this.shadowRoot.removeEventListener("scroll", this._boundTileCancel, true);
     this.shadowRoot.removeEventListener("contextmenu", this._boundTileMenu);
+    this.shadowRoot.removeEventListener("pointerdown", this._boundDragDown);
+    this._planDragEnd(false);
     window.removeEventListener?.("scroll", this._boundTileCancel, true);
     this._tileCancel();
     this.shadowRoot.removeEventListener("error", this._boundImageError, true);
@@ -1145,19 +1152,24 @@ class MealieAtelierCard extends HTMLElement {
     input.removeAttribute("aria-describedby");
     input.closest?.("label")?.querySelector?.("[data-name-error]")?.remove();
   }
-  _flash(text, kind = "status") {
+  /** `action` ({ label, run }) adds a button to the toast, which then stays longer. */
+  _flash(text, kind = "status", action = null) {
     this._toast = String(text || "").slice(0, 500);
     this._toastKind = kind;
+    this._toastAction = action;
     this._render();
     if (this._toastTimer) clearTimeout(this._toastTimer);
-    this._toastTimer = setTimeout(() => {
-      this._toast = "";
-      const toast = this.shadowRoot.querySelector(".toast");
-      if (toast) {
-        toast.classList.add("at-toast-exit");
-        setTimeout(() => toast.remove(), 230);
-      }
-    }, 3800);
+    this._toastTimer = setTimeout(
+      () => {
+        this._toast = "";
+        const toast = this.shadowRoot.querySelector(".toast");
+        if (toast) {
+          toast.classList.add("at-toast-exit");
+          setTimeout(() => toast.remove(), 230);
+        }
+      },
+      action ? 6000 : 3800,
+    );
   }
   _nav() {
     return `<aside class="sidebar">
@@ -1486,6 +1498,11 @@ class MealieAtelierCard extends HTMLElement {
 
   _render() {
     if (!this.isConnected) return;
+    // A render would replace the dragged entry: wait until the drag ends.
+    if (this._drag?.active) {
+      this._renderDeferred = true;
+      return;
+    }
     // Hold the wake lock only while cook mode is open and the user keeps the toggle on.
     this._wakeLock.set(this._modal === "cook" && this._design.keep_awake !== false);
     const d = this._design,
@@ -1574,7 +1591,7 @@ class MealieAtelierCard extends HTMLElement {
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write && !this._previewOnly() ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
-      <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer>${webAppSlot("foot")}</main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
+      <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer>${webAppSlot("foot")}</main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}${this._toastAction ? ` <button class="toast-action" data-action="toast-action">${esc(this._toastAction.label)}</button>` : ""}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
@@ -1989,6 +2006,7 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature B: recipe editor keyboard
     if (this._editorKeyDown(event)) return;
     // END feature B
+    if (this._planKeyMove(event)) return;
     const target = event.target;
     const editing = target?.matches?.('input,textarea,select,[contenteditable="true"]');
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -2555,6 +2573,14 @@ class MealieAtelierCard extends HTMLElement {
         return;
       }
     }
+    if (action === "toast-action") {
+      const run = this._toastAction?.run;
+      this._toastAction = null;
+      this._toast = "";
+      this._render();
+      await run?.();
+      return;
+    }
     this._toast = "";
     // BEGIN feature B: recipe editor actions
     if (action.startsWith("ed-")) {
@@ -3115,13 +3141,23 @@ class MealieAtelierCard extends HTMLElement {
       const others = asArray(this._data.mealplan).filter(
         (x) => x.date === this._planDay && String(x.id) !== String(v),
       );
-      await this._mutate(
+      const removed = asArray(this._data.mealplan).find((x) => String(x.id) === String(v));
+      const fromGrid = this._modal !== "plan";
+      const ok = await this._mutate(
         "mealplan_delete",
         { entry_id: v },
         "mealplan",
         () => this._optimisticRemoveMeal(v),
         { keepModal: this._modal === "plan" && others.length > 0 },
       );
+      if (ok && fromGrid && removed)
+        this._flash(
+          this.t("planRemoved", {
+            name: mealName(removed) || this._mealTypeLabel(removed.entryType),
+          }),
+          "status",
+          { label: this.t("planUndo"), run: () => this._undoRemoveMeal(removed) },
+        );
       return;
     }
   }

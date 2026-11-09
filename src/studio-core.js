@@ -1258,6 +1258,14 @@ const AtelierStudio = (() => {
       .filter(Boolean)
       .sort((a, b) => b.score - a.score || String(a.name).localeCompare(String(b.name), "de"));
   }
+  // Categories that never make a dinner. Compared after clean(), so without diacritics.
+  const NOT_A_DINNER =
+    /\b(dessert|nachspeise|nachtisch|su(?:ss|ß)speise|kuchen|torte|geback|fruhstuck|breakfast|brunch|cake|sweet|getrank|drink|beverage)/;
+  /** A recipe without categories counts, one that is also a main course counts too. */
+  function fitsDinner(recipe) {
+    const categories = Array.isArray(recipe?.recipeCategory) ? recipe.recipeCategory : [];
+    return !categories.length || categories.some((c) => !NOT_A_DINNER.test(clean(c?.name)));
+  }
   function planWeek(
     recipes,
     profile = {},
@@ -1265,9 +1273,13 @@ const AtelierStudio = (() => {
     journal = {},
     existing = [],
     start = new Date(),
+    cookbooks = [],
   ) {
-    const ranked = suggest(recipes, profile, pantry, journal);
+    const ranked = suggest(recipes, profile, pantry, journal, cookbooks);
     const bySlug = new Map(recipes.map((x) => [x.slug, x]));
+    const dinners = ranked.filter((x) => fitsDinner(bySlug.get(x.slug)));
+    // Someone who only keeps desserts, or picked only that cookbook, still gets a proposal.
+    const pool = dinners.length ? dinners : ranked;
     const used = new Map(),
       result = [];
     let previousIngredients = [];
@@ -1282,7 +1294,7 @@ const AtelierStudio = (() => {
         String(d.getDate()).padStart(2, "0"),
       ].join("-");
       if (existing.some((e) => e.date === date && e.entryType === "dinner")) continue;
-      const candidates = ranked
+      const candidates = pool
         .map((x) => {
           const names = (bySlug.get(x.slug)?.recipeIngredient || []).map(ingredient);
           const overlap = previousIngredients.filter((name) =>

@@ -185,6 +185,8 @@
   "studioDinner": "Abendessen",
   "studioPlanOnlyMissing": "Es werden nur fehlende Einträge ergänzt. Bei Fehlern bleiben erfolgreiche Einträge bestehen.",
   "studioPlanCreatePreview": "Erst eine Vorschau erstellen. In Mealie wird nichts ohne Bestätigung geändert.",
+  "studioPlanNoMatch": "Zu deiner Auswahl passt gerade kein Rezept. Ändere oben Kochbuch, Zeit oder Ausschlüsse.",
+  "studioPlanAllPlanned": "Alle Abende der nächsten sieben Tage sind schon geplant.",
   "studioPantryTitle": "Vorräte & Einkauf",
   "studioPantryLead": "Ein einfacher, manueller Vorrat reicht. Atelier gleicht ihn mit dem geplanten Essen ab.",
   "studioPantryKicker": "DEIN VORRAT",
@@ -1461,5 +1463,10 @@
   "nutriHintSpoon": "{text} ≈ {grams} g, {per} g je {spoon}. Geschätzt, bitte prüfen.",
   "nutriHintPinch": "{text} ≈ {grams} g, {per} g je Prise. Geschätzt, bitte prüfen.",
   "nutriHintPiece": "{text} ≈ {grams} g, {per} g je Stück. Geschätzt, bitte prüfen.",
-  "nutriHintWeigh": "Das Gewicht lässt sich nicht schätzen. Wiege {text} ab und trage die Gramm ein."
+  "nutriHintWeigh": "Das Gewicht lässt sich nicht schätzen. Wiege {text} ab und trage die Gramm ein.",
+  "planUndo": "Rückgängig",
+  "planRemoved": "Entfernt: {name}",
+  "planMovedTo": "Verschoben auf {weekday}, {date}",
+  "planMoveHint": "Zum Verschieben ziehen. Per Tastatur geht es mit Alt und den Pfeiltasten.",
+  "planMoveHintTouch": "Zum Verschieben lange drücken und ziehen."
 }

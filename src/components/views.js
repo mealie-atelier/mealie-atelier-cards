@@ -342,6 +342,7 @@ export const viewMethods = {
     const days = this._config.week_days;
     const today = dateYmd(new Date());
     const mealplanFailed = this._failedParts?.has("mealplan") === true;
+    const movable = this._planMovable();
     return `${withNotice && mealplanFailed && !this._loadErrorShown() ? `<div class="notice load-failed" role="status">${icon("calendar")} ${esc(this.t("offline"))}</div>` : ""}<div class="week-grid${days === 7 ? "" : " week-grid-custom"}">${Array.from(
       { length: days },
       (_, i) => {
@@ -352,7 +353,14 @@ export const viewMethods = {
       ${todays
         .map((meal) => {
           const photo = this._photo(meal.recipe || {});
-          return `<button class="day-meal${photo ? " has-photo" : ""}"${meal.recipe?.slug ? " data-tile" : ""} data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>`;
+          const synced =
+            meal.id !== undefined && meal.id !== null && !String(meal.id).startsWith("pending-");
+          const label = mealName(meal) || this._mealTypeLabel(meal.entryType);
+          const remove =
+            this._permissions.can_write && synced
+              ? `<button class="day-meal-remove" data-action="remove-meal" data-value="${esc(meal.id)}" aria-label="${esc(this.t("removeMeal", { name: label, mealType: this._mealTypeLabel(meal.entryType) }))}">${icon("close", 14)}</button>`
+              : "";
+          return `<div class="day-entry"${synced ? ` data-entry-id="${esc(meal.id)}"` : ""} data-date="${esc(ymd)}"${synced && movable ? " data-movable" : ""}><button class="day-meal${photo ? " has-photo" : ""}"${meal.recipe?.slug ? " data-tile" : ""} data-action="day-meal" data-value="${esc(meal.recipe?.slug || "")}" data-date="${esc(ymd)}" title="${esc(mealName(meal))}">${photo ? `<span class="day-meal-photo">${photo}</span>` : ""}<small>${esc(this._mealTypeLabel(meal.entryType))}</small><span class="day-meal-name">${esc(mealName(meal))}</span></button>${remove}</div>`;
         })
         .join("")}
       ${todays.length === 0 && !this._failedParts?.has("mealplan") ? `<div class="day-empty">${esc(this.t("noPlan"))}</div>` : ""}${this._permissions.can_write && !mealplanFailed ? `<button class="day-add" data-action="plan-form" data-value="${ymd}" aria-label="${esc(this.t("planNow"))}">${icon("plus", 16)}</button>` : ""}</div>`;
@@ -535,7 +543,7 @@ export const viewMethods = {
     if (view === "recipes")
       return `${this._intro(this.t("collections"), this.t("recipesSub"), this.t("eyebrow"))}${this._recipeTools()}${this._recipes()}${this._pagination()}`;
     if (view === "mealplan")
-      return `${this._intro(this.t("week"), this.t("mealplanSub"), this.t("eyebrow"))}<div class="heading"><div><h2>${esc(this._planMonthLabel())}</h2><p>${esc(this._dayRange(this._weekStart, this._planDayCount()))}</p></div><div class="toolbar"><button class="btn tiny" data-action="week-prev">${esc(this.t("back"))}</button><button class="btn tiny" data-action="week-today"${this._planShowsCurrentWeek() ? " disabled" : ""}>${esc(this.t("today"))}</button><button class="btn tiny" data-action="week-next">${esc(this.t("next"))}</button></div></div>${this._config.week_days === 7 ? `<p class="week-swipe-hint">${this.t("uiSwipeToBrowseAllSevenDays")}</p>` : ""}${this._weekStack()}`;
+      return `${this._intro(this.t("week"), this.t("mealplanSub"), this.t("eyebrow"))}<div class="heading"><div><h2>${esc(this._planMonthLabel())}</h2><p>${esc(this._dayRange(this._weekStart, this._planDayCount()))}</p></div><div class="toolbar"><button class="btn tiny" data-action="week-prev">${esc(this.t("back"))}</button><button class="btn tiny" data-action="week-today"${this._planShowsCurrentWeek() ? " disabled" : ""}>${esc(this.t("today"))}</button><button class="btn tiny" data-action="week-next">${esc(this.t("next"))}</button></div></div>${this._planMovable() ? `<p class="plan-move-hint">${esc(this.t(globalThis.matchMedia?.("(hover: none)")?.matches ? "planMoveHintTouch" : "planMoveHint"))}</p>` : ""}${this._config.week_days === 7 ? `<p class="week-swipe-hint">${this.t("uiSwipeToBrowseAllSevenDays")}</p>` : ""}${this._weekStack()}`;
     if (view === "shopping")
       return `${this._intro(this.t("list"), this.t("shoppingSub"), this.t("eyebrow"))}${this._shopping()}`;
     return `${this._intro(this.t("admin"), this.t("manageSub"), this.t("eyebrow"))}${this._manage()}`;

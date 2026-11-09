@@ -2725,3 +2725,103 @@
     "lnum" 1,
     "tnum" 1;
 }
+
+/* Week grid entries: remove button, drag and drop. */
+.atelier .day-entry {
+  position: relative;
+  min-width: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.atelier .day-entry img {
+  -webkit-user-drag: none;
+}
+.atelier .day-entry[data-movable] {
+  cursor: grab;
+}
+.atelier .day-entry .day-meal-remove {
+  position: absolute;
+  /* On the corner: a narrow day column has no room beside the meal label. */
+  inset-block-start: -8px;
+  inset-inline-end: -8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  min-width: 0;
+  height: 24px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--at-ink);
+  background: var(--at-panel);
+  box-shadow: var(--ds-shadow-panel);
+  opacity: 0;
+  transition: opacity var(--ds-motion-fast) var(--ds-motion-ease);
+}
+/* A 40 px target around the 24 px button, without taking any layout space. */
+.atelier .day-meal-remove::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+.atelier .day-entry:hover .day-meal-remove,
+.atelier .day-entry:focus-within .day-meal-remove {
+  opacity: 1;
+}
+@media (hover: none) {
+  .atelier .day-entry .day-meal-remove {
+    opacity: 1;
+  }
+}
+/* A mandatory snap would pull every auto-scroll step straight back. */
+.atelier.plan-dragging .week-grid {
+  scroll-snap-type: none !important;
+}
+.atelier .day-entry.drag-source {
+  opacity: 0.4;
+}
+.atelier .day-entry.drag-clone {
+  position: fixed;
+  z-index: 95;
+  margin: 0;
+  pointer-events: none;
+  cursor: grabbing;
+  box-shadow: var(--ds-shadow-panel);
+  border-radius: 10px;
+  scale: 1.03;
+}
+.atelier.plan-dragging .week-grid > .day:hover {
+  transform: none;
+}
+.atelier .day.drop-target {
+  border-color: var(--at-accent);
+  background: color-mix(in srgb, var(--at-accent) 10%, var(--at-panel));
+  transition:
+    border-color var(--ds-motion-fast) var(--ds-motion-ease),
+    background var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier .plan-move-hint {
+  margin: 0 0 var(--ds-space-3);
+  color: var(--at-sub);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.atelier .toast-action {
+  margin-inline-start: 10px;
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  min-height: 32px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .day-entry .day-meal-remove,
+  .atelier .day.drop-target {
+    transition: none;
+  }
+}

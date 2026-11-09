@@ -112,13 +112,15 @@ const componentMethodModules = [
   ["bringWizardMethods", "src/components/bring-wizard.js"],
   ["recipePickerMethods", "src/components/recipe-picker.js"], // feature D
   ["offlineQueueMethods", "src/components/offline-queue.js"], // feature H
+  ["planDragMethods", "src/components/plan-drag.js"],
 ];
 const methodDeclarations = componentMethodModules.map(([name, file]) => {
   const moduleSource = readFileSync(resolve(folder, file), "utf8").trim();
   const exportDeclaration = `export const ${name} = `;
   const exportIndex = moduleSource.indexOf(exportDeclaration);
   if (exportIndex < 0) throw Error(`Cannot locate ${name} export in ${file}`);
-  return `${moduleSource.slice(0, exportIndex)}const ${name} = ${moduleSource
+  // Pure helpers ahead of the export are inlined without their export keywords.
+  return `${moduleSource.slice(0, exportIndex).replace(/^export /gm, "")}const ${name} = ${moduleSource
     .slice(exportIndex + exportDeclaration.length)
     .replace(/;\s*$/, "")}`;
 });

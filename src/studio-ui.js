@@ -756,7 +756,7 @@ Object.assign(MealieAtelierCard.prototype, {
     const planner = this._discoverResults
       ? `${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioPlanKicker")}</span><h2>${this.t("studioPlanTitle")}</h2><p>${this.t("studioPlanDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-plan-preview" ${this._catalogLoading ? "disabled" : ""}>${icon("spark", 15)} ${this.t("studioPlanPreview")}</button>${upcoming.length && this._permissions.can_write ? `<button class="btn" data-action="studio-plan-commit">${icon("check", 15)} ${this.t("studioPlanCommit")}</button>` : ""}</div>
-      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span class="studio-plan-date"><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div class="studio-plan-photo">${this._photo(planRecipes.get(x.slug) || x)}</div><div class="studio-plan-copy"><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => (r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values))).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
+      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span class="studio-plan-date"><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div class="studio-plan-photo">${this._photo(planRecipes.get(x.slug) || x)}</div><div class="studio-plan-copy"><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => (r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values))).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted${this._weekProposalNote ? " studio-plan-note" : ""}" role="status">${this.t(this._weekProposalNote || "studioPlanCreatePreview")}</p>`}</section>`
       : "";
     return this._studioShell(this.t("studioDiscoverTitle"), lead, `${flow}${planner}`);
   },
@@ -1397,14 +1397,31 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     }
     if (action === "studio-plan-preview") {
       if (!this._fullCatalog?.length) await this._studioCatalog();
+      const now = new Date();
+      // Days already gone are never planned. Mealie itself says which evenings are free.
+      const start = this._weekStart > now ? this._weekStart : now;
+      const existing = await this._ws("mealplan", {
+        start: dateYmd(start),
+        end: dateYmd(addDays(start, 6)),
+      }).catch(() => this._data.mealplan);
+      const catalog = this._fullCatalog || [],
+        cookbooks = this._studioCookbooks || [],
+        { profile, pantry, journal } = this._studio;
       this._weekProposal = AtelierStudio.planWeek(
-        this._fullCatalog || [],
-        this._studio.profile,
-        this._studio.pantry,
-        this._studio.journal,
-        this._data.mealplan || [],
-        this._weekStart,
+        catalog,
+        profile,
+        pantry,
+        journal,
+        asArray(existing),
+        start,
+        cookbooks,
       );
+      // An empty proposal always says why: a button without any reaction reads as broken.
+      this._weekProposalNote = this._weekProposal.length
+        ? ""
+        : AtelierStudio.suggest(catalog, profile, pantry, journal, cookbooks).length
+          ? "studioPlanAllPlanned"
+          : "studioPlanNoMatch";
       this._render();
       return;
     }

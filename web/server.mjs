@@ -728,16 +728,28 @@ async function mutate(action, payload, req) {
     case "mealplan_add": {
       const meal = payload.meal_type || "dinner";
       if (!MEAL_TYPES.has(meal)) throw bad("Invalid meal type");
+      // A plan entry is a recipe or a note. Notes come back through this path on Undo.
+      const note = payload.recipe_id == null;
       return mealie("POST", "/api/households/mealplans", {
         date: day(payload.date),
         entryType: meal,
-        recipeId: identifier(payload.recipe_id),
-        title: "",
-        text: "",
+        ...(note ? {} : { recipeId: identifier(payload.recipe_id) }),
+        title: note ? text(payload.title, 500) : "",
+        text: note && payload.text ? text(payload.text, 2000) : "",
       });
     }
     case "mealplan_delete":
       return mealie("DELETE", `/api/households/mealplans/${identifier(payload.entry_id)}`);
+    case "mealplan_move": {
+      const id = identifier(payload.entry_id);
+      const date = day(payload.date);
+      const entry = await mealie("GET", `/api/households/mealplans/${id}`);
+      // Send back only the known fields so nothing unknown reaches Mealie.
+      const body = { id: entry.id, groupId: entry.groupId, userId: entry.userId, date };
+      for (const key of ["entryType", "title", "text", "recipeId", "recipeScale"])
+        if (entry[key] !== undefined && entry[key] !== null) body[key] = entry[key];
+      return mealie("PUT", `/api/households/mealplans/${id}`, body);
+    }
     case "recipe_create":
       return mealie("POST", "/api/recipes", { name: text(payload.name, 120) });
     case "recipe_update": {
@@ -997,6 +1009,7 @@ async function bridge(req) {
               shared_journal: true,
               // Mealie's own star rating and favorite of the signed-in token user.
               recipe_feedback: true,
+              mealplan_move: true,
             },
             limits: { upload_max_bytes: UPLOAD_MAX_BYTES, upload_chunk_bytes: UPLOAD_CHUNK_BYTES },
             can_write: permissions.can_write,

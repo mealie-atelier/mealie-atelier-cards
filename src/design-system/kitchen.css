@@ -195,6 +195,11 @@
   line-height: 1.5;
   margin: 7px 0 0;
 }
+.atelier .studio-plan-note {
+  margin-top: 16px;
+  color: var(--at-ink);
+  font-weight: 600;
+}
 .atelier .studio-plan-list {
   margin-top: 20px;
   border-top: 1px solid var(--at-line);

@@ -472,6 +472,7 @@ const MUTATE_LEVELS = {
   shopping_clear_checked: "write",
   mealplan_add: "write",
   mealplan_delete: "write",
+  mealplan_move: "write",
   recipe_create: "admin",
   recipe_update: "admin",
   recipe_import: "admin",

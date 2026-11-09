@@ -92,5 +92,8 @@ test("a stacked week stays seven columns against the twelve-column tablet rule",
     css,
     /\.week-stack \.week-grid:has\(> \.day:nth-child\(7\):last-child\) \{\s*grid-template-columns: repeat\(7, minmax\(0, 1fr\)\);/,
   );
-  assert.match(css, /\.week-stack \.week-grid > \.day:nth-child\(n\) \{\s*grid-column: auto;/);
+  assert.match(
+    css,
+    /\.week-stack\s+\.week-grid:has\(> \.day:nth-child\(7\):last-child\)\s*> \.day:nth-child\(n\) \{\s*grid-column: auto;/,
+  );
 });

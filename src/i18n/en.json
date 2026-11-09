@@ -189,6 +189,8 @@
   "studioDinner": "Dinner",
   "studioPlanOnlyMissing": "Only missing meals are added. Successful entries remain if another one fails.",
   "studioPlanCreatePreview": "Create a preview first. Nothing changes in Mealie without confirmation.",
+  "studioPlanNoMatch": "No recipe fits your choices right now. Change the cookbook, time or exclusions above.",
+  "studioPlanAllPlanned": "Every evening of the next seven days is already planned.",
   "studioPantryTitle": "Pantry & shopping",
   "studioPantryLead": "A simple, manual pantry is enough. Atelier compares it with your planned meals.",
   "studioPantryKicker": "YOUR PANTRY",
@@ -1461,5 +1463,10 @@
   "nutriHintSpoon": "{text} ≈ {grams} g, {per} g per {spoon}. Estimated, please check.",
   "nutriHintPinch": "{text} ≈ {grams} g, {per} g per pinch. Estimated, please check.",
   "nutriHintPiece": "{text} ≈ {grams} g, {per} g per piece. Estimated, please check.",
-  "nutriHintWeigh": "The weight cannot be estimated. Weigh {text} and enter the grams."
+  "nutriHintWeigh": "The weight cannot be estimated. Weigh {text} and enter the grams.",
+  "planUndo": "Undo",
+  "planRemoved": "Removed: {name}",
+  "planMovedTo": "Moved to {weekday}, {date}",
+  "planMoveHint": "Drag to move. On the keyboard use Alt and the arrow keys.",
+  "planMoveHintTouch": "Press and hold, then drag to move."
 }

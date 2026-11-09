@@ -6,6 +6,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Added
 
+- Meal plan: entries can be removed and moved to another day, by dragging or with Alt and the arrow keys.
 - Home Assistant provider: the meal plan and the shopping lists work with only the built-in Mealie integration, without the Bridge. Ticking a shopping item on or off is the one write that works there.
 - Meal plan range: `week_start` (`monday`, `sunday` or `today`), `week_days` (1 to 14) and `entry_types` set the days and meal types the plan shows, prints and pages through; the visual editor has fields for all three.
 - Recipes, Today and Meal plan cards: `tap_action` and `hold_action` on recipe tiles with Home Assistant's standard actions (navigate, URL, more-info, service call) and `{slug}` in paths; the editor has fields for both. Tapping still opens the recipe by default.
@@ -15,6 +16,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Kochinspo: **Wochenplan vorschlagen** works with a saved cookbook. It used to find nothing and show nothing; an empty proposal now says why.
+- Week proposal: past days are never planned, the free evenings come from Mealie at the moment of the click, and desserts, cakes and breakfasts stay out of the dinners.
 - Web app installed on the home screen: it no longer hangs on "Das Atelier startet noch". The install prompt can no longer stop the start, and the app shell is revalidated on every launch instead of staying cached for an hour.
 - Nutrition estimate: Vanillezucker and Vanillinzucker count as sugar.
 - Print windows: **Close** and **Print** work in the web app; the toolbar no longer uses inline handlers, which the Content Security Policy blocks.

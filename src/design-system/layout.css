@@ -617,7 +617,11 @@
   .atelier .shell:not(.single) .week-stack .week-grid:has(> .day:nth-child(7):last-child) {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
-  .atelier .shell:not(.single) .week-stack .week-grid > .day:nth-child(n) {
+  .atelier
+    .shell:not(.single)
+    .week-stack
+    .week-grid:has(> .day:nth-child(7):last-child)
+    > .day:nth-child(n) {
     grid-column: auto;
   }
 }

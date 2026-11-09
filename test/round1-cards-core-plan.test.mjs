@@ -27,7 +27,7 @@ test("the week grid lists every entry of a day, sorted by meal type, with locali
     title: `n-${t}`,
   }));
   const html = card._week();
-  assert.equal((html.match(/<button class="day-meal/g) || []).length, 7);
+  assert.equal((html.match(/<button class="day-meal[ "]/g) || []).length, 7);
   const order = [...html.matchAll(/<span class="day-meal-name">n-(\w+)</g)].map((m) => m[1]);
   assert.deepEqual(order, ["breakfast", "lunch", "dinner", "side", "snack", "dessert", "drink"]);
   assert.match(html, /<small>Beilage<\/small>/);
