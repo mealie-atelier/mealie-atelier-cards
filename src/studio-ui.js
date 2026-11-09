@@ -1993,16 +1993,21 @@ MealieAtelierCard.prototype._handleSubmit = async function (event) {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(form).entries());
     const previous = this._studio?.journal?.[this._detail.slug] || {};
+    const rating = Number(values.rating) || 0;
+    const favorite = values.favorite === "on";
     const ok = await this._studioWrite("journal_set", {
       slug: this._detail.slug,
-      rating: Number(values.rating) || 0,
+      rating,
       note: String(values.note || "").slice(0, 1200),
-      favorite: values.favorite === "on",
+      favorite,
       cooked: false,
     });
     if (ok) {
       this._modal = "recipe";
-      this._flash(this.t("studioJournalSavedToast"));
+      // A failed Mealie write never undoes the journal entry; the user is told which part is missing.
+      if (await this._pushFeedback(this._detail.slug, rating, favorite))
+        this._flash(this.t("studioJournalSavedToast"));
+      else this._flash(this.t("journalFeedbackFailed"), "error");
     }
     return;
   }

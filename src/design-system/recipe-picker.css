@@ -216,16 +216,163 @@
   font-size: var(--ds-font-sm);
 }
 .atelier .recipe-book-filter {
+  position: relative;
   min-inline-size: 12rem;
 }
 .atelier .recipe-tools:has(.recipe-book-filter) {
   align-items: flex-end;
+}
+/* The trigger wears the field style of the search beside it. */
+.atelier .recipe-book-filter .book-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding: 0 13px;
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-pill);
+  background: var(--at-panel);
+  color: var(--at-ink);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: start;
+}
+.atelier .recipe-book-filter .book-trigger:focus-visible,
+.atelier .recipe-book-filter .book-trigger[aria-expanded="true"] {
+  border-color: var(--ds-brand);
+  outline: 0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-brand) 12%, transparent);
+}
+.atelier .recipe-book-filter .book-value {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--at-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.atelier .recipe-book-filter .book-trigger svg {
+  flex: none;
+  color: var(--at-sub);
+  transform: rotate(90deg);
+}
+.atelier .recipe-book-filter .book-trigger[aria-expanded="true"] svg {
+  transform: rotate(-90deg);
+}
+.atelier .book-sheet {
+  display: contents;
+}
+.atelier .book-panel {
+  position: absolute;
+  z-index: 20;
+  inset-block-start: calc(100% + var(--ds-space-2));
+  inset-inline-start: 0;
+  display: flex;
+  flex-direction: column;
+  inline-size: max-content;
+  min-inline-size: 100%;
+  max-inline-size: 22rem;
+  max-block-size: 320px;
+  overflow: hidden;
+  border: 1px solid var(--at-line);
+  border-radius: 16px;
+  background: var(--at-surface);
+  box-shadow: var(--at-shadow);
+}
+.atelier .book-panel .book-search {
+  flex: none;
+  inline-size: auto;
+  margin: var(--ds-space-2) var(--ds-space-2) 0;
+}
+.atelier .book-list {
+  display: grid;
+  min-block-size: 0;
+  margin: 0;
+  padding: var(--ds-space-1);
+  overflow-y: auto;
+  list-style: none;
+}
+.atelier .book-list:focus-visible {
+  outline: 0;
+}
+.atelier .book-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  min-block-size: 44px;
+  padding: var(--ds-space-1) var(--ds-space-3);
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+}
+.atelier .book-option:hover {
+  background: color-mix(in srgb, var(--ds-brand) 8%, transparent);
+}
+.atelier .book-option[data-active] {
+  background: color-mix(in srgb, var(--ds-brand) 14%, transparent);
+  outline: 2px solid var(--ds-ring);
+  outline-offset: -2px;
+}
+.atelier .book-option[aria-selected="true"] .book-name {
+  font-weight: 750;
+}
+.atelier .book-option .book-name {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  color: var(--at-ink);
+  font-size: 15px;
+}
+.atelier .book-option svg {
+  flex: none;
+  color: var(--ds-brand);
+}
+.atelier .book-empty {
+  margin: 0;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .book-empty[hidden] {
+  display: none;
 }
 @container atelier-card (max-width: 520px) {
   .atelier .studio-book-shelf-list {
     grid-template-columns: 1fr;
   }
   .atelier .recipe-book-filter {
+    grid-column: 1 / -1;
     inline-size: 100%;
+    min-inline-size: 0;
+  }
+  /* A bottom sheet: the scrim covers the card, the panel rests on its lower edge. */
+  .atelier .book-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-end;
+    background: #080d0cbd;
+  }
+  .atelier .book-sheet[popover] {
+    margin: 0;
+    border: 0;
+    inline-size: auto;
+    block-size: auto;
+    max-inline-size: none;
+    max-block-size: none;
+    overflow: visible;
+    color: inherit;
+  }
+  .atelier .book-panel {
+    position: static;
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: none;
+    max-block-size: min(70vh, 480px);
+    border-block-end: 0;
+    border-radius: 20px 20px 0 0;
+    padding-block-end: env(safe-area-inset-bottom);
   }
 }

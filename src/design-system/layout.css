@@ -560,3 +560,64 @@
   font-size: 14px;
   line-height: 1.5;
 }
+
+/* Web app only: the navigation stays on screen while the content scrolls. overflow: clip keeps the
+   edges without turning .atelier into a scroll container, which would pin sticky children to it. */
+:host([data-web-app]) .atelier {
+  overflow: clip;
+  min-height: 100dvh;
+  border-block: 0;
+  border-radius: 0;
+}
+:host([data-web-app]) .atelier .sidebar {
+  padding-top: calc(9px + env(safe-area-inset-top, 0px));
+}
+@container atelier-card (min-width: 921px) {
+  :host([data-web-app]) .atelier .shell:not(.single) > .sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100dvh;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: calc(27px + env(safe-area-inset-top, 0px))
+      calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  :host([data-web-app]) .atelier .shell:not(.single) > .main {
+    padding-top: calc(var(--ds-page-gutter) + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* Three weeks below each other: every row names its week. */
+.atelier .week-stack {
+  display: grid;
+  gap: var(--ds-space-5);
+  min-width: 0;
+}
+.atelier .week-row {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+.atelier .week-row-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.atelier .week-row-title small {
+  color: var(--at-sub);
+  font-size: 12px;
+  font-weight: 400;
+}
+@container atelier-card (min-width: 921px) {
+  .atelier .shell:not(.single) .week-stack .week-grid:has(> .day:nth-child(7):last-child) {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+  .atelier .shell:not(.single) .week-stack .week-grid > .day:nth-child(n) {
+    grid-column: auto;
+  }
+}

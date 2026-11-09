@@ -28,6 +28,19 @@ const COLORS = ["#9dcbb2", "#e5ad92", "#a8bdef", "#d3adcd", "#d6c07d"];
 const NATIVE_RESULT_LIMIT = 500;
 // rows "auto" lets the section grow with the content; a fixed row count made tall cards overlap the next one.
 const GRID_OPTIONS = Object.freeze({ columns: 12, rows: "auto", min_columns: 4 });
+// Tap and hold actions on recipe tiles of the focused recipes, today and meal plan cards.
+const TILE_MODES = ["recipes", "today", "mealplan"];
+const TILE_ACTIONS = [
+  "open-recipe",
+  "none",
+  "more-info",
+  "navigate",
+  "url",
+  "call-service",
+  "perform-action",
+];
+const TILE_HOLD_MS = 500;
+const TILE_HOLD_SLOP_PX = 10;
 const DEFAULTS = {
   mode: "dashboard",
   title: "Mealie Atelier",
@@ -48,12 +61,17 @@ const DEFAULTS = {
   provider: "auto",
   mealie_entry_id: "",
   language: "auto",
+  week_start: "monday",
+  week_days: 7,
+  entry_types: [],
   motion: "expressive",
   kiosk_mode: false,
   cooking_scene: "",
   cooking_media_player: "",
   cooking_volume: 0.18,
   cooking_tts_engine: "",
+  mealie_url: "",
+  mealie_group: "home",
 };
 const ICONS = {
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
@@ -95,6 +113,18 @@ const WEEK_DIAL_MARK =
   '<svg class="week-dial" viewBox="0 0 1024 1024" width="44" height="44" aria-hidden="true" focusable="false"><path class="plate" d="M591.98 155.09C659.11 170.14 721.21 203.95 770.63 253.37C806.57 289.31 834.26 331.96 852.48 378.38L943.35 338.51C950.96 335.18 959.8 338.95 962.66 346.74C1005.82 464.46 1001.22 594.39 949.83 708.75C946.42 716.32 937.34 719.45 929.99 715.59L842.16 669.39C838.03 678.06 833.56 686.56 828.76 694.88L916.58 741.08C923.93 744.94 926.49 754.21 922.18 761.3C857.06 868.44 752.61 945.85 631.16 976.97C623.11 979.04 615 973.89 613.44 965.73L594.8 868.27C585.46 870.44 576.03 872.24 566.51 873.68L585.15 971.14C586.71 979.3 581.07 987.08 572.83 988.13C448.47 1004.02 322.82 970.62 222.76 895.07C216.13 890.06 215.1 880.51 220.51 874.2L285.08 798.86C277.58 792.92 270.28 786.67 263.22 780.12L198.64 855.46C193.23 861.77 183.63 862.21 177.68 856.42C87.71 769.1 35.49 650.04 32.17 524.7C31.95 516.4 38.78 509.64 47.07 509.93L146.24 513.45L146.24 512C146.24 502.85 146.58 493.73 147.26 484.66L48.09 481.15C39.8 480.85 33.46 473.62 34.27 465.36C46.45 340.57 106.98 225.51 202.9 144.77C209.25 139.43 218.8 140.54 223.74 147.22L282.82 226.94C290.33 220.91 298.05 215.19 305.96 209.79L246.88 130.07C241.94 123.4 243.64 113.94 250.61 109.42C355.76 41.14 483.46 16.72 606.39 41.37C614.53 43 619.61 51.17 617.47 59.19L591.98 155.09Z"/><path class="today" d="M619.57 163.42L645.31 66.59C647.44 58.56 655.9 54 663.78 56.63C782.72 96.27 881.43 180.88 938.8 292.36C942.6 299.75 939.39 308.8 931.78 312.14L840.03 352.39C818.18 307.47 787.33 267.53 749.41 235.02C711.49 202.52 667.29 178.15 619.57 163.42Z"/><path class="rim" d="M512 140C539.67 140 567.01 143.08 593.58 149.06L591.98 155.09C601.36 157.19 610.65 159.66 619.81 162.49L621.42 156.45C678.88 174.14 731.75 205.66 775.04 248.96C804.62 278.53 828.7 312.57 846.63 349.49L840.91 352C845.11 360.64 848.97 369.44 852.48 378.38L858.2 375.87C875.09 418.82 884 464.95 884 512C884 568 871.37 622.71 847.69 672.3L842.16 669.39C838.03 678.06 833.56 686.56 828.76 694.88L834.28 697.79C818.14 725.79 798.29 751.8 775.04 775.04C725.43 824.66 663.24 858.81 595.97 874.4L594.8 868.27C585.46 870.44 576.03 872.24 566.51 873.68L567.68 879.81C549.36 882.58 530.76 884 512 884C427.74 884 346.42 855.41 281.02 803.6L285.08 798.86C277.58 792.92 270.28 786.67 263.22 780.12L259.15 784.86C255.7 781.66 252.3 778.39 248.96 775.04C179.48 705.57 140.32 611.44 140 513.22L146.24 513.45L146.24 512C146.24 502.85 146.58 493.73 147.26 484.66L141.02 484.44C147.6 395.86 185.72 312.2 248.96 248.96C258.55 239.36 268.62 230.34 279.1 221.92L282.82 226.94C290.33 220.91 298.05 215.19 305.96 209.79L302.24 204.77C363.62 162.87 436.63 140 512 140ZM512 154.4C417.16 154.4 326.2 192.08 259.14 259.14C192.08 326.2 154.4 417.16 154.4 512C154.4 606.84 192.08 697.8 259.14 764.86C326.2 831.92 417.16 869.6 512 869.6C606.84 869.6 697.8 831.92 764.86 764.86C831.92 697.8 869.6 606.84 869.6 512C869.6 417.16 831.92 326.2 764.86 259.14C697.8 192.08 606.84 154.4 512 154.4Z"/><path class="glyph" d="M394.4 665.6L388.06 659.26L346.4 714.8C340.44 722.75 329.15 724.36 321.2 718.4C313.25 712.44 311.64 701.15 317.6 693.2L360.8 635.6C361.32 634.91 361.88 634.27 362.47 633.67L346.4 617.6C370.4 449.6 490.4 353.6 682.4 329.6C634.4 521.6 562.4 641.6 394.4 665.6ZM417.7 634.32C474.49 563.23 534.49 491.23 622.38 420.06C627.27 416.09 628.02 408.91 624.05 404.02C620.09 399.13 612.91 398.38 608.02 402.35C518.31 475.17 458.31 547.17 399.9 620.08C395.96 624.99 396.76 632.17 401.68 636.1C406.59 640.03 413.77 639.24 417.7 634.32Z"/></svg>';
 const icon = (name, size = 18) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.spark}</svg>`;
+/** A plain http(s) origin without credentials, path, query or trailing slash, else "" (no link). */
+const mealieOrigin = (value) => {
+  if (typeof value !== "string") return "";
+  try {
+    const url = new URL(value.trim());
+    const plain =
+      url.pathname === "/" && !url.search && !url.hash && !url.username && !url.password;
+    return /^https?:$/.test(url.protocol) && plain ? url.origin : "";
+  } catch {
+    return "";
+  }
+};
 const esc = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -144,6 +174,7 @@ const addDays = (d, n) => {
   return a;
 };
 const monday = (day) => addDays(day, -(day.getDay() + 6) % 7);
+/* ATELIER_WEEK_RANGE */
 const tidy = (s, len = 250) =>
   String(s || "")
     .trim()
@@ -322,6 +353,16 @@ class MealieAtelierCard extends HTMLElement {
       if (event.target?.tagName === "IMG") event.target.remove();
     };
     this._boundKeyDown = this._handleKeyDown.bind(this);
+    // A press outside the cookbook panel closes it; the button and the panel handle their own.
+    this._boundBookOutside = (event) => {
+      if (!this._bookOpen) return;
+      const path = event.composedPath?.() || [];
+      const inside = [".book-panel", ".book-trigger"].some((sel) => {
+        const node = this.shadowRoot.querySelector(sel);
+        return node && path.includes(node);
+      });
+      if (!inside) this._bookSetOpen(false, "");
+    };
     // Make the shortcuts work before anything in the card has focus. In Home Assistant this only
     // applies while nothing at all has focus (target is the body), so its own shortcuts and
     // every other focused element keep working.
@@ -348,6 +389,12 @@ class MealieAtelierCard extends HTMLElement {
     };
     this._boundPointerDown = this._handlePointerDown.bind(this);
     this._boundPointerUp = this._handlePointerUp.bind(this);
+    this._tileGesture = null;
+    this._tileHeld = false;
+    this._boundTileDown = this._tileDown.bind(this);
+    this._boundTileMove = this._tileMove.bind(this);
+    this._boundTileCancel = this._tileCancel.bind(this);
+    this._boundTileMenu = this._tileMenu.bind(this);
     this._cookGesture = null;
     this._lastRenderedView = null;
     this._lastRenderedModal = null;
@@ -391,7 +438,20 @@ class MealieAtelierCard extends HTMLElement {
       !(Number.isInteger(Number(config.columns)) && Number(config.columns) > 0)
     )
       throw Error(`Invalid option columns: '${config.columns}'. Allowed: a positive whole number`);
+    const previous = this._config;
     this._config = { ...DEFAULTS, mode, ...config };
+    this._config.week_start = AtelierWeek.normalizeStart(this._config.week_start);
+    this._config.week_days = AtelierWeek.normalizeDays(this._config.week_days);
+    this._config.entry_types = AtelierWeek.normalizeTypes(this._config.entry_types);
+    if (
+      previous &&
+      (previous.week_start !== this._config.week_start ||
+        previous.week_days !== this._config.week_days)
+    ) {
+      this._weekStart = AtelierWeek.rangeStart(new Date(), this._config.week_start);
+      if (this._didLoad && this.isConnected && this._providerActive !== "home_assistant")
+        this._loadMealplan();
+    }
     this._view = this._config.mode;
     if (this.isConnected) this._render();
   }
@@ -444,9 +504,20 @@ class MealieAtelierCard extends HTMLElement {
     // END feature B
     this.shadowRoot.addEventListener("keydown", this._boundKeyDown);
     document.addEventListener("keydown", this._boundPageKeyDown);
+    document.addEventListener("pointerdown", this._boundBookOutside);
     document.addEventListener("visibilitychange", this._boundVisibility);
     this.shadowRoot.addEventListener("pointerdown", this._boundPointerDown, { passive: true });
     this.shadowRoot.addEventListener("pointerup", this._boundPointerUp, { passive: true });
+    this.shadowRoot.addEventListener("pointerdown", this._boundTileDown, { passive: true });
+    this.shadowRoot.addEventListener("pointermove", this._boundTileMove, { passive: true });
+    this.shadowRoot.addEventListener("pointerup", this._boundTileCancel, { passive: true });
+    this.shadowRoot.addEventListener("pointercancel", this._boundTileCancel, { passive: true });
+    this.shadowRoot.addEventListener("scroll", this._boundTileCancel, {
+      capture: true,
+      passive: true,
+    });
+    this.shadowRoot.addEventListener("contextmenu", this._boundTileMenu);
+    window.addEventListener?.("scroll", this._boundTileCancel, { capture: true, passive: true });
     this.shadowRoot.addEventListener("error", this._boundImageError, true);
     this.shadowRoot.addEventListener("focusin", this._boundCookBarFocus);
     // Theme auto outside Home Assistant follows the system colour scheme live.
@@ -483,12 +554,21 @@ class MealieAtelierCard extends HTMLElement {
     // END feature B
     this.shadowRoot.removeEventListener("keydown", this._boundKeyDown);
     document.removeEventListener("keydown", this._boundPageKeyDown);
+    document.removeEventListener("pointerdown", this._boundBookOutside);
     document.removeEventListener("visibilitychange", this._boundVisibility);
     this._schemeQuery?.removeEventListener?.("change", this._boundScheme);
     this._wakeLock.set(false);
     this.shadowRoot.removeEventListener("focusin", this._boundCookBarFocus);
     this.shadowRoot.removeEventListener("pointerdown", this._boundPointerDown);
     this.shadowRoot.removeEventListener("pointerup", this._boundPointerUp);
+    this.shadowRoot.removeEventListener("pointerdown", this._boundTileDown);
+    this.shadowRoot.removeEventListener("pointermove", this._boundTileMove);
+    this.shadowRoot.removeEventListener("pointerup", this._boundTileCancel);
+    this.shadowRoot.removeEventListener("pointercancel", this._boundTileCancel);
+    this.shadowRoot.removeEventListener("scroll", this._boundTileCancel, true);
+    this.shadowRoot.removeEventListener("contextmenu", this._boundTileMenu);
+    window.removeEventListener?.("scroll", this._boundTileCancel, true);
+    this._tileCancel();
     this.shadowRoot.removeEventListener("error", this._boundImageError, true);
     if (this._searchTimer) clearTimeout(this._searchTimer);
     if (this._commandSearchTimer) clearTimeout(this._commandSearchTimer);
@@ -541,6 +621,16 @@ class MealieAtelierCard extends HTMLElement {
     const entries = asArray(this._status?.entries);
     return entries.find((x) => x.entry_id === this._config.entry_id) || entries[0];
   }
+  /** Address of a recipe in the Mealie web UI; the card's own config beats what the web app supplies. */
+  _mealieRecipeUrl(slug) {
+    if (!slug) return "";
+    const own = mealieOrigin(this._config.mealie_url);
+    const entry = this._statusEntry;
+    const base = own || mealieOrigin(entry?.mealie_url);
+    if (!base) return "";
+    const group = (own ? this._config.mealie_group : entry?.mealie_group) || "home";
+    return `${base}/g/${encodeURIComponent(String(group))}/r/${encodeURIComponent(slug)}`;
+  }
   get _permissions() {
     const chosen = this._statusEntry;
     // Prefer the structured permissions; an older Bridge only sends the legacy mirrors.
@@ -567,6 +657,10 @@ class MealieAtelierCard extends HTMLElement {
     return this.t(this._isWebApp ? "uiNoWriteGrantWeb" : "uiNoWriteGrant");
   }
   /** The user may view the kitchen but holds no write grant (the kitchen itself is not read-only). */
+  /** Ticking works with a write grant, or through the built-in integration's todo lists. */
+  get _canTickShopping() {
+    return this._providerActive === "home_assistant" || this._permissions.can_write;
+  }
   get _noWriteGrant() {
     const p = this._permissions;
     return (
@@ -664,6 +758,8 @@ class MealieAtelierCard extends HTMLElement {
     if (this._providerActive === "home_assistant") {
       if (type === "recipes") return this._nativeRecipes(opts.search || "");
       if (type === "recipe") return this._nativeRecipe(opts.slug || opts.recipe_id || "");
+      if (type === "mealplan") return this._nativeMealplan(opts.start, opts.end);
+      if (type === "shopping") return this._nativeShopping();
       throw new Error(this.t("uiThisFeatureRequiresMealieAtelierBridge"));
     }
     if (!this._hass || typeof this._hass.callWS !== "function")
@@ -707,6 +803,59 @@ class MealieAtelierCard extends HTMLElement {
       false,
       true,
     );
+  }
+  /** Meal plan from the built-in integration; an older integration without the service shows an empty plan. */
+  async _nativeMealplan(start, end) {
+    if (!this._hass?.services?.mealie?.get_mealplan || !this._hasNativeMealie) return [];
+    const response = this._nativePayload(
+      await this._nativeAction("get_mealplan", { start_date: start, end_date: end }),
+      "get_mealplan",
+    );
+    return mapNativeMealplan(response);
+  }
+  /** Shopping lists from the todo entities of the built-in integration; none means an empty view. */
+  async _nativeShopping() {
+    const ids = nativeTodoEntityIds(this._hass?.entities);
+    const responses = {};
+    await Promise.all(
+      ids.map(async (entityId) => {
+        try {
+          responses[entityId] = this._nativePayload(
+            await this._hass.callService(
+              "todo",
+              "get_items",
+              {},
+              { entity_id: entityId },
+              false,
+              true,
+            ),
+            "get_items",
+          )?.[entityId];
+        } catch {
+          // One unreadable list must not hide the others.
+        }
+      }),
+    );
+    return mapNativeShopping(ids, this._hass?.states, responses);
+  }
+  /** The only native write: tick a todo item on or off. */
+  async _nativeShoppingToggle(uid, checked) {
+    const item = asArray(this._data.shopping?.items).find((x) => String(x.id) === String(uid));
+    if (!item) return;
+    this._toast = "";
+    try {
+      await this._hass.callService(
+        "todo",
+        "update_item",
+        { item: String(uid), status: checked ? "completed" : "needs_action" },
+        { entity_id: item.shoppingListId },
+      );
+      await this._loadShopping();
+      this._flash(this.t("saved"));
+    } catch (err) {
+      this._error = this._errorSentence(err);
+      this._render();
+    }
   }
   _nativePayload(response, action) {
     let value = response?.service_response || response?.response || response?.result || response;
@@ -778,10 +927,16 @@ class MealieAtelierCard extends HTMLElement {
   async _refreshNative() {
     this._providerActive = "home_assistant";
     this._status = { entries: [], provider: "home_assistant", read_only: true };
-    this._data.mealplan = null;
-    this._data.shopping = null;
     this._data.metadata = null;
     this._data.recipes = await this._nativeRecipes(this._query);
+    // Meal plan and shopping are optional here: a failure leaves the normal empty state.
+    this._data.mealplan = await this._ws("mealplan", {
+      start: dateYmd(this._weekStart),
+      end: dateYmd(addDays(this._weekStart, this._planDayCount() - 1)),
+    }).catch(() => null);
+    this._data.shopping = await this._ws("shopping").catch(() => null);
+    if (!this._activeList)
+      this._activeList = String(asArray(this._data.shopping?.lists)[0]?.id || "");
     this._error = "";
     // The bridge failure that led here no longer applies: do not keep the setup state.
     this._errorCode = "";
@@ -805,7 +960,7 @@ class MealieAtelierCard extends HTMLElement {
           this._ws("recipes", { page: this._page, per_page: 24, search: this._query }),
           this._ws("mealplan", {
             start: dateYmd(this._weekStart),
-            end: dateYmd(addDays(this._weekStart, 6)),
+            end: dateYmd(addDays(this._weekStart, this._planDayCount() - 1)),
           }),
           this._ws("shopping"),
           this._ws("status"),
@@ -921,7 +1076,7 @@ class MealieAtelierCard extends HTMLElement {
     try {
       this._data.mealplan = await this._ws("mealplan", {
         start: dateYmd(this._weekStart),
-        end: dateYmd(addDays(this._weekStart, 6)),
+        end: dateYmd(addDays(this._weekStart, this._planDayCount() - 1)),
       });
       this._failedParts?.delete("mealplan");
       this._error = "";
@@ -1410,12 +1565,16 @@ class MealieAtelierCard extends HTMLElement {
             'class="modal ',
             `class="modal modal-stable${this._carriesBarOn() ? " bar-on" : ""} `,
           );
+    // The web app hands its status panel and page footer into the content column, so the
+    // navigation can fill the screen. Home Assistant renders no slot at all.
+    const webAppSlot = (name) =>
+      this.hasAttribute?.("data-web-app") ? `<slot name="${name}"></slot>` : "";
     const markup = `<ha-card><div lang="${esc(this._locale)}" class="atelier ${theme} ${d.density === "compact" ? "compact" : "comfortable"} motion-${motion} provider-${this._providerActive === "home_assistant" ? "home-assistant" : "atelier"} ${d.kiosk_mode === true ? "kiosk" : ""} ${this._layout === "panel" ? "panel" : ""}" style="--at-accent:${accent};--at-accent-ink:${accentInk(accent)};--at-brand-ink:${accentInk(accent, 0.12)};--at-radius:${rounded}"><div class="shell ${this._config.mode === "dashboard" ? "" : "single"}">
-      ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${this._topbar()}
+      ${this._config.mode === "dashboard" ? this._nav() : ""}<main class="main">${webAppSlot("status")}${this._topbar()}
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write && !this._previewOnly() ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
-      <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer></main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
+      <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer>${webAppSlot("foot")}</main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
@@ -1529,6 +1688,7 @@ class MealieAtelierCard extends HTMLElement {
         );
       });
     }
+    this._bookAfterRender();
   }
   /**
    * The sticky header strip of a dialog switches on in one step, when the dialog heading has scrolled under it:
@@ -1673,6 +1833,66 @@ class MealieAtelierCard extends HTMLElement {
     };
     attempt(0);
   }
+  /** The configured tap or hold action of a recipe tile; anything unusable falls back to the default. */
+  _tileAction(kind) {
+    const fallback = { action: kind === "tap" ? "open-recipe" : "none" };
+    if (!TILE_MODES.includes(this.constructor.getStubConfig().mode)) return fallback;
+    const configured = this._config?.[`${kind}_action`];
+    return configured && typeof configured === "object" && TILE_ACTIONS.includes(configured.action)
+      ? configured
+      : fallback;
+  }
+  /** Runs the action for a recipe: the card's own open-recipe, or Home Assistant's hass-action event. */
+  async _runTileAction(kind, slug) {
+    const configured = this._tileAction(kind);
+    if (configured.action === "none") return;
+    if (configured.action === "open-recipe") return this._openRecipe(slug);
+    const resolved = { ...configured };
+    for (const key of ["navigation_path", "url_path"])
+      if (typeof resolved[key] === "string")
+        resolved[key] = resolved[key].replaceAll("{slug}", encodeURIComponent(slug));
+    this.dispatchEvent(
+      new CustomEvent("hass-action", {
+        bubbles: true,
+        composed: true,
+        detail: { config: { ...this._config, [`${kind}_action`]: resolved }, action: kind },
+      }),
+    );
+  }
+  _tileDown(event) {
+    this._tileHeld = false;
+    this._tileCancel();
+    if (event.button > 0 || event.isPrimary === false) return;
+    const tile = event.target?.closest?.("[data-tile]");
+    const slug = tile?.dataset?.value || "";
+    if (!slug || this._tileAction("hold").action === "none") return;
+    this._tileGesture = {
+      x: event.clientX,
+      y: event.clientY,
+      timer: setTimeout(() => {
+        this._tileGesture = null;
+        this._tileHeld = true;
+        this._runTileAction("hold", slug);
+      }, TILE_HOLD_MS),
+    };
+  }
+  _tileMove(event) {
+    const gesture = this._tileGesture;
+    if (
+      gesture &&
+      Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > TILE_HOLD_SLOP_PX
+    )
+      this._tileCancel();
+  }
+  _tileCancel() {
+    if (this._tileGesture) clearTimeout(this._tileGesture.timer);
+    this._tileGesture = null;
+  }
+  // A long press on touch opens the browser menu; with a hold action it would fight the action.
+  _tileMenu(event) {
+    if (event.target?.closest?.("[data-tile]") && this._tileAction("hold").action !== "none")
+      event.preventDefault?.();
+  }
   _handlePointerDown(event) {
     if (
       this._modal !== "cook" ||
@@ -1793,6 +2013,7 @@ class MealieAtelierCard extends HTMLElement {
       this._render();
       return;
     }
+    if (this._bookKeydown(event)) return;
     // BEGIN feature D: recipe picker keyboard
     if (this._pickerKeydown(event)) return;
     // END feature D
@@ -2019,6 +2240,50 @@ class MealieAtelierCard extends HTMLElement {
       // A detached or already raised element keeps the fixed layout.
     }
   }
+  /** The server offers Mealie's own rating and favorite; without it the journal stays the only record. */
+  get _hasFeedback() {
+    return (
+      this._permissions.features.recipe_feedback === true &&
+      this._providerActive !== "home_assistant"
+    );
+  }
+  /** Reads the rating and favorite Mealie holds for the opened recipe. A failure only hides the prefill. */
+  async _loadFeedback(detail) {
+    this._feedback = null;
+    if (!this._hasFeedback || !detail?.id) return;
+    try {
+      const own = await this._ws("recipe_feedback", { recipe_id: detail.id });
+      this._feedback = {
+        slug: detail.slug,
+        rating: Math.max(0, Math.min(5, Math.round(Number(own?.rating) || 0))),
+        favorite: own?.favorite === true,
+      };
+    } catch {
+      // Optional capability: the journal works without it.
+    }
+  }
+  /**
+   * Sends the rating and favorite to Mealie when they differ from what Mealie holds. Returns false
+   * when a write failed, so the caller can say so while the journal entry stays saved.
+   * shortcut: clearing a rating (0 stars) is not sent, Mealie's rating route needs 1 to 5.
+   */
+  async _pushFeedback(slug, rating, favorite) {
+    const held = this._feedback;
+    if (!this._hasFeedback || !this._permissions.can_write || held?.slug !== slug) return true;
+    try {
+      if (rating >= 1 && rating !== held.rating) {
+        await this._ws("recipe_rate", { slug, rating });
+        held.rating = rating;
+      }
+      if (favorite !== held.favorite) {
+        await this._ws("recipe_favorite", { slug, favorite });
+        held.favorite = favorite;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
   async _openRecipe(slug) {
     if (!slug) return;
     this._modal = "loading";
@@ -2026,6 +2291,7 @@ class MealieAtelierCard extends HTMLElement {
     this._render();
     try {
       this._detail = await this._ws("recipe", { slug });
+      await this._loadFeedback(this._detail);
       this._modal = "recipe";
       this._checkedSteps.clear();
       this._checkedIngredients.clear();
@@ -2276,6 +2542,19 @@ class MealieAtelierCard extends HTMLElement {
     const action = el.dataset.action,
       v = el.dataset.value || "";
     if (action === "backdrop" && event.target !== el) return;
+    if (el.dataset.tile !== undefined) {
+      // A keyboard click (detail 0) never counts as the end of a hold.
+      const held = this._tileHeld && event.detail !== 0;
+      this._tileHeld = false;
+      if (held) {
+        event.preventDefault?.();
+        return;
+      }
+      if (this._tileAction("tap").action !== "open-recipe") {
+        await this._runTileAction("tap", v);
+        return;
+      }
+    }
     this._toast = "";
     // BEGIN feature B: recipe editor actions
     if (action.startsWith("ed-")) {
@@ -2289,6 +2568,8 @@ class MealieAtelierCard extends HTMLElement {
     // BEGIN feature H: offline queue actions
     if (action.startsWith("offline-")) return this._offlineClick(action, v);
     // END feature H
+    if (action === "book-toggle") return this._bookSetOpen(!this._bookOpen);
+    if (action === "book-pick") return this._bookPick(v);
     if (action === "nav" && MODES.includes(v)) {
       if (this._modal === "command") {
         clearTimeout(this._commandSearchTimer);
@@ -2665,7 +2946,8 @@ class MealieAtelierCard extends HTMLElement {
         "shopping-clear-confirm",
         "remove-meal",
       ].includes(action) &&
-      !this._permissions.can_write
+      !this._permissions.can_write &&
+      !(action === "shopping-toggle" && this._canTickShopping)
     )
       return;
     if (action === "create-form") {
@@ -2762,8 +3044,12 @@ class MealieAtelierCard extends HTMLElement {
     if (action === "week-prev" || action === "week-next" || action === "week-today") {
       this._weekStart =
         action === "week-today"
-          ? monday(new Date())
-          : addDays(this._weekStart, action === "week-next" ? 7 : -7);
+          ? AtelierWeek.rangeStart(new Date(), this._config.week_start)
+          : AtelierWeek.shiftRange(
+              this._weekStart,
+              this._config.week_days,
+              action === "week-next" ? 1 : -1,
+            );
       this._revealTodayNext = action === "week-today";
       await this._loadMealplan();
       return;
@@ -2772,6 +3058,10 @@ class MealieAtelierCard extends HTMLElement {
       el.disabled = true;
       const item_id = el.dataset.id;
       const checked = el.dataset.checked !== "true";
+      if (this._providerActive === "home_assistant") {
+        await this._nativeShoppingToggle(item_id, checked);
+        return;
+      }
       await this._mutate("shopping_toggle", { item_id, checked }, "shopping", () =>
         this._optimisticToggle(item_id, checked),
       );
@@ -2920,13 +3210,10 @@ class MealieAtelierCard extends HTMLElement {
       else this._checkedIngredients.delete(n);
       return;
     }
-    if (type === "recipe-book") {
-      this._cookbookFilter = el.value;
-      this._page = 1;
-      // Filtering must cover every recipe, not the loaded page, so the full catalog comes first.
-      (el.value && !this._fullCatalog?.length ? this._studioCatalog() : Promise.resolve()).then(
-        () => this._render(),
-      );
+    if (type === "book-search") {
+      this._bookQuery = el.value;
+      this._bookActive = 0;
+      this._bookPaint();
       return;
     }
     if (type === "shopping-list") {

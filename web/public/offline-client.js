@@ -345,8 +345,9 @@ export function attachOfflineUi(card, offline, alarms) {
         <div class="a-alarms" id="a-alarms"></div>
       </section>
     </div>`;
-  const host = document.querySelector("main") || document.body;
-  host.insertBefore(panel, card);
+  // The card shows this panel at the top of its content column.
+  panel.slot = "status";
+  card.appendChild(panel);
   const $ = (id) => panel.querySelector("#" + id);
   const renderConflicts = () => {
     const box = $("a-conflicts");

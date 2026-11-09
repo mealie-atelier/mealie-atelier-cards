@@ -96,6 +96,12 @@ text = text.replace(printDocumentSlot, () =>
   readFileSync(resolve(folder, "src/components/print-document.js"), "utf8").trim(),
 );
 
+const weekRangeSlot = "/* ATELIER_WEEK_RANGE */";
+if (!text.includes(weekRangeSlot)) throw Error("Missing week range slot");
+text = text.replace(weekRangeSlot, () =>
+  readFileSync(resolve(folder, "src/week-range.js"), "utf8").trim(),
+);
+
 const componentMethodModules = [
   ["viewMethods", "src/components/views.js"],
   ["printActionMethods", "src/components/print-actions.js"],
@@ -123,12 +129,15 @@ const nutritionEstimateSource = readFileSync(
 )
   .replace(/^export /gm, "")
   .trim();
+const nativeMealieSource = readFileSync(resolve(folder, "src/components/native-mealie.js"), "utf8")
+  .replace(/^export /gm, "")
+  .trim();
 const methodSlot = "/* ATELIER_COMPONENT_METHODS */";
 if (!text.includes(methodSlot)) throw Error("Missing component method slot");
 text = text.replace(
   methodSlot,
   () =>
-    `${nutritionEstimateSource}\n\n${methodDeclarations.join("\n\n")}\n\nObject.assign(MealieAtelierCard.prototype, ${componentMethodModules.map(([name]) => name).join(", ")});`,
+    `${nutritionEstimateSource}\n\n${nativeMealieSource}\n\n${methodDeclarations.join("\n\n")}\n\nObject.assign(MealieAtelierCard.prototype, ${componentMethodModules.map(([name]) => name).join(", ")});`,
 );
 writeFileSync(destination, text);
 writeFileSync(web, text);

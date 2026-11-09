@@ -86,6 +86,8 @@ export function loadCards({
       constructor(type, init = {}) {
         this.type = type;
         this.detail = init.detail;
+        this.bubbles = init.bubbles === true;
+        this.composed = init.composed === true;
       }
     },
     ...globals,

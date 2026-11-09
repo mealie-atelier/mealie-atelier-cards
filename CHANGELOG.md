@@ -4,6 +4,15 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Added
+
+- Home Assistant provider: the meal plan and the shopping lists work with only the built-in Mealie integration, without the Bridge. Ticking a shopping item on or off is the one write that works there.
+- Meal plan range: `week_start` (`monday`, `sunday` or `today`), `week_days` (1 to 14) and `entry_types` set the days and meal types the plan shows, prints and pages through; the visual editor has fields for all three.
+- Recipes, Today and Meal plan cards: `tap_action` and `hold_action` on recipe tiles with Home Assistant's standard actions (navigate, URL, more-info, service call) and `{slug}` in paths; the editor has fields for both. Tapping still opens the recipe by default.
+- Recipe dialog: a quiet **Open in Mealie** link opens the recipe in Mealie in a new tab; set `mealie_url` (and `mealie_group`) in the card or `ATELIER_MEALIE_PUBLIC_URL` in the web app.
+- Web app: optional sign-in through Cloudflare Access, verified from the signed token, so people who passed Access need no second password; everyone else still gets the Basic sign-in.
+- Web app: the cooking note form now shows your Mealie star rating and favorite, and saving sends changes to Mealie. If Mealie cannot be reached, the note is still saved and you are told.
+
 ### Fixed
 
 - Web app installed on the home screen: it no longer hangs on "Das Atelier startet noch". The install prompt can no longer stop the start, and the app shell is revalidated on every launch instead of staying cached for an hour.
@@ -24,6 +33,9 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Changed
 
+- Web app: only the content scrolls now. The menu stays fully on screen and the footer sits at its end, as long as the window is wide enough for the sidebar.
+- Meal plan page: three weeks below each other, with **Heute** back to this week and the arrows moving one week.
+- Recipes: the cookbook filter is an own option panel instead of the browser dropdown, with a tick on the chosen row, a search from 16 cookbooks and a bottom sheet on narrow cards.
 - Kochinspo and week proposal: while the recipe collection loads, an animated pot with live progress replaces the status line and the view below it.
 - Design Studio: reset and done share one row.
 - Recipe dialog: main actions stay as buttons, secondary ones are quiet text actions.

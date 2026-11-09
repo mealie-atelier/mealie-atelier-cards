@@ -23,9 +23,10 @@ export const printActionMethods = {
     const html = buildPrintDocument(kind, {
       recipe: this._detail,
       shopping: this._data.shopping,
-      mealplan: this._data.mealplan,
+      mealplan: this._plannedMeals(),
       activeList: this._activeList || String(all[0]?.id || ""),
       weekStart: this._weekStart,
+      weekDays: this._config.week_days,
       locale: this._locale,
       settings: this._design,
       translate: (key, values) => this.t(key, values),

@@ -11,6 +11,8 @@ const ENTITY_FIELDS = {
   cooking_media_player: { domain: "media_player", example: "media_player.kitchen" },
   cooking_tts_engine: { domain: "tts", example: "tts.piper" },
 };
+// Actions the visual editor can build; call-service, perform-action and more-info stay YAML-only.
+const TILE_PATH_KEY = { navigate: "navigation_path", url: "url_path" };
 function shallowEqual(a, b) {
   const ka = Object.keys(a || {});
   const kb = Object.keys(b || {});
@@ -69,7 +71,7 @@ class MealieAtelierEditor extends HTMLElement {
         Object.hasOwn(DEFAULTS, key) &&
         String(DEFAULTS[key]) === String(value) &&
         !["mode", "type", "title", "entry_id"].includes(key);
-      if (isDefault) delete raw[key];
+      if (isDefault || value === undefined) delete raw[key];
       else raw[key] = value;
     }
     this._raw = raw;
@@ -181,13 +183,55 @@ class MealieAtelierEditor extends HTMLElement {
   _handleChange(event) {
     const key = event.target.dataset.key;
     if (!key) return;
+    if (event.target.dataset.actionPart) {
+      this._patchTileAction(key, event.target.dataset.actionPart, event.target.value);
+      this._emitConfig();
+      if (event.target.dataset.actionPart === "action") this._render();
+      return;
+    }
     let value = event.target.type === "checkbox" ? event.target.checked : event.target.value;
+    if (key === "entry_types")
+      value = [...this.shadowRoot.querySelectorAll("input[data-entry-type]")]
+        .filter((box) => box.checked)
+        .map((box) => box.dataset.entryType);
     if (key === "columns") value = Number(value) || 3;
     if (typeof DEFAULTS[key] === "number" && value !== "") value = Number(value);
     this._patch({ [key]: value });
     this._emitConfig();
     if (ENTITY_FIELDS[key]) this._syncEntityWarning(key);
     else if (key === "mode" || key === "provider" || key === "theme") this._render();
+  }
+  // Tap and hold are stored as Home Assistant action objects; the defaults are left out of the YAML.
+  _patchTileAction(key, part, value) {
+    const current =
+      this._config[key] && typeof this._config[key] === "object" ? this._config[key] : {};
+    let next;
+    if (part === "action") next = { action: value };
+    else next = { ...current, [TILE_PATH_KEY[current.action]]: value };
+    const isDefault = next.action === (key === "tap_action" ? "open-recipe" : "none");
+    this._patch({ [key]: isDefault ? undefined : next });
+  }
+  _tileActionMarkup(key, label) {
+    const tr = (k) => this._tr(k);
+    const current =
+      this._config[key] && typeof this._config[key] === "object" ? this._config[key] : {};
+    const fallback = key === "tap_action" ? "open-recipe" : "none";
+    const action = current.action || fallback;
+    const stored = this._config[key];
+    const options = [
+      ["open-recipe", tr("editorActionOpenRecipe")],
+      ["none", tr("editorActionNone")],
+      ["navigate", tr("editorActionNavigate")],
+      ["url", tr("editorActionUrl")],
+    ];
+    // An action only YAML can express (call-service, more-info) stays selected as a labelled extra.
+    if (!options.some(([value]) => value === action))
+      options.push([
+        action,
+        translateLabel(this._locale(), "editorCustomValue", { value: action }),
+      ]);
+    const pathKey = TILE_PATH_KEY[action];
+    return `<div class="group"><label for="atelier-${key}">${label}</label><select id="atelier-${key}" data-key="${key}" data-action-part="action">${options.map(([value, text]) => `<option value="${esc(value)}" ${value === action ? "selected" : ""}>${esc(text)}</option>`).join("")}</select>${pathKey && stored ? `<input id="atelier-${key}-path" data-key="${key}" data-action-part="path" value="${esc(current[pathKey] || "")}" placeholder="${action === "url" ? "https://example.com/{slug}" : "/lovelace/recipe/{slug}"}" autocomplete="off"><p class="hint">${tr("editorActionSlugHint")}</p>` : ""}</div>`;
   }
   _handleClick(event) {
     const action = event.target.closest?.("[data-editor-action]")?.dataset.editorAction;
@@ -410,6 +454,22 @@ class MealieAtelierEditor extends HTMLElement {
       ],
     )}</div>
     <label class="line"><input type="checkbox" data-key="show_images" ${c.show_images !== false ? "checked" : ""}> ${tr("editorShowRecipeImages")}</label>
+    <div class="group"><label for="atelier-week_start">${tr("editorWeekStart")}</label>${choose(
+      "week_start",
+      [
+        ["monday", tr("editorWeekStartMonday")],
+        ["sunday", tr("editorWeekStartSunday")],
+        ["today", tr("editorWeekStartToday")],
+      ],
+    )}</div><div class="group"><label for="atelier-week_days">${tr("editorWeekDays")}</label>${choose(
+      "week_days",
+      Array.from({ length: AtelierWeek.MAX_DAYS }, (_, i) => [i + 1, String(i + 1)]),
+    )}</div>
+    <div class="group"><label id="atelier-entry_types-label">${tr("editorEntryTypes")}</label><div role="group" aria-labelledby="atelier-entry_types-label">${AtelierWeek.ENTRY_TYPES.map(
+      (type) =>
+        `<label class="line"><input type="checkbox" data-key="entry_types" data-entry-type="${type}" ${AtelierWeek.normalizeTypes(c.entry_types).includes(type) ? "checked" : ""}> ${tr({ side: "printDocSide", snack: "printDocSnack", drink: "printDocDrink", dessert: "printDocDessert" }[type] || type)}</label>`,
+    ).join("")}</div><p class="hint">${tr("editorEntryTypesHint")}</p></div>
+    ${["recipes", "today", "mealplan"].includes(c.mode) ? `${this._tileActionMarkup("tap_action", tr("editorTapAction"))}${this._tileActionMarkup("hold_action", tr("editorHoldAction"))}` : ""}
     <details class="editor-advanced"><summary>${tr("editorOptionalPrintAndKitchenSettings")}</summary><div class="section-head"><span>03</span><div><strong>${tr("editorPrintStudio")}</strong><p>${tr("editorPremiumA4LayoutsForRecipesAndLists")}</p></div></div><div class="group"><label for="atelier-print_style">${tr("editorPrintTemplate")}</label>${choose(
       "print_style",
       [
@@ -424,7 +484,7 @@ class MealieAtelierEditor extends HTMLElement {
     <div class="group"><label for="atelier-cooking_volume">${tr("editorCookingVolume")}</label>${choose(
       "cooking_volume",
       [...[0.1, 0.18, 0.3, 0.5].map((v) => [v, percent.format(v)])],
-    )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper" list="atelier-list-cooking_tts_engine" autocomplete="off">${this._entityDatalist("cooking_tts_engine")}${this._entityWarning("cooking_tts_engine")}<p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div></details>
+    )}</div><div class="group"><label for="atelier-cooking_tts_engine">${tr("editorOptionalTTSEngineHA")}</label><input id="atelier-cooking_tts_engine" data-key="cooking_tts_engine" value="${esc(c.cooking_tts_engine || "")}" placeholder="tts.piper" list="atelier-list-cooking_tts_engine" autocomplete="off">${this._entityDatalist("cooking_tts_engine")}${this._entityWarning("cooking_tts_engine")}<p class="hint">${tr("editorUseAHomeAssistantEntityAllOptionalDeviceActionsAreDisabledByDefault")}</p></div><div class="group"><label for="atelier-mealie_url">${tr("editorMealieAddress")}</label><input id="atelier-mealie_url" data-key="mealie_url" type="url" value="${esc(c.mealie_url || "")}" placeholder="https://mealie.example.com" autocomplete="off"><p class="hint">${tr("editorMealieAddressHint")}</p></div><div class="group"><label for="atelier-mealie_group">${tr("editorMealieGroup")}</label><input id="atelier-mealie_group" data-key="mealie_group" value="${esc(c.mealie_group || "")}" placeholder="home" autocomplete="off"></div></details>
     <p class="hint editor-footer">${tr("editorDashboardModeContainsTheCompleteKitchenDeviceSpecificChangesAreAvailableHereInTheDesignStudio")}</p></div>`;
   }
   _entityDatalist(key) {

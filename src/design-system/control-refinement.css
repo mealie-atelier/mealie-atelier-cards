@@ -859,6 +859,7 @@
   font: inherit;
   font-size: 13px;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   transition: color var(--ds-motion-base) var(--ds-motion-ease);
 }
@@ -1367,4 +1368,11 @@
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+/* Any other range than seven days: columns fill the width and wrap, so one to fourteen days never leave holes or
+   squeeze. Seven days keep the tuned layouts above. */
+.atelier .shell .week-grid.week-grid-custom {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  align-items: start;
 }

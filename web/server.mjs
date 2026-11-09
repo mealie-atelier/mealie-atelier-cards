@@ -54,6 +54,7 @@ import {
   renderServiceWorker,
   securityHeaders,
 } from "./security.mjs";
+import { createAccessVerifier, parseAccessConfig } from "./access-jwt.mjs";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3000);
@@ -64,11 +65,33 @@ if (!Number.isInteger(PORT) || PORT < 0 || PORT > 65535) {
 const HOST = process.env.HOST || "0.0.0.0";
 const MEALIE_URL = (process.env.MEALIE_URL || "").replace(/\/$/, "");
 const MEALIE_API_TOKEN = process.env.MEALIE_API_TOKEN || "";
+// Public address of Mealie for the "Open in Mealie" link: a plain http(s) origin, else none.
+function publicOrigin(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    const plain =
+      url.pathname === "/" && !url.search && !url.hash && !url.username && !url.password;
+    return /^https?:$/.test(url.protocol) && plain ? url.origin : "";
+  } catch {
+    return "";
+  }
+}
+const MEALIE_PUBLIC_URL = publicOrigin(process.env.ATELIER_MEALIE_PUBLIC_URL);
+if (process.env.ATELIER_MEALIE_PUBLIC_URL && !MEALIE_PUBLIC_URL)
+  console.warn("ATELIER_MEALIE_PUBLIC_URL ignored: use a plain http(s) address without a path.");
+const MEALIE_GROUP = process.env.ATELIER_MEALIE_GROUP || "home";
 const USER = process.env.ATELIER_USERNAME || "atelier";
 const PASSWORD = process.env.ATELIER_PASSWORD || "";
 let USERS = [];
 try {
   USERS = parseUsers(process.env.ATELIER_USERS);
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
+let ACCESS = null;
+try {
+  ACCESS = parseAccessConfig(process.env, USERS);
 } catch (error) {
   console.error(error.message);
   process.exit(1);
@@ -219,6 +242,16 @@ const alarmAccess = (req) => ({
   name: req.atelierUser?.name || "",
   admin: req.atelierUser?.role === "admin",
 });
+const accessVerifier = ACCESS ? createAccessVerifier(ACCESS) : null;
+/** A valid Cloudflare Access token signs in; anything else leaves the Basic path untouched. */
+async function isAccessAuthorized(req) {
+  if (!accessVerifier) return false;
+  const name = await accessVerifier.verify(req);
+  const user = USERS.find((u) => u.name === name);
+  if (!user) return false;
+  req.atelierUser = { name: user.name, role: user.role };
+  return true;
+}
 async function isAuthorized(req) {
   const header = req.headers.authorization || "";
   if (!header.startsWith("Basic ")) return false;
@@ -393,6 +426,15 @@ async function mealie(method, path, body, query) {
   } finally {
     clearTimeout(timeout);
   }
+}
+let selfUserId = "";
+/** Id of the user behind the API token, read once because Mealie's rating routes need it. */
+async function selfId() {
+  if (!selfUserId) {
+    const me = await mealie("GET", "/api/users/self");
+    selfUserId = identifier(me?.id);
+  }
+  return selfUserId;
 }
 /** Checks that MEALIE_URL answers like Mealie and accepts the token. */
 async function mealieReachable() {
@@ -937,6 +979,8 @@ async function bridge(req) {
             name: "Standalone Mealie",
             connected: await mealieReachable(),
             read_only: READ_ONLY,
+            mealie_url: MEALIE_PUBLIC_URL,
+            mealie_group: MEALIE_GROUP,
             ai_enabled: !!AI_KEY,
             ai_provider: AI_KEY?.provider || "none",
             permissions,
@@ -951,6 +995,8 @@ async function bridge(req) {
               recipe_filters: true,
               // One journal for the whole household, so changing it needs write access.
               shared_journal: true,
+              // Mealie's own star rating and favorite of the signed-in token user.
+              recipe_feedback: true,
             },
             limits: { upload_max_bytes: UPLOAD_MAX_BYTES, upload_chunk_bytes: UPLOAD_CHUNK_BYTES },
             can_write: permissions.can_write,
@@ -1206,6 +1252,36 @@ async function bridge(req) {
       // END recipe picker filters
       return { ...data, items: unwrap(data).map(withImage) };
     }
+    case "mealie_atelier/recipe_feedback": {
+      const id = identifier(msg.recipe_id);
+      try {
+        const own = await mealie("GET", `/api/users/self/ratings/${id}`);
+        return {
+          rating: Number.isInteger(own?.rating) ? own.rating : null,
+          favorite: own?.isFavorite === true,
+        };
+      } catch (error) {
+        // Mealie answers 404 while the user has neither rated nor favorited the recipe.
+        if (error.status === 404) return { rating: null, favorite: false };
+        throw error;
+      }
+    }
+    case "mealie_atelier/recipe_rate": {
+      if (!Number.isInteger(msg.rating) || msg.rating < 1 || msg.rating > 5)
+        throw bad("Invalid rating");
+      const slug = identifier(msg.slug);
+      await mealie("POST", `/api/users/${await selfId()}/ratings/${slug}`, { rating: msg.rating });
+      return { saved: true };
+    }
+    case "mealie_atelier/recipe_favorite": {
+      if (typeof msg.favorite !== "boolean") throw bad("Invalid favorite");
+      const slug = identifier(msg.slug);
+      await mealie(
+        msg.favorite ? "POST" : "DELETE",
+        `/api/users/${await selfId()}/favorites/${slug}`,
+      );
+      return { saved: true };
+    }
     case "mealie_atelier/recipe":
       return withImage(await mealie("GET", `/api/recipes/${identifier(msg.slug)}`));
     case "mealie_atelier/mealplan": {
@@ -1421,7 +1497,8 @@ const server = createServer(async (req, res) => {
   }
   // A throttled address is refused before its credentials are checked, so the lockout cannot be
   // used as a password oracle.
-  const retryMs = authThrottle.retryAfterMs(throttleClient(req));
+  const viaAccess = await isAccessAuthorized(req);
+  const retryMs = viaAccess ? 0 : authThrottle.retryAfterMs(throttleClient(req));
   if (retryMs > 0) {
     const headers = { "Retry-After": String(Math.ceil(retryMs / 1000)) };
     if (wantsHtml(req))
@@ -1436,7 +1513,7 @@ const server = createServer(async (req, res) => {
       reply(res, 429, { error: "Too many failed sign-ins. Try again later." }, undefined, headers);
     return;
   }
-  if (!(await isAuthorized(req))) {
+  if (!viaAccess && !(await isAuthorized(req))) {
     const headers = { "WWW-Authenticate": 'Basic realm="Mealie Atelier", charset="UTF-8"' };
     if (wantsHtml(req))
       reply(res, 401, authPage(req, "signIn"), "text/html; charset=utf-8", headers);

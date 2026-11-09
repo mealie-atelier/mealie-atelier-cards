@@ -70,7 +70,8 @@
   box-sizing: border-box;
 }
 .atelier-connectivity {
-  margin: 0 0 var(--shell-space-4);
+  max-width: var(--ds-content-max);
+  margin: 0 auto var(--shell-space-4);
   color: var(--shell-ink);
   font-size: 13px;
   line-height: 1.48;
@@ -284,7 +285,7 @@
 }
 @media (max-width: 700px) {
   .atelier-connectivity {
-    margin: 10px 12px 0;
+    margin: 0 0 var(--shell-space-3);
     border-radius: 14px;
   }
   .a-summary {

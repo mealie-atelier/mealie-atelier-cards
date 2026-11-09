@@ -17,6 +17,8 @@ const rules = (css) => {
 test("no non-panel .atelier rule fills the viewport height", () => {
   for (const file of readdirSync(dir).filter((name) => name.endsWith(".css"))) {
     for (const { selector, body } of rules(readFileSync(new URL(file, dir), "utf8"))) {
+      // The standalone web app is the whole page and never sits in a masonry or sections view.
+      if (selector.includes(":host([data-web-app])")) continue;
       if (!/\.atelier\b/.test(selector) || /\.panel\b/.test(selector)) continue;
       assert.doesNotMatch(
         body,

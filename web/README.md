@@ -61,9 +61,12 @@ All settings are environment variables (see `.env.example`).
 | `PORT`                                                                           | `3000`    | no       | Listen port. Compose forces `3000`; use `ATELIER_HOST_PORT` (default `3008`) for the published port.                                                                                                                                               |
 | `HOST`                                                                           | `0.0.0.0` | no       | Listen address.                                                                                                                                                                                                                                    |
 | `ATELIER_TRUSTED_PROXIES`                                                        | none      | no       | Comma-separated IPs and CIDRs (IPv4 and IPv6) of your reverse proxies. Only requests from these sockets may supply the client address through `X-Forwarded-For`.                                                                                   |
+| `ATELIER_ACCESS_TEAM_DOMAIN`, `ATELIER_ACCESS_AUD`, `ATELIER_ACCESS_USERS`       | empty     | no       | Cloudflare Access sign-in; all three together or none, see [Cloudflare Access sign-in](#cloudflare-access-sign-in).                                                                                                                                |
 | `ATELIER_READ_ONLY`                                                              | `false`   | no       | `1`, `true` or `yes` rejects all writes on the server.                                                                                                                                                                                             |
 | `ATELIER_DATA_DIR`                                                               | `./data`  | no       | Persistent state directory. Compose and the image use `/app/data`.                                                                                                                                                                                 |
 | `ATELIER_STRUCTURED_EDITS`                                                       | `false`   | no       | Structured ingredient editing (`true` to enable); only on a backed-up Mealie 3.x (tested with v3.29).                                                                                                                                              |
+| `ATELIER_MEALIE_PUBLIC_URL`                                                      | empty     | no       | Address your browser reaches Mealie at (`http` or `https`, host and port only, no path). Adds an **Open in Mealie** link to the recipe dialog; empty means no link. A card's own `mealie_url` wins.                                                |
+| `ATELIER_MEALIE_GROUP`                                                           | `home`    | no       | Mealie group slug used in that link.                                                                                                                                                                                                               |
 | `BRING_EMAIL` and `BRING_PASSWORD`                                               | empty     | no       | Optional, for headless setups: connects a Bring! account at start. The password is used for the login only and is never stored; see [Smart Shopping Sync to Bring!](#smart-shopping-sync-to-bring).                                                |
 | `ATELIER_SYNC_LANGUAGE`                                                          | empty     | no       | Language of the item text sent to Bring! (for example `de` or `en`). Unset: the language of the last sync request in the app, remembered in `ATELIER_DATA_DIR` across restarts, so background runs keep it; English until a sync request was made. |
 | `USDA_FDC_API_KEY`                                                               | empty     | no       | Enables USDA matching in the Nutrition Lab.                                                                                                                                                                                                        |
@@ -101,6 +104,24 @@ ATELIER_USERS='anna:admin:scrypt$16384$8$1$...$...;ben:reader:scrypt$16384$8$1$.
 - Successful sign-ins are cached in memory for 10 minutes so each request does not run scrypt; failures are never cached and every one counts for the sign-in throttle described below.
 
 Generate the Web Push keys with `npm run vapid` on any machine with Node 22 or later, from a checkout of this repository (the Docker image does not contain the `scripts/` folder, so the command does not work inside the container), and paste the three `ATELIER_VAPID_` lines into `.env` (the subject must start with `mailto:` or `https://`, otherwise the server refuses to start; replace the example address). Keep the private key stable, secret and backed up.
+
+### Cloudflare Access sign-in
+
+Optionally, people who already passed [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/) sign in without a second password. The server checks the signed `Cf-Access-Jwt-Assertion` header against the public keys of your team: signature (RS256 only), issuer, audience, expiry and email.
+
+| Variable                     | Value                                                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `ATELIER_ACCESS_TEAM_DOMAIN` | The bare hostname of your team, for example `your-team.cloudflareaccess.com`.                            |
+| `ATELIER_ACCESS_AUD`         | The Application Audience (AUD) tag of the Access application.                                            |
+| `ATELIER_ACCESS_USERS`       | Comma-separated `email:username` pairs. Every username must exist in `ATELIER_USERS` and keeps its role. |
+
+Set all three or none. The server refuses to start with a partial or invalid setting, and with none of them set it behaves as if the feature did not exist.
+
+**Precondition:** only enable this when the app is reachable through the Access-protected hostname. Access is what asks people to sign in and issues the token, so on any other route nobody has one.
+
+The token is what authenticates, not the network path. The server does not trust the header because of where a request came from: a request that bypasses Access has no valid token and gets the Basic sign-in, the same as a request whose token is forged, expired, meant for another application or carries an email that is not listed. These requests do not count as failed sign-ins. A valid token skips the Basic sign-in and its throttle; roles, read-only mode and the CSRF header check apply unchanged.
+
+Keys come from `https://<team domain>/cdn-cgi/access/certs` and are cached for one hour. An unknown key id triggers a new fetch at most once every 5 minutes. If Cloudflare cannot be reached, cached keys stay in use. Without cached keys visitors get the Basic sign-in and the service stays up, so keep a working Basic password for that case.
 
 ## Security
 

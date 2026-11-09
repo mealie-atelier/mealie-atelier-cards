@@ -82,8 +82,13 @@ export const nutritionJournalMethods = {
   },
   _journalMarkup() {
     const slug = this._detail?.slug,
-      note = this._journal[slug] || {};
-    return `<div class="modal-content journal-studio"><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("journalKicker"))}</div><h2>${esc(this.t("journal"))}</h2><p class="muted">${this.t("uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie")}</p>
+      note = { ...(this._journal[slug] || {}) };
+    // Mealie is the truth for rating and favorite: a stale journal value must not overwrite it
+    // on a save that changed nothing. Without an answer from Mealie the journal value stands.
+    const held = this._feedback?.slug === slug ? this._feedback : null;
+    if (held?.rating) note.rating = held.rating;
+    if (held) note.favorite = held.favorite;
+    return `<div class="modal-content journal-studio"><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("journalKicker"))}</div><h2>${esc(this.t("journal"))}</h2><p class="muted">${this.t(held && this._permissions.can_write ? "journalHintSynced" : "uiYourPersonalCookingNotesStoredOnlyOnThisDeviceNotSyncedToMealie")}</p>
     <form data-form="journal" class="editor-form"><section class="editor-card"><label class="field"><span>${this.t("uiHowDidItTurnOut")}</span><select name="rating">${[0, 1, 2, 3, 4, 5].map((i) => `<option value="${i}" ${Number(note.rating || 0) === i ? "selected" : ""}>${i ? `${"★".repeat(i)} ${i}/5` : this.t("uiNotRated")}</option>`).join("")}</select></label><label class="field"><span>${esc(this.t("journalNote"))}</span><textarea name="note" maxlength="800" rows="5" placeholder="${this.t("uiNextTimeReduceTheSalt")}">${esc(note.note || "")}</textarea></label><label class="editor-check"><input type="checkbox" name="favorite" ${note.favorite === true ? "checked" : ""}> ${esc(this.t("uiRememberAsFavoriteRecipe"))}</label><div class="form-actions"><button type="button" class="btn" data-action="close-modal">${esc(this.t("back"))}</button><button class="btn primary" type="submit">${esc(this.t("journalSave"))}</button></div></section></form></div>`;
   },
 };

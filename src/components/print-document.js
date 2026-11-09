@@ -16,7 +16,7 @@ function wirePrintToolbar(popup) {
 // Build a standalone print document and escape every Mealie field before rendering it.
 function buildPrintDocument(
   kind,
-  { recipe, shopping, mealplan, activeList, weekStart, locale, settings, translate },
+  { recipe, shopping, mealplan, activeList, weekStart, weekDays, locale, settings, translate },
 ) {
   const t = (key, values) => (typeof translate === "function" ? translate(key, values) : key);
   const words = {
@@ -153,17 +153,21 @@ function buildPrintDocument(
       weekStart instanceof Date && !Number.isNaN(weekStart.getTime())
         ? weekStart
         : monday(new Date());
-    const lastDate = addDays(mondayDate, 6);
+    const days = AtelierWeek.normalizeDays(weekDays);
+    const lastDate = AtelierWeek.rangeEnd(mondayDate, days);
     const period = `${dayString(locale || "de-DE", mondayDate, { day: "numeric", month: "short" })} – ${dayString(locale || "de-DE", lastDate, { day: "numeric", month: "short", year: "numeric" })}`;
     heading = `<div class="eyebrow">${esc(words.week)} · ${esc(words.created)}</div><h1>${esc(words.page)}</h1><p class="dek">${esc(period)}</p>`;
     const all = asArray(mealplan);
-    body = `<section class="week-print">${Array.from({ length: 7 }, (_, i) => {
-      const d = addDays(mondayDate, i),
-        ymd = dateYmd(d),
-        meals = all.filter((x) => x.date === ymd);
-      return `<div class="week-day"><div class="weekday">${esc(dayString(locale || "de-DE", d, { weekday: "long" }))}<strong>${esc(dayString(locale || "de-DE", d, { day: "numeric", month: "short" }))}</strong></div>
+    body = `<section class="week-print" style="grid-template-columns:repeat(${Math.min(days, 7)},minmax(0,1fr))">${Array.from(
+      { length: days },
+      (_, i) => {
+        const d = addDays(mondayDate, i),
+          ymd = dateYmd(d),
+          meals = all.filter((x) => x.date === ymd);
+        return `<div class="week-day"><div class="weekday">${esc(dayString(locale || "de-DE", d, { weekday: "long" }))}<strong>${esc(dayString(locale || "de-DE", d, { day: "numeric", month: "short" }))}</strong></div>
         ${meals.length ? meals.map((meal) => `<div class="week-meal"><small>${esc(mealType(meal.entryType || ""))}</small><b>${esc(mealName(meal))}</b></div>`).join("") : `<p>${esc(words.noPlan)}</p>`}</div>`;
-    }).join("")}</section>${noteLines}`;
+      },
+    ).join("")}</section>${noteLines}`;
   } else {
     throw Error("Unsupported print document");
   }

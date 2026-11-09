@@ -96,7 +96,8 @@ test("first-run card setup is a skippable three-step wizard with secure integrat
     "editor-advanced",
   ])
     assert.ok(template.includes(value), value);
-  assert.doesNotMatch(template, /data-key="api_token"|data-key="mealie_url"/);
+  // mealie_url is only the optional address behind "Open in Mealie"; credentials stay out.
+  assert.doesNotMatch(template, /data-key="api_token"/);
   assert.match(design, /.setup-progress/);
   assert.match(design, /.setup-preset:focus-visible/);
   assert.match(design, /prefers-reduced-motion:\s*reduce/);

@@ -290,6 +290,22 @@ test("the search, the labelled cookbook field and the button sit on one line", (
   );
 });
 
+test("the cookbook panel is anchored on a wide card and a bottom sheet on a narrow one", () => {
+  const picker = readFileSync(
+    new URL("../src/design-system/recipe-picker.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(rule(picker, ".atelier .book-panel"), /position: absolute/);
+  const narrow = picker.match(
+    /@container atelier-card \(max-width: 520px\) \{[^@]*?\.atelier \.book-sheet[\s\S]*?\n\}/,
+  );
+  assert.ok(narrow, "a narrow container rule styles the sheet");
+  assert.match(narrow[0], /\.atelier \.book-sheet \{[^}]*position: fixed/);
+  assert.match(narrow[0], /\.atelier \.book-panel \{[^}]*position: static/);
+  assert.match(narrow[0], /\.atelier \.recipe-book-filter \{[^}]*grid-column: 1 \/ -1/);
+  assert.match(rule(picker, ".atelier .recipe-book-filter .book-value"), /text-overflow: ellipsis/);
+});
+
 test("a card in the web app shell never asks for Home Assistant, a card in Home Assistant may", async () => {
   const card = makeCard(loadCards(), { hass: undefined });
   card._hass = undefined;
