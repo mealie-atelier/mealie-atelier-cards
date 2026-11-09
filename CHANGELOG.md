@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.16] - 2026-11-09
+
 ### Added
 
 - Meal plan: entries can be removed and moved to another day, by dragging or with Alt and the arrow keys.
@@ -689,7 +691,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.15...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.16...HEAD
+[0.12.16]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.15...v0.12.16
 [0.12.15]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.14...v0.12.15
 [0.12.14]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.13...v0.12.14
 [0.12.13]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.12...v0.12.13
