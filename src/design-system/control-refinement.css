@@ -1337,3 +1337,34 @@
 .atelier .detail-cols .step {
   --hover-lift: 1px;
 }
+
+/* Icon and label share one centre line inside a pill. */
+.atelier .pill:has(> svg) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  line-height: 1;
+}
+.atelier .pill > svg {
+  flex: none;
+  display: block;
+}
+
+/* Kochinspo: every idea takes the same room, so the page below never moves. */
+@container atelier-card (min-width: 761px) {
+  .atelier .studio-discover-hero {
+    min-height: 25rem;
+  }
+}
+.atelier .studio-discover-hero-copy :is(h2, h3) {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.atelier .studio-discover-hero-copy > p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}

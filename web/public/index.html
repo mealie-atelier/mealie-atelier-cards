@@ -83,7 +83,7 @@
   </head>
   <body>
     <main>
-      <mealie-atelier-card></mealie-atelier-card>
+      <mealie-atelier-card data-web-app></mealie-atelier-card>
       <footer class="foot">
         <span class="foot-copy" id="foot-copy"
           >MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT&nbsp;MEALIE</span
@@ -153,20 +153,31 @@
       import { initPwaInstall } from "/pwa-install.js";
       const pwaInstall = initPwaInstall();
       await import("/mealie-atelier-cards.js?v=0.12.15");
+      // The offline queue, alarms and the service worker are extras. When one of them fails or
+      // hangs, as phone storage or a sign-in proxy can make them do, the kitchen still opens.
+      const optional = (task, fallback) =>
+        Promise.race([
+          Promise.resolve()
+            .then(task)
+            .catch(() => fallback),
+          new Promise((resolve) => setTimeout(resolve, 3000, fallback)),
+        ]);
+      const bareOffline = { enabled: false, getShopping: (load) => load() };
+      const bareAlarms = { refresh: async () => {} };
       const {
         AtelierOfflineClient,
         AtelierAlarmClient,
         attachOfflineUi,
-        reloadAfterReconnect,
-        OFFLINE_ACTIONS,
-      } = await import("/offline-client.js");
+        reloadAfterReconnect = async () => {},
+        OFFLINE_ACTIONS = [],
+      } = (await optional(() => import("/offline-client.js"), null)) || {};
       const registrationPromise =
         "serviceWorker" in navigator
           ? navigator.serviceWorker.register("/sw.js").catch(() => null)
           : Promise.resolve(null);
-      await registrationPromise;
-      const offline = await new AtelierOfflineClient().init();
-      const alarms = await new AtelierAlarmClient().init();
+      await optional(() => registrationPromise, null);
+      const offline = await optional(() => new AtelierOfflineClient().init(), bareOffline);
+      const alarms = await optional(() => new AtelierAlarmClient().init(), bareAlarms);
       const card = document.querySelector("mealie-atelier-card");
       card.setConfig({
         mode: "dashboard",
@@ -264,7 +275,7 @@
           return result;
         },
       };
-      attachOfflineUi(card, offline, alarms);
+      if (offline !== bareOffline && alarms !== bareAlarms) attachOfflineUi(card, offline, alarms);
       // Native card and companion use the same timer implementation. No second click-handler
       // intercepts or duplicates the card's alarm creation/cancellation requests.
       window.addEventListener("online", () => {

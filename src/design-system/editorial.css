@@ -1473,6 +1473,9 @@
   color: var(--at-sub);
   margin-top: 15px;
 }
+.atelier .nutri-hint {
+  margin-top: 0;
+}
 .atelier .nutri-provenance {
   font-size: 11px;
   line-height: 1.9;

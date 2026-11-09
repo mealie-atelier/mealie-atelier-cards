@@ -14,6 +14,19 @@ export function inlineScriptHashes(html) {
 }
 
 /**
+ * Puts the home screen icon into the page itself. iOS fetches the icon without the session of the
+ * page, so behind a sign-in proxy or Basic auth a linked icon arrives as a redirect or a 401 and
+ * the home screen shows no icon.
+ */
+export function inlineTouchIcon(html, png) {
+  const uri = `data:image/png;base64,${Buffer.from(png).toString("base64")}`;
+  return html.replace(
+    /(<link\s+rel="apple-touch-icon"[^>]*\shref=")[^"]*"/,
+    (_, head) => `${head}${uri}"`,
+  );
+}
+
+/**
  * Same-origin only. Recipe photos and step images come through /api/image and /api/recipe-asset,
  * so img-src needs no remote host. The print popup is an about:blank document that inherits this
  * policy and uses one inline onclick handler, which is allowed by hash instead of 'unsafe-inline'.

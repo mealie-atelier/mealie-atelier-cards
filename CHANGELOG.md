@@ -13,6 +13,11 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Week proposal: spacing is even and every day shows the recipe photo.
 - Week view: a hovered day card keeps its top border.
 - Buttons and cards no longer twitch when the pointer rests on their edge.
+- Web app: the home screen icon also appears behind a sign-in proxy or Basic auth, because the page carries it itself.
+- Web app: a failing or hanging offline queue, alarm check or service worker no longer stops the app from starting, and it never asks for Home Assistant.
+- Badges with an icon are centered, and the Kochinspo photo keeps its height between ideas.
+- Nutrition: German ingredients find USDA foods, generic foods come first, and household amounts get a marked gram estimate instead of being taken as grams.
+- Kochbuch: your Mealie cookbooks are listed, and the 120 recipe limit is gone. The Rezepte view can filter by cookbook.
 
 ### Changed
 

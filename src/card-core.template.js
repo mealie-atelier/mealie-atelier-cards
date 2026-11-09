@@ -560,7 +560,7 @@ class MealieAtelierCard extends HTMLElement {
   }
   /** True inside the standalone web app, whose shell hands the card a hass shim with this flag. */
   get _isWebApp() {
-    return this._hass?.atelierOfflineHost === true;
+    return this._hass?.atelierOfflineHost === true || this.hasAttribute?.("data-web-app") === true;
   }
   /** Notice for a reader: the grant lives in the HA options or in the web app's account role. */
   get _noWriteGrantText() {
@@ -667,7 +667,7 @@ class MealieAtelierCard extends HTMLElement {
       throw new Error(this.t("uiThisFeatureRequiresMealieAtelierBridge"));
     }
     if (!this._hass || typeof this._hass.callWS !== "function")
-      throw new Error(this.t("uiHomeAssistantNotReady"));
+      throw new Error(this.t(this._isWebApp ? "uiWebAppNotReady" : "uiHomeAssistantNotReady"));
     // Status covers every Bridge entry, so it never carries an entry_id.
     const entry_id = type === "status" ? undefined : this._config.entry_id || undefined;
     return this._hass.callWS({
@@ -1312,7 +1312,7 @@ class MealieAtelierCard extends HTMLElement {
       const preview = await this._ws("nutrition_prepare", { slug: this._detail.slug });
       this._nutrition = {
         preview,
-        rows: preview.ingredients.map((row) => ({ ...row, selected: null })),
+        rows: preview.ingredients.map((row) => ({ ...prepareNutritionRow(row), selected: null })),
         choices: [],
         active: -1,
         report: null,
@@ -2517,7 +2517,7 @@ class MealieAtelierCard extends HTMLElement {
       n.active = i;
       this._render();
       try {
-        n.choices = await this._ws("nutrition_search", { query });
+        n.choices = sortFoods(await this._ws("nutrition_search", { query }), query);
       } catch (error) {
         n.choices = [];
         n.notice = this._nutritionErrorText(error);
@@ -2755,7 +2755,8 @@ class MealieAtelierCard extends HTMLElement {
       const page = Math.max(1, Number(v) || 1);
       if (page === this._page) return;
       this._page = page;
-      await this._searchRecipes();
+      if (this._bookFilterList()) this._render();
+      else await this._searchRecipes();
       return;
     }
     if (action === "week-prev" || action === "week-next" || action === "week-today") {
@@ -2866,6 +2867,9 @@ class MealieAtelierCard extends HTMLElement {
     if (el?.hasAttribute("data-nutri-grams") && this._nutrition) {
       const i = Number(el.dataset.nutriGrams);
       this._nutrition.rows[i].grams = el.value === "" ? null : Number(el.value);
+      this._nutrition.rows[i].estimate = null;
+      const hint = this.shadowRoot.querySelector(`[data-nutri-hint="${i}"]`);
+      if (hint) hint.hidden = true;
       this._nutrition.report = null;
       return;
     }
@@ -2914,6 +2918,15 @@ class MealieAtelierCard extends HTMLElement {
       const n = Number(el.dataset.index);
       if (el.checked) this._checkedIngredients.add(n);
       else this._checkedIngredients.delete(n);
+      return;
+    }
+    if (type === "recipe-book") {
+      this._cookbookFilter = el.value;
+      this._page = 1;
+      // Filtering must cover every recipe, not the loaded page, so the full catalog comes first.
+      (el.value && !this._fullCatalog?.length ? this._studioCatalog() : Promise.resolve()).then(
+        () => this._render(),
+      );
       return;
     }
     if (type === "shopping-list") {

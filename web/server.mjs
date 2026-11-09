@@ -48,6 +48,7 @@ import {
   isPrivateAddress,
   clientAddress,
   inlineScriptHashes,
+  inlineTouchIcon,
   packageVersion,
   renderServiceWorker,
   securityHeaders,
@@ -1490,6 +1491,11 @@ const server = createServer(async (req, res) => {
       let data = await readFile(join(ROOT, "public", filename));
       const headers = { "Cache-Control": "private, max-age=3600" };
       if (filename === "sw.js") data = renderServiceWorker(data.toString("utf8"), VERSION);
+      if (filename === "index.html")
+        data = inlineTouchIcon(
+          data.toString("utf8"),
+          await readFile(join(ROOT, "public", "apple-touch-icon.png")),
+        );
       if (filename === "manifest.webmanifest") {
         data = localizedManifest(data.toString("utf8"), req);
         headers.Vary = "Accept-Language, Cookie";

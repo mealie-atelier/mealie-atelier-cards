@@ -842,6 +842,22 @@ Object.assign(MealieAtelierCard.prototype, {
      }</section></div>`,
     );
   },
+  /** Every supported Mealie cookbook as a toggle; unsupported rules are dropped by supportedCookbooks. */
+  _studioBookShelf() {
+    if (!this._studioCookbooks) this._studioLoadCookbooks();
+    const books = this._studioCookbooks || [],
+      picked = this._bookPicked || new Set(),
+      catalog = this._fullCatalog || [];
+    if (!books.length) return "";
+    return `<div class="studio-book-shelf"><h3 class="studio-book-shelf-title">${this.t("cookbookShelf")}</h3><div class="studio-book-shelf-list" role="group" aria-label="${esc(this.t("cookbookShelf"))}">${books
+      .map((book) => {
+        const count = catalog.length
+          ? catalog.filter((r) => AtelierStudio.matchesCookbook(r, book)).length
+          : null;
+        return `<button class="studio-book-pick" type="button" data-action="studio-book-pick" data-value="${esc(book.slug)}" aria-pressed="${picked.has(book.slug)}"><span class="studio-book-pick-name">${esc(book.name)}</span>${count == null ? "" : `<span class="studio-book-pick-count">${esc(this.tp("cookbookRecipeCount", count))}</span>`}</button>`;
+      })
+      .join("")}</div></div>`;
+  },
   _studioCookbook() {
     const candidates = this._fullCatalog || asArray(this._data.recipes?.items),
       selected = this._bookSelected || new Set();
@@ -851,9 +867,9 @@ Object.assign(MealieAtelierCard.prototype, {
       `
       <div class="studio-grid studio-grid-main ds-grid ds-grid--split">${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookSelectKicker")}</span><h2>${this.t("cookbookCollection")}</h2></div>
       <div class="text-actions studio-book-actions"><button class="text-action" type="button" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="text-action" type="button" data-action="studio-book-clear">${this.t("cookbookClear")}</button>${this._fullCatalog?.length ? "" : `<button class="text-action" type="button" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button>`}</div>
+      ${this._studioBookShelf()}
       <div class="studio-book-list">${
         candidates
-          .slice(0, 120)
           .map(
             (r) =>
               `<label class="studio-book-row"><input type="checkbox" data-book="${esc(r.slug)}" ${selected.has(r.slug) ? "checked" : ""}>${this._photo(r, "studio-book-photo") || '<span class="studio-book-photo studio-book-photo--empty" aria-hidden="true"></span>'}<span>${esc(r.name)}</span></label>`,
@@ -1525,12 +1541,37 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     }
     if (action === "studio-book-all") {
       this._bookSelected = new Set(
-        (this._fullCatalog || asArray(this._data.recipes?.items)).slice(0, 120).map((x) => x.slug),
+        (this._fullCatalog || asArray(this._data.recipes?.items)).map((x) => x.slug),
       );
       this._render();
       return;
     }
+    if (action === "studio-book-pick") {
+      if (!this._fullCatalog?.length) await this._studioCatalog();
+      const book = (this._studioCookbooks || []).find((b) => b.slug === value);
+      if (!book || !this._fullCatalog?.length) return;
+      const picked = this._bookPicked || new Set(),
+        selected = this._bookSelected || new Set(),
+        inBook = (b) =>
+          this._fullCatalog.filter((r) => AtelierStudio.matchesCookbook(r, b)).map((r) => r.slug);
+      if (picked.has(value)) {
+        picked.delete(value);
+        inBook(book).forEach((slug) => selected.delete(slug));
+        // Recipes that another chosen book still contains stay selected.
+        (this._studioCookbooks || [])
+          .filter((b) => picked.has(b.slug))
+          .forEach((b) => inBook(b).forEach((slug) => selected.add(slug)));
+      } else {
+        picked.add(value);
+        inBook(book).forEach((slug) => selected.add(slug));
+      }
+      this._bookPicked = picked;
+      this._bookSelected = selected;
+      this._render();
+      return;
+    }
     if (action === "studio-book-clear") {
+      this._bookPicked = new Set();
       this._bookSelected = new Set();
       this._render();
       return;

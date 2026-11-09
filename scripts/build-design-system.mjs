@@ -116,12 +116,19 @@ const methodDeclarations = componentMethodModules.map(([name, file]) => {
     .slice(exportIndex + exportDeclaration.length)
     .replace(/;\s*$/, "")}`;
 });
+// Pure helper functions shared by the component methods, inlined without their export keywords.
+const nutritionEstimateSource = readFileSync(
+  resolve(folder, "src/components/nutrition-estimate.js"),
+  "utf8",
+)
+  .replace(/^export /gm, "")
+  .trim();
 const methodSlot = "/* ATELIER_COMPONENT_METHODS */";
 if (!text.includes(methodSlot)) throw Error("Missing component method slot");
 text = text.replace(
   methodSlot,
   () =>
-    `${methodDeclarations.join("\n\n")}\n\nObject.assign(MealieAtelierCard.prototype, ${componentMethodModules.map(([name]) => name).join(", ")});`,
+    `${nutritionEstimateSource}\n\n${methodDeclarations.join("\n\n")}\n\nObject.assign(MealieAtelierCard.prototype, ${componentMethodModules.map(([name]) => name).join(", ")});`,
 );
 writeFileSync(destination, text);
 writeFileSync(web, text);

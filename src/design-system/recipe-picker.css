@@ -167,3 +167,62 @@
     animation: none;
   }
 }
+
+/* Cookbook shelf on the Kochbuch page and the cookbook filter in the Rezepte view. */
+.atelier .studio-book-shelf {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-4);
+}
+.atelier .studio-book-shelf-title {
+  margin: 0;
+}
+.atelier .studio-book-shelf-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--ds-space-2);
+}
+.atelier .studio-book-pick {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+  padding: var(--ds-space-3);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  color: var(--ds-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.atelier .studio-book-pick[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--ds-brand) 9%, var(--ds-surface-raised));
+  border-color: var(--ds-brand);
+}
+.atelier .studio-book-pick:focus-visible {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 2px;
+}
+.atelier .studio-book-pick-name {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+}
+.atelier .studio-book-pick-count {
+  flex: none;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+}
+.atelier .recipe-book-filter {
+  min-inline-size: 12rem;
+}
+@container atelier-card (max-width: 520px) {
+  .atelier .studio-book-shelf-list {
+    grid-template-columns: 1fr;
+  }
+  .atelier .recipe-book-filter {
+    inline-size: 100%;
+  }
+}

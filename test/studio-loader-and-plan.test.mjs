@@ -261,3 +261,34 @@ test("every lifted card bridges the gap it leaves under the pointer", () => {
   }
   assert.match(bridge, /inset-block-end: calc\(var\(--hover-lift\) \* -1\)/);
 });
+
+test("icon and label sit on one centre line inside a pill", () => {
+  const block = rule(css, ".atelier .pill:has(> svg)");
+  assert.match(block, /display: inline-flex/);
+  assert.match(block, /align-items: center/);
+});
+
+test("every Kochinspo idea takes the same room on a wide card", () => {
+  assert.match(
+    css,
+    /min-width: 761px\) \{\s*\.atelier \.studio-discover-hero \{\s*min-height: 25rem/,
+  );
+  assert.match(
+    rule(css, ".atelier .studio-discover-hero-copy :is(h2, h3)"),
+    /-webkit-line-clamp: 3/,
+  );
+});
+
+test("a card in the web app shell never asks for Home Assistant, a card in Home Assistant may", async () => {
+  const card = makeCard(loadCards(), { hass: undefined });
+  card._hass = undefined;
+  card.hasAttribute = (name) => name === "data-web-app";
+  assert.equal(card._isWebApp, true);
+  await assert.rejects(card._ws("status"), (error) => {
+    assert.doesNotMatch(error.message, /Home Assistant/);
+    return true;
+  });
+  card.hasAttribute = () => false;
+  assert.equal(card._isWebApp, false);
+  await assert.rejects(card._ws("status"), /Home Assistant/);
+});

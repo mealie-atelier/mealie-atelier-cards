@@ -43,15 +43,40 @@ export const viewMethods = {
     const failedParts = this._failedParts || new Set();
     return `<div class="statline">${this._stat(this._loadFailed === true || failedParts.has("recipes") ? "—" : (total ?? "—"), this.t("count"), "book", "recipes")}${this._stat(failedParts.has("mealplan") ? "—" : scheduled, this.t("nextMeal"), "calendar", "mealplan")}${this._stat(failedParts.has("shopping") ? "—" : open, this.t("openItemsLabel"), "cart", "shopping")}</div>`;
   },
+  /** The chosen cookbook's recipes from the full catalog, or null while the list is unfiltered. */
+  _bookFilterList() {
+    const book = (this._studioCookbooks || []).find((b) => b.slug === this._cookbookFilter);
+    if (!book || !this._fullCatalog?.length) return null;
+    const query = String(this._query || "")
+      .trim()
+      .toLowerCase();
+    return this._fullCatalog.filter(
+      (r) =>
+        AtelierStudio.matchesCookbook(r, book) &&
+        (!query ||
+          String(r.name || "")
+            .toLowerCase()
+            .includes(query)),
+    );
+  },
+  _bookFilterField() {
+    if (!this._studioCookbooks) this._studioLoadCookbooks();
+    const books = this._studioCookbooks || [];
+    if (!books.length) return "";
+    return `<label class="field recipe-book-filter"><span>${esc(this.t("recipeBookFilter"))}</span><select data-input="recipe-book"><option value="">${esc(this.t("recipeBookFilterAll"))}</option>${books.map((b) => `<option value="${esc(b.slug)}" ${b.slug === this._cookbookFilter ? "selected" : ""}>${esc(b.name)}</option>`).join("")}</select></label>`;
+  },
   _recipeTools() {
-    return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._permissions.can_manage && !this._loadFailed && !this._failedParts?.has("recipes") ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
+    return `<div class="recipe-tools"><label class="search">${icon("search", 17)}<input type="search" data-input="search" aria-label="${esc(this.t("search"))}" autocomplete="off" placeholder="${esc(this.t("search"))}" value="${esc(this._query)}"></label>${this._bookFilterField()}${this._permissions.can_manage && !this._loadFailed && !this._failedParts?.has("recipes") ? `<button class="btn tiny" data-action="create-form">${icon("plus", 14)} ${esc(this.t("create"))}</button>` : ""}</div>`;
   },
   _recipes(limit = 24) {
     const recipes = asArray(this._data.recipes?.items);
+    const bookList = limit === 24 ? this._bookFilterList() : null;
     const localPage = this._providerActive === "home_assistant" && limit === 24;
-    const list = localPage
-      ? recipes.slice((this._page - 1) * limit, this._page * limit)
-      : recipes.slice(0, limit);
+    const list = bookList
+      ? bookList.slice((this._page - 1) * limit, this._page * limit)
+      : localPage
+        ? recipes.slice((this._page - 1) * limit, this._page * limit)
+        : recipes.slice(0, limit);
     const ratio =
       { portrait: "4/5", square: "1/1", landscape: "4/3" }[this._design.photo_ratio] || "4/5";
     return `<div class="recipe-grid ${limit < 24 ? "is-featured" : ""}" style="--at-cols:${Math.min(4, Math.max(1, Number(this._design.columns) || 3))};--at-tile-ratio:${ratio}">${list
@@ -69,7 +94,10 @@ export const viewMethods = {
       )}</div>${this._providerActive === "home_assistant" ? `<p class="provider-note" role="status">${this.t("uiUpTo500MatchesThroughHomeAssistantPhotosAndAtelierWriteFeaturesStayDisabledForSecurity")}</p>${this._providerTruncated ? `<p class="provider-note" role="status">${esc(this.t("uiProviderResultsTruncated", { limit: NATIVE_RESULT_LIMIT }))}</p>` : ""}` : ""}${!list.length && !this._loadErrorShown() && (this._loadFailed || this._failedParts?.has("recipes")) ? `<div class="notice load-failed" role="status">${icon("book")} ${esc(this.t("offline"))}</div>` : ""}${!list.length && !this._loadFailed ? `<div class="notice">${icon("book")} ${esc(this._libraryEmpty() ? this.t("uiEmptyLibrary") : this._query ? this.t("uiNoSearchResults", { query: this._query }) : this.t("noRecipes"))}</div>` : ""}`;
   },
   _pagination() {
-    const page = this._data.recipes || {};
+    const bookList = this._bookFilterList();
+    const page = bookList
+      ? { page: this._page, total: bookList.length, per_page: 24 }
+      : this._data.recipes || {};
     const p = Number(page.page || this._page);
     const total = Number(page.total || 0);
     const size = Number(page.per_page || page.perPage || 24);
