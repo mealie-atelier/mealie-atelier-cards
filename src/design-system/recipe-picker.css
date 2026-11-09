@@ -35,17 +35,64 @@
   gap: var(--ds-space-2);
   min-width: 0;
 }
+/* Same anatomy as the select next to it: filled control under a field label, value left, chevron right. */
 .atelier .picker-disclosure {
-  min-height: 44px;
-  border-radius: var(--ds-radius-md);
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: var(--ds-space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 13px;
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-md);
+  background: var(--at-panel);
+  color: var(--at-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: start;
+  cursor: pointer;
 }
+.atelier .picker-disclosure-value {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--at-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The group is a .field inside .editor-card, whose span rules (foundation.css, editorial.css) out-rank the
+   single-class selectors above. These selectors are one step more specific so the value and the option names
+   read like the select next to them: ink colour, 13px, regular weight, no uppercase. */
+.atelier .picker-filter .picker-disclosure .picker-disclosure-value,
+.atelier .picker-filter .picker-options label span {
+  color: var(--at-ink);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.atelier .picker-chevron {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: transform var(--ds-motion-fast) var(--ds-motion-ease);
+}
+.atelier .picker-disclosure[aria-expanded="true"] .picker-chevron {
+  transform: rotate(-135deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .picker-chevron {
+    transition: none;
+  }
+}
+/* No inner scroll: the options grow within the sheet's own scroll so no row is cut off. */
 .atelier .picker-options {
   display: grid;
   gap: var(--ds-space-1);
-  max-height: 180px;
-  overflow: auto;
   padding: var(--ds-space-2);
   border: 1px solid var(--ds-border);
   border-radius: var(--ds-radius-md);
@@ -59,7 +106,13 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
-  min-height: 44px;
+  min-height: 24px;
+  color: var(--at-ink);
+}
+@media (pointer: coarse) {
+  .atelier .picker-options label {
+    min-height: 44px;
+  }
 }
 .atelier .picker-hint {
   color: var(--ds-muted);

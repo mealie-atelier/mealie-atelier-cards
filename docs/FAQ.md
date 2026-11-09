@@ -12,7 +12,7 @@ Remove the cards from your dashboards first (leftover cards show "Configuration 
 
 ## Do I need the Bridge integration?
 
-No, but it unlocks more. The cards can read recipes through Home Assistant's built-in Mealie integration. The optional [Mealie Atelier Bridge](https://github.com/mealie-atelier/mealie-atelier-bridge) is needed for writes (shopping, meal plan, recipe editing) and for recipe photos. It keeps your Mealie API token on the server side, never in a card.
+No, but it unlocks more. The cards can read recipes, the meal plan and the shopping lists through Home Assistant's built-in Mealie integration, and you can tick shopping items on and off there. The optional [Mealie Atelier Bridge](https://github.com/mealie-atelier/mealie-atelier-bridge) is needed for all other writes (adding, editing and deleting shopping items, meal plan changes such as adding, moving and removing entries, recipe editing) and for recipe photos. It keeps your Mealie API token on the server side, never in a card.
 
 ## Does it work without Home Assistant?
 

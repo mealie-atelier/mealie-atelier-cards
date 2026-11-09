@@ -16,7 +16,7 @@ Mealie Atelier uses one GitHub organization and two product repositories. The st
 - The web app in `web/` is a standalone Node service. It keeps Mealie credentials on its server and works without Home Assistant.
 - The demo is generated from fictional bilingual recipes in `demo/data/recipes.json`. It stays static and browser-local; it must never use a household Mealie export or call live Mealie/Home Assistant services.
 - The Bridge owns Home Assistant-side credentials and durable integration state. Cards and Web must not contain secrets or depend on Bridge for standalone operation.
-- Product icon and social-preview artwork use the Week Dial mark; the masters live in the `mealie-atelier/.github` repository and export steps are in `brand/README.md`.
+- Product icon and social-preview artwork use the Week Dial mark; the masters live in the `mealie-atelier/.github` repository and export steps are in `brand/README.md`. The Cards `brand/` folder also carries the same Home Assistant brand images as the Bridge (`icon`, `logo`, `dark_icon`, `dark_logo`, each with `@2x`); keep both copies identical.
 
 ## Release checks
 
@@ -29,7 +29,7 @@ Before each package release, run its documented build, tests, lint and format ch
 
 ## Product principles
 
-Mealie stays the recipe system of record, and credentials never reach browser code. The standalone experience stays useful without Home Assistant. Home Assistant's built-in Mealie integration offers to-do entities and basic meal plan actions, but the cards only use its read actions (`get_recipes`, `get_recipe`); the Bridge adds authenticated images and explicit, permission-checked write operations. Privacy, accessibility, responsive behavior and safe failure states are part of the product, and German and English stay equally usable. Recipe suggestions are informational and are not medical or allergen-safety advice. This project is an unofficial companion and is not endorsed by Mealie or Home Assistant.
+Mealie stays the recipe system of record, and credentials never reach browser code. The standalone experience stays useful without Home Assistant. Home Assistant's built-in Mealie integration offers to-do entities and basic meal plan actions, but the cards use its read actions (`get_recipes`, `get_recipe`, `get_mealplan`), read the Mealie to-do lists, and only tick shopping items; the Bridge adds authenticated images and explicit, permission-checked write operations. Privacy, accessibility, responsive behavior and safe failure states are part of the product, and German and English stay equally usable. Recipe suggestions are informational and are not medical or allergen-safety advice. This project is an unofficial companion and is not endorsed by Mealie or Home Assistant.
 
 Support is optional. The in-app Ko-fi link is user-initiated; there are no timed prompts or feature gates.
 

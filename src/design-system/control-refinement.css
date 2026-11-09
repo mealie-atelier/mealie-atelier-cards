@@ -620,7 +620,7 @@
     padding: 3px;
   }
   .atelier .modal.large:has(.cook-layout) .cook-timer-dial time {
-    font-size: 10px;
+    font-size: 11px;
   }
   .atelier .modal.large:has(.cook-layout) .cook-timer-card .icon-btn {
     min-inline-size: 36px;
@@ -845,6 +845,17 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0 var(--ds-space-5);
+}
+/* Narrow cards lay the actions out as two even columns; a lone last action spans the row instead of dangling. */
+@container atelier-card (max-width: 560px) {
+  .atelier .text-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--ds-space-5);
+  }
+  .atelier .text-actions > .text-action:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 .atelier .text-action {
   appearance: none;

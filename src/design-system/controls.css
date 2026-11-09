@@ -82,6 +82,17 @@
   transform: none;
   opacity: 1;
 }
+/* Touch screens get a 44px hit area around the 22px box without changing its look. */
+@media (pointer: coarse) {
+  .atelier input[type="checkbox"] {
+    position: relative;
+  }
+  .atelier input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    inset: calc((var(--ds-check-size) - var(--ds-check-target)) / 2);
+  }
+}
 .atelier input[type="radio"] {
   border-radius: 50%;
 }

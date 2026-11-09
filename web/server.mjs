@@ -52,6 +52,7 @@ import {
   staticCacheControl,
   packageVersion,
   renderServiceWorker,
+  openerPolicyHeaders,
   securityHeaders,
 } from "./security.mjs";
 import { createAccessVerifier, parseAccessConfig } from "./access-jwt.mjs";
@@ -271,6 +272,7 @@ function reply(res, status, body, contentType = "application/json; charset=utf-8
     "Cache-Control": "no-store",
     "X-Frame-Options": "DENY",
     ...SECURITY_HEADERS,
+    ...openerPolicyHeaders(res.req?.headers?.["x-forwarded-proto"]),
     ...headers,
   });
   // HEAD gets the status and headers of the GET answer, never a body.

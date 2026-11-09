@@ -42,6 +42,9 @@
   display: flex;
 }
 .atelier .atelier-credit-footer {
+  flex-wrap: wrap;
+  column-gap: var(--ds-space-3);
+  align-items: center;
   justify-content: center;
   padding: var(--ds-space-4) var(--ds-space-2) var(--ds-space-1);
   color: var(--ds-muted);
@@ -392,6 +395,12 @@
   }
   .atelier .sidebar-footer {
     display: none;
+  }
+}
+/* The sidebar footer is hidden once the nav collapses (920px), so the credit moves into the page from there. */
+@container atelier-card (max-width: 920px) {
+  .atelier .main > .atelier-credit-footer {
+    display: flex;
   }
 }
 @container atelier-card (max-width: 430px) {

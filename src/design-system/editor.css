@@ -5,6 +5,9 @@
   --ed-surface: var(--card-background-color, #1b2722);
   --ed-border: var(--divider-color, #74847a65);
   --ed-accent: var(--primary-color, #9dcbb2);
+  /* Filled controls: white needs a darker fill than the theme's bright primary. */
+  --ed-accent-fill: color-mix(in srgb, var(--ed-accent) 74%, #000);
+  --ed-on-accent: var(--text-primary-color, #fff);
   display: block;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: var(--ed-text);
@@ -120,7 +123,7 @@ input[type="checkbox"]::before {
   content: "";
   width: 11px;
   height: 7px;
-  border: solid #13291d;
+  border: solid var(--ed-on-accent);
   border-width: 0 0 2.5px 2.5px;
   transform: translateY(-1px) rotate(-45deg) scale(0);
   opacity: 0;
@@ -129,8 +132,8 @@ input[type="checkbox"]::before {
     transform var(--ds-motion-fast) var(--ds-motion-ease);
 }
 input[type="checkbox"]:checked {
-  background: var(--ed-accent);
-  border-color: var(--ed-accent);
+  background: var(--ed-accent-fill);
+  border-color: var(--ed-accent-fill);
 }
 input[type="checkbox"]:checked::before {
   transform: translateY(-1px) rotate(-45deg) scale(1);
@@ -246,7 +249,7 @@ input[type="checkbox"]:disabled {
   gap: 22px;
 }
 .setup-brand {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.16em;
   color: var(--ed-muted);
@@ -354,12 +357,12 @@ input[type="checkbox"]:disabled {
 }
 .setup-progress li.current > span,
 .setup-progress li.complete > span {
-  border-color: var(--ed-accent);
-  background: var(--ed-accent);
-  color: #13251b;
+  border-color: var(--ed-accent-fill);
+  background: var(--ed-accent-fill);
+  color: var(--ed-on-accent);
 }
 .setup-progress li.complete:before {
-  background: var(--ed-accent);
+  background: var(--ed-accent-fill);
 }
 .setup-panel {
   display: grid;
@@ -374,7 +377,7 @@ input[type="checkbox"]:disabled {
 .setup-kicker {
   margin: 0 0 1px;
   color: var(--ed-accent);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.13em;
 }
@@ -412,7 +415,7 @@ input[type="checkbox"]:disabled {
   border: 2px solid color-mix(in srgb, var(--ed-accent) 28%, transparent);
   border-top-color: var(--ed-accent);
   border-radius: 50%;
-  animation: setup-spin var(--ds-motion-slow) var(--ds-motion-linear) infinite;
+  animation: setup-spin var(--ds-motion-loading) var(--ds-motion-linear) infinite;
 }
 .setup-callout {
   display: grid;
@@ -522,7 +525,7 @@ input[type="checkbox"]:disabled {
   border: 1px solid color-mix(in srgb, var(--ed-accent) 42%, var(--ed-border));
   border-radius: var(--ds-radius-pill, 999px);
   color: var(--ed-accent);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
 }
@@ -583,7 +586,7 @@ input[type="checkbox"]:disabled {
 }
 .setup-live-preview small {
   color: var(--ed-accent);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -715,7 +718,7 @@ input[type="checkbox"]:disabled {
 .setup-preset small {
   padding: 0 4px;
   color: var(--ed-muted);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.45;
 }
 .setup-reassure {
@@ -756,9 +759,9 @@ input[type="checkbox"]:disabled {
     border-color var(--ds-motion-fast) var(--ds-motion-ease);
 }
 .editor-primary {
-  border-color: var(--ed-accent);
-  background: var(--ed-accent);
-  color: #14251b;
+  border-color: var(--ed-accent-fill);
+  background: var(--ed-accent-fill);
+  color: var(--ed-on-accent);
 }
 .editor-primary:focus-visible,
 .editor-secondary:focus-visible {
@@ -804,8 +807,8 @@ input[type="checkbox"]:disabled {
   width: 27px;
   height: 27px;
   border-radius: 50%;
-  background: var(--ed-accent);
-  color: #13251b;
+  background: var(--ed-accent-fill);
+  color: var(--ed-on-accent);
   font-weight: 800;
 }
 .setup-success > div {
@@ -878,7 +881,7 @@ input[type="checkbox"]:disabled {
     right: -14px;
   }
   .setup-progress li small {
-    font-size: 9px;
+    font-size: 11px;
     white-space: normal;
   }
   .setup-panel {
@@ -925,7 +928,7 @@ input[type="checkbox"]:disabled {
     padding: 7px 7px 10px;
   }
   .setup-preset small {
-    font-size: 9px;
+    font-size: 11px;
   }
   .editor-primary,
   .editor-secondary {
@@ -949,7 +952,7 @@ input[type="checkbox"]:disabled {
     text-align: right;
   }
   .setup-progress li small {
-    font-size: 8px;
+    font-size: 11px;
   }
   .setup-live-preview {
     grid-template-columns: 70px minmax(0, 1fr);

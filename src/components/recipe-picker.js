@@ -359,11 +359,21 @@ export const recipePickerMethods = {
     input?.focus?.({ preventScroll: true });
   },
 
+  /** What the filter control shows: "All", the single selected name or "n selected". */
+  _pickerFilterSummary(s, key) {
+    const picked = key === "category" ? s.filters.categories : s.filters.tags;
+    if (!picked.length) return this.t("pickerAll");
+    if (picked.length > 1) return this.t("pickerSelectedMany", { count: picked.length });
+    const list = key === "category" ? s.meta?.categories : s.meta?.tags;
+    const entry = asArray(list).find((e) => e?.slug === picked[0]);
+    return entry?.name || picked[0];
+  },
   _pickerFilterGroup(s, key, label, entries) {
     const picked = key === "category" ? s.filters.categories : s.filters.tags;
     const panelId = `${s.id}-${key}-panel`;
+    const labelId = `${s.id}-${key}-label`;
     const open = s.panels[key];
-    return `<div class="picker-filter"><button class="btn tiny picker-disclosure" type="button" data-action="picker-toggle" data-value="${key}" aria-expanded="${open}" aria-controls="${panelId}"><span>${esc(label)}</span><span data-picker-count="${key}">${picked.length ? `(${picked.length})` : ""}</span></button>
+    return `<div class="field picker-filter"><span id="${labelId}">${esc(label)}</span><button class="picker-disclosure" type="button" data-action="picker-toggle" data-value="${key}" aria-expanded="${open}" aria-controls="${panelId}" aria-labelledby="${labelId} ${s.id}-${key}-value"><span class="picker-disclosure-value" id="${s.id}-${key}-value" data-picker-count="${key}">${esc(this._pickerFilterSummary(s, key))}</span><span class="picker-chevron" aria-hidden="true"></span></button>
       <div class="picker-options" id="${panelId}" role="group" aria-label="${esc(label)}" ${open ? "" : "hidden"}>${entries.map((e) => `<label><input type="checkbox" data-input="picker-${key}" value="${esc(e.slug)}" ${picked.includes(e.slug) ? "checked" : ""}> <span>${esc(e.name || e.slug)}</span></label>`).join("")}</div></div>`;
   },
   _pickerFiltersMarkup(s) {
@@ -475,7 +485,7 @@ export const recipePickerMethods = {
       } else if (!el.checked && at >= 0) list.splice(at, 1);
       const key = type === "picker-category" ? "category" : "tag";
       const count = this.shadowRoot.querySelector(`[data-picker-count="${key}"]`);
-      if (count) count.textContent = list.length ? `(${list.length})` : "";
+      if (count) count.textContent = this._pickerFilterSummary(s, key);
     } else if (type === "picker-favorites") s.filters.favorites = Boolean(el.checked);
     else if (type === "picker-order") s.filters.order = el.value === "recent" ? "recent" : "name";
     else return;

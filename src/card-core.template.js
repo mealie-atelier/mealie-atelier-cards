@@ -1,5 +1,5 @@
 /* Mealie Atelier: zero-dependency web components for Home Assistant (version in VERSION). */
-const VERSION = "0.12.16";
+const VERSION = "0.12.17";
 const MODES = [
   "dashboard",
   "today",
@@ -96,6 +96,7 @@ const ICONS = {
     '<path d="m12 3 1.7 6.3L20 11l-6.3 1.7L12 19l-1.7-6.3L4 11l6.3-1.7ZM19 18l.6 1.4L21 20l-1.4.6L19 22l-.6-1.4L17 20l1.4-.6Z"/>',
   utensils: '<path d="M4 3v7a4 4 0 0 0 8 0V3M8 3v18M19 3c-2 0-3 4-3 9h4V3h-1Zm1 9v9"/>',
   dots: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
   external:
     '<path d="M13 5h6v6M19 5l-9 9"/><path d="M19 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
   edit: '<path d="M12 20h9M4 16l12-12 4 4-12 12H4v-4Z"/>',
@@ -1591,7 +1592,7 @@ class MealieAtelierCard extends HTMLElement {
       ${this._error ? `<div class="notice error is-spaced" role="alert">${icon("bolt", 17)}<span>${esc(this._error)}</span>${this._setupMissing ? `<span class="setup-hint">${esc(this.t("uiSetupMissingHint"))} <a href="/config/integrations">${esc(this.t("uiOpenIntegrations"))}</a></span>` : ""}<button class="btn tiny" data-action="refresh">${esc(this.t(this._setupMissing ? "uiCheckAgain" : "retry"))}</button></div>` : ""}
       ${this._status && this._providerActive !== "home_assistant" && this._noWriteGrant ? `<div class="notice is-spaced" role="status">${icon("leaf", 16)} <strong>${esc(this._noWriteGrantText)}</strong></div>` : this._status && (this._statusEntry || this._providerActive === "home_assistant") && !this._error && !this._setupMissing && !this._permissions.can_write && !this._previewOnly() ? `<div class="notice is-spaced ${this._providerActive === "home_assistant" ? "is-provider-notice" : ""}" role="status">${icon("leaf", 16)} <strong>${esc(this._providerActive === "home_assistant" ? this.t("uiMealieReadOnly") : this.t("readOnly"))}</strong>${this._providerActive === "home_assistant" ? `<span class="provider-copy">${esc(this.t("uiRecipesCookingPhotosAndEditsNeedAtelierBridge"))}</span>` : ` ${esc(this.t("readOnlyHint"))}`}</div>` : ""}
       <div class="view-stage ds-page ${viewChanged ? "is-entering" : themeChanged ? "is-theme-entering" : ""}" data-view="${esc(this._view)}" role="region" aria-label="${esc(this.t(this._view))}">${this._setupMissing ? "" : this._body()}</div>
-      <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}</footer>${webAppSlot("foot")}</main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}${this._toastAction ? ` <button class="toast-action" data-action="toast-action">${esc(this._toastAction.label)}</button>` : ""}</div>` : ""}</div></ha-card>`;
+      <footer class="atelier-credit-footer">${AtelierUI.attribution({ lead: this.t("creditMadeWith"), by: this.t("creditBy") })}<span class="atelier-version">Mealie Atelier ${VERSION}</span></footer>${webAppSlot("foot")}</main></div>${displayedModal}${this._toast ? `<div class="toast${this._toastKind === "error" ? " toast-error" : ""}" role="${this._toastKind === "error" ? "alert" : "status"}" aria-live="${this._toastKind === "error" ? "assertive" : "polite"}">${icon(this._toastKind === "error" ? "bolt" : "check", 15)} ${esc(this._toast)}${this._toastAction ? ` <button class="toast-action" data-action="toast-action">${esc(this._toastAction.label)}</button>` : ""}</div>` : ""}</div></ha-card>`;
     const card = this.shadowRoot.querySelector("ha-card");
     const template = document.createElement("template");
     template.innerHTML = markup;
@@ -2630,7 +2631,9 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     if (action === "refresh") {
+      const started = !this._busy;
       await this._refresh();
+      if (started && !this._error) this._flash(this.t("refreshed"));
       return;
     }
     if (action === "settings") {

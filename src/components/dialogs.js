@@ -106,7 +106,10 @@ export const dialogMethods = {
       const scaledYield =
         discoverTarget && servingBase
           ? `${this._localeNumber(discoverTarget)} ${servingWord}`
-          : baseYield || "—";
+          : baseYield || "";
+      const clockTime = AtelierStudio.formatTime(recipe.totalTime, this._language);
+      // A real serving count keeps the cutlery icon; a pan or loaf text gets the neutral spark.
+      const yieldIcon = servingBase ? "utensils" : "spark";
       const scaleNote =
         discoverTarget && servingBase && discoverTarget !== servingBase
           ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", {
@@ -165,7 +168,7 @@ export const dialogMethods = {
         .join("");
       size = "large";
       content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${inlineMarkdown(recipe.description || "")}</p>
-        <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
+        <div class="recipe-meta">${clockTime ? `<span class="pill">${icon("clock", 12)} ${esc(clockTime)}</span>` : ""}${scaledYield ? `<span class="pill">${icon(yieldIcon, 12)} ${esc(scaledYield)}</span>` : ""}</div>
         <div class="recipe-actions"><div class="toolbar recipe-actions-main"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._permissions.can_write ? `<button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button><button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button>` : ""}</div><div class="text-actions">${this._providerActive === "home_assistant" ? "" : `<button class="text-action" type="button" data-action="nutrition-open">${icon("leaf", 15)} ${esc(this.t("nutrition"))}</button>`}<button class="text-action" type="button" data-action="journal-open">${icon("book", 15)} ${esc(this.t("journal"))}</button><button class="text-action" type="button" data-action="print-recipe">${icon("print", 15)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_manage ? `<button class="text-action" type="button" data-action="edit-form">${icon("edit", 15)} ${esc(this.t("edit"))}</button>` : ""}${(() => {
           const mealieUrl = this._mealieRecipeUrl(recipe.slug);
           return mealieUrl

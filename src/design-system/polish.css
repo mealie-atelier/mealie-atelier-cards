@@ -445,8 +445,9 @@
   min-height: 44px;
   font-size: 13px;
   line-height: 1.4;
-  gap: 12px;
-  padding: 12px 13px;
+  gap: 10px;
+  padding: 12px 11px;
+  white-space: nowrap;
 }
 .atelier .nav button.active {
   box-shadow: inset 2px 0 0 var(--ds-brand);
@@ -458,7 +459,7 @@
   padding-bottom: 35px;
 }
 .atelier .identity span {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.16em;
 }
 .atelier .nav-label {
@@ -566,7 +567,7 @@
   gap: 5px;
 }
 .atelier .tile-body small {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.13em;
   line-height: 1.4;
   margin: 0;
@@ -1059,7 +1060,7 @@
     font-size: 14px;
   }
   .atelier .eyebrow {
-    font-size: 10.5px;
+    font-size: 11px;
     letter-spacing: 0.12em;
   }
   .atelier .hero {
@@ -1121,7 +1122,7 @@
     font-size: clamp(17px, 4.8cqi, 21px);
   }
   .atelier .tile-body small {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.08em;
   }
   .atelier .tile-meta {
@@ -2765,6 +2766,12 @@
   content: "";
   position: absolute;
   inset: -8px;
+}
+/* Touch screens get the full 44px target (24px button plus 10px on each side). */
+@media (pointer: coarse) {
+  .atelier .day-meal-remove::after {
+    inset: calc((24px - var(--ds-check-target)) / 2);
+  }
 }
 .atelier .day-entry:hover .day-meal-remove,
 .atelier .day-entry:focus-within .day-meal-remove {

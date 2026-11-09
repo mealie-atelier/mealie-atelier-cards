@@ -81,7 +81,7 @@
     font-size: 18px;
   }
   .atelier .stat span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .atelier .recipe-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -138,6 +138,18 @@
   }
   .atelier .modal-hero {
     height: 175px;
+  }
+}
+/* Wide phones (430 to 480 px) shift the plate away from the copy like 390 does. */
+@container atelier-card (min-width: 421px) and (max-width: 480px) {
+  .atelier .hero .hero-copy {
+    max-width: 95%;
+    position: relative;
+    z-index: 2;
+  }
+  .atelier .hero .hero-art {
+    right: -95px;
+    opacity: 0.2;
   }
 }
 @container atelier-card (max-width: 760px) {
@@ -215,7 +227,7 @@
   }
   .atelier .nav button {
     padding: 9px 8px;
-    font-size: 10px;
+    font-size: 11px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -275,7 +287,7 @@
     max-width: 310px;
   }
   .atelier .hero p {
-    font-size: 10px;
+    font-size: 11px;
   }
   .atelier .hero .btn.primary {
     margin-top: 3px;
@@ -296,7 +308,7 @@
     display: none;
   }
   .atelier .stat span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .atelier .heading h2 {
     font-size: 30px;
@@ -342,7 +354,7 @@
     min-height: 48px;
   }
   .atelier .tile-body small {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1.25px;
   }
   .atelier .week-grid {
@@ -421,7 +433,7 @@
 @container atelier-card (max-width: 390px) {
   .atelier .nav button {
     min-width: 52px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .atelier .main {
     padding: 20px 15px 45px;
@@ -668,7 +680,7 @@
     font-size: 25px;
   }
   .atelier .command-footer {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 @container atelier-card (max-width: 760px) {

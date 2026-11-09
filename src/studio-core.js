@@ -83,6 +83,8 @@ const AtelierStudio = (() => {
       .replace(/\s+/g, " ");
     return /^\d+(?:[.,]\d+)?$/.test(text) ? `${text} min` : text;
   }
+  /** Label text shown in CSS uppercase: ß would become "SS", so it maps to the capital ẞ (display only). */
+  const capsLabel = (text) => String(text ?? "").replaceAll("ß", "ẞ");
   function recipeServings(recipe) {
     const known = Number(recipe?.recipeServings);
     if (Number.isFinite(known) && known > 0) return known;
@@ -1744,7 +1746,10 @@ const AtelierStudio = (() => {
       problems.push({
         severity: "warning",
         field: "servings",
-        key: "studioAuditServingsInvalid",
+        // A yield text without a usable serving count gets its own message; an absent or odd one keeps the original.
+        key: clean(recipe?.recipeYield || "")
+          ? "studioAuditServingsNoNumber"
+          : "studioAuditServingsInvalid",
       });
     if (!recipe.totalTime && !recipe.prepTime)
       problems.push({ severity: "info", field: "time", key: "studioAuditTimeMissing" });
@@ -1828,6 +1833,7 @@ const AtelierStudio = (() => {
     pantryCoverage,
     durationMinutes,
     formatTime,
+    capsLabel,
     recipeServings,
     recommendation,
     suggest,

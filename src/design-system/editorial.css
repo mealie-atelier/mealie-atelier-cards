@@ -63,13 +63,13 @@
   font-size: 12px;
 }
 .atelier .identity span {
-  font-size: 8px;
+  font-size: 11px;
   letter-spacing: 2.25px;
   white-space: nowrap;
   margin-top: 7px;
 }
 .atelier .nav-label {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 2.4px;
   padding-left: 13px;
   margin-bottom: 7px;
@@ -91,7 +91,7 @@
   display: none;
 }
 .atelier .sidebar-footer {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.2px;
 }
 .atelier .main {
@@ -114,7 +114,7 @@
   background: transparent;
 }
 .atelier .eyebrow {
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 2.65px;
   font-weight: 760;
 }
@@ -256,7 +256,7 @@
   font-weight: 400;
 }
 .atelier .stat span {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.3px;
 }
 .atelier .section {
@@ -367,7 +367,7 @@
   left: 15px;
   top: 14px;
   color: #fffce9;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.7px;
   font-weight: 700;
   padding: 3px 9px;
@@ -383,7 +383,7 @@
 }
 .atelier .tile-body small {
   color: var(--ds-brand-text);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 2.15px;
   font-weight: 730;
   margin-bottom: 9px;
@@ -439,7 +439,7 @@
 }
 .atelier .day-head span {
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1px;
 }
 .atelier .day-head b {
@@ -541,7 +541,7 @@
 .atelier .pill {
   border-radius: 999px;
   padding: 8px 13px;
-  font-size: 10px;
+  font-size: 11px;
 }
 .atelier .detail-cols {
   grid-template-columns: 0.82fr 1.2fr;
@@ -637,7 +637,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 9px;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 2px;
   color: var(--ds-brand-text);
   text-transform: uppercase;
@@ -730,7 +730,7 @@
   line-height: 1.75;
 }
 .atelier .editor-card .field span {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.1px;
   font-weight: 780;
   text-transform: uppercase;
@@ -819,7 +819,7 @@
   }
   .atelier .nav button {
     padding: 9px 8px;
-    font-size: 10px;
+    font-size: 11px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -879,7 +879,7 @@
     max-width: 310px;
   }
   .atelier .hero p {
-    font-size: 10px;
+    font-size: 11px;
   }
   .atelier .hero .btn.primary {
     margin-top: 3px;
@@ -900,7 +900,7 @@
     display: none;
   }
   .atelier .stat span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .atelier .heading h2 {
     font-size: 30px;
@@ -946,7 +946,7 @@
     min-height: 48px;
   }
   .atelier .tile-body small {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 1.25px;
   }
   .atelier .week-grid {
@@ -1025,7 +1025,7 @@
 @media (max-width: 390px) {
   .atelier .nav button {
     min-width: 52px;
-    font-size: 9px;
+    font-size: 11px;
   }
   .atelier .main {
     padding: 20px 15px 45px;
@@ -1177,7 +1177,7 @@
   color: var(--at-ink);
 }
 .atelier .cook-step-section {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--ds-brand-text);
@@ -1348,7 +1348,7 @@
   border: 1px solid var(--at-line);
   color: var(--at-sub);
   padding: 5px 9px;
-  font-size: 10px;
+  font-size: 11px;
   border-radius: 100px;
   white-space: nowrap;
 }
@@ -1369,7 +1369,7 @@
   min-width: 0;
 }
 .atelier .nutri-row-fields label span {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--at-sub);
   font-weight: 650;
   letter-spacing: 0.2px;
@@ -1454,7 +1454,7 @@
 }
 .atelier .nutri-stat span {
   color: var(--at-sub);
-  font-size: 10px;
+  font-size: 11px;
 }
 .atelier .nutri-stat strong {
   color: var(--at-ink);

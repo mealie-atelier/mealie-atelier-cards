@@ -117,11 +117,13 @@ Object.assign(MealieAtelierCard.prototype, {
           this._render();
         // A step moved by another device opens at the top, like the local buttons.
         if (stepMoved) this._resetCookScroll();
+        return true;
       }
     } catch (error) {
       this._studioError = error?.message || this.t("studioConnectionFailed");
       if (!silent) this._render();
     }
+    return false;
   },
   /**
    * The Bridge reports a person who still has tasks as a bare `invalid_request` with an English
@@ -551,7 +553,7 @@ Object.assign(MealieAtelierCard.prototype, {
       .join("");
     return `<section class="studio-panel studio-diagnostics" aria-labelledby="atelier-system-title">
       ${AtelierUI.sectionHeading({ id: "atelier-system-title", kicker: this.t("studioDiagnosticsKicker"), title: this.t(records.length && records.every((r) => r.ok) ? "studioDiagnosticsPassed" : "studioDiagnosticsTitle"), description: this.t("studioDiagnosticsDescription") })}
-      <div class="studio-actions"><button class="btn primary" data-action="studio-check-health" ${this._diagnosticsBusy ? "disabled" : ""}>${icon("refresh", 14)} ${this._diagnosticsBusy ? this.t("studioDiagnosticsRunning") : this.t("studioDiagnosticsCheck")}</button><button class="btn" data-action="studio-export">${icon("book", 14)} ${this.t("studioDiagnosticsExport")}</button></div>
+      <div class="studio-actions"><button class="btn primary" data-action="studio-check-health" ${this._diagnosticsBusy ? "disabled" : ""}>${icon("refresh", 14)} ${this._diagnosticsBusy ? this.t("studioDiagnosticsRunning") : this.t("studioDiagnosticsCheck")}</button><button class="btn" data-action="studio-export">${icon("download", 14)} ${this.t("studioDiagnosticsExport")}</button></div>
       <div class="studio-diagnostic-grid" role="status" aria-live="polite">${display || `<p class="studio-muted">${esc(this.t("studioDiagnosticsEmpty"))}</p>`}</div>
       <p class="studio-muted studio-diagnostic-footer">Status: ${p.can_manage ? this.t("studioDiagnosticsAdmin") : p.can_write ? this.t("studioDiagnosticsEdit") : this.t("studioDiagnosticsReadOnly")} · ${this.t("version")} ${esc(this._status?.version || "—")} · ${this.t("studioDiagnosticsBackup")}</p>
     </section>`;
@@ -832,7 +834,7 @@ Object.assign(MealieAtelierCard.prototype, {
      ${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("familySession")}</span><h2>${esc(session?.name || this.t("familyNoSession"))}</h2></div>
      ${
        session
-         ? `<p class="studio-step-badge">${this.t("familyStep", { step: sharedStep + 1, total: stepTotal || "?", date: atDate(session.started, this._locale) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next" ${stepTotal && sharedStep >= stepTotal - 1 ? "disabled" : ""}>${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
+         ? `<p class="studio-step-badge">${this.t("familyStep", { step: sharedStep + 1, total: stepTotal || "?", date: esc(atDate(session.started, this._locale)) })}</p><div class="studio-actions">${!kid && this._permissions.can_write ? `<button class="btn" data-action="studio-session-prev" ${session.step <= 0 ? "disabled" : ""}>${this.t("familyBack")}</button><button class="btn primary" data-action="studio-session-next" ${stepTotal && sharedStep >= stepTotal - 1 ? "disabled" : ""}>${this.t("familyNext")}</button><button class="btn" data-action="studio-session-end">${this.t("familyEnd")}</button>` : ""}<button class="btn" data-action="studio-session-open">${this.t("familyOpenCook")}</button></div>
      <h3>${this.t("familyTimers")}</h3><div>${session.timers.map((x) => `<div class="studio-timer-row${x.deadline <= Date.now() ? " is-done" : ""}"><span>${esc(x.name)}</span><b data-shared-timer="${esc(x.id)}">${sharedTimerText(x)}</b><small class="cook-timer-status" data-shared-timer-status>${x.deadline <= Date.now() ? this.t("uiREADY") : this.t("uiRUNNING")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-timer-remove" data-id="${esc(x.id)}" aria-label="${this.t("studioRemove")}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTimers")}</p>`}</div>
      ${!kid && this._permissions.can_write ? `<form class="studio-form studio-formline" data-form="studio-timer"><label>${this.t("familyTimerName")}<input name="name" value="${this.t("studioOven")}" maxlength="70" required></label><label>${this.t("familyMinutes")}<input type="number" name="minutes" value="10" min="1" max="240" required></label><button class="btn" type="submit">${this.t("familySetTimer")}</button></form>` : ""}
      <h3>${this.t("familyTasks")}</h3>${session.tasks.map((t) => `<div class="studio-task"><button type="button" class="studio-check ${t.done ? "done" : ""}" role="checkbox" aria-checked="${t.done ? "true" : "false"}" aria-label="${esc(this.t(t.done ? "familyMarkOpen" : "familyMarkDone", { task: t.text }))}" data-action="studio-task-done" data-id="${esc(t.id)}" ${this._permissions.can_write ? "" : 'disabled aria-disabled="true"'}>${icon("check", 16)}</button><span>${esc(t.text)}</span><small>${esc(people.find((x) => x.id === t.memberId)?.name || "")}</small>${!kid && this._permissions.can_write ? `<button class="icon-btn" data-action="studio-task-remove" data-id="${esc(t.id)}" aria-label="${esc(this.t("studioRemove"))}">${icon("close", 14)}</button>` : ""}</div>`).join("") || `<p class="studio-muted">${this.t("familyNoTasks")}</p>`}
@@ -866,7 +868,7 @@ Object.assign(MealieAtelierCard.prototype, {
       this.t("cookbookLead"),
       `
       <div class="studio-grid studio-grid-main ds-grid ds-grid--split">${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookSelectKicker")}</span><h2>${this.t("cookbookCollection")}</h2></div>
-      <div class="text-actions studio-book-actions"><button class="text-action" type="button" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="text-action" type="button" data-action="studio-book-clear">${this.t("cookbookClear")}</button>${this._fullCatalog?.length ? "" : `<button class="text-action" type="button" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button>`}</div>
+      <div class="text-actions studio-book-actions"><button class="text-action" type="button" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="text-action" type="button" data-action="studio-book-clear" ${selected.size || this._bookPicked?.size ? "" : "disabled"}>${this.t("cookbookClear")}</button>${this._fullCatalog?.length ? "" : `<button class="text-action" type="button" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button>`}</div>
       ${this._studioBookShelf()}
       <div class="studio-book-list">${
         candidates
@@ -1438,7 +1440,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       return;
     }
     if (action === "studio-sync") {
-      await this._studioRefresh();
+      if (await this._studioRefresh()) this._flash(this.t("studioSynced"));
       return;
     }
     if (action === "studio-kid-toggle") {
@@ -1588,6 +1590,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       return;
     }
     if (action === "studio-book-clear") {
+      if (!this._bookSelected?.size && !this._bookPicked?.size) return;
       this._bookPicked = new Set();
       this._bookSelected = new Set();
       this._render();
@@ -2053,6 +2056,8 @@ MealieAtelierCard.prototype._handleInput = function (event) {
       count.innerHTML = this._bookCountHtml(this._bookSelected.size);
     const submit = this.shadowRoot.querySelector('[data-form="studio-book"] button[type="submit"]');
     if (submit) submit.disabled = !this._bookSelected.size;
+    const clear = this.shadowRoot.querySelector('[data-action="studio-book-clear"]');
+    if (clear) clear.disabled = !this._bookSelected.size && !this._bookPicked?.size;
     return;
   }
   return _atOriginalInput.call(this, event);

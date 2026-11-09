@@ -2,7 +2,7 @@ services:
   mealie-atelier:
     build: .
     restart: unless-stopped
-    env_file: .env # optional settings, see below
+    env_file: .env # required: MEALIE_URL, MEALIE_API_TOKEN and ATELIER_PASSWORD or ATELIER_USERS, see .env.example
     # Smart Shopping Sync to Bring!: connect the account in the app (an administrator signs in once;
     # only tokens land in the atelier_data volume) or set BRING_EMAIL and BRING_PASSWORD in .env.
     # ATELIER_SYNC_LANGUAGE (de or en; unset follows the app language) and the test-only

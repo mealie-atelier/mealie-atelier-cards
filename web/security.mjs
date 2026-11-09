@@ -54,8 +54,17 @@ export function securityHeaders(scriptHashes = []) {
     "Content-Security-Policy": contentSecurityPolicy(scriptHashes),
     "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
     "Referrer-Policy": "no-referrer",
-    "Cross-Origin-Opener-Policy": "same-origin",
   };
+}
+
+/**
+ * Browsers ignore Cross-Origin-Opener-Policy on plain http and print a console error for it, so it
+ * is only sent when the proxy in front says the visitor came over https. A forged header costs
+ * nothing: it can only add this policy to the response of the client that forged it.
+ */
+export function openerPolicyHeaders(forwardedProto = "") {
+  const first = String(forwardedProto).split(",")[0].trim().toLowerCase();
+  return first === "https" ? { "Cross-Origin-Opener-Policy": "same-origin" } : {};
 }
 
 /**

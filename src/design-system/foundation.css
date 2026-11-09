@@ -128,14 +128,14 @@ ha-card {
 }
 .atelier .identity span {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--at-sub);
   letter-spacing: 1.7px;
   margin-top: 4px;
   text-transform: uppercase;
 }
 .atelier .nav-label {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 1.8px;
   color: var(--at-sub);
   padding: 0 15px 10px;
@@ -271,7 +271,7 @@ ha-card {
   color: var(--at-sub);
 }
 .atelier .eyebrow {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 2.2px;
   font-weight: 850;
   color: var(--ds-brand-text);
@@ -596,7 +596,7 @@ ha-card {
   flex: 1;
 }
 .atelier .tile-body small {
-  font-size: 9px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   font-weight: 850;
@@ -610,20 +610,23 @@ ha-card {
   line-height: 1.3;
   min-height: 34px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .atelier .tile-meta {
   display: flex;
   align-items: center;
   gap: 6px;
   color: var(--at-sub);
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 9px;
 }
 .atelier .pill {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 760;
   color: var(--ds-brand-text);
   background: color-mix(in srgb, var(--at-accent) 13%, transparent);
@@ -667,7 +670,7 @@ ha-card {
   gap: 4px;
 }
 .atelier .day-head span {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--at-sub);
   font-weight: 700;
 }
@@ -693,13 +696,13 @@ ha-card {
 }
 .atelier .day-meal small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ds-brand-text);
   margin-bottom: 4px;
 }
 .atelier .day-empty {
   color: var(--at-sub);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.35;
 }
 .atelier .day-add {
@@ -1071,7 +1074,7 @@ ha-card {
 .atelier .today-meal .meal-details small {
   display: block;
   color: var(--at-sub);
-  font-size: 10px;
+  font-size: 11px;
   margin-bottom: 4px;
 }
 .atelier .today-meal .meal-details strong {
@@ -1238,7 +1241,7 @@ ha-card {
     font-size: 18px;
   }
   .atelier .stat span {
-    font-size: 9px;
+    font-size: 11px;
   }
   .atelier .recipe-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

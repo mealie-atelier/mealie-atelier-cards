@@ -5,6 +5,8 @@ import { readFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  openerPolicyHeaders,
+  securityHeaders,
   createAuthThrottle,
   contentSecurityPolicy,
   inlineScriptHashes,
@@ -113,7 +115,15 @@ test("server locks out a client after repeated wrong passwords and sets hardenin
     assert.match(csp, /frame-ancestors 'none'/);
     assert.doesNotMatch(csp, /script-src[^;]*unsafe-inline/);
     assert.match(ok.headers.get("permissions-policy"), /camera=\(\)/);
-    assert.equal(ok.headers.get("cross-origin-opener-policy"), "same-origin");
+    assert.equal(
+      ok.headers.get("cross-origin-opener-policy"),
+      null,
+      "plain http: browsers ignore it",
+    );
+    const viaTunnel = await fetch(url, {
+      headers: { Authorization: basic(PASSWORD), "X-Forwarded-Proto": "https" },
+    });
+    assert.equal(viaTunnel.headers.get("cross-origin-opener-policy"), "same-origin");
     assert.equal(ok.headers.get("referrer-policy"), "no-referrer");
     for (let i = 0; i < 5; i++) {
       const r = await fetch(url, { headers: { Authorization: basic("wrong-password-" + i) } });
@@ -539,4 +549,15 @@ test("isPrivateAddress recognises loopback and private ranges only", () => {
     assert.equal(isPrivateAddress(a), true, a);
   for (const a of ["8.8.8.8", "172.32.0.1", "2001:db8::1", "unknown"])
     assert.equal(isPrivateAddress(a), false, a);
+});
+
+test("the opener policy is only sent to visitors who came over https", () => {
+  assert.deepEqual(openerPolicyHeaders("https"), { "Cross-Origin-Opener-Policy": "same-origin" });
+  assert.deepEqual(openerPolicyHeaders("HTTPS, http"), {
+    "Cross-Origin-Opener-Policy": "same-origin",
+  });
+  assert.deepEqual(openerPolicyHeaders("http"), {});
+  assert.deepEqual(openerPolicyHeaders("http, https"), {});
+  assert.deepEqual(openerPolicyHeaders(undefined), {});
+  assert.equal("Cross-Origin-Opener-Policy" in securityHeaders([]), false);
 });

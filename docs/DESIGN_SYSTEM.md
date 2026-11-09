@@ -1,6 +1,6 @@
 # Mealie Atelier design system
 
-**Binding design and implementation rules for the standalone web app, the Home Assistant cards and the Bridge.** Valid for release 0.12.16 and newer; changes per version are in the [changelog](../CHANGELOG.md). The shorter [control system note](CONTROL_SYSTEM.md) covers the shared controls.
+**Binding design and implementation rules for the standalone web app, the Home Assistant cards and the Bridge.** Valid for release 0.12.17 and newer; changes per version are in the [changelog](../CHANGELOG.md). The shorter [control system note](CONTROL_SYSTEM.md) covers the shared controls.
 
 ## 1. Principles
 
@@ -27,7 +27,7 @@ The visual direction is a calm, photographic kitchen studio: excellent food phot
 - Ask only for credentials required by the selected path. Explain that the Mealie URL must be reachable from the Home Assistant host, where to create an API token, and how to resolve common address/certificate errors. Never request credentials in Lovelace card YAML.
 - Keep optional nutrition/AI and experimental settings out of first-run setup. Explain write permissions before users enable household changes; retain safe, explicit defaults.
 - Keep the first-run card wizard short, skippable, keyboard accessible, localized, and focused on choosing a starting view and appearance. Installation, data connection, and card appearance are distinct tasks.
-- Provide no-YAML install instructions first. Keep manual install and YAML-managed-resource recovery as clearly labeled advanced routes, and never promise Marketplace one-click links before canonical repositories and owners are published.
+- Provide no-YAML install instructions first. Keep manual install and YAML-managed-resource recovery as clearly labeled advanced routes, offer the Marketplace path first, and add the Add from link route for catalogs that do not list a package yet.
 - Validate the complete new-user journey against both paths, including a missing Bridge, missing native Mealie integration, wrong URL, invalid token, stale frontend resource, and direct recovery without removing existing dashboard data.
 
 ## 4. Repository structure
@@ -38,11 +38,14 @@ mealie-atelier-cards/
     card-core.template.js         # Stable HA/Mealie component core, not a generated bundle
     studio-core.js                # Kitchen logic
     studio-ui.js                  # Kitchen and studio views
+    week-range.js                 # Planner date range
     design-system/
       foundation.css              # General views and structure
       editorial.css               # Photographic art direction
       kitchen.css                 # Kitchen, studio, and family views
       motion.css                  # Motion and interactions
+      bring-wizard.css            # Bring! connection wizard
+      mobile-forms.css            # Phone form layout
       adaptive.css                # Container adapters for legacy breakpoints
       tokens.css                  # Central design tokens
       layout.css                  # Responsive container layouts
@@ -70,6 +73,10 @@ mealie-atelier-cards/
       nutrition-journal.js        # Nutrition workflows and local notes
       dialogs.js                  # Modal workflows and dialog content
       editor.js                   # Home Assistant visual card editor
+      bring-wizard.js             # Bring! connection wizard
+      native-mealie.js            # Core Mealie provider mapping
+      nutrition-estimate.js       # Gram estimates for the nutrition dialog
+      plan-drag.js                # Drag and drop of meal plan entries
   scripts/build-design-system.mjs # Reproducibly generates both bundles
   dist/mealie-atelier-cards.js    # Generated HACS artifact
   demo/preview.html               # Local interactive fixture demo
@@ -82,7 +89,7 @@ mealie-atelier-cards/
 - **Spacing:** `--ds-space-1` through `--ds-space-16` map to the shared 4 px spacing scale; intermediate `--ds-space-7` is 28 px for deliberate page rhythm.
 - **Radius:** `--ds-radius-sm`, `--ds-radius-md`, `--ds-radius-lg`, `--ds-radius-xl`, and `--ds-radius-pill`.
 - **Surfaces:** `--ds-background`, `--ds-surface`, and `--ds-surface-raised`.
-- **Typography:** `--ds-font-xs`, `--ds-font-sm`, `--ds-font-md`, `--ds-font-lg`, `--ds-line-tight`, and `--ds-line-body`. Families are semantic too: editorial display headings use `--ds-font-display`; interface and recipe copy use `--ds-font-ui` and `--ds-font-reading`.
+- **Typography:** `--ds-font-xs`, `--ds-font-sm`, `--ds-font-md`, `--ds-font-lg`, `--ds-line-tight`, and `--ds-line-body`. Families are semantic too: editorial display headings use `--ds-font-display`; interface and recipe copy use `--ds-font-ui`.
 - **Motion:** `--ds-motion-fast`, `--ds-motion-base`, `--ds-motion-enter`, `--ds-motion-slow`, `--ds-motion-image`, `--ds-motion-image-long`, `--ds-motion-loading`, `--ds-motion-reduced`, `--ds-motion-ease`, `--ds-motion-spring`, and `--ds-motion-linear` are the shared timing and easing values for UI motion. The Expressive, Subtle (config value `balanced`) and Off motion setting scales these tokens; `prefers-reduced-motion` always wins. Legacy `--at-*` names are aliases only and must point back to these tokens. No stylesheet may introduce raw transition durations or curves. The Home Assistant editor has a separate shadow-root stylesheet; bundle generation copies the central motion-token declarations into that stylesheet, so `editor.css` must use the tokens without redeclaring their values.
 - **Semantic colors:** `--ds-text`, `--ds-muted`, `--ds-border`, `--ds-brand`, and `--ds-ring` derive from the selected theme.
 - **Themes:** Dark and neutral stone-and-herb light surface palettes are declared once in `tokens.css`; components consume semantic surfaces, text, borders, button foreground, and sidebar tokens. The standalone shell and install dialog follow the saved card theme and update the browser theme color. Editorial photography treatments must have a Light variant and cannot carry the dark green overlay into Light mode. The Expressive, Subtle and Off motion settings also apply to the standalone shell. Custom accent colors remain user-controlled and must remain legible against both palettes.
@@ -99,7 +106,7 @@ Views must not assign ad hoc colors or spacing to whole screens. Add a semantic 
 - Use spacing, typography, color, border, radius, shadow, and motion tokens. CSS pixel values remain appropriate for intrinsic icon geometry, control targets, hairlines, and data-driven image ratios; they are not substitutes for the spacing scale.
 - Add variants to shared components when two views need the same treatment. Do not duplicate one-off control, card, dropdown, checkbox, focus, or disabled-state styling in feature stylesheets.
 - Every interactive component defines rest, hover, focus-visible, pressed, disabled, and reduced-motion states. Motion should give feedback: short button and selection responses, a restrained view/dialog entrance, and small image movement on deliberate pointer hover. Do not animate idle branding, perpetually pulse controls, delay actions, or transform touch targets. Stay to transform/opacity where possible.
-- Keep a single quiet author credit per rendered surface. It reads “Made with ♥ by Daniel”; “Daniel” links to `https://alles-automatisch.de/` in a new tab with `rel="noopener noreferrer"`. On wide dashboard cards the credit lives in the sidebar footer; on compact, single-view, and kiosk layouts it moves to the end of the content. It is text, never a banner, sticky element, or recurring animation. Its heart may respond once on hover/focus and honors reduced motion.
+- Keep a single quiet author credit per rendered surface. It reads “Made with ♥ by Daniel” (German: “Mit ♥ von Daniel”); “Daniel” links to `https://alles-automatisch.de/` in a new tab with `rel="noopener noreferrer"`. On wide dashboard cards the credit lives in the sidebar footer; on compact, single-view, and kiosk layouts it moves to the end of the content. It is text, never a banner, sticky element, or recurring animation. Its heart may respond once on hover/focus and honors reduced motion.
 - Add a regression guard when adding a token family or shared component. Keep the standalone shell's small outer-surface tokens mapped to the same values documented here; the card's shadow root is the source for card component styling.
 
 ## 6. Layout and breakpoints
@@ -129,29 +136,31 @@ Views use the shared `AtelierUI` constructors for `pageHeader`, `sectionHeading`
 
 ## 7.1 Kochinspo recipe discovery
 
-**Interaction contract:** The discovery view is named “Kochinspo” and behaves as a short, progressive recipe wizard, not a profile form. Choices are derived from the locally loaded Mealie recipe catalog, the household's live Mealie cookbooks, and shared Kitchen Intelligence ranking. Ask only high-value questions: eating style (anything, vegetarian, vegan, meat, or fish), optional collection selection from supported Mealie cookbook filters, child-friendly/mild preference, people, time budget, pantry-first ranking, and disliked ingredients. Multiple cookbook choices use union semantics; with no selection, all loaded recipes remain eligible. Persist selected cookbook slugs with the other preferences in the existing private Atelier profile. Only evaluate one-clause tag/category ID `IN` filters against recipe IDs; never execute cookbook filter text. Allergy safety is never inferred or promised from tags or ingredient text; show a calm reminder to check the recipe itself.
+**Interaction contract:** The discovery view is named “Kochinspo” in German and “Discover” in English (card mode `discover`), and behaves as a short, progressive recipe wizard, not a profile form. Choices are derived from the locally loaded Mealie recipe catalog, the household's live Mealie cookbooks, and shared Kitchen Intelligence ranking. Ask only high-value questions: eating style (anything, vegetarian, vegan, meat, or fish), optional collection selection from supported Mealie cookbook filters, child-friendly/mild preference, people, time budget, pantry-first ranking, and disliked ingredients. Multiple cookbook choices use union semantics; with no selection, all loaded recipes remain eligible. Persist selected cookbook slugs with the other preferences in the existing private Atelier profile. Only evaluate one-clause tag/category ID `IN` filters against recipe IDs; never execute cookbook filter text. Allergy safety is never inferred or promised from tags or ingredient text; show a calm reminder to check the recipe itself.
 
 **Real Mealie data normalization:** Mealie time fields may be localized strings or ranges (for example `25 – 30 Minuten`), not numbers. Parse them for conservative time-budget filtering and ranking using the upper end of a range; preserve the source wording in recipe displays and never append a second unit. Sum explicitly labeled phases only when the field clearly describes separate phases. Mealie often stores a usable base quantity in `recipeYieldQuantity` and a unit in `recipeYield` while `recipeServings` is zero. Use that quantity as a serving basis only when the unit explicitly means people/portions/servings; never treat pieces, slices, or other yields as servings. Scale ingredients only when this verified basis is positive. Preserve unknown durations and ambiguous yield units without guessing.
 
-Show a single, editorially strong recipe suggestion with its image, time, servings, and explainable match reasons, followed by a small set of alternatives. Re-selecting a suggestion is an explicit user action. When opening that recommendation, scale only clearly numeric ingredient amounts to the chosen household size; preserve ambiguous free-text measures and disclose them for manual review. Keep weekly planning below the wizard. Load catalog pages using the reported total, with a 600-recipe safety cap; show live loading progress and disclose when the result set is partial. Filter and ranking semantics live in `studio-core.js`; validation and persistence live in `studio-state.mjs`; markup uses shared Atelier primitives and tokens.
+Show a single, editorially strong recipe suggestion with its image, time, servings, and explainable match reasons, followed by a small set of alternatives. Re-selecting a suggestion is an explicit user action. When opening that recommendation, scale only clearly numeric ingredient amounts to the chosen household size; preserve ambiguous free-text measures and disclose them for manual review. Keep weekly planning below the wizard. The weekly proposal button (German “Wochenplan vorschlagen”) uses the same saved cookbook selection and shows a clear message when no recipe fits instead of an empty plan. Load catalog pages using the reported total, with a 600-recipe safety cap; show live loading progress and disclose when the result set is partial. Filter and ranking semantics live in `studio-core.js`; validation and persistence live in `web/studio-state.mjs` (web app) and `studio.py` (Bridge); markup uses shared Atelier primitives and tokens.
 
 **Visual brief:** Preserve the existing calm photographic kitchen-studio art direction. Use the existing ink/charcoal surface and sage accent tokens, Georgia display headings, and the current interface type. On wide containers, pair a compact preference panel with a large food-photo hero; stack the selection and hero cleanly in narrow containers, including all four iPhone Duo poses. Use a typographic register with an accent underline for preference choices (no pill or chip rows), a restrained four-part progress cue, and compact photo-led alternative cards. Interaction changes may use the existing spring/base motion tokens for one short transition; never add idle animation and always honor reduced motion. Keep the recipe image, title, and metadata in one clear hierarchy.
 
 ```text
 Kochinspo
 ┌─────────────────────────┐   ┌──────────────────────────────────┐
-│ 01 / Geschmack          │   │                                  │
-│ [Alles] [Vegan] [...]   │   │          Rezeptfoto              │
-│ 02 / Wer isst mit?      │   │  Hauptvorschlag · Zeit · Portion │
-│ Personen · Zeit · Vorrat│   │  Warum passt es? · Rezept öffnen │
-│ [Passende Ideen zeigen] │   └──────────────────────────────────┘
+│ 01 / Was schmeckt dir?  │   │                                  │
+│ Alles offen · Vegan · … │   │          Rezeptfoto              │
+│ 02 / Aus welchem        │   │  Titel · Zeit · Portionen        │
+│ Kochbuch?               │   │  Match-Gründe · Rezept ansehen   │
+│ 03 / Wer isst mit?      │   └──────────────────────────────────┘
+│ 04 / Was ist heute drin?│
+│ Ideen finden            │
 └─────────────────────────┘   Alternativen als kleine Bildkarten
 ```
 
 ## 7.2 Home Assistant card compatibility and editor
 
 - Treat the Lovelace card resource as a product in its own right: it runs in Home Assistant without the optional Atelier Web server and has no external runtime dependency.
-- Use provider capabilities explicitly. `atelier` is the full signed-proxy provider; `home_assistant` uses only Home Assistant Core's documented Mealie response actions and stays read-only; `auto` prefers Atelier and may fall back only for supported reads. Never silently route writes to a weaker provider.
+- Use provider capabilities explicitly. `atelier` is the full signed-proxy provider; `home_assistant` uses Home Assistant Core's documented Mealie response actions (recipes, meal plan) and the Mealie todo entities, is read-only apart from ticking shopping items, and never routes any other write; `auto` prefers Atelier and may fall back only for supported reads. Never silently route writes to a weaker provider.
 - The editor reports the detected provider and its capabilities before setup completes. Setup may be skipped and retried. Expose capabilities in plain language, and give unsupported modes a useful alternative path instead of a broken/empty card.
 - Core Mealie images are not loaded by constructing guessed URLs or exposing Mealie credentials. Hide them unless delivered through a trusted authenticated proxy. Normalize official response shapes once in the provider layer; view components consume a stable internal recipe shape.
 - The editor uses shared tokens and component states. Settings are grouped by outcome (content, layout, motion, optional devices), defaults are previewable, and advanced fields stay collapsed until requested. Every option must do something visible and be keyboard/touch accessible. Reduced-motion remains authoritative.
@@ -188,7 +197,7 @@ Live Mealie, live Home Assistant, external AI/USDA providers, and Fully Kiosk ar
 
 ## 11. First-run setup contract
 
-- Getting a first usable kitchen dashboard is the aha moment. Keep the Home Assistant card editor to a skippable, three-step path: connect an existing Mealie Atelier integration, choose the starting view, then pick a visual preset. Save each choice through Home Assistant's `config-changed` event immediately.
+- Getting a first usable kitchen dashboard is the aha moment. Keep the Home Assistant card editor to a skippable, three-step path: connect an existing Mealie Atelier Bridge connection or the built-in Home Assistant Mealie integration (read-only), choose the starting view, then pick a visual preset. Save each choice through Home Assistant's `config-changed` event immediately.
 - If no integration exists, explain the missing prerequisite and link directly to Home Assistant integrations. Do not ask for a Mealie URL or API token in the card editor; credentials belong only in the secure integration config flow.
 - Keep print, kiosk, theme details, and device actions in a clearly optional advanced section. Existing cards reopen with their current selections and can bypass onboarding without losing settings.
 - The wizard is a compact native Home Assistant visual-editor surface, not a second application shell. Use the shared editor tokens, accessible progress and focus states, reduced-motion behavior, and a concise preview of the chosen view.

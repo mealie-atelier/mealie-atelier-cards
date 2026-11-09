@@ -4,6 +4,34 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.17] - 2026-11-09
+
+### Added
+
+- Brand images (`brand/icon.png`, `logo.png` and their dark and 2x variants), identical to the Bridge's.
+
+### Changed
+
+- Setup wizard: filled buttons, progress steps and checkboxes carry white text and icons on a darkened theme color.
+- Recipe filters in the plan form look like the other fields: label above, current choice, chevron, and the options open inside the sheet's own scroll.
+- No text on screen is smaller than 11 px, and touch targets for removing a meal and for checkboxes are 44 px on touch devices.
+- Tile titles show up to three lines at every width and long words wrap instead of being cut.
+- Credit and version are visible at every width and in phone landscape.
+- Atelier data export: one name in button and message, and a download icon.
+
+### Fixed
+
+- Quick search and setup wizard: the spinner no longer turns several times per second.
+- Shopping list: no "0/0 done" counter on an empty list.
+- Recipe dialog: no clock chip with a bare dash for a recipe without a time, and a yield text like "1 large loaf pan" no longer sits beside the person icon.
+- Recipe check: a yield text without a number has its own message instead of "servings missing".
+- Category labels keep a capital sharp s instead of turning into "SS".
+- Hero card: the plate no longer overlaps the subtitle at phone widths between 421 and 480 px.
+- Sidebar: "Gemeinsam kochen" stays on one line.
+- Command palette: keyboard hints are hidden on touch devices.
+- Refresh and live status give visible feedback, and clearing a cookbook selection is disabled while nothing is selected.
+- Web app: no console error about the opener policy on plain http.
+
 ## [0.12.16] - 2026-11-09
 
 ### Added
@@ -691,7 +719,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.16...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.17...HEAD
+[0.12.17]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.16...v0.12.17
 [0.12.16]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.15...v0.12.16
 [0.12.15]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.14...v0.12.15
 [0.12.14]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.13...v0.12.14
