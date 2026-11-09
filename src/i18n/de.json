@@ -56,6 +56,8 @@
   "studioSaveFailed": "Speichern fehlgeschlagen",
   "studioAnalysisFailed": "Rezeptanalyse fehlgeschlagen",
   "studioDetailsLoading": "Rezeptdetails werden für die Planung geladen …",
+  "studioLoaderTitle": "Deine Rezepte kommen in den Topf",
+  "studioLoaderHint": "Das passiert einmal pro Besuch. Danach geht es sofort.",
   "studioCatalogLoading": "Rezeptsammlung wird geladen: {loaded} von {total} Rezepten …",
   "studioCatalogLoadingCount": "Rezeptsammlung wird geladen: {loaded} Rezepte …",
   "studioCatalogDetails": "Rezeptdetails: {loaded} von {total} geladen …",

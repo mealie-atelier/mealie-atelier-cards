@@ -537,7 +537,7 @@ export const dialogMethods = {
         <div class="settings-group"><label class="field"><span><input type="checkbox" data-input="show-images" ${d.show_images !== false ? "checked" : ""}> ${esc(this.t("pictures"))}</span></label></div>
         <div class="settings-group"><h3>${esc(this.t("editorPrintStudio"))}</h3><p class="settings-hint">${this.t("uiSeparateA4LayoutsForRecipesShoppingAndYourWeeklyPlan")}</p><button class="btn" data-action="print-settings">${icon("print", 14)} ${this.t("uiOpenPrintSettings")}</button></div>
         <div class="settings-group support-group"><h3>${this.t("uiEnjoyingTheAtelier")}</h3><p class="settings-hint">${this.t("uiIfItMakesYourKitchenRoutineBetterYouCanOptionallySupportItsDevelopmentOnKoFi")}</p><a class="btn support-link" href="https://ko-fi.com/allesautomatisch" target="_blank" rel="noopener noreferrer">${icon("spark", 14)} ${this.t("uiSayThanksOnKoFi")} <span aria-hidden="true">↗</span></a></div>
-        <p class="settings-hint">${esc(this.t("configured"))}</p><div class="form-actions"><button class="btn" data-action="reset-design">${esc(this.t("resetDesign"))}</button></div><div class="form-actions"><button class="btn primary" data-action="close-modal">${esc(this.t("done"))}</button></div></div>`;
+        <p class="settings-hint">${esc(this.t("configured"))}</p><div class="form-actions design-actions"><button class="btn" data-action="reset-design">${esc(this.t("resetDesign"))}</button><button class="btn primary" data-action="close-modal">${esc(this.t("done"))}</button></div></div>`;
     }
     const dialogTitles = {
       command: this.t("uiQuickActions"),

@@ -9,9 +9,15 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Print windows: **Close** and **Print** work in the web app; the toolbar no longer uses inline handlers, which the Content Security Policy blocks.
 - Print studio: the paper preview now follows style, photo, nutrition, checkboxes, notes and completed items.
 - Kochinspo: the cookbook step loads the cookbooks itself and shows them.
+- Kochinspo: **Another idea** no longer makes the view jump; the card keeps its height and only the content crossfades.
+- Week proposal: spacing is even and every day shows the recipe photo.
+- Week view: a hovered day card keeps its top border.
+- Buttons and cards no longer twitch when the pointer rests on their edge.
 
 ### Changed
 
+- Kochinspo and week proposal: while the recipe collection loads, an animated pot with live progress replaces the status line and the view below it.
+- Design Studio: reset and done share one row.
 - Recipe dialog: main actions stay as buttons, secondary ones are quiet text actions.
 - Recipe source shows the host name, the full address stays in the link.
 - Dialog heads no longer carry decorative round icons.

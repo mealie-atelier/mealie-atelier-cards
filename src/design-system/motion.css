@@ -165,7 +165,6 @@
 .atelier .btn.primary:hover:not(:disabled) {
   box-shadow: 0 11px 28px color-mix(in srgb, var(--at-accent) 27%, transparent);
   filter: brightness(1.055);
-  transform: translateY(-2px);
 }
 .atelier .btn.ghost:hover:not(:disabled),
 .atelier .btn:not(.primary):hover:not(:disabled) {
@@ -205,9 +204,6 @@
 }
 .atelier .nav button.active svg {
   color: var(--ds-brand-text);
-}
-.atelier .nav button:hover:not(.active) {
-  transform: translateX(3px);
 }
 .atelier .sidebar {
   background-image:
@@ -725,7 +721,6 @@
 .atelier .command-item:hover,
 .atelier .command-item:focus-visible {
   background: color-mix(in srgb, var(--at-accent) 13%, var(--at-panel));
-  transform: translateX(3px);
 }
 .atelier .command-item svg {
   color: var(--ds-brand-text);
@@ -810,7 +805,6 @@
 .atelier .command-item.command-recipe:hover,
 .atelier .command-item.command-recipe:focus-visible {
   border-color: color-mix(in srgb, var(--at-accent) 26%, var(--at-line));
-  transform: translateY(-1px);
 }
 .atelier .command-recipe-image {
   position: relative;
@@ -1545,9 +1539,6 @@
   background: var(--at-accent, #a2cdb3);
   border-color: var(--at-accent, #a2cdb3);
   color: var(--at-accent-ink, #101c15);
-}
-.at-premium-dialog .btn:hover {
-  transform: translateY(-1px);
 }
 .at-premium-dialog .btn:active {
   transform: scale(0.98);

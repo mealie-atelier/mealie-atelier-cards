@@ -551,7 +551,6 @@
     background var(--ds-motion-fast) var(--ds-motion-ease);
 }
 .atelier .cook-timer-presets button:hover {
-  transform: translateY(-1px);
   border-color: var(--ds-brand);
   background: color-mix(in srgb, var(--ds-brand) 9%, var(--ds-surface));
 }

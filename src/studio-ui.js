@@ -254,6 +254,8 @@ Object.assign(MealieAtelierCard.prototype, {
     if (this._catalogLoading) return [];
     this._catalogLoading = true;
     this._catalogProgress = { loaded: 0, total: null };
+    this._render();
+    this._revealLoader();
     this._catalogLimited = false;
     this._render();
     try {
@@ -271,7 +273,7 @@ Object.assign(MealieAtelierCard.prototype, {
         }
         all.push(...items);
         this._catalogProgress.loaded = all.length;
-        this._render();
+        this._paintCatalogProgress();
         if (
           items.length < pageSize ||
           all.length >= maxRecipes ||
@@ -293,7 +295,7 @@ Object.assign(MealieAtelierCard.prototype, {
           else full.push(next[i + j]);
         });
         this._catalogProgress.details = full.length;
-        this._render();
+        this._paintCatalogProgress();
       }
       this._fullCatalog = full;
       this._catalogLimited =
@@ -311,6 +313,101 @@ Object.assign(MealieAtelierCard.prototype, {
     return this._fullCatalog || [];
   },
   /** Bring the Kochinspo wizard back into view only when its top has scrolled out above. */
+  _studioLoaderState() {
+    const progress = this._catalogProgress;
+    const text = progress
+      ? progress.details
+        ? this.t("studioCatalogDetails", { loaded: progress.details, total: progress.loaded })
+        : progress.total
+          ? this.t("studioCatalogLoading", { loaded: progress.loaded, total: progress.total })
+          : this.t("studioCatalogLoadingCount", { loaded: progress.loaded })
+      : this.t("studioDetailsLoading");
+    const ratio =
+      progress?.details && progress.loaded
+        ? 0.1 + 0.9 * Math.min(1, progress.details / progress.loaded)
+        : progress?.total
+          ? 0.1 * Math.min(1, progress.loaded / progress.total)
+          : 0.02;
+    return { text, percent: Math.round(ratio * 100) };
+  },
+  /** The kitchen scene shown while the recipe collection loads. */
+  _studioLoader() {
+    const { text, percent } = this._studioLoaderState();
+    // A foreign re-render rebuilds the scene: the wall-clock phase (loop length 2 x --ds-motion-loading) keeps it seamless.
+    const phase = Date.now() % 3600;
+    const drop = (x, index, art) =>
+      `<g transform="translate(${x} 14)"><g class="studio-loader-drop d${index}">${art}</g></g>`;
+    const wisp = (x, index) =>
+      `<path class="studio-loader-steam s${index}" d="M${x} 72c-9-10 9-19 0-30s9-19 0-30"/>`;
+    const flame = (x, index) =>
+      `<path class="studio-loader-flame f${index}" d="M${x} 170c-6-5-5-10 0-16 5 6 6 11 0 16Z"/>`;
+    return `<section class="studio-loader" role="status" style="--loader-phase:${phase}ms">
+      <svg class="studio-loader-scene" viewBox="0 0 260 186" aria-hidden="true">
+        ${wisp(104, 1)}${wisp(130, 2)}${wisp(156, 3)}
+        ${drop(
+          110,
+          1,
+          '<path class="studio-loader-leaf" d="M0-12C9-8 11 3 0 12-11 3-9-8 0-12Z"/><path class="studio-loader-vein" d="M0-7V12"/>',
+        )}
+        ${drop(
+          132,
+          2,
+          '<circle class="studio-loader-tomato" r="10"/><path class="studio-loader-vein" d="M-4-9 0-6l4-3"/>',
+        )}
+        ${drop(
+          152,
+          3,
+          '<circle class="studio-loader-carrot" r="8"/><circle class="studio-loader-vein" r="3.5"/>',
+        )}
+        <g class="studio-loader-pot">
+          <path class="studio-loader-line" d="M72 112H62a7 7 0 0 0 0 14h10M188 112h10a7 7 0 0 1 0 14h-10"/>
+          <rect class="studio-loader-body" x="72" y="94" width="116" height="56" rx="16"/>
+          <path class="studio-loader-shine" d="M88 136c8 3 20 4 32 3"/>
+        </g>
+        <g class="studio-loader-lid">
+          <path class="studio-loader-knob" d="M119 84a11 8 0 0 1 22 0"/>
+          <rect class="studio-loader-body" x="64" y="84" width="132" height="9" rx="4.5"/>
+        </g>
+        ${flame(106, 1)}${flame(130, 2)}${flame(154, 3)}
+        <path class="studio-loader-line" d="M52 172h156"/>
+      </svg>
+      <h2>${this.t("studioLoaderTitle")}</h2>
+      <p class="studio-loader-hint">${this.t("studioLoaderHint")}</p>
+      <div class="studio-loader-track" role="progressbar" aria-label="${esc(this.t("studioLoaderTitle"))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}" style="--done:${percent / 100}"><i></i></div>
+      <p class="studio-loader-status">${esc(text)}</p>
+    </section>`;
+  },
+  /** Progress updates touch only the bar and its line: a full render would restart the animation on every batch. */
+  _paintCatalogProgress() {
+    const loader = this.shadowRoot?.querySelector?.(".studio-loader");
+    if (!loader) {
+      this._render();
+      return;
+    }
+    const { text, percent } = this._studioLoaderState();
+    loader.querySelector(".studio-loader-status").textContent = text;
+    const track = loader.querySelector(".studio-loader-track");
+    track.setAttribute("aria-valuenow", String(percent));
+    track.style.setProperty("--done", String(percent / 100));
+  },
+  _revealLoader() {
+    requestAnimationFrame(() => {
+      const loader = this.shadowRoot?.querySelector?.(".studio-loader");
+      if (loader && loader.getBoundingClientRect().top < 0)
+        loader.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+  },
+  /** Wait briefly until the next photo is decoded, so the swap never shows an empty frame. */
+  async _studioPreloadPhoto(recipe) {
+    const src = imageOk(recipe?.imageUrl);
+    if (!src || typeof Image !== "function") return;
+    const image = new Image();
+    image.src = src;
+    await Promise.race([
+      image.decode?.().catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 700)),
+    ]);
+  },
   _revealDiscover() {
     requestAnimationFrame(() => {
       const layout = this.shadowRoot.querySelector(".studio-discover-layout");
@@ -362,16 +459,8 @@ Object.assign(MealieAtelierCard.prototype, {
       : value;
   },
   _studioShell(title, lead, content, kicker = this.t("studioKicker")) {
-    const progress = this._catalogProgress;
-    const progressText = progress
-      ? progress.details
-        ? this.t("studioCatalogDetails", { loaded: progress.details, total: progress.loaded })
-        : progress.total
-          ? this.t("studioCatalogLoading", { loaded: progress.loaded, total: progress.total })
-          : this.t("studioCatalogLoadingCount", { loaded: progress.loaded })
-      : "";
     const limitCopy = `${this.t("studioCatalogLimit")}${this._catalogTotal ? ` ${this.t("studioCatalogTotal", { total: this._catalogTotal })}` : ""}`;
-    return `${AtelierUI.pageHeader({ title, description: lead, kicker })}${this._studioError ? `<div class="studio-warning" role="status">${esc(this._studioError)}</div>` : ""}${this._catalogLoading ? `<div class="studio-warning" role="status" aria-live="polite">${esc(progressText || this.t("studioDetailsLoading"))}</div>` : ""}${this._catalogLimited ? `<p class="studio-muted">${esc(limitCopy)}</p>` : ""}${content}`;
+    return `${AtelierUI.pageHeader({ title, description: lead, kicker })}${this._studioError ? `<div class="studio-warning" role="status">${esc(this._studioError)}</div>` : ""}${this._catalogLoading || this._discoverSearching ? this._studioLoader() : `${this._catalogLimited ? `<p class="studio-muted">${esc(limitCopy)}</p>` : ""}${content}`}`;
   },
   _atelierDialog({
     title,
@@ -596,6 +685,7 @@ Object.assign(MealieAtelierCard.prototype, {
       : [];
     const alternatives = selected.filter((x) => x.slug !== hero?.slug).slice(0, 3);
     const upcoming = this._weekProposal || [];
+    const planRecipes = new Map(asArray(this._fullCatalog).map((recipe) => [recipe.slug, recipe]));
     const step = Math.max(0, Math.min(3, Number(d.step) || 0));
     const stepName = [
       this.t("studioDiscoverStep0"),
@@ -637,7 +727,7 @@ Object.assign(MealieAtelierCard.prototype, {
           : `${AtelierUI.surfaceStart()}<div class="studio-discover-result-head"><div><span class="eyebrow">${this.t("studioDiscoverResult")}</span><h2>${this.t("studioDiscoverResultTitle")}</h2></div><button class="btn tiny" data-action="studio-discover-edit">${icon("edit", 14)} ${this.t("studioDiscoverEdit")}</button></div>
       ${
         hero
-          ? `<article class="studio-discover-hero"><div class="studio-discover-hero-photo">${this._photo(hero.recipe)}</div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.tp("studioDiscoverRecipeBase", hero.servings, { servings: hero.servings }) : this.tp("studioDiscoverForPeople", hero.people, { people: hero.people })}</span></div><p>${esc(
+          ? `<article class="studio-discover-hero${this._discoverHeroMotion ? ` is-${this._discoverHeroMotion}` : ""}"${this._discoverHeroHeight ? ` style="min-height:${Math.ceil(this._discoverHeroHeight)}px"` : ""}><div class="studio-discover-hero-photo">${this._photo(hero.recipe)}</div><div class="studio-discover-hero-copy"><span class="studio-discover-match">${icon("spark", 13)} ${heroBooks.length ? this.t("studioDiscoverFromCookbooks") : this.t("studioDiscoverFromRecipes")}</span><h3>${esc(hero.name)}</h3>${heroBooks.length ? `<p class="studio-discover-book-match">${heroBooks.map(esc).join(" · ")}</p>` : ""}<div class="studio-discover-meta"><span>${icon("clock", 14)} ${esc(hero.timeLabel || this.t("studioDiscoverTimeOpen"))}</span><span>${icon("utensils", 14)} ${hero.servings ? this.tp("studioDiscoverRecipeBase", hero.servings, { servings: hero.servings }) : this.tp("studioDiscoverForPeople", hero.people, { people: hero.people })}</span></div><p>${esc(
               hero.reasons
                 // The meta row already states the recipe base and the time, so the reason
                 // line skips the base and words the time budget without the minutes. The
@@ -666,7 +756,7 @@ Object.assign(MealieAtelierCard.prototype, {
     const planner = this._discoverResults
       ? `${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("studioPlanKicker")}</span><h2>${this.t("studioPlanTitle")}</h2><p>${this.t("studioPlanDescription")}</p></div>
       <div class="studio-actions"><button class="btn primary" data-action="studio-plan-preview" ${this._catalogLoading ? "disabled" : ""}>${icon("spark", 15)} ${this.t("studioPlanPreview")}</button>${upcoming.length && this._permissions.can_write ? `<button class="btn" data-action="studio-plan-commit">${icon("check", 15)} ${this.t("studioPlanCommit")}</button>` : ""}</div>
-      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => (r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values))).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
+      ${upcoming.length ? `<div class="studio-plan-list">${upcoming.map((x) => `<div class="studio-plan-row"><span class="studio-plan-date"><strong>${esc(atDate(x.date, this._locale))}</strong> <small>${x.meal_type === "lunch" ? this.t("studioLunch") : this.t("studioDinner")}</small></span><div class="studio-plan-photo">${this._photo(planRecipes.get(x.slug) || x)}</div><div class="studio-plan-copy"><b>${esc(x.leftovers ? this.t("studioLeftoversName", { name: x.name }) : x.name)}</b><p>${esc(x.reasons.map((r) => (r.plural ? this.tp(r.key, r.values.count, r.values) : this.t(r.key, r.values))).join(" · "))}</p></div></div>`).join("")}</div><p class="studio-muted">${this.t("studioPlanOnlyMissing")}</p>` : `<p class="studio-muted">${this.t("studioPlanCreatePreview")}</p>`}</section>`
       : "";
     return this._studioShell(this.t("studioDiscoverTitle"), lead, `${flow}${planner}`);
   },
@@ -1223,10 +1313,20 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
         exclude: d.exclude,
         cookbooks: d.cookbooks,
       };
-      if (!this._fullCatalog?.length) await this._studioCatalog();
-      // Placeholder values never reach profile_set: only a draft from real state or a touched one is saved.
-      if (this._permissions.can_write && !(d.placeholder && !d.touched))
-        await this._studioWrite("profile_set", profile);
+      // Keeps the kitchen scene up between the end of the catalog load and the first result.
+      const needsCatalog = !this._fullCatalog?.length;
+      this._discoverSearching = needsCatalog;
+      try {
+        if (needsCatalog) await this._studioCatalog();
+        // Placeholder values never reach profile_set: only a draft from real state or a touched one is saved.
+        if (this._permissions.can_write && !(d.placeholder && !d.touched))
+          await this._studioWrite("profile_set", profile);
+      } catch (error) {
+        this._discoverSearching = false;
+        this._render();
+        throw error;
+      }
+      this._discoverSearching = false;
       this._discoverCandidates = AtelierStudio.suggest(
         this._fullCatalog || asArray(this._data.recipes?.items),
         profile,
@@ -1236,7 +1336,10 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       );
       this._discoverSelected = this._discoverCandidates[0]?.slug || "";
       this._discoverResults = true;
+      this._discoverHeroHeight = 0;
+      this._discoverHeroMotion = "entering";
       this._render();
+      this._discoverHeroMotion = "";
       this._revealDiscover();
       return;
     }
@@ -1248,8 +1351,19 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     if (action === "studio-discover-next-idea") {
       const rows = this._discoverCandidates || [],
         index = rows.findIndex((x) => x.slug === this._discoverSelected);
-      if (rows.length) this._discoverSelected = rows[(index + 1) % rows.length].slug;
+      if (!rows.length) return;
+      const next = rows[(index + 1) % rows.length];
+      // The hero keeps its tallest height so the page below it never moves between ideas.
+      const hero = this.shadowRoot?.querySelector?.(".studio-discover-hero");
+      this._discoverHeroHeight = Math.max(
+        this._discoverHeroHeight || 0,
+        hero?.getBoundingClientRect?.().height || 0,
+      );
+      await this._studioPreloadPhoto(next.recipe);
+      this._discoverSelected = next.slug;
+      this._discoverHeroMotion = "swapping";
       this._render();
+      this._discoverHeroMotion = "";
       return;
     }
     if (action === "studio-check-health") {

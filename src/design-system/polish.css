@@ -2247,7 +2247,12 @@
   border-radius: var(--ds-radius-xl);
   background: var(--ds-surface);
   box-shadow: var(--ds-shadow-card, 0 14px 40px #00000012);
+}
+.atelier .studio-discover-hero.is-entering {
   animation: studio-discover-reveal var(--ds-motion-enter) var(--ds-motion-ease) both;
+}
+.atelier .studio-discover-hero.is-swapping > * {
+  animation: studio-discover-swap var(--ds-motion-enter) var(--ds-motion-ease) both;
 }
 .atelier .studio-discover-hero-photo {
   position: relative;
@@ -2415,6 +2420,14 @@
   color: var(--ds-muted);
   font-size: var(--ds-font-xs);
   line-height: 1.5;
+}
+@keyframes studio-discover-swap {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes studio-discover-reveal {
   from {

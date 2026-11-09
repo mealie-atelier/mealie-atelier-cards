@@ -56,6 +56,8 @@
   "studioSaveFailed": "Could not save",
   "studioAnalysisFailed": "Recipe analysis failed",
   "studioDetailsLoading": "Loading recipe details for planning…",
+  "studioLoaderTitle": "Your recipes are going into the pot",
+  "studioLoaderHint": "This happens once per visit. After that it is instant.",
   "studioCatalogLoading": "Loading recipe collection: {loaded} of {total} recipes…",
   "studioCatalogLoadingCount": "Loading recipe collection: {loaded} recipes…",
   "studioCatalogDetails": "Recipe details: {loaded} of {total} loaded…",

@@ -760,10 +760,6 @@ input[type="checkbox"]:disabled {
   background: var(--ed-accent);
   color: #14251b;
 }
-.editor-primary:hover,
-.editor-secondary:hover {
-  transform: translateY(-1px);
-}
 .editor-primary:focus-visible,
 .editor-secondary:focus-visible {
   outline: 2px solid var(--ed-accent);

@@ -240,7 +240,6 @@ ha-card {
 }
 .atelier .icon-btn:hover {
   background: var(--at-panel2);
-  transform: translateY(-1px);
 }
 .atelier h1,
 .atelier h2,
@@ -316,7 +315,6 @@ ha-card {
 }
 .atelier .btn:hover {
   filter: brightness(1.13);
-  transform: translateY(-1px);
 }
 .atelier .btn.primary {
   background: var(--at-accent);

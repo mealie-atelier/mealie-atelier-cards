@@ -1029,3 +1029,311 @@
 .atelier .print-paper.style-minimal .paper-tick {
   border-color: #67716b;
 }
+
+/* Week proposal: date, photo and text share one centre line. */
+.atelier .studio-plan-row {
+  grid-template-columns: 5.5rem 3.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--ds-space-4);
+  padding-block: var(--ds-space-3);
+}
+.atelier .studio-plan-row:last-child {
+  border-bottom: 0;
+}
+.atelier .studio-plan-date strong,
+.atelier .studio-plan-date small {
+  display: block;
+  line-height: 1.3;
+}
+.atelier .studio-plan-photo {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border-radius: var(--ds-radius-md, 10px);
+  background: var(--ds-surface-raised);
+}
+.atelier .studio-plan-photo > img,
+.atelier .studio-plan-photo > picture,
+.atelier .studio-plan-photo .placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .studio-plan-copy b {
+  display: block;
+  line-height: 1.3;
+}
+.atelier .studio-plan-copy p {
+  margin: var(--ds-space-1) 0 0;
+}
+.atelier .studio-plan-list + .studio-muted {
+  margin-block-start: var(--ds-space-4);
+}
+@container atelier-card (max-width: 640px) {
+  .atelier .studio-plan-row {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    column-gap: var(--ds-space-3);
+    row-gap: var(--ds-space-1);
+  }
+  .atelier .studio-plan-photo {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: start;
+  }
+  .atelier .studio-plan-date {
+    grid-column: 2;
+    display: flex;
+    gap: var(--ds-space-2);
+    align-items: baseline;
+  }
+  .atelier .studio-plan-copy {
+    grid-column: 2;
+  }
+}
+
+/* Recipe collection loading: a small pot takes in the recipes. */
+.atelier .studio-loader {
+  --loader-beat: calc(var(--ds-motion-loading) * 2);
+  --loader-tomato: #d9694e;
+  --loader-carrot: #e5a04a;
+  display: grid;
+  justify-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-6) var(--ds-space-5) calc(var(--ds-space-6) * 1.5);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface);
+  text-align: center;
+}
+.atelier .studio-loader h2 {
+  margin: 0;
+}
+.atelier .studio-loader-hint,
+.atelier .studio-loader-status {
+  margin: 0;
+  color: var(--ds-muted);
+}
+.atelier .studio-loader-status {
+  font-variant-numeric: tabular-nums;
+}
+.atelier .studio-loader-scene {
+  width: min(100%, 320px);
+  height: auto;
+  overflow: visible;
+}
+.atelier .studio-loader-scene * {
+  transform-box: fill-box;
+}
+.atelier .studio-loader-line,
+.atelier .studio-loader-body,
+.atelier .studio-loader-knob,
+.atelier .studio-loader-vein,
+.atelier .studio-loader-shine,
+.atelier .studio-loader-steam {
+  fill: none;
+  stroke: var(--ds-text);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.atelier .studio-loader-body {
+  fill: var(--ds-surface-raised);
+}
+.atelier .studio-loader-shine {
+  stroke: var(--ds-muted);
+  opacity: 0.6;
+}
+.atelier .studio-loader-vein {
+  stroke: var(--ds-surface);
+  stroke-width: 1.5;
+}
+.atelier .studio-loader-leaf {
+  fill: var(--at-accent);
+}
+.atelier .studio-loader-tomato {
+  fill: var(--loader-tomato);
+}
+.atelier .studio-loader-carrot {
+  fill: var(--loader-carrot);
+}
+.atelier .studio-loader-flame {
+  fill: var(--loader-carrot);
+  transform-origin: 50% 100%;
+  animation: studio-loader-flicker calc(var(--loader-beat) / 6) ease-in-out infinite alternate;
+  animation-delay: calc(var(--loader-phase) * -1);
+}
+.atelier .studio-loader-flame.f2 {
+  fill: var(--loader-tomato);
+  animation-delay: calc((var(--loader-phase) + var(--loader-beat) / 18) * -1);
+}
+.atelier .studio-loader-flame.f3 {
+  animation-delay: calc((var(--loader-phase) + var(--loader-beat) / 9) * -1);
+}
+.atelier .studio-loader-steam {
+  stroke: var(--ds-muted);
+  opacity: 0;
+  stroke-dasharray: 26 70;
+  animation: studio-loader-steam var(--loader-beat) ease-in-out infinite;
+  animation-delay: calc(var(--loader-phase) * -1);
+}
+.atelier .studio-loader-steam.s2 {
+  animation-delay: calc((var(--loader-phase) + var(--loader-beat) / 3) * -1);
+}
+.atelier .studio-loader-steam.s3 {
+  animation-delay: calc((var(--loader-phase) + var(--loader-beat) * 2 / 3) * -1);
+}
+.atelier .studio-loader-drop {
+  opacity: 0;
+  transform-origin: 50% 50%;
+  animation: studio-loader-drop var(--loader-beat) ease-in infinite;
+  animation-delay: calc(var(--loader-phase) * -1);
+}
+.atelier .studio-loader-drop.d2 {
+  animation-delay: calc((var(--loader-phase) + var(--loader-beat) * 2 / 3) * -1);
+}
+.atelier .studio-loader-drop.d3 {
+  animation-delay: calc((var(--loader-phase) + var(--loader-beat) / 3) * -1);
+}
+.atelier .studio-loader-lid {
+  transform-origin: 6% 100%;
+  animation: studio-loader-lid calc(var(--loader-beat) / 3) ease-in-out infinite;
+  animation-delay: calc(var(--loader-phase) * -1);
+}
+.atelier .studio-loader-pot {
+  animation: studio-loader-simmer calc(var(--loader-beat) / 3) ease-in-out infinite;
+  animation-delay: calc(var(--loader-phase) * -1);
+}
+.atelier .studio-loader-track {
+  width: min(100%, 320px);
+  height: var(--ds-space-1);
+  margin-block-start: var(--ds-space-4);
+  overflow: hidden;
+  border-radius: var(--ds-radius-pill, 999px);
+  background: var(--ds-border);
+}
+.atelier .studio-loader-track > i {
+  display: block;
+  height: 100%;
+  background: var(--at-accent);
+  transform: scaleX(var(--done, 0));
+  transform-origin: left center;
+  transition: transform var(--ds-motion-base) var(--ds-motion-ease);
+}
+@keyframes studio-loader-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px) rotate(0deg);
+  }
+  6% {
+    opacity: 1;
+  }
+  29% {
+    opacity: 1;
+  }
+  33%,
+  100% {
+    opacity: 0;
+    transform: translateY(100px) rotate(220deg);
+  }
+}
+@keyframes studio-loader-lid {
+  0%,
+  45%,
+  100% {
+    transform: none;
+  }
+  62%,
+  84% {
+    transform: translateY(-5px) rotate(-11deg);
+  }
+}
+@keyframes studio-loader-simmer {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(1px);
+  }
+}
+@keyframes studio-loader-steam {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+    transform: translateY(8px);
+  }
+  30% {
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -96;
+    transform: translateY(-14px);
+  }
+}
+@keyframes studio-loader-flicker {
+  from {
+    transform: scale(0.82, 0.78);
+  }
+  to {
+    transform: scale(1.05, 1.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .studio-loader-scene * {
+    animation: none !important;
+  }
+}
+.atelier.motion-off .studio-loader-steam {
+  opacity: 0.45;
+}
+@media (prefers-reduced-motion: reduce) {
+  .atelier .studio-loader-steam {
+    opacity: 0.45;
+  }
+}
+
+/* Design Studio: reset on the left, done on the right, one row. */
+.atelier .form-actions.design-actions {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+/* The week scroller clips vertically too: leave room for the hover lift of the day cards. */
+.atelier .week-grid {
+  padding-block-start: var(--ds-space-1);
+  margin-block-start: calc(var(--ds-space-1) * -1);
+}
+
+/* A lifted card leaves its old bottom edge: the bridge keeps the pointer on it, otherwise hover flips on and off. */
+.atelier .week-grid > .day,
+.atelier .studio-discover-alt,
+.atelier .detail-cols .step {
+  position: relative;
+}
+.atelier .recipe-tile:hover::after,
+.atelier .week-grid > .day:hover::after,
+.atelier .studio-discover-alt:hover::after,
+.atelier .detail-cols .step:hover::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: calc(var(--hover-lift) * -1);
+  block-size: var(--hover-lift);
+}
+.atelier .recipe-tile {
+  --hover-lift: 3px;
+}
+.atelier .week-grid > .day,
+.atelier .studio-discover-alt {
+  --hover-lift: 2px;
+}
+.atelier .detail-cols .step {
+  --hover-lift: 1px;
+}
