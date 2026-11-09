@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { inlineTouchIcon } from "../security.mjs";
+import { inlineTouchIcon, staticCacheControl } from "../security.mjs";
 
 const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
 const AsyncFunction = (async () => {}).constructor;
@@ -17,7 +17,7 @@ const shellScript = () => {
 };
 
 /** Runs the real startup script of index.html against stubbed browser objects. */
-function startShell({ offlineModule, register }) {
+function startShell({ offlineModule, register, initPwaInstall = () => ({ refresh() {} }) }) {
   const calls = [];
   const card = {
     _design: { theme: "auto", motion: "expressive" },
@@ -42,7 +42,7 @@ function startShell({ offlineModule, register }) {
     serviceWorker: { register, addEventListener() {} },
   };
   const load = async (path) => {
-    if (path === "/pwa-install.js") return { initPwaInstall: () => ({ refresh() {} }) };
+    if (path === "/pwa-install.js") return { initPwaInstall };
     if (path === "/offline-client.js") return offlineModule();
     return {};
   };
@@ -99,6 +99,34 @@ test("the web app starts when everything optional works", async () => {
     startShell({ offlineModule: async () => healthyModule(), register: registered }),
   );
 });
+
+for (const [name, initPwaInstall] of [
+  ["answers without refresh, as the installed home screen app did", () => ({ dispose() {} })],
+  [
+    "throws on refresh",
+    () => ({
+      refresh() {
+        throw Error("no storage");
+      },
+    }),
+  ],
+  [
+    "throws while starting",
+    () => {
+      throw Error("no dialog");
+    },
+  ],
+]) {
+  test(`the web app starts when the install prompt ${name}`, async () => {
+    await opensTheKitchen(
+      startShell({
+        offlineModule: async () => healthyModule(),
+        register: registered,
+        initPwaInstall,
+      }),
+    );
+  });
+}
 
 test("the web app starts when the offline module cannot load", async () => {
   await opensTheKitchen(
@@ -160,4 +188,12 @@ test("the home screen icon travels inside the page", async () => {
   assert.match(page, /sizes="180x180"/);
   assert.equal(page.includes('href="/apple-touch-icon.png"'), false);
   assert.equal(page.length - html.length < png.length * 1.4, true, "only the icon link changes");
+});
+
+test("a home screen app never keeps a stale shell, only the versioned bundle and images stay cached", () => {
+  for (const file of ["index.html", "pwa-install.js", "offline-client.js", "sw.js", "shell.css"])
+    assert.equal(staticCacheControl(file), "no-cache", file);
+  assert.equal(staticCacheControl("manifest.webmanifest"), "no-cache");
+  for (const file of ["mealie-atelier-cards.js", "apple-touch-icon.png", "favicon.ico"])
+    assert.equal(staticCacheControl(file), "private, max-age=3600", file);
 });

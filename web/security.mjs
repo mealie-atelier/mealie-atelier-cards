@@ -110,6 +110,15 @@ export function packageVersion(raw) {
 }
 
 /** Fills the service worker cache name from the package version, so each release gets a new cache. */
+/**
+ * The app shell is what starts everything else, so a home screen app must never keep a stale copy
+ * of it. Only the bundle (its URL carries the version) and images may stay cached.
+ */
+export function staticCacheControl(filename) {
+  const shell = /\.(html|js|css|webmanifest)$/.test(filename);
+  return shell && filename !== "mealie-atelier-cards.js" ? "no-cache" : "private, max-age=3600";
+}
+
 export function renderServiceWorker(source, version) {
   return source.replaceAll("__ATELIER_VERSION__", version);
 }

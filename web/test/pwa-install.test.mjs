@@ -234,3 +234,20 @@ test("desktop Firefox and Safari get their own steps and no Home Screen wording"
   const phone = getInstallCopy("en", getInstallContext({ userAgent: "Android Chrome" }));
   assert.match(phone.intro, /Home Screen/);
 });
+
+test("the installed app hides the install button and still answers the refresh of the shell", () => {
+  const node = {
+    hidden: false,
+    showModal() {},
+    querySelector: () => null,
+    querySelectorAll: () => [],
+  };
+  const documentRef = { querySelector: () => node, documentElement: { lang: "de" } };
+  const installed = initPwaInstall({
+    documentRef,
+    navigatorRef: { standalone: true, language: "de" },
+    windowRef: {},
+  });
+  assert.equal(node.hidden, true);
+  assert.doesNotThrow(() => installed.refresh("en"));
+});

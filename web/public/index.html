@@ -151,7 +151,15 @@
     </dialog>
     <script type="module">
       import { initPwaInstall } from "/pwa-install.js";
-      const pwaInstall = initPwaInstall();
+      // The install prompt is decoration: it never decides whether the kitchen opens.
+      const decorate = (task) => {
+        try {
+          return task();
+        } catch {
+          return null;
+        }
+      };
+      const pwaInstall = decorate(() => initPwaInstall());
       await import("/mealie-atelier-cards.js?v=0.12.15");
       // The offline queue, alarms and the service worker are extras. When one of them fails or
       // hangs, as phone storage or a sign-in proxy can make them do, the kitchen still opens.
@@ -220,7 +228,7 @@
           foot.textContent = isGerman
             ? "MEALIE ATELIER · PRIVATES KÜCHENSTUDIO · MIT\u00a0MEALIE"
             : "MEALIE ATELIER · PRIVATE KITCHEN STUDIO · POWERED\u00a0BY\u00a0MEALIE";
-        pwaInstall?.refresh(language);
+        decorate(() => pwaInstall?.refresh?.(language));
       };
       syncShellLanguage(card._language);
       card.addEventListener("mealie-atelier-language-change", (event) => {

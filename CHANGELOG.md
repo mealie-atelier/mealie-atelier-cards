@@ -6,6 +6,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Fixed
 
+- Web app installed on the home screen: it no longer hangs on "Das Atelier startet noch". The install prompt can no longer stop the start, and the app shell is revalidated on every launch instead of staying cached for an hour.
+- Nutrition estimate: Vanillezucker and Vanillinzucker count as sugar.
 - Print windows: **Close** and **Print** work in the web app; the toolbar no longer uses inline handlers, which the Content Security Policy blocks.
 - Print studio: the paper preview now follows style, photo, nutrition, checkboxes, notes and completed items.
 - Kochinspo: the cookbook step loads the cookbooks itself and shows them.

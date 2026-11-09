@@ -27,7 +27,7 @@ test("usdaQuery maps German ingredients tolerantly and leaves the rest alone", (
 test("usdaQuery knows at least 80 distinct ingredients", () => {
   const names =
     `Milch Sahne Joghurt Quark Butter Käse Parmesan Mozzarella Feta Ei Eigelb Mehl Vollkornmehl Haferflocken
-    Backpulver Hefe Zucker Puderzucker Honig Salz Pfeffer Zimt Kurkuma Muskat Oregano Thymian Curry Senf Essig Wasser
+    Backpulver Hefe Zucker Puderzucker Vanillezucker Vanillinzucker Honig Salz Pfeffer Zimt Kurkuma Muskat Oregano Thymian Curry Senf Essig Wasser
     Öl Olivenöl Rapsöl Margarine Schmalz Zwiebel Knoblauch Kartoffel Tomate Tomatenmark Karotte Paprika Gurke Zucchini
     Brokkoli Blumenkohl Spinat Salat Lauch Sellerie Champignons Kürbis Mais Kohl Aubergine Ingwer Petersilie Basilikum
     Schnittlauch Apfel Zitrone Banane Orange Birne Erdbeeren Himbeeren Blaubeeren Trauben Rosinen Kirschen Ananas

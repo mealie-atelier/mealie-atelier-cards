@@ -101,6 +101,8 @@ const NUTRI_TERMS = nutriIndex({
   // sugars, sweet
   zucker: "sugars, granulated",
   puderzucker: "sugars, powdered",
+  vanillezucker: "sugars, granulated",
+  vanillinzucker: "sugars, granulated",
   "brauner zucker": "sugars, brown",
   honig: "honey",
   ahornsirup: "syrup, maple",

@@ -150,7 +150,8 @@ export function initPwaInstall({
 
   if (context.isStandalone) {
     trigger.hidden = true;
-    return { context, dispose() {} };
+    // The shell calls refresh on every start, an installed app has nothing to translate here.
+    return { context, refresh() {}, dispose() {} };
   }
 
   const render = () => {

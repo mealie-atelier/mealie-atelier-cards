@@ -178,7 +178,7 @@ test("every file the service worker precaches and the manifest names is served w
         headers: { Authorization: basic },
       });
       assert.equal(r.status, 200, path);
-      assert.match(r.headers.get("cache-control") || "", /max-age/, path);
+      assert.match(r.headers.get("cache-control") || "", /max-age|no-cache/, path);
       const ext = path.slice(path.lastIndexOf("."));
       if (expected[ext]) assert.equal(r.headers.get("content-type"), expected[ext], path);
       await r.arrayBuffer();

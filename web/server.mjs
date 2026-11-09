@@ -49,6 +49,7 @@ import {
   clientAddress,
   inlineScriptHashes,
   inlineTouchIcon,
+  staticCacheControl,
   packageVersion,
   renderServiceWorker,
   securityHeaders,
@@ -1489,7 +1490,7 @@ const server = createServer(async (req, res) => {
     if ((req.method === "GET" || req.method === "HEAD") && FILES[pathname]) {
       const [filename, contentType] = FILES[pathname];
       let data = await readFile(join(ROOT, "public", filename));
-      const headers = { "Cache-Control": "private, max-age=3600" };
+      const headers = { "Cache-Control": staticCacheControl(filename) };
       if (filename === "sw.js") data = renderServiceWorker(data.toString("utf8"), VERSION);
       if (filename === "index.html")
         data = inlineTouchIcon(

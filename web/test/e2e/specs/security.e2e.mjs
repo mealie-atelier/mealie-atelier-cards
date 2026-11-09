@@ -25,7 +25,7 @@ test("every response carries the hardening headers", async () => {
     assert.equal(response.headers.get("x-frame-options"), "DENY", path);
   }
   const index = await fetch(`${baseUrl}/`, { headers: authed });
-  assert.equal(index.headers.get("cache-control"), "private, max-age=3600");
+  assert.equal(index.headers.get("cache-control"), "no-cache");
   const api = await fetch(`${baseUrl}/api/health`, { headers: authed });
   assert.equal(api.headers.get("cache-control"), "no-store");
 });
