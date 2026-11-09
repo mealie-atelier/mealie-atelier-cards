@@ -4,6 +4,20 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- Print windows: **Close** and **Print** work in the web app; the toolbar no longer uses inline handlers, which the Content Security Policy blocks.
+- Print studio: the paper preview now follows style, photo, nutrition, checkboxes, notes and completed items.
+- Kochinspo: the cookbook step loads the cookbooks itself and shows them.
+
+### Changed
+
+- Recipe dialog: main actions stay as buttons, secondary ones are quiet text actions.
+- Recipe source shows the host name, the full address stays in the link.
+- Dialog heads no longer carry decorative round icons.
+- Cookbook page: selection actions are a quiet text row; the analysis action only shows while the catalog is not loaded.
+- Docs and product page: the Bridge is listed in the default catalog and installs by search.
+
 ## [0.12.15] - 2026-11-04
 
 ### Changed

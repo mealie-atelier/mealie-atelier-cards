@@ -33,8 +33,6 @@ export const printActionMethods = {
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
-    popup.document.getElementById("print-now")?.addEventListener("click", () => popup.print());
-    popup.document.getElementById("close-print")?.addEventListener("click", () => popup.close());
-    popup.focus();
+    wirePrintToolbar(popup);
   },
 };

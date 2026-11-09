@@ -164,7 +164,7 @@ test("Home Assistant Mealie fallback is read-only, credential-safe, and visibly 
   );
   assert.match(
     compactDialogs,
-    /this\._providerActive===["']home_assistant["']\?"":`<buttonclass="btn"data-action="nutrition-open"/,
+    /this\._providerActive===["']home_assistant["']\?"":`<buttonclass="text-action"type="button"data-action="nutrition-open"/,
   );
   assert.match(
     compactDialogs,

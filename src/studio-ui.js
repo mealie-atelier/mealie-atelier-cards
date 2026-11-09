@@ -237,6 +237,18 @@ Object.assign(MealieAtelierCard.prototype, {
       this._sessionStepLoading.delete(session.slug);
     }
   },
+  // The cookbook step comes before any catalog load, so its choices cannot wait for one.
+  async _studioLoadCookbooks() {
+    if (this._cookbooksRequested) return;
+    this._cookbooksRequested = true;
+    try {
+      const metadata = await this._ws("metadata");
+      this._studioCookbooks = AtelierStudio.supportedCookbooks(asArray(metadata?.cookbooks));
+      this._render();
+    } catch {
+      this._cookbooksRequested = false;
+    }
+  },
   async _studioCatalog() {
     if (this._fullCatalog?.length) return this._fullCatalog;
     if (this._catalogLoading) return [];
@@ -555,6 +567,7 @@ Object.assign(MealieAtelierCard.prototype, {
       ["meat", this.t("studioDiscoverMeat")],
       ["fish", this.t("studioDiscoverFish")],
     ];
+    if (!this._studioCookbooks) this._studioLoadCookbooks();
     const cookbooks = this._studioCookbooks || [];
     const ingredients = [
       ["Pilze", this.t("ingredientMushrooms")],
@@ -604,9 +617,9 @@ Object.assign(MealieAtelierCard.prototype, {
       ${
         !this._discoverResults
           ? `${AtelierUI.surfaceStart()}<div class="studio-discover-top"><span class="eyebrow">${this.t("studioDiscoverCompass")}</span><span class="studio-discover-stepcount">0${step + 1} <i>/</i> 04</span></div><div class="studio-discover-progress" role="progressbar" aria-label="${this.t("studioDiscoverStepProgress", { step: step + 1 })}" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${step + 1}"><span style="--discover-progress:${((step + 1) / 4) * 100}%"></span></div>
-      <div class="studio-discover-prompt"><h2>${stepName}</h2><p>${[this.t("studioDiscoverQuestion0"), this.t("studioDiscoverQuestion1"), this.t("studioDiscoverQuestion2"), this.t("studioDiscoverQuestion3")][step]}</p></div>
+      <div class="studio-discover-prompt"><h2>${stepName}</h2><p>${[this.t("studioDiscoverQuestion0"), this.t("studioDiscoverCookbooksHint"), this.t("studioDiscoverQuestion2"), this.t("studioDiscoverQuestion3")][step]}</p></div>
       ${step === 0 ? `<div class="studio-choice-grid" role="group" aria-label="${this.t("studioDiscoverDiet")}">${choices.map(([value, label]) => chip("mealStyle", value, label)).join("")}</div><p class="studio-muted studio-discover-note">${this.t("studioDiscoverDietHint")}</p>` : ""}
-      ${step === 1 ? `<div class="studio-discover-label-block"><span class="studio-discover-label">${this.t("studioDiscoverCookbooks")}</span><small>${this.t("studioDiscoverCookbooksHint")}</small></div><div class="studio-choice-grid studio-cookbook-choices" role="group" aria-label="${this.t("studioDiscoverCookbooksAria")}">${chip("cookbooks", "all", this.t("studioDiscoverAllRecipes"))}${cookbooks.map((book) => chip("cookbooks", book.slug, esc(book.name))).join("")}</div>${!cookbooks.length ? `<p class="studio-muted studio-discover-note">${this.t("studioDiscoverNoCookbooks")}</p>` : ""}` : ""}
+      ${step === 1 ? `<div class="studio-choice-grid studio-cookbook-choices" role="group" aria-label="${this.t("studioDiscoverCookbooksAria")}">${chip("cookbooks", "all", this.t("studioDiscoverAllRecipes"))}${cookbooks.map((book) => chip("cookbooks", book.slug, esc(book.name))).join("")}</div>${!cookbooks.length ? `<p class="studio-muted studio-discover-note">${this.t("studioDiscoverNoCookbooks")}</p>` : ""}` : ""}
       ${
         step === 2
           ? `<div class="studio-discover-household"><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverPeople")}</span><small>${this.t("studioDiscoverPeopleHint")}</small></div><div class="studio-counter"><button type="button" data-action="studio-discover-choice" data-key="people" data-value="-1" aria-label="${this.t("studioDiscoverOneLess")}">−</button><output aria-live="polite">${d.people}</output><button type="button" data-action="studio-discover-choice" data-key="people" data-value="1" aria-label="${this.t("studioDiscoverOneMore")}">+</button></div></div><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverKidFriendly")}</span><small>${this.t("studioDiscoverMild")}</small></div><div class="studio-choice-grid studio-choice-grid--compact">${chip("kidFriendly", false, this.t("studioDiscoverAnyPreference"))}${chip("kidFriendly", true, this.t("studioDiscoverWithKids"))}</div></div></div><div class="studio-choice-grid studio-time-choices" role="group" aria-label="${this.t("studioDiscoverTime")}">${AtelierStudio.DISCOVER_MINUTES.map(
@@ -747,7 +760,7 @@ Object.assign(MealieAtelierCard.prototype, {
       this.t("cookbookLead"),
       `
       <div class="studio-grid studio-grid-main ds-grid ds-grid--split">${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookSelectKicker")}</span><h2>${this.t("cookbookCollection")}</h2></div>
-      <div class="studio-actions"><button class="btn" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button><button class="btn" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="btn" data-action="studio-book-clear">${this.t("cookbookClear")}</button></div>
+      <div class="text-actions studio-book-actions"><button class="text-action" type="button" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="text-action" type="button" data-action="studio-book-clear">${this.t("cookbookClear")}</button>${this._fullCatalog?.length ? "" : `<button class="text-action" type="button" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button>`}</div>
       <div class="studio-book-list">${
         candidates
           .slice(0, 120)
@@ -923,11 +936,12 @@ Object.assign(MealieAtelierCard.prototype, {
       )
       .join("");
     const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
-      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media screen and (max-width:840px){.page,.chapter{width:auto;min-height:0;margin:12px;padding:24px 18px}.cover{min-height:70vh}.cover h1{font-size:40px;max-width:none;overflow-wrap:anywhere}.toc h2,.chapter h2{font-size:28px;margin:12px 0 20px}.cols{grid-template-columns:1fr;gap:18px}.toolbar button{padding:10px 16px}}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
-      </style></head><body><nav class="toolbar"><button type="button" onclick="window.print()">${esc(this.t("printSavePdf"))}</button> <button type="button" onclick="window.close()">${esc(this.t("close"))}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
+      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}${PRINT_TOOLBAR_CSS}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media screen and (max-width:840px){.page,.chapter{width:auto;min-height:0;margin:12px;padding:24px 18px}.cover{min-height:70vh}.cover h1{font-size:40px;max-width:none;overflow-wrap:anywhere}.toc h2,.chapter h2{font-size:28px;margin:12px 0 20px}.cols{grid-template-columns:1fr;gap:18px}}@media print{body{background:#fff}.print-toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
+      </style></head><body>${printToolbar(this.t("printSavePdf"), this.t("close"))}<section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
+    wirePrintToolbar(popup);
   },
 });
 MealieAtelierCard.prototype._refresh = async function () {

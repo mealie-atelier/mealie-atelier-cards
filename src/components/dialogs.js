@@ -128,8 +128,11 @@ export const dialogMethods = {
       const sourceUrl = /^https?:\/\//i.test(String(recipe.orgURL || ""))
         ? String(recipe.orgURL)
         : "";
+      const sourceHost = sourceUrl
+        ? sourceUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/[/?#].*$/, "")
+        : "";
       const sourceLine = sourceUrl
-        ? `<p class="recipe-labels"><span>${esc(this.t("uiRecipeSource"))}</span> <a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(sourceUrl)}</a></p>`
+        ? `<p class="recipe-labels"><span>${esc(this.t("uiRecipeSource"))}</span> <a class="recipe-source-link" href="${esc(sourceUrl)}" title="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(sourceHost)} ${icon("external", 12)}</a></p>`
         : "";
       const noteBlocks = asArray(recipe.notes)
         .map((note) => ({
@@ -163,7 +166,7 @@ export const dialogMethods = {
       size = "large";
       content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${inlineMarkdown(recipe.description || "")}</p>
         <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
-        <div class="toolbar recipe-actions"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn" data-action="nutrition-open">${icon("leaf", 16)} ${esc(this.t("nutrition"))}</button>`}<button class="btn" data-action="journal-open">${icon("book", 16)} ${esc(this.t("journal"))}</button><button class="btn" data-action="print-recipe">${icon("print", 16)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button><button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button>` : ""}${this._permissions.can_manage ? `<button class="btn" data-action="edit-form">${icon("edit", 16)} ${esc(this.t("edit"))}</button>` : ""}</div>
+        <div class="recipe-actions"><div class="toolbar recipe-actions-main"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._permissions.can_write ? `<button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button><button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button>` : ""}</div><div class="text-actions">${this._providerActive === "home_assistant" ? "" : `<button class="text-action" type="button" data-action="nutrition-open">${icon("leaf", 15)} ${esc(this.t("nutrition"))}</button>`}<button class="text-action" type="button" data-action="journal-open">${icon("book", 15)} ${esc(this.t("journal"))}</button><button class="text-action" type="button" data-action="print-recipe">${icon("print", 15)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_manage ? `<button class="text-action" type="button" data-action="edit-form">${icon("edit", 15)} ${esc(this.t("edit"))}</button>` : ""}</div></div>
         ${(() => {
           const entry = this._journal[recipe.slug] || {};
           const rating = Math.max(0, Math.min(5, Math.round(Number(entry.rating) || 0)));
@@ -259,7 +262,7 @@ export const dialogMethods = {
       size = "plan-anchored";
       const d = this._planDay || dateYmd(new Date());
       const all = asArray(this._data.mealplan).filter((m) => m.date === d);
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("mealplan").toUpperCase()}</div><h2>${esc(this.t("planNow"))}</h2><p>${this.t("uiPlanMealsQuicklyWithoutClutter")}</p></div><div class="editor-stamp">${icon("calendar", 26)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("mealplan").toUpperCase()}</div><h2>${esc(this.t("planNow"))}</h2><p>${this.t("uiPlanMealsQuicklyWithoutClutter")}</p></div></div>
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogYourMenu")}</div><form class="editor-form" data-form="plan">
           <div class="editor-columns"><label class="field"><span>${esc(this.t("day"))}</span><input type="date" name="date" value="${esc(d)}" required></label>
           <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type">${["dinner", ...this._mealTypes().filter((x) => x !== "dinner")].map((x) => `<option value="${x}">${esc(this._mealTypeLabel(x))}</option>`).join("")}</select></label></div>
@@ -280,10 +283,10 @@ export const dialogMethods = {
         }</div>`;
     }
     if (this._modal === "create")
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div><div class="editor-stamp">${icon("plus", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogRecipeTitle")}</div><form class="editor-form" data-form="create"><label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" data-autofocus placeholder="${this.t("uieGLemonPastaWithSpinach")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("create"))}</button></div></form></section></div>`;
     if (this._modal === "import")
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("importKicker"))}</div><h2>${esc(this.t("import"))}</h2><p>${this.t("uiPasteARecipeLinkMealieHandlesImportingIt")}</p></div><div class="editor-stamp">${icon("external", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("importKicker"))}</div><h2>${esc(this.t("import"))}</h2><p>${this.t("uiPasteARecipeLinkMealieHandlesImportingIt")}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogSource")}</div><form class="editor-form" data-form="import"><label class="field"><span>${esc(this.t("url"))}</span><input type="url" name="url" required maxlength="2000" placeholder="https://…"></label><p class="editor-sub">${esc(this.t("importTip"))}</p><div class="form-actions"><button type="submit" class="btn primary">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></form></section></div>`;
     if (this._modal === "edit" && this._detail) {
       const rec = this._detail;
@@ -291,8 +294,7 @@ export const dialogMethods = {
       size = "large";
       content = `<div class="modal-content atelier-editor">
         <div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogRecipeStudio")}</div><h2>${this.t("uiEditRecipe")}</h2><p class="editor-context">${esc(rec.name)}</p>
-        <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div>
-        <div class="editor-stamp">${icon("edit", 28)}</div></div>
+        <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div></div>
         <form data-form="edit" class="editor-form" novalidate>
         ${this._editorPhotoSection()}
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("editorNameAndDescription"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
@@ -312,7 +314,7 @@ export const dialogMethods = {
         </form></div>`;
     }
     if (this._modal === "create-list")
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("listName"))}</div><form class="editor-form" data-form="create-list"><label class="field"><span>${esc(this.t("listName"))} *</span><input name="name" maxlength="100" required data-autofocus placeholder="${this.t("uieGWeeklyGroceries")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("createList"))}</button></div></form></section></div>`;
     if (this._modal === "shopping-edit") {
       const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
@@ -320,7 +322,7 @@ export const dialogMethods = {
       );
       const from = item ? this._shoppingEditFields(item) : null;
       content = from
-        ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t(from.freeText ? "shoppingEditTipFreeText" : "shoppingEditTip"))}</p></div><div class="editor-stamp">${icon("edit", 27)}</div></div>
+        ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t(from.freeText ? "shoppingEditTipFreeText" : "shoppingEditTip"))}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("itemFallback"))}</div><form class="editor-form" data-form="shopping-edit"><label class="field"><span>${esc(this.t("shoppingItemName"))} *</span><input name="name" maxlength="250" required data-autofocus value="${esc(from.name)}"></label>
       <label class="field"><span>${esc(this.t("shoppingItemQuantity"))}</span><input name="quantity" type="number" inputmode="decimal" min="0" max="100000" step="any" value="${esc(from.quantity || "")}"></label>
       ${from.freeText ? "" : `<label class="field"><span>${esc(this.t("shoppingItemNote"))}</span><input name="note" maxlength="250" value="${esc(from.note)}"></label>`}
@@ -333,12 +335,12 @@ export const dialogMethods = {
           (x) => String(x.shoppingListId) === String(this._activeList),
         ),
       );
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingClearTitle"))}</h2><p>${esc(this.tp("shoppingClearConfirm", count))}</p></div><div class="editor-stamp">${icon("trash", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingClearTitle"))}</h2><p>${esc(this.tp("shoppingClearConfirm", count))}</p></div></div>
       <section class="editor-card"><div class="form-actions"><button type="button" class="btn" data-action="close-modal" data-autofocus>${esc(this.t("shoppingCancel"))}</button><button type="button" class="btn primary" data-action="shopping-clear-confirm" ${count ? "" : "disabled"}>${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button></div></section></div>`;
     }
     if (this._modal === "recipe-to-list" && this._detail) {
       const lists = asArray(this._data.shopping?.lists);
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("shopping")}</div><form class="editor-form" data-form="recipe-to-list">
       ${lists.length ? `<label class="field"><span>${esc(this.t("selectList"))}</span><select name="list_id" required>${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === this._activeList ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></label>` : `<p class="notice">${esc(this.t("addListFirst"))}</p>`}
       <div class="form-actions"><button type="button" class="btn" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>${lists.length ? `<button type="submit" class="btn primary">${icon("cart", 14)} ${esc(this.t("shoppingAddRecipe"))}</button>` : ""}</div></form></section></div>`;
@@ -357,6 +359,7 @@ export const dialogMethods = {
           : this._printKind === "shopping"
             ? asArray(this._data.shopping?.items)
                 .filter((x) => String(x.shoppingListId) === String(this._activeList))
+                .filter((x) => d.print_completed === true || !x.checked)
                 .map((x) => x.display || x.note || x.food?.name || "")
             : Array.from({ length: 7 }, (_, i) => {
                 const day = addDays(this._weekStart, i);
@@ -375,9 +378,48 @@ export const dialogMethods = {
           : this._printKind === "shopping"
             ? ["", ""]
             : [];
+      // The preview follows the rules of buildPrintDocument, so what is ticked here is what gets printed.
+      const printRecipe = this._printKind === "recipe" ? this._detail : null;
+      const paperStyle = ["editorial", "compact", "minimal"].includes(d.print_style)
+        ? d.print_style
+        : "editorial";
+      const paperTick =
+        this._printKind !== "mealplan" && d.print_checkboxes !== false
+          ? '<i class="paper-tick" aria-hidden="true"></i>'
+          : "";
+      const paperDekText = printRecipe
+        ? String(printRecipe.description || "").trim()
+        : this.t("uiPrintPreviewDescription");
+      const paperDek = paperDekText ? `<p>${esc(shortenAtWord(paperDekText, 120))}</p>` : "";
+      const paperImage =
+        printRecipe && paperStyle !== "minimal" && d.print_image === true
+          ? imageOk(printRecipe.imageUrl)
+          : "";
+      const paperPhoto = paperImage
+        ? `<div class="paper-photo"><img src="${esc(paperImage)}" alt=""></div>`
+        : "";
+      const paperMacro = (label, value) => {
+        const clean = String(value ?? "").trim();
+        return clean ? `<div><b>${esc(clean)}</b> ${esc(label)}</div>` : "";
+      };
+      const paperFacts = printRecipe?.nutrition;
+      const paperNutrition =
+        printRecipe && d.print_nutrition === true && paperFacts && typeof paperFacts === "object"
+          ? `<div class="paper-nutrition"><div class="paper-label">${esc(this.t("nutrition"))}</div><div class="paper-macros">${[
+              paperMacro(this.t("printDocCalories"), paperFacts.calories),
+              paperMacro(this.t("printDocProtein"), paperFacts.proteinContent),
+              paperMacro(this.t("printDocCarbs"), paperFacts.carbohydrateContent),
+              paperMacro(this.t("printDocFat"), paperFacts.fatContent),
+            ].join("")}</div></div>`
+          : "";
+      const paperNotes =
+        d.print_notes !== false &&
+        !(printRecipe && asArray(printRecipe.recipeInstructions).length > 18)
+          ? `<div class="paper-notes"><div class="paper-label">${esc(this.t(printRecipe ? "journalNote" : "printNotes"))}</div><i></i><i></i></div>`
+          : "";
       size = "large";
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">${esc(this.t("printStudioEyebrow"))}</div>
-      <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
+      <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div></div>
       <div class="print-setup"><div><div class="eyebrow print-section-heading">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
         ["editorial", this.t("uiPrintEditorial"), this.t("uiPrintEditorialDescription")],
@@ -397,8 +439,8 @@ export const dialogMethods = {
       <label class="editor-check"><input type="checkbox" data-input="print-notes" ${d.print_notes !== false ? "checked" : ""}> ${esc(this.t("uiPrintIncludeNotes"))}</label>
       <button class="btn primary print-submit" type="button" data-action="print-now">${icon("print", 17)} ${esc(this.t("uiPrintOpenPreview"))}</button>
       <p class="print-guide">${esc(this.t("uiPrintGuide"))}${this._printKind === "mealplan" ? ` ${esc(this.t("uiPrintGuideLandscape"))}` : ""}</p></div>
-      <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
-        <h3>${esc(name || this.t("uiYourRecipe"))}</h3><p>${esc(this.t("uiPrintPreviewDescription"))}</p><div class="paper-line"></div><div class="paper-cols">
+      <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper style-${paperStyle} kind-${this._printKind} ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
+        <h3>${esc(name || this.t("uiYourRecipe"))}</h3>${paperDek}<div class="paper-line"></div>${paperPhoto}${paperNutrition}<div class="paper-cols">
           <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintDayMeal") : this.t("uiPrintIngredientsItems"))}</div>${
             this._printKind === "mealplan"
               ? paperIngredients
@@ -409,26 +451,33 @@ export const dialogMethods = {
                   .join("")
               : paperIngredients
                   .slice(0, 7)
-                  .map((x) => `<div class="paper-preview-row">${esc(x)}</div>`)
+                  .map(
+                    (x) =>
+                      `<div class="paper-preview-row">${paperTick}<span>${esc(x)}</span></div>`,
+                  )
                   .join("") || '<div class="paper-preview-row">–</div>'
           }</div>
-          <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintNotesOnly") : this.t("uiPrintPreparationNotes"))}</div>${
-            this._printKind === "mealplan"
-              ? paperIngredients
-                  .map(
-                    () =>
-                      '<div class="paper-preview-row paper-day-row paper-write-row">&nbsp;</div>',
-                  )
-                  .join("")
-              : paperMethod
-                  .slice(0, 5)
-                  .map(
-                    (x, i) =>
-                      `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
-                  )
-                  .join("") || '<div class="paper-preview-row">–</div>'
-          }</div></div>
-          <div class="paper-foot">${esc(this.t("uiPrintDesignedForPaper"))}</div></div></div></div></div>`;
+          ${
+            this._printKind === "shopping"
+              ? ""
+              : `<div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintNotesOnly") : this.t("uiPrintPreparationNotes"))}</div>${
+                  this._printKind === "mealplan"
+                    ? paperIngredients
+                        .map(
+                          () =>
+                            '<div class="paper-preview-row paper-day-row paper-write-row">&nbsp;</div>',
+                        )
+                        .join("")
+                    : paperMethod
+                        .slice(0, 5)
+                        .map(
+                          (x, i) =>
+                            `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
+                        )
+                        .join("") || '<div class="paper-preview-row">–</div>'
+                }</div>`
+          }</div>
+          ${paperNotes}<div class="paper-foot">${esc(this.t("uiPrintDesignedForPaper"))}</div></div></div></div></div>`;
     }
     if (this._modal === "settings") {
       const d = this._design;

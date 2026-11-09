@@ -1,3 +1,18 @@
+// One action bar for every print window: the main action is filled, closing is outlined.
+const PRINT_TOOLBAR_CSS = `.print-toolbar{position:sticky;top:0;z-index:10;background:#1b2c25;padding:14px 20px;display:flex;gap:10px;justify-content:center;align-items:center;box-shadow:0 9px 30px #0002}
+  .print-toolbar button{border:1px solid #ffffff55;background:transparent;color:white;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:650;cursor:pointer}
+  .print-toolbar button:hover{border-color:#ffffffaa}
+  .print-toolbar .primary{background:#a8c5ac;color:#15291c;border-color:#a8c5ac;font-weight:750}`;
+function printToolbar(printLabel, closeLabel) {
+  return `<nav class="print-toolbar"><button type="button" class="primary" id="print-now">${esc(printLabel)}</button><button type="button" id="close-print">${esc(closeLabel)}</button></nav>`;
+}
+// The window inherits the CSP of its opener, so inline onclick handlers never run in it.
+function wirePrintToolbar(popup) {
+  popup.document.getElementById("print-now")?.addEventListener("click", () => popup.print());
+  popup.document.getElementById("close-print")?.addEventListener("click", () => popup.close());
+  popup.focus();
+}
+
 // Build a standalone print document and escape every Mealie field before rendering it.
 function buildPrintDocument(
   kind,
@@ -157,9 +172,7 @@ function buildPrintDocument(
   const css = `
   :root{--paper:#fffefb;--ink:#22352d;--soft:#627568;--sage:#8a9e8d;--rule:#d7ded5;--pale:#f1f4ef}
   *{box-sizing:border-box} html,body{margin:0} body{background:#e8ede8;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-  .print-toolbar{position:sticky;top:0;z-index:10;background:#1b2c25;padding:14px 20px;display:flex;gap:10px;justify-content:center;align-items:center;box-shadow:0 9px 30px #0002}
-  .print-toolbar button{border:1px solid #ffffff55;background:transparent;color:white;border-radius:10px;padding:11px 16px;font:650 13px inherit;cursor:pointer}
-  .print-toolbar .primary{background:#a8c5ac;color:#15291c;border:0;font-weight:750}
+  ${PRINT_TOOLBAR_CSS}
   .sheet{width:210mm;min-height:297mm;margin:26px auto 40px;background:var(--paper);padding:17mm 17mm 14mm;box-shadow:0 22px 60px #1831222e}
   .sheet.landscape{width:297mm;min-height:210mm;padding:15mm 17mm}
   .masthead{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:30px;color:var(--soft);font-size:9px;font-weight:800;letter-spacing:2px}
@@ -219,7 +232,7 @@ function buildPrintDocument(
   @media(max-width:590px){.sheet{padding:23px 18px}.print-toolbar{flex-wrap:wrap}.masthead{flex-wrap:wrap}.masthead .atelier-credit{width:100%;justify-content:flex-end}.week-print{grid-template-columns:repeat(2,minmax(0,1fr))}.shopping-items.two-columns{columns:1}h1{font-size:30px}}
   `;
   return `<!DOCTYPE html><html lang="${esc(locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(pageName || "Mealie Atelier")}</title><style>${css}</style></head>
-   <body><nav class="print-toolbar"><button type="button" class="primary" id="print-now">${esc(words.print)}</button><button type="button" id="close-print">${esc(words.close)}</button></nav>
+   <body>${printToolbar(words.print, words.close)}
    <article class="sheet ${landscape ? "landscape" : ""} ${photo ? "has-photo" : ""} ${esc(style)}"><header class="masthead"><span class="logo">MEALIE <b>ATELIER</b></span><span>${esc(t("printEdition"))}</span>${AtelierUI.attribution({ lead: t("creditMadeWith"), by: t("creditBy") })}</header>
    <section class="document-heading">${heading}</section>${body}${kind === "recipe" && instructions.length > 18 ? "" : `<footer class="footer"><span>${esc(words.made)}</span><span>${esc(words.created)}</span></footer>`}</article></body></html>`;
 }

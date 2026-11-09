@@ -163,7 +163,13 @@
   margin-block-end: var(--ds-space-5);
 }
 .atelier .recipe-actions {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-5);
+}
+.atelier .recipe-actions-main {
   flex-wrap: wrap;
+  margin-block-end: 0;
 }
 .atelier .editing-hint {
   margin-block-start: var(--ds-space-3);

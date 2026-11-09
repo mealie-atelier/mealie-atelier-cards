@@ -88,7 +88,15 @@ test("failed meal plan delete restores the entry, failed add removes the pending
 
 test("a skipped recipe fetch in the cookbook print is surfaced and the rest is still printed", async () => {
   const written = [];
-  const popup = { document: { write: (html) => written.push(html), open() {}, close() {} } };
+  const popup = {
+    document: {
+      write: (html) => written.push(html),
+      open() {},
+      close() {},
+      getElementById: () => null,
+    },
+    focus() {},
+  };
   const cards = loadCards({ window: { open: () => popup } });
   const card = makeCard(cards, {
     hass: {

@@ -1327,17 +1327,6 @@ ha-card {
   line-height: 1.65;
   max-width: 550px;
 }
-.atelier .editor-stamp {
-  width: 58px;
-  height: 58px;
-  border: 1px solid var(--at-line);
-  border-radius: 18px;
-  background: var(--at-panel2);
-  display: grid;
-  place-items: center;
-  color: var(--ds-brand-text);
-  flex-shrink: 0;
-}
 .atelier .editor-form {
   display: grid;
   gap: 15px;

@@ -838,3 +838,194 @@
 .atelier .editor-form > .editor-sub:has(+ .form-actions) {
   margin-block-end: 0;
 }
+
+/* Secondary actions read as text, so the main action of a view stays obvious. */
+.atelier .text-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--ds-space-5);
+}
+.atelier .text-action {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--at-sub);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--ds-motion-base) var(--ds-motion-ease);
+}
+.atelier .text-action:hover {
+  color: var(--at-ink);
+}
+.atelier .text-action:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.atelier .studio-book-actions {
+  margin-block-end: var(--ds-space-2);
+}
+
+.atelier .settings-group > .settings-hint + .btn {
+  margin-block-start: var(--ds-space-3);
+}
+
+/* A source link names the site; the full address stays in the tooltip. */
+.atelier .recipe-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: inherit;
+  text-decoration: none;
+}
+.atelier .recipe-source-link:hover {
+  color: var(--at-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Cookbook choices are a calm tick list, one line per book. */
+.atelier .studio-cookbook-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 0 var(--ds-space-5);
+}
+.atelier .studio-cookbook-choices .studio-choice {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 0;
+  border: 0;
+  border-block-end: 1px solid var(--at-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--at-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: start;
+}
+.atelier .studio-cookbook-choices .studio-choice::before {
+  content: "";
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--at-sub);
+  border-radius: 4px;
+}
+.atelier .studio-cookbook-choices .studio-choice:hover {
+  background: transparent;
+  border-block-end-color: var(--at-sub);
+}
+.atelier .studio-cookbook-choices .studio-choice.is-selected {
+  background: transparent;
+  box-shadow: none;
+  border-block-end-color: var(--at-line);
+  font-weight: 700;
+}
+.atelier .studio-cookbook-choices .studio-choice.is-selected::before {
+  border-color: var(--ds-brand);
+  background: var(--ds-brand);
+  box-shadow: inset 0 0 0 2.5px var(--at-panel);
+}
+.atelier .studio-cookbook-choices .studio-choice:first-child {
+  grid-column: 1 / -1;
+}
+
+/* Paper preview: each print option changes the sheet the way it changes the document. */
+.atelier .print-paper .paper-cols {
+  min-height: 0;
+  overflow: hidden;
+}
+.atelier .print-paper.kind-shopping .paper-cols {
+  grid-template-columns: 1fr;
+}
+.atelier .print-paper .paper-preview-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.atelier .print-paper .paper-preview-row > span {
+  all: unset;
+  min-width: 0;
+}
+.atelier .print-paper .paper-tick {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-block-start: 2px;
+  border: 1px solid #93a99a;
+  border-radius: 1.5px;
+}
+.atelier .print-paper .paper-photo {
+  flex: none;
+  height: 20%;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.atelier .print-paper .paper-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .print-paper .paper-nutrition {
+  flex: none;
+  display: grid;
+  gap: 4px;
+}
+.atelier .print-paper .paper-macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  color: #53685c;
+  font-size: 8px;
+}
+.atelier .print-paper .paper-macros b {
+  color: #23392c;
+  font-size: 10px;
+}
+.atelier .print-paper .paper-notes {
+  flex: none;
+  display: grid;
+  gap: 10px;
+}
+.atelier .print-paper .paper-notes i {
+  display: block;
+  height: 1px;
+  background: #d7ded5;
+}
+.atelier .print-paper.style-compact {
+  gap: 8px;
+}
+.atelier .print-paper.style-compact h3 {
+  font-size: 17px;
+}
+.atelier .print-paper.style-compact .paper-preview-row {
+  padding: 2px 0;
+  font-size: 8px;
+  line-height: 1.3;
+}
+.atelier .print-paper.style-compact .paper-col {
+  gap: 4px;
+}
+.atelier
+  .print-paper.style-minimal
+  :is(.paper-kicker, .paper-foot, .paper-label, .paper-preview-row b) {
+  color: #65716c;
+}
+.atelier .print-paper.style-minimal .paper-tick {
+  border-color: #67716b;
+}

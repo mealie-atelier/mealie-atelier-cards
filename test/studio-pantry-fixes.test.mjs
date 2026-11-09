@@ -81,7 +81,9 @@ test("the cookbook print preview offers a close button and a viewport meta", asy
       write: (html) => (written = html),
       open() {},
       close() {},
+      getElementById: () => null,
     },
+    focus() {},
   };
   const card = makeCard(loadCards({ window: { open: () => popup } }));
   card._fullCatalog = [
@@ -91,7 +93,8 @@ test("the cookbook print preview offers a close button and a viewport meta", asy
   await card._studioPrintBook({ title: "T", subtitle: "S", photos: false });
   assert.match(written, /name="viewport"/);
   assert.match(written, /@media screen and \(max-width:840px\)\{\.page,\.chapter\{width:auto/);
-  assert.match(written, /window\.close\(\)">Close</);
+  assert.match(written, /id="close-print"[^>]*>Close</);
+  assert.doesNotMatch(written, /\sonclick=/, "the app CSP blocks inline handlers in the popup");
 });
 
 test("deleting the row under edit clears the edit target and typed values survive a re-render", async () => {

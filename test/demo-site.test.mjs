@@ -145,8 +145,13 @@ test("landing pages state the install route and setup facts correctly", () => {
   );
   assert.match(de, /im Marketplace oder in HACS nach „Mealie Atelier Cards“ suchen/);
   // The catalog feed lags behind the merge, so the install card keeps a fallback for the Cards.
-  assert.match(de, /Findet die Suche sie noch nicht, gehen sie den Weg der Bridge\./);
-  assert.match(en, /if the search does not find them yet, they take the Bridge route\./);
+  assert.match(de, /Findet die Suche sie noch nicht, hilft derselbe Ausweg\./);
+  assert.match(en, /If the search does not find them yet, the same fallback applies\./);
+  // The Bridge is listed too: search first, the link route only as the fallback.
+  assert.match(de, /im Marketplace oder in HACS nach „Mealie Atelier Bridge“ suchen/);
+  assert.match(en, /search for “Mealie Atelier Bridge” in the Marketplace or in HACS/);
+  assert.doesNotMatch(de, /eingereicht|wartet noch auf die Prüfung/);
+  assert.doesNotMatch(en, /is submitted|waits for review/);
   // The German page uses the German Home Assistant label, never the English one.
   assert.doesNotMatch(de, /Add from link/);
   assert.match(en, /search for “Mealie Atelier Cards” in the Marketplace or in HACS/);
@@ -160,7 +165,7 @@ test("landing pages state the install route and setup facts correctly", () => {
     assert.match(html, /docker compose up -d --build/);
     assert.match(html, /OpenAI/);
     assert.match(html, /Anthropic/);
-    // The Bridge listing is submitted, not merged, so nothing may promise it is live today.
+    // The catalog feed lags behind the merge, so nothing may promise the packages are live everywhere.
     assert.doesNotMatch(html, /jetzt im Marketplace|now in the Marketplace/i);
     assert.doesNotMatch(
       html,

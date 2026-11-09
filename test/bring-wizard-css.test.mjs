@@ -31,13 +31,6 @@ test("the wizard action row has air above it and stays in view", () => {
   assert.match(nav, /background:\s*var\(--bw-nav-bg\)/);
 });
 
-test("the header cart glyph has no button-like circle and is hidden from assistive tech", () => {
-  const stamp = rule(".atelier .sync-panel .editor-stamp");
-  assert.match(stamp, /border:\s*0/);
-  assert.match(stamp, /background:\s*transparent/);
-  assert.match(bundle, /class="editor-stamp" aria-hidden="true"/);
-});
-
 test("the phone layout drops the inner card frame and fills the screen", () => {
   const phone = css.slice(css.indexOf("/* Phone:"));
   assert.match(phone, /@container atelier-card \(max-width: 460px\)/);
@@ -91,26 +84,5 @@ test("the reauth paragraph sits clear of the account heading, tighter on a phone
   assert.match(
     phone,
     /\.bw-account \.bw-account-head \+ \.bw-text\s*\{[^}]*margin-block-start:\s*var\(--ds-space-3\)/,
-  );
-});
-
-test("the cart glyph in the sync dialog header is centered on the close button, scoped to the sync panel", () => {
-  const rules = [...css.matchAll(/\n(\.atelier [^{]*\.editor-stamp)\s*\{([^}]*)\}/g)];
-  const glyph = rules.find(
-    ([, selector, body]) =>
-      selector === ".atelier .sync-panel .editor-stamp" && /margin-block-start/.test(body),
-  );
-  assert.ok(glyph, "a rule shifts the glyph in the sync panel only");
-  const body = glyph[2].replace(/\s+/g, " ");
-  assert.match(body, /block-size:\s*var\(--bw-glyph\)/);
-  // 20px inset + half the close button, minus the dialog padding and half the glyph.
-  assert.match(
-    body,
-    /margin-block-start:\s*calc\(\s*20px \+ var\(--at-close-size, 48px\) \/ 2 - var\(--bw-pad, clamp\(24px, 3\.1cqi, 45px\)\) - var\(--bw-glyph\) \/ 2 \)/,
-  );
-  assert.match(
-    bundle,
-    /margin-block-start:\s*calc\(\s*20px \+ var\(--at-close-size, 48px\) \/ 2/,
-    "the bundle carries the rule",
   );
 });

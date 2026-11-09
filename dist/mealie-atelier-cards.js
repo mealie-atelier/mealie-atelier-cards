@@ -1517,17 +1517,6 @@ ha-card {
   line-height: 1.65;
   max-width: 550px;
 }
-.atelier .editor-stamp {
-  width: 58px;
-  height: 58px;
-  border: 1px solid var(--at-line);
-  border-radius: 18px;
-  background: var(--at-panel2);
-  display: grid;
-  place-items: center;
-  color: var(--ds-brand-text);
-  flex-shrink: 0;
-}
 .atelier .editor-form {
   display: grid;
   gap: 15px;
@@ -2556,11 +2545,6 @@ ha-card {
 }
 .atelier .editor-lead p {
   font-size: 13px;
-}
-.atelier .editor-stamp {
-  border-radius: 50%;
-  height: 55px;
-  width: 55px;
 }
 .atelier .editor-card {
   border-radius: 18px;
@@ -7354,7 +7338,13 @@ ha-card {
   margin-block-end: var(--ds-space-5);
 }
 .atelier .recipe-actions {
+  display: grid;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-5);
+}
+.atelier .recipe-actions-main {
   flex-wrap: wrap;
+  margin-block-end: 0;
 }
 .atelier .editing-hint {
   margin-block-start: var(--ds-space-3);
@@ -9824,9 +9814,6 @@ ha-card {
   }
 }
 @container atelier-card (max-width:460px) {
-  .atelier .editor-stamp {
-    display: none;
-  }
   .atelier .editor-lead {
     margin-bottom: 22px;
   }
@@ -12042,6 +12029,197 @@ ha-card {
   margin-block-end: 0;
 }
 
+/* Secondary actions read as text, so the main action of a view stays obvious. */
+.atelier .text-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--ds-space-5);
+}
+.atelier .text-action {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--at-sub);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--ds-motion-base) var(--ds-motion-ease);
+}
+.atelier .text-action:hover {
+  color: var(--at-ink);
+}
+.atelier .text-action:focus-visible {
+  outline: 2px solid var(--ds-brand);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.atelier .studio-book-actions {
+  margin-block-end: var(--ds-space-2);
+}
+
+.atelier .settings-group > .settings-hint + .btn {
+  margin-block-start: var(--ds-space-3);
+}
+
+/* A source link names the site; the full address stays in the tooltip. */
+.atelier .recipe-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: inherit;
+  text-decoration: none;
+}
+.atelier .recipe-source-link:hover {
+  color: var(--at-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Cookbook choices are a calm tick list, one line per book. */
+.atelier .studio-cookbook-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 0 var(--ds-space-5);
+}
+.atelier .studio-cookbook-choices .studio-choice {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 0;
+  border: 0;
+  border-block-end: 1px solid var(--at-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--at-ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: start;
+}
+.atelier .studio-cookbook-choices .studio-choice::before {
+  content: "";
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--at-sub);
+  border-radius: 4px;
+}
+.atelier .studio-cookbook-choices .studio-choice:hover {
+  background: transparent;
+  border-block-end-color: var(--at-sub);
+}
+.atelier .studio-cookbook-choices .studio-choice.is-selected {
+  background: transparent;
+  box-shadow: none;
+  border-block-end-color: var(--at-line);
+  font-weight: 700;
+}
+.atelier .studio-cookbook-choices .studio-choice.is-selected::before {
+  border-color: var(--ds-brand);
+  background: var(--ds-brand);
+  box-shadow: inset 0 0 0 2.5px var(--at-panel);
+}
+.atelier .studio-cookbook-choices .studio-choice:first-child {
+  grid-column: 1 / -1;
+}
+
+/* Paper preview: each print option changes the sheet the way it changes the document. */
+.atelier .print-paper .paper-cols {
+  min-height: 0;
+  overflow: hidden;
+}
+.atelier .print-paper.kind-shopping .paper-cols {
+  grid-template-columns: 1fr;
+}
+.atelier .print-paper .paper-preview-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.atelier .print-paper .paper-preview-row > span {
+  all: unset;
+  min-width: 0;
+}
+.atelier .print-paper .paper-tick {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-block-start: 2px;
+  border: 1px solid #93a99a;
+  border-radius: 1.5px;
+}
+.atelier .print-paper .paper-photo {
+  flex: none;
+  height: 20%;
+  overflow: hidden;
+  border-radius: 2px;
+}
+.atelier .print-paper .paper-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.atelier .print-paper .paper-nutrition {
+  flex: none;
+  display: grid;
+  gap: 4px;
+}
+.atelier .print-paper .paper-macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  color: #53685c;
+  font-size: 8px;
+}
+.atelier .print-paper .paper-macros b {
+  color: #23392c;
+  font-size: 10px;
+}
+.atelier .print-paper .paper-notes {
+  flex: none;
+  display: grid;
+  gap: 10px;
+}
+.atelier .print-paper .paper-notes i {
+  display: block;
+  height: 1px;
+  background: #d7ded5;
+}
+.atelier .print-paper.style-compact {
+  gap: 8px;
+}
+.atelier .print-paper.style-compact h3 {
+  font-size: 17px;
+}
+.atelier .print-paper.style-compact .paper-preview-row {
+  padding: 2px 0;
+  font-size: 8px;
+  line-height: 1.3;
+}
+.atelier .print-paper.style-compact .paper-col {
+  gap: 4px;
+}
+.atelier
+  .print-paper.style-minimal
+  :is(.paper-kicker, .paper-foot, .paper-label, .paper-preview-row b) {
+  color: #65716c;
+}
+.atelier .print-paper.style-minimal .paper-tick {
+  border-color: #67716b;
+}
+
 /* Structured recipe editor (feature B): ingredient rows, comboboxes, history and photo uploads.
    Time values come from the motion tokens; touch targets are at least 44px. */
 .atelier .ed-actions {
@@ -12998,28 +13176,6 @@ ha-card {
   margin-block-start: 0;
 }
 
-/* The cart glyph in the dialog header is decoration, not a second button next to Close. */
-.atelier .sync-panel .editor-stamp {
-  inline-size: auto;
-  block-size: auto;
-  border: 0;
-  background: transparent;
-  color: var(--ds-muted);
-  opacity: 0.75;
-}
-/* The glyph's center sits on the close button's center (the sticky button is inset 20px from the dialog top and
-   48px tall wherever the stamp shows; --at-close-size is set on the button itself, so the fallback applies),
-   whatever the dialog padding: the header starts one padding below the top, so the glyph is pulled up by the
-   difference and by half its own height, which leaves the title where it was. */
-.atelier .sync-panel .editor-stamp {
-  --bw-glyph: 26px;
-  block-size: var(--bw-glyph);
-  margin-block-start: calc(
-    20px + var(--at-close-size, 48px) / 2 - var(--bw-pad, clamp(24px, 3.1cqi, 45px)) -
-      var(--bw-glyph) / 2
-  );
-}
-
 /* Compact dialog header for the wizard so the first screen holds the step and its actions. */
 .atelier .bw-wizard .editor-lead {
   margin-block-end: 0;
@@ -13778,6 +13934,21 @@ function dayString(locale, day, opts) {
 }
 
 /** Dedicated print documents. No token/credentials or arbitrary HTML from Mealie is interpolated. */
+// One action bar for every print window: the main action is filled, closing is outlined.
+const PRINT_TOOLBAR_CSS = `.print-toolbar{position:sticky;top:0;z-index:10;background:#1b2c25;padding:14px 20px;display:flex;gap:10px;justify-content:center;align-items:center;box-shadow:0 9px 30px #0002}
+  .print-toolbar button{border:1px solid #ffffff55;background:transparent;color:white;border-radius:10px;padding:11px 16px;font-family:inherit;font-size:13px;font-weight:650;cursor:pointer}
+  .print-toolbar button:hover{border-color:#ffffffaa}
+  .print-toolbar .primary{background:#a8c5ac;color:#15291c;border-color:#a8c5ac;font-weight:750}`;
+function printToolbar(printLabel, closeLabel) {
+  return `<nav class="print-toolbar"><button type="button" class="primary" id="print-now">${esc(printLabel)}</button><button type="button" id="close-print">${esc(closeLabel)}</button></nav>`;
+}
+// The window inherits the CSP of its opener, so inline onclick handlers never run in it.
+function wirePrintToolbar(popup) {
+  popup.document.getElementById("print-now")?.addEventListener("click", () => popup.print());
+  popup.document.getElementById("close-print")?.addEventListener("click", () => popup.close());
+  popup.focus();
+}
+
 // Build a standalone print document and escape every Mealie field before rendering it.
 function buildPrintDocument(
   kind,
@@ -13937,9 +14108,7 @@ function buildPrintDocument(
   const css = `
   :root{--paper:#fffefb;--ink:#22352d;--soft:#627568;--sage:#8a9e8d;--rule:#d7ded5;--pale:#f1f4ef}
   *{box-sizing:border-box} html,body{margin:0} body{background:#e8ede8;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-  .print-toolbar{position:sticky;top:0;z-index:10;background:#1b2c25;padding:14px 20px;display:flex;gap:10px;justify-content:center;align-items:center;box-shadow:0 9px 30px #0002}
-  .print-toolbar button{border:1px solid #ffffff55;background:transparent;color:white;border-radius:10px;padding:11px 16px;font:650 13px inherit;cursor:pointer}
-  .print-toolbar .primary{background:#a8c5ac;color:#15291c;border:0;font-weight:750}
+  ${PRINT_TOOLBAR_CSS}
   .sheet{width:210mm;min-height:297mm;margin:26px auto 40px;background:var(--paper);padding:17mm 17mm 14mm;box-shadow:0 22px 60px #1831222e}
   .sheet.landscape{width:297mm;min-height:210mm;padding:15mm 17mm}
   .masthead{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:30px;color:var(--soft);font-size:9px;font-weight:800;letter-spacing:2px}
@@ -13999,7 +14168,7 @@ function buildPrintDocument(
   @media(max-width:590px){.sheet{padding:23px 18px}.print-toolbar{flex-wrap:wrap}.masthead{flex-wrap:wrap}.masthead .atelier-credit{width:100%;justify-content:flex-end}.week-print{grid-template-columns:repeat(2,minmax(0,1fr))}.shopping-items.two-columns{columns:1}h1{font-size:30px}}
   `;
   return `<!DOCTYPE html><html lang="${esc(locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(pageName || "Mealie Atelier")}</title><style>${css}</style></head>
-   <body><nav class="print-toolbar"><button type="button" class="primary" id="print-now">${esc(words.print)}</button><button type="button" id="close-print">${esc(words.close)}</button></nav>
+   <body>${printToolbar(words.print, words.close)}
    <article class="sheet ${landscape ? "landscape" : ""} ${photo ? "has-photo" : ""} ${esc(style)}"><header class="masthead"><span class="logo">MEALIE <b>ATELIER</b></span><span>${esc(t("printEdition"))}</span>${AtelierUI.attribution({ lead: t("creditMadeWith"), by: t("creditBy") })}</header>
    <section class="document-heading">${heading}</section>${body}${kind === "recipe" && instructions.length > 18 ? "" : `<footer class="footer"><span>${esc(words.made)}</span><span>${esc(words.created)}</span></footer>`}</article></body></html>`;
 }
@@ -17408,9 +17577,7 @@ const printActionMethods = {
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
-    popup.document.getElementById("print-now")?.addEventListener("click", () => popup.print());
-    popup.document.getElementById("close-print")?.addEventListener("click", () => popup.close());
-    popup.focus();
+    wirePrintToolbar(popup);
   },
 }
 
@@ -17437,7 +17604,7 @@ const nutritionJournalMethods = {
       n.preview.existing && Object.values(n.preview.existing).some((v) => v !== null && v !== ""),
     );
     const report = n.report;
-    return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div><div class="editor-stamp">${icon("leaf", 27)}</div></div>
+    return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div></div>
       <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong class="at-numeral">${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.tp("uiServing", Number(n.preview.servings) || 0))}</span></div>
       ${!n.preview.fdc_enabled ? `<div class="nutri-alert">${this.t(this._isWebApp ? "uiUsdaKeyMissingWeb" : "nutriUsdaKeyMissingHa")}</div>` : ""}
       ${existing ? `<div class="nutri-alert">${this.t("uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt")}</div>` : ""}
@@ -17610,8 +17777,11 @@ const dialogMethods = {
       const sourceUrl = /^https?:\/\//i.test(String(recipe.orgURL || ""))
         ? String(recipe.orgURL)
         : "";
+      const sourceHost = sourceUrl
+        ? sourceUrl.replace(/^https?:\/\/(www\.)?/i, "").replace(/[/?#].*$/, "")
+        : "";
       const sourceLine = sourceUrl
-        ? `<p class="recipe-labels"><span>${esc(this.t("uiRecipeSource"))}</span> <a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(sourceUrl)}</a></p>`
+        ? `<p class="recipe-labels"><span>${esc(this.t("uiRecipeSource"))}</span> <a class="recipe-source-link" href="${esc(sourceUrl)}" title="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">${esc(sourceHost)} ${icon("external", 12)}</a></p>`
         : "";
       const noteBlocks = asArray(recipe.notes)
         .map((note) => ({
@@ -17645,7 +17815,7 @@ const dialogMethods = {
       size = "large";
       content = `<div class="modal-hero">${img || icon("utensils", 78)}</div><div class="modal-content"><div class="eyebrow">${esc(recipeEyebrow)}</div><h2 class="recipe-title">${esc(recipe.name)}</h2><p class="description">${inlineMarkdown(recipe.description || "")}</p>
         <div class="recipe-meta"><span class="pill">${icon("clock", 12)} ${esc(AtelierStudio.formatTime(recipe.totalTime, this._language) || "—")}</span><span class="pill">${icon("utensils", 12)} ${esc(scaledYield)}</span></div>
-        <div class="toolbar recipe-actions"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._providerActive === "home_assistant" ? "" : `<button class="btn" data-action="nutrition-open">${icon("leaf", 16)} ${esc(this.t("nutrition"))}</button>`}<button class="btn" data-action="journal-open">${icon("book", 16)} ${esc(this.t("journal"))}</button><button class="btn" data-action="print-recipe">${icon("print", 16)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_write ? `<button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button><button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button>` : ""}${this._permissions.can_manage ? `<button class="btn" data-action="edit-form">${icon("edit", 16)} ${esc(this.t("edit"))}</button>` : ""}</div>
+        <div class="recipe-actions"><div class="toolbar recipe-actions-main"><button class="btn primary" data-action="cook-start" ${!steps.length ? "disabled" : ""}>${icon("utensils", 16)} ${esc(this.t("cookStart"))}</button>${this._permissions.can_write ? `<button class="btn" data-action="recipe-to-list-form">${icon("cart", 16)} ${esc(this.t("shoppingFromRecipe"))}</button><button class="btn" data-action="plan-form" data-value="${dateYmd(new Date())}">${icon("calendar", 16)} ${esc(this.t("addToPlan"))}</button>` : ""}</div><div class="text-actions">${this._providerActive === "home_assistant" ? "" : `<button class="text-action" type="button" data-action="nutrition-open">${icon("leaf", 15)} ${esc(this.t("nutrition"))}</button>`}<button class="text-action" type="button" data-action="journal-open">${icon("book", 15)} ${esc(this.t("journal"))}</button><button class="text-action" type="button" data-action="print-recipe">${icon("print", 15)} ${this.t("uiPrintPDF")}</button>${this._permissions.can_manage ? `<button class="text-action" type="button" data-action="edit-form">${icon("edit", 15)} ${esc(this.t("edit"))}</button>` : ""}</div></div>
         ${(() => {
           const entry = this._journal[recipe.slug] || {};
           const rating = Math.max(0, Math.min(5, Math.round(Number(entry.rating) || 0)));
@@ -17741,7 +17911,7 @@ const dialogMethods = {
       size = "plan-anchored";
       const d = this._planDay || dateYmd(new Date());
       const all = asArray(this._data.mealplan).filter((m) => m.date === d);
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("mealplan").toUpperCase()}</div><h2>${esc(this.t("planNow"))}</h2><p>${this.t("uiPlanMealsQuicklyWithoutClutter")}</p></div><div class="editor-stamp">${icon("calendar", 26)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("mealplan").toUpperCase()}</div><h2>${esc(this.t("planNow"))}</h2><p>${this.t("uiPlanMealsQuicklyWithoutClutter")}</p></div></div>
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogYourMenu")}</div><form class="editor-form" data-form="plan">
           <div class="editor-columns"><label class="field"><span>${esc(this.t("day"))}</span><input type="date" name="date" value="${esc(d)}" required></label>
           <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type">${["dinner", ...this._mealTypes().filter((x) => x !== "dinner")].map((x) => `<option value="${x}">${esc(this._mealTypeLabel(x))}</option>`).join("")}</select></label></div>
@@ -17762,10 +17932,10 @@ const dialogMethods = {
         }</div>`;
     }
     if (this._modal === "create")
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div><div class="editor-stamp">${icon("plus", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogNewRecipe")}</div><h2>${esc(this.t("create"))}</h2><p>${this.t("uiStartWithARecipeTitleAddDetailsAfterCreating")}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogRecipeTitle")}</div><form class="editor-form" data-form="create"><label class="field"><span>${esc(this.t("name"))} *</span><input name="name" required maxlength="120" data-autofocus placeholder="${this.t("uieGLemonPastaWithSpinach")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("create"))}</button></div></form></section></div>`;
     if (this._modal === "import")
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("importKicker"))}</div><h2>${esc(this.t("import"))}</h2><p>${this.t("uiPasteARecipeLinkMealieHandlesImportingIt")}</p></div><div class="editor-stamp">${icon("external", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("importKicker"))}</div><h2>${esc(this.t("import"))}</h2><p>${this.t("uiPasteARecipeLinkMealieHandlesImportingIt")}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogSource")}</div><form class="editor-form" data-form="import"><label class="field"><span>${esc(this.t("url"))}</span><input type="url" name="url" required maxlength="2000" placeholder="https://…"></label><p class="editor-sub">${esc(this.t("importTip"))}</p><div class="form-actions"><button type="submit" class="btn primary">${icon("arrow", 14)} ${esc(this.t("import"))}</button></div></form></section></div>`;
     if (this._modal === "edit" && this._detail) {
       const rec = this._detail;
@@ -17773,8 +17943,7 @@ const dialogMethods = {
       size = "large";
       content = `<div class="modal-content atelier-editor">
         <div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${this.t("dialogRecipeStudio")}</div><h2>${this.t("uiEditRecipe")}</h2><p class="editor-context">${esc(rec.name)}</p>
-        <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div>
-        <div class="editor-stamp">${icon("edit", 28)}</div></div>
+        <p>${this.t("uiDetailsIngredientsAndInstructionsInOneClearWorkflow")}</p></div></div>
         <form data-form="edit" class="editor-form" novalidate>
         ${this._editorPhotoSection()}
         <section class="editor-card"><div class="eyebrow">01 / ${this.t("dialogBasics")}</div><h3>${esc(this.t("editorNameAndDescription"))}</h3><p class="editor-sub">${this.t("uiYourRecipeTitleSummaryAndServingSize")}</p>
@@ -17794,7 +17963,7 @@ const dialogMethods = {
         </form></div>`;
     }
     if (this._modal === "create-list")
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("createList"))}</h2><p>${this.t("uiGiveYourShoppingListAName")}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("listName"))}</div><form class="editor-form" data-form="create-list"><label class="field"><span>${esc(this.t("listName"))} *</span><input name="name" maxlength="100" required data-autofocus placeholder="${this.t("uieGWeeklyGroceries")}"></label><div class="form-actions"><button type="submit" class="btn primary">${icon("plus", 14)} ${esc(this.t("createList"))}</button></div></form></section></div>`;
     if (this._modal === "shopping-edit") {
       const item = this._offlineItems(asArray(this._data.shopping?.items)).find(
@@ -17802,7 +17971,7 @@ const dialogMethods = {
       );
       const from = item ? this._shoppingEditFields(item) : null;
       content = from
-        ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t(from.freeText ? "shoppingEditTipFreeText" : "shoppingEditTip"))}</p></div><div class="editor-stamp">${icon("edit", 27)}</div></div>
+        ? `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingEditTitle"))}</h2><p>${esc(this.t(from.freeText ? "shoppingEditTipFreeText" : "shoppingEditTip"))}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${esc(this.t("itemFallback"))}</div><form class="editor-form" data-form="shopping-edit"><label class="field"><span>${esc(this.t("shoppingItemName"))} *</span><input name="name" maxlength="250" required data-autofocus value="${esc(from.name)}"></label>
       <label class="field"><span>${esc(this.t("shoppingItemQuantity"))}</span><input name="quantity" type="number" inputmode="decimal" min="0" max="100000" step="any" value="${esc(from.quantity || "")}"></label>
       ${from.freeText ? "" : `<label class="field"><span>${esc(this.t("shoppingItemNote"))}</span><input name="note" maxlength="250" value="${esc(from.note)}"></label>`}
@@ -17815,12 +17984,12 @@ const dialogMethods = {
           (x) => String(x.shoppingListId) === String(this._activeList),
         ),
       );
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingClearTitle"))}</h2><p>${esc(this.tp("shoppingClearConfirm", count))}</p></div><div class="editor-stamp">${icon("trash", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingClearTitle"))}</h2><p>${esc(this.tp("shoppingClearConfirm", count))}</p></div></div>
       <section class="editor-card"><div class="form-actions"><button type="button" class="btn" data-action="close-modal" data-autofocus>${esc(this.t("shoppingCancel"))}</button><button type="button" class="btn primary" data-action="shopping-clear-confirm" ${count ? "" : "disabled"}>${icon("trash", 14)} ${esc(this.t("shoppingClearTicked"))}</button></div></section></div>`;
     }
     if (this._modal === "recipe-to-list" && this._detail) {
       const lists = asArray(this._data.shopping?.lists);
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div><div class="editor-stamp">${icon("cart", 27)}</div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("shopping")}</div><form class="editor-form" data-form="recipe-to-list">
       ${lists.length ? `<label class="field"><span>${esc(this.t("selectList"))}</span><select name="list_id" required>${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === this._activeList ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></label>` : `<p class="notice">${esc(this.t("addListFirst"))}</p>`}
       <div class="form-actions"><button type="button" class="btn" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>${lists.length ? `<button type="submit" class="btn primary">${icon("cart", 14)} ${esc(this.t("shoppingAddRecipe"))}</button>` : ""}</div></form></section></div>`;
@@ -17839,6 +18008,7 @@ const dialogMethods = {
           : this._printKind === "shopping"
             ? asArray(this._data.shopping?.items)
                 .filter((x) => String(x.shoppingListId) === String(this._activeList))
+                .filter((x) => d.print_completed === true || !x.checked)
                 .map((x) => x.display || x.note || x.food?.name || "")
             : Array.from({ length: 7 }, (_, i) => {
                 const day = addDays(this._weekStart, i);
@@ -17857,9 +18027,48 @@ const dialogMethods = {
           : this._printKind === "shopping"
             ? ["", ""]
             : [];
+      // The preview follows the rules of buildPrintDocument, so what is ticked here is what gets printed.
+      const printRecipe = this._printKind === "recipe" ? this._detail : null;
+      const paperStyle = ["editorial", "compact", "minimal"].includes(d.print_style)
+        ? d.print_style
+        : "editorial";
+      const paperTick =
+        this._printKind !== "mealplan" && d.print_checkboxes !== false
+          ? '<i class="paper-tick" aria-hidden="true"></i>'
+          : "";
+      const paperDekText = printRecipe
+        ? String(printRecipe.description || "").trim()
+        : this.t("uiPrintPreviewDescription");
+      const paperDek = paperDekText ? `<p>${esc(shortenAtWord(paperDekText, 120))}</p>` : "";
+      const paperImage =
+        printRecipe && paperStyle !== "minimal" && d.print_image === true
+          ? imageOk(printRecipe.imageUrl)
+          : "";
+      const paperPhoto = paperImage
+        ? `<div class="paper-photo"><img src="${esc(paperImage)}" alt=""></div>`
+        : "";
+      const paperMacro = (label, value) => {
+        const clean = String(value ?? "").trim();
+        return clean ? `<div><b>${esc(clean)}</b> ${esc(label)}</div>` : "";
+      };
+      const paperFacts = printRecipe?.nutrition;
+      const paperNutrition =
+        printRecipe && d.print_nutrition === true && paperFacts && typeof paperFacts === "object"
+          ? `<div class="paper-nutrition"><div class="paper-label">${esc(this.t("nutrition"))}</div><div class="paper-macros">${[
+              paperMacro(this.t("printDocCalories"), paperFacts.calories),
+              paperMacro(this.t("printDocProtein"), paperFacts.proteinContent),
+              paperMacro(this.t("printDocCarbs"), paperFacts.carbohydrateContent),
+              paperMacro(this.t("printDocFat"), paperFacts.fatContent),
+            ].join("")}</div></div>`
+          : "";
+      const paperNotes =
+        d.print_notes !== false &&
+        !(printRecipe && asArray(printRecipe.recipeInstructions).length > 18)
+          ? `<div class="paper-notes"><div class="paper-label">${esc(this.t(printRecipe ? "journalNote" : "printNotes"))}</div><i></i><i></i></div>`
+          : "";
       size = "large";
       content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">${esc(this.t("printStudioEyebrow"))}</div>
-      <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div><div class="editor-stamp">${icon("print", 27)}</div></div>
+      <h2>${esc(this.t("uiPrintHeroTitle"))}</h2><p>${esc(this.t("uiPrintHeroDescription"))}</p></div></div>
       <div class="print-setup"><div><div class="eyebrow print-section-heading">01 / ${esc(this.t("uiPrintStyle"))}</div>
       ${[
         ["editorial", this.t("uiPrintEditorial"), this.t("uiPrintEditorialDescription")],
@@ -17879,8 +18088,8 @@ const dialogMethods = {
       <label class="editor-check"><input type="checkbox" data-input="print-notes" ${d.print_notes !== false ? "checked" : ""}> ${esc(this.t("uiPrintIncludeNotes"))}</label>
       <button class="btn primary print-submit" type="button" data-action="print-now">${icon("print", 17)} ${esc(this.t("uiPrintOpenPreview"))}</button>
       <p class="print-guide">${esc(this.t("uiPrintGuide"))}${this._printKind === "mealplan" ? ` ${esc(this.t("uiPrintGuideLandscape"))}` : ""}</p></div>
-      <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
-        <h3>${esc(name || this.t("uiYourRecipe"))}</h3><p>${esc(this.t("uiPrintPreviewDescription"))}</p><div class="paper-line"></div><div class="paper-cols">
+      <div><div class="eyebrow print-section-heading">${esc(this.t("uiPrintPaperPreview"))}</div><div class="print-paper style-${paperStyle} kind-${this._printKind} ${this._printKind === "mealplan" ? "landscape" : ""}"><div class="paper-kicker">MEALIE / ATELIER</div>
+        <h3>${esc(name || this.t("uiYourRecipe"))}</h3>${paperDek}<div class="paper-line"></div>${paperPhoto}${paperNutrition}<div class="paper-cols">
           <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintDayMeal") : this.t("uiPrintIngredientsItems"))}</div>${
             this._printKind === "mealplan"
               ? paperIngredients
@@ -17891,26 +18100,33 @@ const dialogMethods = {
                   .join("")
               : paperIngredients
                   .slice(0, 7)
-                  .map((x) => `<div class="paper-preview-row">${esc(x)}</div>`)
+                  .map(
+                    (x) =>
+                      `<div class="paper-preview-row">${paperTick}<span>${esc(x)}</span></div>`,
+                  )
                   .join("") || '<div class="paper-preview-row">–</div>'
           }</div>
-          <div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintNotesOnly") : this.t("uiPrintPreparationNotes"))}</div>${
-            this._printKind === "mealplan"
-              ? paperIngredients
-                  .map(
-                    () =>
-                      '<div class="paper-preview-row paper-day-row paper-write-row">&nbsp;</div>',
-                  )
-                  .join("")
-              : paperMethod
-                  .slice(0, 5)
-                  .map(
-                    (x, i) =>
-                      `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
-                  )
-                  .join("") || '<div class="paper-preview-row">–</div>'
-          }</div></div>
-          <div class="paper-foot">${esc(this.t("uiPrintDesignedForPaper"))}</div></div></div></div></div>`;
+          ${
+            this._printKind === "shopping"
+              ? ""
+              : `<div class="paper-col"><div class="paper-label">${esc(this._printKind === "mealplan" ? this.t("uiPrintNotesOnly") : this.t("uiPrintPreparationNotes"))}</div>${
+                  this._printKind === "mealplan"
+                    ? paperIngredients
+                        .map(
+                          () =>
+                            '<div class="paper-preview-row paper-day-row paper-write-row">&nbsp;</div>',
+                        )
+                        .join("")
+                    : paperMethod
+                        .slice(0, 5)
+                        .map(
+                          (x, i) =>
+                            `<div class="paper-preview-row"><b>${i + 1}.</b> ${esc(shortenAtWord(x, 110))}</div>`,
+                        )
+                        .join("") || '<div class="paper-preview-row">–</div>'
+                }</div>`
+          }</div>
+          ${paperNotes}<div class="paper-foot">${esc(this.t("uiPrintDesignedForPaper"))}</div></div></div></div></div>`;
     }
     if (this._modal === "settings") {
       const d = this._design;
@@ -19689,7 +19905,7 @@ const shoppingSyncMethods = {
     return `<div class="modal-backdrop" data-action="backdrop"><div class="modal sync-modal ${size}" role="dialog" aria-modal="true" aria-labelledby="sync-title" tabindex="-1">${closing}<div class="modal-bar-title" aria-hidden="true">${title}</div>${content}</div></div>`;
   },
   _syncLead(title, text) {
-    return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div><div class="editor-stamp" aria-hidden="true">${icon("cart", 26)}</div></div>`;
+    return `<div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shopping").toUpperCase())}</div><h2 id="sync-title">${esc(title)}</h2>${text ? `<p>${esc(text)}</p>` : ""}</div></div>`;
   },
   _syncInfoHtml() {
     const caps = this._syncCaps();
@@ -24552,6 +24768,18 @@ Object.assign(MealieAtelierCard.prototype, {
       this._sessionStepLoading.delete(session.slug);
     }
   },
+  // The cookbook step comes before any catalog load, so its choices cannot wait for one.
+  async _studioLoadCookbooks() {
+    if (this._cookbooksRequested) return;
+    this._cookbooksRequested = true;
+    try {
+      const metadata = await this._ws("metadata");
+      this._studioCookbooks = AtelierStudio.supportedCookbooks(asArray(metadata?.cookbooks));
+      this._render();
+    } catch {
+      this._cookbooksRequested = false;
+    }
+  },
   async _studioCatalog() {
     if (this._fullCatalog?.length) return this._fullCatalog;
     if (this._catalogLoading) return [];
@@ -24870,6 +25098,7 @@ Object.assign(MealieAtelierCard.prototype, {
       ["meat", this.t("studioDiscoverMeat")],
       ["fish", this.t("studioDiscoverFish")],
     ];
+    if (!this._studioCookbooks) this._studioLoadCookbooks();
     const cookbooks = this._studioCookbooks || [];
     const ingredients = [
       ["Pilze", this.t("ingredientMushrooms")],
@@ -24919,9 +25148,9 @@ Object.assign(MealieAtelierCard.prototype, {
       ${
         !this._discoverResults
           ? `${AtelierUI.surfaceStart()}<div class="studio-discover-top"><span class="eyebrow">${this.t("studioDiscoverCompass")}</span><span class="studio-discover-stepcount">0${step + 1} <i>/</i> 04</span></div><div class="studio-discover-progress" role="progressbar" aria-label="${this.t("studioDiscoverStepProgress", { step: step + 1 })}" aria-valuemin="1" aria-valuemax="4" aria-valuenow="${step + 1}"><span style="--discover-progress:${((step + 1) / 4) * 100}%"></span></div>
-      <div class="studio-discover-prompt"><h2>${stepName}</h2><p>${[this.t("studioDiscoverQuestion0"), this.t("studioDiscoverQuestion1"), this.t("studioDiscoverQuestion2"), this.t("studioDiscoverQuestion3")][step]}</p></div>
+      <div class="studio-discover-prompt"><h2>${stepName}</h2><p>${[this.t("studioDiscoverQuestion0"), this.t("studioDiscoverCookbooksHint"), this.t("studioDiscoverQuestion2"), this.t("studioDiscoverQuestion3")][step]}</p></div>
       ${step === 0 ? `<div class="studio-choice-grid" role="group" aria-label="${this.t("studioDiscoverDiet")}">${choices.map(([value, label]) => chip("mealStyle", value, label)).join("")}</div><p class="studio-muted studio-discover-note">${this.t("studioDiscoverDietHint")}</p>` : ""}
-      ${step === 1 ? `<div class="studio-discover-label-block"><span class="studio-discover-label">${this.t("studioDiscoverCookbooks")}</span><small>${this.t("studioDiscoverCookbooksHint")}</small></div><div class="studio-choice-grid studio-cookbook-choices" role="group" aria-label="${this.t("studioDiscoverCookbooksAria")}">${chip("cookbooks", "all", this.t("studioDiscoverAllRecipes"))}${cookbooks.map((book) => chip("cookbooks", book.slug, esc(book.name))).join("")}</div>${!cookbooks.length ? `<p class="studio-muted studio-discover-note">${this.t("studioDiscoverNoCookbooks")}</p>` : ""}` : ""}
+      ${step === 1 ? `<div class="studio-choice-grid studio-cookbook-choices" role="group" aria-label="${this.t("studioDiscoverCookbooksAria")}">${chip("cookbooks", "all", this.t("studioDiscoverAllRecipes"))}${cookbooks.map((book) => chip("cookbooks", book.slug, esc(book.name))).join("")}</div>${!cookbooks.length ? `<p class="studio-muted studio-discover-note">${this.t("studioDiscoverNoCookbooks")}</p>` : ""}` : ""}
       ${
         step === 2
           ? `<div class="studio-discover-household"><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverPeople")}</span><small>${this.t("studioDiscoverPeopleHint")}</small></div><div class="studio-counter"><button type="button" data-action="studio-discover-choice" data-key="people" data-value="-1" aria-label="${this.t("studioDiscoverOneLess")}">−</button><output aria-live="polite">${d.people}</output><button type="button" data-action="studio-discover-choice" data-key="people" data-value="1" aria-label="${this.t("studioDiscoverOneMore")}">+</button></div></div><div class="studio-discover-counter"><div><span class="studio-discover-label">${this.t("studioDiscoverKidFriendly")}</span><small>${this.t("studioDiscoverMild")}</small></div><div class="studio-choice-grid studio-choice-grid--compact">${chip("kidFriendly", false, this.t("studioDiscoverAnyPreference"))}${chip("kidFriendly", true, this.t("studioDiscoverWithKids"))}</div></div></div><div class="studio-choice-grid studio-time-choices" role="group" aria-label="${this.t("studioDiscoverTime")}">${AtelierStudio.DISCOVER_MINUTES.map(
@@ -25062,7 +25291,7 @@ Object.assign(MealieAtelierCard.prototype, {
       this.t("cookbookLead"),
       `
       <div class="studio-grid studio-grid-main ds-grid ds-grid--split">${AtelierUI.surfaceStart()}<div class="studio-head ds-surface-header"><span class="eyebrow">${this.t("cookbookSelectKicker")}</span><h2>${this.t("cookbookCollection")}</h2></div>
-      <div class="studio-actions"><button class="btn" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button><button class="btn" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="btn" data-action="studio-book-clear">${this.t("cookbookClear")}</button></div>
+      <div class="text-actions studio-book-actions"><button class="text-action" type="button" data-action="studio-book-all">${this.t("cookbookSelectAll")}</button><button class="text-action" type="button" data-action="studio-book-clear">${this.t("cookbookClear")}</button>${this._fullCatalog?.length ? "" : `<button class="text-action" type="button" data-action="studio-analyze">${icon("refresh", 14)} ${this.t("cookbookLoad")}</button>`}</div>
       <div class="studio-book-list">${
         candidates
           .slice(0, 120)
@@ -25238,11 +25467,12 @@ Object.assign(MealieAtelierCard.prototype, {
       )
       .join("");
     const html = `<!doctype html><html lang="${esc(this._locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>
-      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}.toolbar{position:sticky;top:0;background:#1b3025;padding:14px;text-align:center;color:#fff}.toolbar button{padding:12px 23px;border:0;border-radius:9px;background:#adcfb7;font-weight:700;cursor:pointer}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media screen and (max-width:840px){.page,.chapter{width:auto;min-height:0;margin:12px;padding:24px 18px}.cover{min-height:70vh}.cover h1{font-size:40px;max-width:none;overflow-wrap:anywhere}.toc h2,.chapter h2{font-size:28px;margin:12px 0 20px}.cols{grid-template-columns:1fr;gap:18px}.toolbar button{padding:10px 16px}}@media print{body{background:#fff}.toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
-      </style></head><body><nav class="toolbar"><button type="button" onclick="window.print()">${esc(this.t("printSavePdf"))}</button> <button type="button" onclick="window.close()">${esc(this.t("close"))}</button></nav><section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
+      *{box-sizing:border-box}body{margin:0;background:#e9ece9;color:#26382f;font:12px/1.7 Arial,sans-serif}${PRINT_TOOLBAR_CSS}.page,.chapter{width:210mm;min-height:297mm;background:#fff;margin:20px auto;padding:19mm 18mm;box-shadow:0 7px 30px #0002}.cover{display:flex;flex-direction:column;justify-content:space-between;background:#203c2c;color:#fff}.cover .kicker{letter-spacing:4px;color:#b0d0b6;font-size:12px}.cover h1{font:normal 68px/1.05 Georgia,serif;max-width:130mm}.cover .subtitle{font-size:17px;color:#d3e2d3}.toc h2,.chapter h2{font:normal 38px/1.15 Georgia,serif;margin:15px 0 28px}.toc li{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #d8e2d9;gap:10px}.toc ul{padding:0;list-style:none}.eyebrow,h3{letter-spacing:2px;font-size:10px;font-weight:800;color:#618772}.chapter-image{width:100%;max-height:80mm;object-fit:cover;display:block;margin:10mm 0}.meta{color:#758578;margin-bottom:26px}.cols{display:grid;grid-template-columns:37% 1fr;gap:28px}.ingredient{padding:7px 0;border-bottom:1px solid #e2e9e3;break-inside:avoid}.method{display:grid;grid-template-columns:23px 1fr;gap:10px;break-inside:avoid;margin:0 0 18px}.method b{font:normal 22px Georgia,serif;color:#7da48a}@page{size:A4 portrait;margin:0}@media screen and (max-width:840px){.page,.chapter{width:auto;min-height:0;margin:12px;padding:24px 18px}.cover{min-height:70vh}.cover h1{font-size:40px;max-width:none;overflow-wrap:anywhere}.toc h2,.chapter h2{font-size:28px;margin:12px 0 20px}.cols{grid-template-columns:1fr;gap:18px}}@media print{body{background:#fff}.print-toolbar{display:none}.page,.chapter{box-shadow:none;margin:0;break-after:page;page-break-after:always;width:auto;min-height:297mm}.chapter:last-child{break-after:auto}.cover{background:#fff!important;color:#203c2c!important;border:1mm solid #203c2c}.cover .kicker{color:#486d55!important}.cover .subtitle,.cover small{color:#304339!important}}
+      </style></head><body>${printToolbar(this.t("printSavePdf"), this.t("close"))}<section class="page cover"><div class="kicker">MEALIE ATELIER · ${this.t("printCollection")}</div><div><h1>${esc(title)}</h1><p class="subtitle">${esc(subtitle)}</p></div><small>${this.t("printMadeWithLove")}</small></section><section class="page toc"><div class="eyebrow">${this.t("printContents")}</div><h2>${this.t("printRecipes")}</h2><ul>${toc}</ul></section>${chapters}</body></html>`;
     popup.document.open();
     popup.document.write(html);
     popup.document.close();
+    wirePrintToolbar(popup);
   },
 });
 MealieAtelierCard.prototype._refresh = async function () {

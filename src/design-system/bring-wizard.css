@@ -477,28 +477,6 @@
   margin-block-start: 0;
 }
 
-/* The cart glyph in the dialog header is decoration, not a second button next to Close. */
-.atelier .sync-panel .editor-stamp {
-  inline-size: auto;
-  block-size: auto;
-  border: 0;
-  background: transparent;
-  color: var(--ds-muted);
-  opacity: 0.75;
-}
-/* The glyph's center sits on the close button's center (the sticky button is inset 20px from the dialog top and
-   48px tall wherever the stamp shows; --at-close-size is set on the button itself, so the fallback applies),
-   whatever the dialog padding: the header starts one padding below the top, so the glyph is pulled up by the
-   difference and by half its own height, which leaves the title where it was. */
-.atelier .sync-panel .editor-stamp {
-  --bw-glyph: 26px;
-  block-size: var(--bw-glyph);
-  margin-block-start: calc(
-    20px + var(--at-close-size, 48px) / 2 - var(--bw-pad, clamp(24px, 3.1cqi, 45px)) -
-      var(--bw-glyph) / 2
-  );
-}
-
 /* Compact dialog header for the wizard so the first screen holds the step and its actions. */
 .atelier .bw-wizard .editor-lead {
   margin-block-end: 0;

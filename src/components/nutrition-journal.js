@@ -21,7 +21,7 @@ export const nutritionJournalMethods = {
       n.preview.existing && Object.values(n.preview.existing).some((v) => v !== null && v !== ""),
     );
     const report = n.report;
-    return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div><div class="editor-stamp">${icon("leaf", 27)}</div></div>
+    return `<div class="modal-content nutrition-studio"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("nutritionKicker"))}</div><h2>${esc(this.t("nutriTitle"))}</h2><p>${this.t("uiNutrientValuesComeFromFoodDataNotAIGuessesReviewAllWeightsAndMatches")}</p></div></div>
       <div class="nutri-header"><div class="nutri-eyebrow">${esc(n.preview.name || "")}</div><strong class="at-numeral">${matched} / ${n.rows.length}</strong><span>${this.t("uiFoodsMatched")} · ${esc(n.preview.servings || "—")} ${esc(this.tp("uiServing", Number(n.preview.servings) || 0))}</span></div>
       ${!n.preview.fdc_enabled ? `<div class="nutri-alert">${this.t(this._isWebApp ? "uiUsdaKeyMissingWeb" : "nutriUsdaKeyMissingHa")}</div>` : ""}
       ${existing ? `<div class="nutri-alert">${this.t("uiThisRecipeAlreadyHasNutritionDataExplicitApprovalIsRequiredToReplaceIt")}</div>` : ""}

@@ -1339,9 +1339,6 @@
   }
 }
 @container atelier-card (max-width:460px) {
-  .atelier .editor-stamp {
-    display: none;
-  }
   .atelier .editor-lead {
     margin-bottom: 22px;
   }

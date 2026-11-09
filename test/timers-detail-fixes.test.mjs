@@ -213,7 +213,7 @@ test("recipe detail shows category, notes, tags, source, ingredient groups and f
   assert.match(html, /Quick/);
   assert.match(
     html,
-    /href="https:\/\/example\.org\/src" target="_blank" rel="noopener noreferrer"/,
+    /href="https:\/\/example\.org\/src" title="https:\/\/example\.org\/src" target="_blank" rel="noopener noreferrer">example\.org /,
   );
   assert.equal((html.match(/<h4 class="step-section">(Puree|Sauce)/g) || []).length, 2);
   assert.match(html, /<strong>612 kcal<\/strong>/);
