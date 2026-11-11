@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.12.18] - 2026-11-11
+
 ### Fixed
 
 - The read-only and error notices above a page no longer run past the content column on wide screens; they line up with the topbar and the page.
@@ -723,7 +725,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.17...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.18...HEAD
+[0.12.18]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.17...v0.12.18
 [0.12.17]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.16...v0.12.17
 [0.12.16]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.15...v0.12.16
 [0.12.15]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.14...v0.12.15
