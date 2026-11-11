@@ -38,7 +38,8 @@
   min-width: 0;
 }
 .atelier .topbar,
-.atelier .view-stage {
+.atelier .view-stage,
+.atelier .main > .notice {
   max-width: 1216px;
   margin-inline: auto;
 }

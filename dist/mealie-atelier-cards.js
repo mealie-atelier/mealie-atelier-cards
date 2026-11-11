@@ -6727,8 +6727,10 @@ ha-card {
   width: 100%;
   padding: var(--ds-page-gutter);
 }
+/* Status notices sit directly in .main, between topbar and page, so they share the content column. */
 .atelier .topbar,
-.atelier .view-stage {
+.atelier .view-stage,
+.atelier .main > .notice {
   width: 100%;
   max-width: var(--ds-content-max);
   margin-inline: auto;
@@ -8695,7 +8697,8 @@ ha-card {
   min-width: 0;
 }
 .atelier .topbar,
-.atelier .view-stage {
+.atelier .view-stage,
+.atelier .main > .notice {
   max-width: 1216px;
   margin-inline: auto;
 }

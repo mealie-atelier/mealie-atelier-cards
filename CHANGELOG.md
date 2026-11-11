@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Fixed
+
+- The read-only and error notices above a page no longer run past the content column on wide screens; they line up with the topbar and the page.
+
 ## [0.12.17] - 2026-11-09
 
 ### Added

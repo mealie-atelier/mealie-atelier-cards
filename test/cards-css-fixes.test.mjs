@@ -120,3 +120,19 @@ test("the sidebar identity subtitle never wraps, so English and German align", a
   const block = css.match(/\.atelier \.identity span \{[^}]*\}/)?.[0] || "";
   assert.match(block, /white-space:\s*nowrap/);
 });
+
+test("status notices above the page share the content column of topbar and page", () => {
+  // The read-only and error notices sit directly in .main; without the column limit they ran
+  // past the topbar and the page on wide screens.
+  const layout = rule(
+    css("layout"),
+    ".atelier .topbar,\n.atelier .view-stage,\n.atelier .main > .notice",
+  );
+  assert.match(layout, /max-width:\s*var\(--ds-content-max\)/);
+  assert.match(layout, /margin-inline:\s*auto/);
+  const polish = rule(
+    css("polish"),
+    ".atelier .topbar,\n.atelier .view-stage,\n.atelier .main > .notice",
+  );
+  assert.match(polish, /max-width:\s*1216px/);
+});
