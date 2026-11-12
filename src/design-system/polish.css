@@ -2423,6 +2423,63 @@
   font-size: var(--ds-font-xs);
   line-height: 1.5;
 }
+.atelier .servings-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-2) var(--ds-space-4);
+  margin-block: var(--ds-space-2) var(--ds-space-3);
+  padding-block: var(--ds-space-3);
+  border-block: 1px solid var(--ds-border);
+}
+.atelier .servings-label {
+  display: block;
+  color: var(--ds-text);
+  font-weight: 700;
+  font-size: var(--ds-font-sm);
+}
+.atelier .servings-base {
+  display: block;
+  margin-block-start: var(--ds-space-1);
+  color: var(--ds-muted);
+  font-size: var(--ds-font-xs);
+}
+.atelier .servings-counter output {
+  min-width: 4ch; /* holds "×2,5" and "200" without jumping */
+}
+.atelier .servings-unit {
+  /* visually hidden, read by the live region */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.atelier .servings-counter button[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: default;
+}
+.atelier .servings-counter button:focus-visible {
+  outline: 2px solid var(--ds-ring);
+  outline-offset: 3px;
+}
+.atelier .servings-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--ds-space-5);
+  margin: 0;
+}
+.atelier .servings-actions .text-action {
+  min-height: 44px;
+}
+.atelier .servings-list-note {
+  margin: var(--ds-space-2) 0 0;
+  color: var(--ds-muted);
+  font-size: var(--ds-font-sm);
+  line-height: var(--ds-line-body);
+}
 @keyframes studio-discover-swap {
   from {
     opacity: 0.25;

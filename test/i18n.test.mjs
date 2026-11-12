@@ -100,6 +100,7 @@ test("card editor and shared dialogs/views/print use keys present in every local
     "components/views.js",
     "components/print-actions.js",
     "components/nutrition-journal.js",
+    "components/servings.js",
   ];
   for (const file of files) {
     const sourceText = readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8");

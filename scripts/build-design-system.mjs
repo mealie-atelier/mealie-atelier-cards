@@ -113,6 +113,7 @@ const componentMethodModules = [
   ["recipePickerMethods", "src/components/recipe-picker.js"], // feature D
   ["offlineQueueMethods", "src/components/offline-queue.js"], // feature H
   ["planDragMethods", "src/components/plan-drag.js"],
+  ["servingsMethods", "src/components/servings.js"],
 ];
 const methodDeclarations = componentMethodModules.map(([name, file]) => {
   const moduleSource = readFileSync(resolve(folder, file), "utf8").trim();
