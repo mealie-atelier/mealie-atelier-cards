@@ -2469,16 +2469,14 @@
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--ds-space-5);
-  margin: 0;
+  /* The actions carry inline padding for the focus ring. The row's negative margin keeps every line's
+     text on the label column, also when the two actions wrap, and the gap keeps the visible text gap. */
+  gap: 0 calc(var(--ds-space-5) - 2 * var(--ds-space-2));
+  margin: 0 calc(-1 * var(--ds-space-2));
 }
 .atelier .servings-actions .text-action {
   min-height: 44px;
-  /* room for the focus ring; the first item's negative margin keeps the text on the label column */
   padding-inline: var(--ds-space-2);
-}
-.atelier .servings-actions .text-action:first-child {
-  margin-inline-start: calc(-1 * var(--ds-space-2));
 }
 .atelier .servings-list-note {
   margin: var(--ds-space-2) 0 0;

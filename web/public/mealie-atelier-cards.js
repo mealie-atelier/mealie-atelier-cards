@@ -3112,13 +3112,13 @@ ha-card {
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
-/* Ingredients Mealie links to the current step: quiet labels under the step text. */
+/* Ingredients Mealie links to the current step: quiet labels under the step heading. */
 .atelier .cook-step-ingredients {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 8px;
   max-width: 620px;
-  margin: 4px 0 0;
+  margin: 8px 0 12px;
   padding: 0;
   list-style: none;
 }
@@ -11121,6 +11121,7 @@ ha-card {
   margin-block-start: var(--ds-space-1);
   color: var(--ds-muted);
   font-size: var(--ds-font-xs);
+  text-wrap: pretty;
 }
 .atelier .servings-counter output {
   min-width: 4ch; /* holds "×2,5" and "200" without jumping */
@@ -11146,17 +11147,21 @@ ha-card {
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--ds-space-5);
-  margin: 0;
+  /* The actions carry inline padding for the focus ring. The row's negative margin keeps every line's
+     text on the label column, also when the two actions wrap, and the gap keeps the visible text gap. */
+  gap: 0 calc(var(--ds-space-5) - 2 * var(--ds-space-2));
+  margin: 0 calc(-1 * var(--ds-space-2));
 }
 .atelier .servings-actions .text-action {
   min-height: 44px;
+  padding-inline: var(--ds-space-2);
 }
 .atelier .servings-list-note {
   margin: var(--ds-space-2) 0 0;
   color: var(--ds-muted);
   font-size: var(--ds-font-sm);
   line-height: var(--ds-line-body);
+  text-wrap: pretty;
 }
 @keyframes studio-discover-swap {
   from {
@@ -19970,7 +19975,7 @@ const dialogMethods = {
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
         <div class="cook-track" data-bar-anchor role="progressbar" aria-valuemin="0" aria-valuemax="${n}" aria-valuenow="${idx + 1}"><div class="cook-fill" style="width:${((idx + 1) / Math.max(1, n)) * 100}%"></div></div>
         ${AtelierWakeLock.supported() ? `<label class="cook-wake"><input type="checkbox" data-input="keep-awake" ${this._design.keep_awake !== false ? "checked" : ""}> ${esc(this.t("uiKeepScreenAwake"))}</label>` : ""}
-        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${headingText.length > 140 ? ` class="cook-stage--long${headingText.length > 320 ? " cook-stage--xlong" : ""}"` : ""}>${inlineMarkdown(headingText)}</h2>${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepIngredientsHtml}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
+        <div class="cook-stage" data-swipe-hint="${esc(this.t("cookSwipeHint"))}">${stepTitle ? `<p class="cook-step-section">${esc(stepTitle)}</p>` : ""}<h2${headingText.length > 140 ? ` class="cook-stage--long${headingText.length > 320 ? " cook-stage--xlong" : ""}"` : ""}>${inlineMarkdown(headingText)}</h2>${stepIngredientsHtml}${stepSummary ? `<p class="cook-step-detail">${inlineMarkdown(stepBody)}</p>` : ""}${stepPhoto ? `<figure class="cook-step-figure"><img class="cook-step-photo" src="${esc(stepPhoto)}" alt="${esc(`${this._detail.name} · ${this.t("uiStep")} ${idx + 1}`)}" decoding="sync"></figure>` : ""}<p class="muted">${esc(cookYield)}</p></div>
         <div class="cook-controls"><section class="cook-utility" aria-label="${this.t("uiKitchenTimers")}"${this._timerComposeOpen ? " data-composing" : ""}>
           <header class="cook-timer-header"><span class="cook-timer-mark" aria-hidden="true">${icon("clock", 16)}</span><div><span class="cook-timer-kicker">${this.t("uiATELIERKITCHENTIMER")}</span><strong>${this.t("uiKeepEverythingInRhythm")}</strong></div><button type="button" class="cook-timer-toggle" data-action="timer-compose-toggle" aria-expanded="${this._timerComposeOpen ? "true" : "false"}" aria-controls="cook-timer-compose">${this.t("uiSetATimer")}</button><span class="cook-timer-count">${this._timers.filter((timer) => !timer.done).length} ${this.t("uiactive")}</span></header>
           <p class="cook-sr-only" role="status" aria-live="polite" aria-atomic="true" data-timer-announce>${esc(this._timerAnnouncement || "")}</p><div class="cook-timer-compose" id="cook-timer-compose"><div class="cook-timer-presets" role="group" aria-label="${this.t("uiQuickTimerPresets")}">${[5, 10, 15].map((minutes) => `<button type="button" data-action="timer-preset" data-value="${minutes}">${minutes} ${this.t("uimin")}</button>`).join("")}</div><div class="cook-timer-fields"><label><span>${this.t("uiMinutes")}</span><input type="number" data-timer-minutes min="1" max="180" value="10" inputmode="numeric" aria-label="${this.t("uiTimerDurationInMinutes")}" ${this._timerError ? 'aria-invalid="true" aria-describedby="cook-timer-err"' : ""}></label><label><span>${this.t("uiLabelOptional")}</span><input type="text" data-timer-label maxlength="40" placeholder="${this.t("uieGOven")}"></label><button class="btn primary cook-timer-start" data-action="timer-start">${icon("clock", 16)} ${this.t("uiStartTimer")}</button></div>${this._timerError ? `<p class="cook-timer-error" role="alert" id="cook-timer-err">${esc(this._timerError)}</p>` : ""}</div>
@@ -28532,7 +28537,12 @@ MealieAtelierCard.prototype.connectedCallback = function () {
     const fast = cooking && this._studio?.family?.session && document.visibilityState !== "hidden";
     const slowDue = now - this._studioPollAt >= STUDIO_POLL_SLOW_MS - STUDIO_POLL_FAST_MS / 2;
     if (!fast && !slowDue) return;
-    if (["family", "discover", "pantry"].includes(this._view) || cooking) {
+    // An open recipe of the shared session adopts a servings amount changed on another device.
+    const sharedRecipe =
+      this._modal === "recipe" &&
+      !!this._detail?.slug &&
+      this._detail.slug === this._studio?.family?.session?.slug;
+    if (["family", "discover", "pantry"].includes(this._view) || cooking || sharedRecipe) {
       this._studioPollAt = now;
       this._studioRefresh({ silent: true });
     }

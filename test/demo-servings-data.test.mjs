@@ -37,11 +37,18 @@ for (const r of catalog.recipes) {
         const lead = leadingAmount(lines[i]);
         assert.ok(lead, `${lang}[${i}] line starts with an amount: ${lines[i]}`);
         assert.equal(lead.value, part.quantity, `${lang}[${i}] quantity equals the line`);
+        // Foods and units are singular like in Mealie; the line may use the plural form from `plurals`.
+        const forms = catalog.plurals[lang];
         if (part.unit) {
-          assert.ok(lead.rest.startsWith(part.unit + " "), `${lang}[${i}] unit follows the amount`);
+          const units = [part.unit, forms.units[part.unit]].filter(Boolean);
+          assert.ok(
+            units.some((unit) => lead.rest.startsWith(unit + " ")),
+            `${lang}[${i}] unit follows the amount`,
+          );
         }
+        const foods = [part.food, forms.foods[part.food]].filter(Boolean);
         assert.ok(
-          lines[i].toLowerCase().includes(part.food.toLowerCase()),
+          foods.some((food) => lines[i].toLowerCase().includes(food.toLowerCase())),
           `${lang}[${i}] food "${part.food}" in "${lines[i]}"`,
         );
       });
@@ -136,7 +143,8 @@ test("every plural key is a food or unit used in the parsed rows", () => {
     const { foods: pf, units: pu } = catalog.plurals[lang];
     for (const [singular, plural] of Object.entries(pf)) {
       assert.ok(foods.has(singular), `${lang} plural food "${singular}" is used`);
-      assert.ok(plural && plural !== singular, `${lang} plural of "${singular}" differs`);
+      // Equal forms are listed only for counted foods ("kleine Pak Choi"), see the guard below.
+      assert.ok(plural, `${lang} plural of "${singular}" is set`);
     }
     for (const [singular, plural] of Object.entries(pu)) {
       assert.ok(units.has(singular), `${lang} plural unit "${singular}" is used`);
@@ -193,4 +201,15 @@ test("preview hands the plural names to the mocked units and foods", () => {
   assert.match(preview, /pluralName: plurals\.units\?\.\[part\.unit\]/);
   assert.match(preview, /pluralName: plurals\.foods\?\.\[part\.food\]/);
   assert.match(preview, /display: mealieDisplay\(/);
+});
+
+// A counted row (no unit) reads "1 Tomaten" on a Mealie shopping list when the food is stored in the
+// plural. Every such food is singular and has its plural form listed, also when both forms are equal.
+test("counted foods are singular with a listed plural", () => {
+  for (const lang of ["de", "en"]) {
+    const foods = catalog.plurals[lang].foods;
+    for (const r of catalog.recipes)
+      for (const part of r.ingredientParts[lang])
+        if (part && !part.unit) assert.ok(part.food in foods, `${lang} ${r.id}: ${part.food}`);
+  }
 });

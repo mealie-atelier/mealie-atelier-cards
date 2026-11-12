@@ -464,10 +464,9 @@ test("stepper css: 44px text actions and no pill radius", () => {
   const css = readFileSync(new URL("../src/design-system/polish.css", import.meta.url), "utf8");
   assert.match(css, /\.atelier \.servings-actions \.text-action \{\s*min-height: 44px;/);
   assert.match(css, /\.text-action \{[^}]*padding-inline: var\(--ds-space-2\)/);
-  assert.match(
-    css,
-    /\.text-action:first-child \{\s*margin-inline-start: calc\(-1 \* var\(--ds-space-2\)\)/,
-  );
+  // The row, not its first item, takes the negative margin: wrapped actions stay on the label column.
+  assert.match(css, /\.servings-actions \{[^}]*margin: 0 calc\(-1 \* var\(--ds-space-2\)\)/);
+  assert.doesNotMatch(css, /\.servings-actions \.text-action:first-child/);
   assert.match(css, /\.servings-list-note \{[^}]*text-wrap: pretty/);
   const rules = css.match(/\.atelier \.servings-[^{]*\{[^}]*\}/g) || [];
   assert.ok(rules.length >= 8);

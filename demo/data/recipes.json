@@ -11,10 +11,22 @@
         "Salatgurke": "Salatgurken",
         "Hokkaido-Kürbis": "Hokkaido-Kürbisse",
         "Bio-Zitrone": "Bio-Zitronen",
-        "Romanasalat": "Romanasalate"
+        "Romanasalat": "Romanasalate",
+        "Champignon": "Champignons",
+        "Frühlingszwiebel": "Frühlingszwiebeln",
+        "Hähnchenbrustfilet": "Hähnchenbrustfilets",
+        "Karotte": "Karotten",
+        "Limette": "Limetten",
+        "Möhre": "Möhren",
+        "Tomate": "Tomaten",
+        "Wan-Tan-Teigblatt": "Wan-Tan-Teigblätter",
+        "kleine Pak Choi": "kleine Pak Choi",
+        "rote Paprika": "rote Paprika"
       },
       "units": {
-        "Prise": "Prisen"
+        "Prise": "Prisen",
+        "Scheibe": "Scheiben",
+        "Zweig": "Zweige"
       }
     },
     "en": {
@@ -27,13 +39,24 @@
         "Hokkaido squash": "Hokkaido squashes",
         "unwaxed lemon": "unwaxed lemons",
         "red bell pepper": "red bell peppers",
-        "romaine lettuce": "romaine lettuces"
+        "romaine lettuce": "romaine lettuces",
+        "carrot": "carrots",
+        "chicken breast fillet": "chicken breast fillets",
+        "lime": "limes",
+        "mushroom": "mushrooms",
+        "scallion": "scallions",
+        "small head bok choy": "small heads bok choy",
+        "tomato": "tomatoes",
+        "wonton wrapper": "wonton wrappers"
       },
       "units": {
         "handful": "handfuls",
         "piece": "pieces",
         "pinch": "pinches",
-        "pinch of": "pinches of"
+        "pinch of": "pinches of",
+        "rasher": "rashers",
+        "slice": "slices",
+        "sprig": "sprigs"
       }
     }
   },
@@ -140,16 +163,16 @@
         "de": [
           { "quantity": 1, "unit": "EL", "food": "Olivenöl", "note": "" },
           { "quantity": 1, "unit": null, "food": "Zwiebel", "note": "in dünnen Streifen" },
-          { "quantity": 3, "unit": null, "food": "Tomaten", "note": "grob gewürfelt" },
-          { "quantity": 4, "unit": null, "food": "Eier", "note": "" },
+          { "quantity": 3, "unit": null, "food": "Tomate", "note": "grob gewürfelt" },
+          { "quantity": 4, "unit": null, "food": "Ei", "note": "" },
           { "quantity": 1, "unit": "Handvoll", "food": "Basilikumblätter", "note": "" },
           null
         ],
         "en": [
           { "quantity": 1, "unit": "tbsp", "food": "olive oil", "note": "" },
           { "quantity": 1, "unit": null, "food": "onion", "note": "thinly sliced" },
-          { "quantity": 3, "unit": null, "food": "tomatoes", "note": "roughly diced" },
-          { "quantity": 4, "unit": null, "food": "eggs", "note": "" },
+          { "quantity": 3, "unit": null, "food": "tomato", "note": "roughly diced" },
+          { "quantity": 4, "unit": null, "food": "egg", "note": "" },
           { "quantity": 1, "unit": "handful", "food": "basil leaves", "note": "" },
           null
         ]
@@ -384,14 +407,14 @@
       },
       "ingredientParts": {
         "de": [
-          { "quantity": 2, "unit": null, "food": "Hähnchenbrustfilets", "note": "etwa 350 g" },
+          { "quantity": 2, "unit": null, "food": "Hähnchenbrustfilet", "note": "etwa 350 g" },
           { "quantity": 1, "unit": null, "food": "Romanasalat", "note": "" },
           { "quantity": 1, "unit": null, "food": "rote Paprika", "note": "" },
           { "quantity": 0.5, "unit": null, "food": "Salatgurke", "note": "" },
           { "quantity": 0.5, "unit": null, "food": "rote Zwiebel", "note": "in feinen Streifen" },
           { "quantity": 150, "unit": "g", "food": "Kirschtomaten", "note": "" },
           { "quantity": 50, "unit": "g", "food": "schwarze Oliven", "note": "entsteint" },
-          { "quantity": 2, "unit": "Scheiben", "food": "Weißbrot", "note": "" },
+          { "quantity": 2, "unit": "Scheibe", "food": "Weißbrot", "note": "" },
           { "quantity": 30, "unit": "g", "food": "Parmesan", "note": "" },
           { "quantity": 4, "unit": "EL", "food": "Olivenöl", "note": "" },
           { "quantity": 1, "unit": "EL", "food": "Zitronensaft", "note": "" },
@@ -399,14 +422,14 @@
           null
         ],
         "en": [
-          { "quantity": 2, "unit": null, "food": "chicken breast fillets", "note": "about 350 g" },
+          { "quantity": 2, "unit": null, "food": "chicken breast fillet", "note": "about 350 g" },
           { "quantity": 1, "unit": null, "food": "romaine lettuce", "note": "" },
           { "quantity": 1, "unit": null, "food": "red bell pepper", "note": "" },
           { "quantity": 0.5, "unit": null, "food": "cucumber", "note": "" },
           { "quantity": 0.5, "unit": null, "food": "red onion", "note": "thinly sliced" },
           { "quantity": 150, "unit": "g", "food": "cherry tomatoes", "note": "" },
           { "quantity": 50, "unit": "g", "food": "pitted black olives", "note": "" },
-          { "quantity": 2, "unit": "slices", "food": "white bread", "note": "" },
+          { "quantity": 2, "unit": "slice", "food": "white bread", "note": "" },
           { "quantity": 30, "unit": "g", "food": "Parmesan", "note": "" },
           { "quantity": 4, "unit": "tbsp", "food": "olive oil", "note": "" },
           { "quantity": 1, "unit": "tbsp", "food": "lemon juice", "note": "" },
@@ -519,7 +542,7 @@
       "ingredientParts": {
         "de": [
           { "quantity": 1, "unit": null, "food": "Hokkaido-Kürbis", "note": "etwa 1 kg" },
-          { "quantity": 2, "unit": null, "food": "Möhren", "note": "" },
+          { "quantity": 2, "unit": null, "food": "Möhre", "note": "" },
           { "quantity": 1, "unit": null, "food": "Zwiebel", "note": "" },
           { "quantity": 1, "unit": null, "food": "Knoblauchzehe", "note": "" },
           { "quantity": 2, "unit": "EL", "food": "Olivenöl", "note": "" },
@@ -531,7 +554,7 @@
         ],
         "en": [
           { "quantity": 1, "unit": null, "food": "Hokkaido squash", "note": "about 1 kg" },
-          { "quantity": 2, "unit": null, "food": "carrots", "note": "" },
+          { "quantity": 2, "unit": null, "food": "carrot", "note": "" },
           { "quantity": 1, "unit": null, "food": "onion", "note": "" },
           { "quantity": 1, "unit": null, "food": "garlic clove", "note": "" },
           { "quantity": 2, "unit": "tbsp", "food": "olive oil", "note": "" },
@@ -648,7 +671,7 @@
           { "quantity": 150, "unit": "g", "food": "passierte Tomaten", "note": "" },
           { "quantity": 150, "unit": "g", "food": "Mozzarella", "note": "" },
           { "quantity": 60, "unit": "g", "food": "Schinken", "note": "hauchdünn geschnitten" },
-          { "quantity": 8, "unit": null, "food": "Champignons", "note": "klein, halbiert" },
+          { "quantity": 8, "unit": null, "food": "Champignon", "note": "klein, halbiert" },
           { "quantity": 1, "unit": "EL", "food": "Olivenöl", "note": "" }
         ],
         "en": [
@@ -659,7 +682,7 @@
           { "quantity": 150, "unit": "g", "food": "strained tomatoes", "note": "" },
           { "quantity": 150, "unit": "g", "food": "mozzarella", "note": "" },
           { "quantity": 60, "unit": "g", "food": "wafer-thin sliced ham", "note": "" },
-          { "quantity": 8, "unit": null, "food": "mushrooms", "note": "small, halved" },
+          { "quantity": 8, "unit": null, "food": "mushroom", "note": "small, halved" },
           { "quantity": 1, "unit": "tbsp", "food": "olive oil", "note": "" }
         ]
       },
@@ -766,7 +789,7 @@
       "ingredientParts": {
         "de": [
           { "quantity": 400, "unit": "g", "food": "Penne", "note": "" },
-          { "quantity": 4, "unit": "Scheiben", "food": "Frühstücksspeck", "note": "" },
+          { "quantity": 4, "unit": "Scheibe", "food": "Frühstücksspeck", "note": "" },
           {
             "quantity": 280,
             "unit": "g",
@@ -787,7 +810,7 @@
         ],
         "en": [
           { "quantity": 400, "unit": "g", "food": "penne", "note": "" },
-          { "quantity": 4, "unit": "rashers", "food": "bacon", "note": "" },
+          { "quantity": 4, "unit": "rasher", "food": "bacon", "note": "" },
           { "quantity": 280, "unit": "g", "food": "jarred artichoke hearts", "note": "drained" },
           {
             "quantity": 200,
@@ -1037,7 +1060,7 @@
           { "quantity": 250, "unit": "g", "food": "Basmatireis", "note": "" },
           { "quantity": 1, "unit": "EL", "food": "Kokosöl", "note": "" },
           { "quantity": 1, "unit": null, "food": "rote Zwiebel", "note": "in Spalten" },
-          { "quantity": 2, "unit": null, "food": "Knoblauchzehen", "note": "fein gehackt" },
+          { "quantity": 2, "unit": null, "food": "Knoblauchzehe", "note": "fein gehackt" },
           { "quantity": 2, "unit": "EL", "food": "vegane gelbe Currypaste", "note": "" },
           {
             "quantity": 400,
@@ -1045,10 +1068,10 @@
             "food": "festkochende Kartoffeln",
             "note": "in 2 cm Würfeln"
           },
-          { "quantity": 2, "unit": null, "food": "Karotten", "note": "in dicken Scheiben" },
+          { "quantity": 2, "unit": null, "food": "Karotte", "note": "in dicken Scheiben" },
           { "quantity": 400, "unit": "ml", "food": "Kokosmilch", "note": "" },
           { "quantity": 50, "unit": "g", "food": "geröstete Erdnüsse", "note": "" },
-          { "quantity": 2, "unit": null, "food": "Limetten", "note": "" },
+          { "quantity": 2, "unit": null, "food": "Limette", "note": "" },
           { "quantity": 1, "unit": "Handvoll", "food": "Koriander", "note": "" },
           { "quantity": 1, "unit": "Prise", "food": "Salz", "note": "" }
         ],
@@ -1056,13 +1079,13 @@
           { "quantity": 250, "unit": "g", "food": "basmati rice", "note": "" },
           { "quantity": 1, "unit": "tbsp", "food": "coconut oil", "note": "" },
           { "quantity": 1, "unit": null, "food": "red onion", "note": "cut into wedges" },
-          { "quantity": 2, "unit": null, "food": "garlic cloves", "note": "finely chopped" },
+          { "quantity": 2, "unit": null, "food": "garlic clove", "note": "finely chopped" },
           { "quantity": 2, "unit": "tbsp", "food": "vegan yellow curry paste", "note": "" },
           { "quantity": 400, "unit": "g", "food": "waxy potatoes", "note": "in 2 cm cubes" },
-          { "quantity": 2, "unit": null, "food": "carrots", "note": "in thick slices" },
+          { "quantity": 2, "unit": null, "food": "carrot", "note": "in thick slices" },
           { "quantity": 400, "unit": "ml", "food": "coconut milk", "note": "" },
           { "quantity": 50, "unit": "g", "food": "roasted peanuts", "note": "" },
-          { "quantity": 2, "unit": null, "food": "limes", "note": "" },
+          { "quantity": 2, "unit": null, "food": "lime", "note": "" },
           { "quantity": 1, "unit": "handful", "food": "cilantro", "note": "" },
           { "quantity": 1, "unit": "pinch of", "food": "salt", "note": "" }
         ]
@@ -1175,11 +1198,11 @@
           { "quantity": 1, "unit": "Stück", "food": "Ingwer", "note": "etwa 2 cm, fein gerieben" },
           { "quantity": 2, "unit": "EL", "food": "helle Sojasauce", "note": "" },
           { "quantity": 1, "unit": "TL", "food": "Sesamöl", "note": "" },
-          { "quantity": 24, "unit": null, "food": "Wan-Tan-Teigblätter", "note": "" },
+          { "quantity": 24, "unit": null, "food": "Wan-Tan-Teigblatt", "note": "" },
           { "quantity": 1.2, "unit": "l", "food": "Hühnerbrühe", "note": "" },
           { "quantity": 2, "unit": null, "food": "kleine Pak Choi", "note": "" },
-          { "quantity": 3, "unit": null, "food": "Frühlingszwiebeln", "note": "in feinen Ringen" },
-          { "quantity": 3, "unit": null, "food": "Knoblauchzehen", "note": "fein gehackt" },
+          { "quantity": 3, "unit": null, "food": "Frühlingszwiebel", "note": "in feinen Ringen" },
+          { "quantity": 3, "unit": null, "food": "Knoblauchzehe", "note": "fein gehackt" },
           { "quantity": 2, "unit": "EL", "food": "neutrales Öl", "note": "" }
         ],
         "en": [
@@ -1192,11 +1215,11 @@
           },
           { "quantity": 2, "unit": "tbsp", "food": "light soy sauce", "note": "" },
           { "quantity": 1, "unit": "tsp", "food": "sesame oil", "note": "" },
-          { "quantity": 24, "unit": null, "food": "wonton wrappers", "note": "" },
+          { "quantity": 24, "unit": null, "food": "wonton wrapper", "note": "" },
           { "quantity": 1.2, "unit": "l", "food": "chicken stock", "note": "" },
-          { "quantity": 2, "unit": null, "food": "small heads bok choy", "note": "" },
-          { "quantity": 3, "unit": null, "food": "scallions", "note": "thinly sliced" },
-          { "quantity": 3, "unit": null, "food": "garlic cloves", "note": "finely chopped" },
+          { "quantity": 2, "unit": null, "food": "small head bok choy", "note": "" },
+          { "quantity": 3, "unit": null, "food": "scallion", "note": "thinly sliced" },
+          { "quantity": 3, "unit": null, "food": "garlic clove", "note": "finely chopped" },
           { "quantity": 2, "unit": "tbsp", "food": "neutral oil", "note": "" }
         ]
       },
@@ -1307,7 +1330,7 @@
           { "quantity": 2, "unit": "TL", "food": "Salz", "note": "" },
           { "quantity": 6, "unit": "EL", "food": "Olivenöl", "note": "" },
           { "quantity": 1, "unit": null, "food": "Bio-Zitrone", "note": "" },
-          { "quantity": 3, "unit": "Zweige", "food": "Rosmarin", "note": "" },
+          { "quantity": 3, "unit": "Zweig", "food": "Rosmarin", "note": "" },
           { "quantity": 1, "unit": "TL", "food": "Meersalzflocken", "note": "" }
         ],
         "en": [
@@ -1317,7 +1340,7 @@
           { "quantity": 2, "unit": "tsp", "food": "salt", "note": "" },
           { "quantity": 6, "unit": "tbsp", "food": "olive oil", "note": "" },
           { "quantity": 1, "unit": null, "food": "unwaxed lemon", "note": "" },
-          { "quantity": 3, "unit": "sprigs", "food": "rosemary", "note": "" },
+          { "quantity": 3, "unit": "sprig", "food": "rosemary", "note": "" },
           { "quantity": 1, "unit": "tsp", "food": "flaky sea salt", "note": "" }
         ]
       },
