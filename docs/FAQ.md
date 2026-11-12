@@ -24,11 +24,11 @@ No. The [demo](https://mealie.alles-automatisch.de) uses fictional recipes in th
 
 ## How does scaling a recipe work?
 
-Use the stepper above the ingredients in a recipe (Servings; Makes or Amount when a recipe has no serving count). The amounts update in the recipe, in cooking mode (including the ingredients under each step), in print and in the voice answer for "how much". "Recipe: ..." shows the original amount and "Back to the recipe amount" returns to it.
+Use the stepper under Ingredients in a recipe (Servings; Makes or Amount when a recipe has no serving count). The amounts update in the recipe, in cooking mode (including the ingredients listed for each step), in print and in the voice answer for "how much". "Recipe: ..." shows the original amount and "Back to the recipe amount" returns to it.
 
-Only clear quantities are scaled. Free-text rows such as "salt to taste" stay as written, so check them yourself. The same goes for rows that Mealie has no parsed quantity for: they are added to the shopping list as written.
+Only clear quantities are scaled. Free-text rows such as "salt to taste" stay as written, so check them yourself. The same goes for rows that Mealie has no parsed quantity for: they are added to the shopping list as written. Older Mealie recipes sometimes store a free-text row with the quantity 1; Mealie multiplies that row, so it reads "2 salt and pepper" on the list. Parsing the ingredients in Mealie's recipe editor turns such rows into proper ones.
 
-Adding to the shopping list with the chosen amounts needs Mealie Atelier Bridge 0.13.0 or newer. With an older Bridge the dialog tells you that it adds the recipe amounts instead. The same version is needed to share the amount in a Cook together session.
+The standalone web app adds the chosen amounts to the shopping list. In Home Assistant this needs Mealie Atelier Bridge 0.13.0 or newer. With an older Bridge the dialog tells you that it adds the recipe amounts instead. The same version is needed to share the amount in a Cook together session.
 
 ## Does shopping list sync to Bring! work?
 
