@@ -51,6 +51,35 @@ test("steps render safe inline Markdown without double-linking", () => {
   assert.match(html, /href="https:\/\/example\.com\/a_b_c"/);
 });
 
+test("cooking mode lists the ingredients Mealie links to the current step", () => {
+  const c = card("de");
+  const recipe = detail({
+    recipeIngredient: [
+      { referenceId: "r1", quantity: 200, unit: { name: "g" }, food: { name: "Mehl" }, note: "" },
+      { referenceId: "r2", quantity: 2, food: { name: "Ei" }, note: "" },
+      { referenceId: "r3", quantity: 1, food: { name: "Zwiebel" }, note: "" },
+    ],
+    recipeInstructions: [
+      { text: "Verrühren", ingredientReferences: [{ referenceId: "r2" }, { referenceId: "r1" }] },
+      { text: "Ruhen lassen", ingredientReferences: [] },
+    ],
+  });
+  c._cookIndex = 0;
+  const first = open(c, "cook", recipe);
+  const list = first.match(/<ul class="cook-step-ingredients"[^>]*>(.*?)<\/ul>/)?.[1] || "";
+  const items = [...list.matchAll(/<li>(.*?)<\/li>/g)].map((m) => m[1]);
+  // Recipe order, not reference order, and only the linked ones.
+  assert.equal(items.length, 2);
+  assert.match(items[0], /Mehl/);
+  assert.match(items[1], /Ei/);
+  assert.doesNotMatch(list, /Zwiebel/);
+  c._cookIndex = 1;
+  assert.doesNotMatch(open(c, "cook", recipe), /cook-step-ingredients/);
+  // Untouched for recipes without links.
+  c._cookIndex = 0;
+  assert.doesNotMatch(open(c, "cook", detail()), /cook-step-ingredients/);
+});
+
 test("cook heading renders Markdown and long untitled steps get the long class", () => {
   const c = card("en");
   c._cookIndex = 0;

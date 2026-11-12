@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Added
+
+- Cooking mode lists the ingredients Mealie links to the current step, as Mealie's own cooking mode does. Recipes without linked ingredients look as before.
+
 ## [0.12.18] - 2026-11-11
 
 ### Fixed

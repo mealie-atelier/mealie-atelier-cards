@@ -1193,6 +1193,25 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
+/* Ingredients Mealie links to the current step: quiet chips under the step text. */
+.atelier .cook-step-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  max-width: 620px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.atelier .cook-step-ingredients li {
+  padding: 5px 12px;
+  border: 1px solid var(--at-line);
+  border-radius: 999px;
+  color: var(--at-ink);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
 .atelier .cook-step-figure {
   width: min(100%, 680px);
   margin: 6px 0 0;
