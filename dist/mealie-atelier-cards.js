@@ -24950,6 +24950,13 @@ const planDragMethods = {
 
 const SERVINGS_FACTOR_LADDER = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
 const SERVINGS_EPSILON = 1e-9;
+/** At most this many whole numbers on the stepper; a larger range steps in larger whole numbers. */
+const SERVINGS_LADDER_STEPS = 200;
+/** The range the family session and the Bridge accept for an amount and its base. */
+const SESSION_SERVINGS_MIN = 0.01;
+const SESSION_SERVINGS_MAX = 1000;
+/** The largest factor a shopping transfer may carry (web server and Bridge reject more). */
+const SERVINGS_MAX_FACTOR = 100;
 const SERVINGS_KEEP_MODALS = [
   "recipe",
   "cook",
@@ -24974,8 +24981,11 @@ function yieldUnitText(recipe) {
 /** Every value the stepper can reach, ascending. */
 function servingsLadder(model) {
   if (model.mode === "factor") return SERVINGS_FACTOR_LADDER;
-  const values = new Set([model.base, model.min]);
-  for (let n = Math.ceil(model.min); n <= Math.floor(model.max); n += 1) values.add(n);
+  const values = new Set([model.base, model.min, model.max]);
+  const from = Math.ceil(model.min),
+    to = Math.floor(model.max);
+  const step = Math.max(1, Math.ceil((to - from) / SERVINGS_LADDER_STEPS));
+  for (let n = from; n <= to; n += step) values.add(n);
   return [...values].sort((a, b) => a - b);
 }
 
@@ -25021,7 +25031,10 @@ const servingsMethods = {
       rowsAsWritten: rows.filter((row) => !(Number(row?.quantity) > 0) && ingredientName(row))
         .length,
       min: base < 1 ? base : 1,
-      max: Math.max(base, Math.min(200, Math.max(20, Math.ceil(base * 10)))),
+      max: Math.max(
+        base,
+        Math.min(200, Math.max(20, Math.ceil(base * 10)), base * SERVINGS_MAX_FACTOR),
+      ),
     };
     if (mode === "factor") {
       model.min = SERVINGS_FACTOR_LADDER[0];
@@ -25158,7 +25171,18 @@ ${actions.length ? `<p class="servings-actions">${actions.join("")}</p>` : ""}</
     if (!model) return;
     const before = this._servingsTarget(recipe),
       next = servingsClamp(model, value);
-    const seen = this._servings?.slug === recipe.slug ? this._servings.sessionSeen : undefined;
+    // A local choice keeps the session pair it was made against, so the next poll does not take it back
+    // (a device that does not write to the session never sets the write-pending guard).
+    const session = this._studio?.family?.session;
+    const sessionPair =
+      session?.slug === recipe.slug &&
+      Number(session.servings) > 0 &&
+      Number(session.servingsBase) > 0
+        ? [Number(session.servings), Number(session.servingsBase)]
+        : undefined;
+    const seen =
+      (this._servings?.slug === recipe.slug ? this._servings.sessionSeen : undefined) ??
+      (source === "local" ? sessionPair : undefined);
     this._servings = { slug: recipe.slug, value: next, source, sessionSeen: seen };
     if (notify && Math.abs(next - before) > SERVINGS_EPSILON) this._servingsDidChange?.(next);
     this._render();
@@ -25171,7 +25195,7 @@ ${actions.length ? `<p class="servings-actions">${actions.join("")}</p>` : ""}</
     const next =
       direction > 0
         ? ladder.find((n) => n > current + SERVINGS_EPSILON)
-        : ladder.findLast((n) => n < current - SERVINGS_EPSILON);
+        : [...ladder].reverse().find((n) => n < current - SERVINGS_EPSILON); // no findLast: older wall tablets lack it
     if (next !== undefined) this._servingsSet(next);
   },
   /** Adopts the family session's amount for the open recipe. Returns true when it changed (caller renders). */
@@ -25202,10 +25226,11 @@ ${actions.length ? `<p class="servings-actions">${actions.join("")}</p>` : ""}</
   _servingsSessionFields() {
     const model = this._servingsModel();
     if (!model || this._permissions.features?.session_servings !== true) return {};
-    return {
-      servings: Number(this._servingsTarget().toFixed(6)),
-      servings_base: model.base,
-    };
+    const servings = Number(this._servingsTarget().toFixed(6));
+    const inRange = (n) => n >= SESSION_SERVINGS_MIN && n <= SESSION_SERVINGS_MAX;
+    // Outside the range the session accepts, the session starts without a shared amount instead of failing.
+    if (!inRange(servings) || !inRange(model.base)) return {};
+    return { servings, servings_base: model.base };
   },
   _servingsListPayload() {
     if (!this._servingsScaled() || this._permissions.features?.recipe_scale !== true) return {};
@@ -27462,11 +27487,9 @@ Object.assign(MealieAtelierCard.prototype, {
       this._servingsTimer = null;
       const live = this._studio?.family?.session;
       try {
-        if (live && live.slug === slug && this._detail?.slug === slug)
-          await this._studioWrite("session_servings", {
-            session_id: live.id,
-            ...this._servingsSessionFields(),
-          });
+        const fields = this._servingsSessionFields();
+        if (live && live.slug === slug && this._detail?.slug === slug && "servings" in fields)
+          await this._studioWrite("session_servings", { session_id: live.id, ...fields });
       } finally {
         if (!this._servingsTimer) this._servingsWritePending = false;
       }

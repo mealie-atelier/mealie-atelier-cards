@@ -207,3 +207,39 @@ test("the voice answer for an ingredient is scaled", async () => {
   recognizers[0].onresult({ results: [[{ transcript: "how much eggs" }]] });
   assert.match(card.flashes[0], /^4 eggs/);
 });
+
+test("a device that does not write keeps its local amount over the next poll", async () => {
+  for (const opts of [{ can_write: false }, { kid: true }]) {
+    const shared = session({ servings: 4, servingsBase: 2 });
+    const card = setup({ active: shared, ...opts });
+    assert.equal(card._servingsTarget(), 4);
+    card._servingsSet(6);
+    card._ws = async () => ({ revision: 2, family: { session: shared }, journal: {} });
+    await card._studioRefresh({ silent: true });
+    assert.equal(card._servingsTarget(), 6, JSON.stringify(opts));
+    assert.equal(card.writes.filter(([a]) => a === "session_servings").length, 0);
+    // A new amount from the session is still adopted.
+    const changed = session({ servings: 8, servingsBase: 2 });
+    card._ws = async () => ({ revision: 3, family: { session: changed }, journal: {} });
+    await card._studioRefresh({ silent: true });
+    assert.equal(card._servingsTarget(), 8);
+  }
+});
+
+test("a base outside the session range starts the session without a shared amount", async () => {
+  for (const base of [1500, 0.005]) {
+    const card = setup({ active: null });
+    card._detail = {
+      ...card._detail,
+      recipeServings: undefined,
+      recipeYieldQuantity: base,
+      recipeYield: `${base} Stück`,
+    };
+    card._studioRefresh = async () => true;
+    await click(card, "cook-start");
+    const start = card.writes.find(([action]) => action === "session_start");
+    assert.ok(start, `base ${base}: session_start was sent`);
+    assert.equal("servings" in start[1], false, `base ${base}: no servings`);
+    assert.equal("servings_base" in start[1], false);
+  }
+});

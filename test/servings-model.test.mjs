@@ -502,3 +502,43 @@ test("every key the servings module references exists in both locales", () => {
       assert.ok(kind === "tp" ? `${key}.other` in labels : key in labels, `${lang}.${key}`);
   }
 });
+
+test("a huge base keeps the ladder bounded and every factor within the transfer limit", () => {
+  for (const base of [1500, 1e6, 1e12]) {
+    const c = servingsCard(base);
+    const started = performance.now();
+    const ladder = [];
+    c._servingsSet(c._servingsModel().min, { notify: false });
+    for (let i = 0; i < 400; i += 1) {
+      ladder.push(c._servingsTarget());
+      const before = c._servingsTarget();
+      c._servingsStep(1);
+      if (c._servingsTarget() === before) break;
+    }
+    assert.ok(ladder.length <= 203, `base ${base}: ${ladder.length} steps`);
+    assert.ok(ladder.includes(base), `base ${base} is on the ladder`);
+    assert.ok(performance.now() - started < 1000, `base ${base} steps quickly`);
+  }
+  for (const base of [0.01, 0.1, 0.5, 2, 50]) {
+    const model = servingsCard(base)._servingsModel();
+    assert.ok(model.max / base <= 100, `base ${base}: max ${model.max}`);
+  }
+});
+
+test("no findLast or findLastIndex in the cards source: older wall tablets lack them", () => {
+  for (const file of [
+    "src/components/servings.js",
+    "src/components/offline-queue.js",
+    "src/studio-ui.js",
+    "src/card-core.template.js",
+  ]) {
+    const code = readFileSync(new URL(`../${file}`, import.meta.url), "utf8").replace(
+      /\/\/.*$|\/\*[\s\S]*?\*\//gm,
+      "",
+    );
+    assert.doesNotMatch(code, /\.findLast(Index)?\(/, file);
+  }
+  const c = servingsCard(4);
+  c._servingsStep(-1);
+  assert.equal(c._servingsTarget(), 3);
+});

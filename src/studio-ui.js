@@ -192,11 +192,9 @@ Object.assign(MealieAtelierCard.prototype, {
       this._servingsTimer = null;
       const live = this._studio?.family?.session;
       try {
-        if (live && live.slug === slug && this._detail?.slug === slug)
-          await this._studioWrite("session_servings", {
-            session_id: live.id,
-            ...this._servingsSessionFields(),
-          });
+        const fields = this._servingsSessionFields();
+        if (live && live.slug === slug && this._detail?.slug === slug && "servings" in fields)
+          await this._studioWrite("session_servings", { session_id: live.id, ...fields });
       } finally {
         if (!this._servingsTimer) this._servingsWritePending = false;
       }
