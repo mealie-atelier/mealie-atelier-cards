@@ -3299,16 +3299,19 @@ details[open] .chev {
   padding: 14px 18px 14px 0;
 }
 .recipe-metrics div:nth-child(even) {
-  padding-left: 18px;
+  /* The right column ends at the page edge, so it needs no padding there: that room goes to the value. */
+  padding-inline: 18px 0;
   border-left: 1px solid var(--line);
 }
 .recipe-metrics div:nth-child(n + 3) {
   border-top: 1px solid var(--line);
 }
+/* Whole words stay whole, so the longest value ("Hausmannskost", "Mediterranean") has to fit one
+   line: the size follows the width down to 320 px (test/recipe-metrics-fit.test.mjs). */
 .recipe-metrics b {
   overflow-wrap: break-word;
   hyphens: manual;
-  font: 500 22px/1.2 var(--serif);
+  font: 500 clamp(16px, 5.2vw, 22px) / 1.2 var(--serif);
 }
 .recipe-metrics span {
   color: var(--faint);

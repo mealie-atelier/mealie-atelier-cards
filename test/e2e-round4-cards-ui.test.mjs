@@ -5,6 +5,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
+import { findChrome } from "./support/chrome.mjs";
 
 const locale = (name) =>
   JSON.parse(readFileSync(new URL(`../src/i18n/${name}.json`, import.meta.url), "utf8"));
@@ -149,20 +150,6 @@ test("a failed load does not claim there is no shopping list or nothing planned"
   assert.doesNotMatch(card._shopping(), /Create your first shopping list|class="notice"/);
   assert.doesNotMatch(card._today(), /Nothing planned|class="notice"/);
 });
-
-function findChrome() {
-  const candidates = [process.env.CHROME_BIN];
-  for (const dir of [".cache/ms-playwright", "Library/Caches/ms-playwright"]) {
-    const root = join(process.env.HOME ?? "", dir);
-    if (!existsSync(root)) continue;
-    for (const entry of readdirSync(root).sort().reverse()) {
-      if (!entry.startsWith("chromium_headless_shell-")) continue;
-      for (const sub of readdirSync(join(root, entry)))
-        candidates.push(join(root, entry, sub, "chrome-headless-shell"));
-    }
-  }
-  return candidates.find((path) => path && existsSync(path));
-}
 
 test("the tablet week strip keeps long meal names whole instead of splitting words", (t) => {
   const chrome = findChrome();

@@ -5,6 +5,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
+import { findChrome } from "./support/chrome.mjs";
 
 const read = (name) =>
   readFileSync(new URL(`../src/design-system/${name}`, import.meta.url), "utf8").replace(
@@ -62,21 +63,6 @@ test("the dialog is one fixed height box from 641px of height up", () => {
   assert.match(block, /overflow: hidden/);
   assert.match(block, /> \.cook-layout \{ flex: 1 1 auto; min-height: 0;/);
 });
-
-/** A headless Chromium from CHROME_BIN or the Playwright cache, if one is installed. */
-function findChrome() {
-  const candidates = [process.env.CHROME_BIN];
-  for (const dir of [".cache/ms-playwright", "Library/Caches/ms-playwright"]) {
-    const root = join(process.env.HOME ?? "", dir);
-    if (!existsSync(root)) continue;
-    for (const entry of readdirSync(root).sort().reverse()) {
-      if (!entry.startsWith("chromium_headless_shell-")) continue;
-      for (const sub of readdirSync(join(root, entry)))
-        candidates.push(join(root, entry, sub, "chrome-headless-shell"));
-    }
-  }
-  return candidates.find((path) => path && existsSync(path));
-}
 
 const bundlePath = new URL("../dist/mealie-atelier-cards.js", import.meta.url).pathname;
 const LONG_STEP = "Peel the onions and dice them finely, then sweat them in a large pan. ".repeat(

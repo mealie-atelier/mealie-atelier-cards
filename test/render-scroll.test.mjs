@@ -13,6 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import assert from "node:assert/strict";
 import { loadCards, makeCard } from "./support/card-harness.mjs";
+import { findChrome } from "./support/chrome.mjs";
 
 /** A card whose previous ha-card is swapped while the page reports the given card tops. */
 function swappingCard(tops) {
@@ -95,21 +96,6 @@ test("the stable marker really switches off the backdrop and step heading animat
     assert.match(rule[2], /animation:\s*none\s*!important/, selector);
   }
 });
-
-/** A headless Chromium from CHROME_BIN or the Playwright cache, if one is installed. */
-function findChrome() {
-  const candidates = [process.env.CHROME_BIN];
-  for (const dir of [".cache/ms-playwright", "Library/Caches/ms-playwright"]) {
-    const root = join(process.env.HOME ?? "", dir);
-    if (!existsSync(root)) continue;
-    for (const entry of readdirSync(root).sort().reverse()) {
-      if (!entry.startsWith("chromium_headless_shell-")) continue;
-      for (const sub of readdirSync(join(root, entry)))
-        candidates.push(join(root, entry, sub, "chrome-headless-shell"));
-    }
-  }
-  return candidates.find((path) => path && existsSync(path));
-}
 
 const bundlePath = new URL("../dist/mealie-atelier-cards.js", import.meta.url).pathname;
 

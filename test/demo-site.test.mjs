@@ -13,6 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { sectionIds } from "../demo/site/chrome.mjs";
+import { findChrome } from "./support/chrome.mjs";
 
 const baseUrl = "https://mealie.example.test/";
 const links = {
@@ -1190,22 +1191,6 @@ test("sharp photos: every master is at least 2000 px wide and ships a 1600w vari
 
 // Layout needs a real browser engine: find a headless Chromium (CHROME_BIN, PATH or the Playwright
 // cache) and skip when none is installed.
-function findChrome() {
-  const candidates = [process.env.CHROME_BIN];
-  const cache = join(process.env.HOME ?? "", "Library/Caches/ms-playwright");
-  const linuxCache = join(process.env.HOME ?? "", ".cache/ms-playwright");
-  for (const dir of [cache, linuxCache]) {
-    if (!existsSync(dir)) continue;
-    for (const entry of readdirSync(dir).sort().reverse()) {
-      if (!entry.startsWith("chromium_headless_shell-")) continue;
-      for (const sub of readdirSync(join(dir, entry))) {
-        candidates.push(join(dir, entry, sub, "chrome-headless-shell"));
-      }
-    }
-  }
-  return candidates.find((path) => path && existsSync(path));
-}
-
 test("rendered at 390 and 768 px the photo grid follows the photo ratios and the quote card hugs its text", (t) => {
   const chrome = findChrome();
   if (!chrome) return t.skip("no headless Chromium available");
