@@ -7,7 +7,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 ### Added
 
 - Servings scaler: the recipe dialog has a stepper (Servings, or Makes and Amount for recipes without a serving count) that converts the ingredient amounts, with a "Recipe: ..." line for the original and "Back to the recipe amount". Cooking mode, print and the voice answer for "how much" use the same amounts.
-- Cooking mode shows the ingredients each step needs right below its heading, in the chosen amounts, thanks to @Marlon1694 ([#3](https://github.com/mealie-atelier/mealie-atelier-cards/pull/3)).
+- Cooking mode shows the ingredients each step needs below the step text, in the chosen amounts, thanks to @Marlon1694 ([#3](https://github.com/mealie-atelier/mealie-atelier-cards/pull/3)).
 - Shopping list: adding a recipe to a list can use the chosen amounts. The web app does this out of the box; in Home Assistant it needs Bridge 0.13.0 or newer, and with an older Bridge the dialog says it adds the recipe amounts.
 - Cook together: the chosen amount is shared through the family session, so everyone in the session sees the same amounts (web app, or Bridge 0.13.0 or newer).
 

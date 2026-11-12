@@ -80,9 +80,9 @@ test("cooking mode lists the ingredients linked to the current step", () => {
   assert.match(items[0], /Mehl/);
   assert.match(items[1], /Ei/);
   assert.doesNotMatch(list, /Zwiebel/);
-  // Chips sit right after the heading, before the step detail text.
-  assert.ok(first.indexOf("</h2><ul") > 0, "chips directly follow the heading");
-  assert.ok(first.indexOf("cook-step-ingredients") < first.indexOf("cook-step-detail"));
+  // Chips follow the step text: up to nine of them must never push the instruction off a phone screen.
+  assert.ok(first.indexOf("cook-step-detail") < first.indexOf("cook-step-ingredients"));
+  assert.ok(first.indexOf('</p><ul class="cook-step-ingredients"') > 0, "chips follow the text");
   c._cookIndex = 1;
   assert.doesNotMatch(open(c, "cook", recipe), /cook-step-ingredients/);
   c._cookIndex = 2;

@@ -1193,7 +1193,8 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
-/* Ingredients Mealie links to the current step: quiet labels under the step heading. */
+/* Ingredients Mealie links to the current step: quiet labels under the step text, so a long list never
+   pushes the instruction out of a phone's step area. */
 .atelier .cook-step-ingredients {
   display: flex;
   flex-wrap: wrap;
