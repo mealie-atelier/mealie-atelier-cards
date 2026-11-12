@@ -182,6 +182,8 @@ export const servingsMethods = {
       people >= 1 &&
       people <= 20 &&
       Math.abs(people - target) > SERVINGS_EPSILON &&
+      // Equal to the recipe amount, "back to the recipe amount" already does the same.
+      Math.abs(people - model.base) > SERVINGS_EPSILON &&
       people >= model.min &&
       people <= model.max
     )

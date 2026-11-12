@@ -343,6 +343,9 @@ function localizedData(locale) {
       cookMinutes: recipe.cookMinutes,
       restMinutes: recipe.restMinutes ?? 0,
       ingredients: recipe.ingredients[locale],
+      // Parsed rows and step links: the live demo scales amounts and lists each step's ingredients.
+      ingredientParts: recipe.ingredientParts?.[locale] ?? null,
+      stepIngredients: recipe.stepIngredients ?? [],
       steps: recipe.steps[locale],
       image: {
         file: `../photos/${photoName(recipe)}`,

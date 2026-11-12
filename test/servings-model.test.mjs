@@ -356,6 +356,14 @@ test("household action: servings mode only, integer within 1..20", () => {
   assert.match(half._servingsStepperHtml(), /Für 1 Person \(Haushalt\)/);
 });
 
+test("household action is left out when it equals the recipe amount", () => {
+  const c = servingsCard(2, { studio: { profile: { people: 2 } } });
+  c._servingsSet(4);
+  const html = c._servingsStepperHtml();
+  assert.match(html, /Zurück zur Rezeptmenge/);
+  assert.doesNotMatch(html, /Haushalt/, "the reset already sets the same amount");
+});
+
 test("stepper html in yield and factor mode, and hidden without ingredients", () => {
   const yieldCard = make({ recipeYieldQuantity: 12, recipeYield: "12 Muffins" });
   let html = yieldCard._servingsStepperHtml();

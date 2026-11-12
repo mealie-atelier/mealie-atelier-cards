@@ -92,3 +92,32 @@ test("preview maps parts, step references and the capability flags", () => {
   assert.match(preview, /req\.payload\.scale \?\? 1/);
   assert.match(preview, /row\.quantity \* scale/);
 });
+
+// The generator builds a per-locale catalog from selected fields; a field it drops never reaches the
+// live demo (cook mode showed no chips and every row had quantity 0). Run it for real into a temp dir.
+test("the generated demo catalog keeps parsed rows and step links", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const { mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+  try {
+    execFileSync(process.execPath, ["scripts/generate-demo-site.mjs"], {
+      env: { ...process.env, ATELIER_DEMO_OUT_DIR: out },
+      stdio: "pipe",
+    });
+    for (const lang of ["de", "en"]) {
+      const built = JSON.parse(readFileSync(join(out, "data", `${lang}.json`), "utf8"));
+      const recipes = built.recipes;
+      assert.equal(recipes.length, catalog.recipes.length);
+      for (const [i, r] of recipes.entries()) {
+        const source = catalog.recipes[i];
+        assert.deepEqual(r.ingredientParts, source.ingredientParts[lang], `${lang} ${r.id} parts`);
+        assert.deepEqual(r.stepIngredients, source.stepIngredients, `${lang} ${r.id} links`);
+      }
+      assert.ok(recipes.some((r) => r.stepIngredients.some((links) => links.length)));
+    }
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});
