@@ -2032,6 +2032,12 @@ class MealieAtelierCard extends HTMLElement {
       this._render();
       return;
     }
+    const stepKey = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[event.key];
+    if (stepKey && target?.matches?.('[data-action="servings-step"]')) {
+      event.preventDefault();
+      if (target.getAttribute?.("aria-disabled") !== "true") this._servingsStep(stepKey);
+      return;
+    }
     if (this._bookKeydown(event)) return;
     // BEGIN feature D: recipe picker keyboard
     if (this._pickerKeydown(event)) return;
@@ -2305,6 +2311,8 @@ class MealieAtelierCard extends HTMLElement {
   }
   async _openRecipe(slug) {
     if (!slug) return;
+    const previousModal = this._modal;
+    this._servingsOnOpen(slug, previousModal);
     this._modal = "loading";
     this._toast = "";
     this._render();
@@ -2932,6 +2940,14 @@ class MealieAtelierCard extends HTMLElement {
       this._renumberSteps();
       return;
     }
+    if (action === "servings-step") {
+      if (el.getAttribute?.("aria-disabled") !== "true") this._servingsStep(Number(v));
+      return;
+    }
+    if (action === "servings-set") {
+      this._servingsSet(Number(v));
+      return;
+    }
     if (action === "cook-to-recipe") {
       this._modal = this._detail ? "recipe" : null;
       this._render();
@@ -3506,7 +3522,11 @@ class MealieAtelierCard extends HTMLElement {
         if (this._detail?.id && values.list_id)
           ok = await this._mutate(
             "shopping_from_recipe",
-            { list_id: values.list_id, recipe_id: this._detail.id },
+            {
+              list_id: values.list_id,
+              recipe_id: this._detail.id,
+              ...this._servingsListPayload(),
+            },
             "shopping",
           );
         break;
