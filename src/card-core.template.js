@@ -2033,7 +2033,9 @@ class MealieAtelierCard extends HTMLElement {
       return;
     }
     const stepKey = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[event.key];
-    if (stepKey && target?.matches?.('[data-action="servings-step"]')) {
+    // Arrow keys step the servings; with a modifier they keep their browser meaning (Alt+Left goes back).
+    const plainKey = !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey;
+    if (stepKey && plainKey && target?.matches?.('[data-action="servings-step"]')) {
       event.preventDefault();
       if (target.getAttribute?.("aria-disabled") !== "true") this._servingsStep(stepKey);
       return;

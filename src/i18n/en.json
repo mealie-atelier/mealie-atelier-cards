@@ -35,6 +35,7 @@
   "addToPlan": "Plan meal",
   "servings": "Servings",
   "ingredients": "Ingredients",
+  "cookStepIngredients": "Ingredients for this step",
   "instructions": "Instructions",
   "next": "Next",
   "back": "Back",

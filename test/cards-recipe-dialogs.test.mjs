@@ -68,6 +68,7 @@ test("cooking mode lists the ingredients linked to the current step", () => {
   });
   c._cookIndex = 0;
   const first = open(c, "cook", recipe);
+  assert.match(first, /<ul class="cook-step-ingredients" aria-label="Zutaten für diesen Schritt">/);
   const list = first.match(/<ul class="cook-step-ingredients"[^>]*>(.*?)<\/ul>/)?.[1] || "";
   const items = [...list.matchAll(/<li>(.*?)<\/li>/g)].map((m) => m[1]);
   // Recipe order, not reference order, and only the linked rows.

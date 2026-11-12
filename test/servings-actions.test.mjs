@@ -41,9 +41,10 @@ const button = (action, value, disabled = false) => {
   return el;
 };
 const click = (card, el) => card._handleClick({ target: el, preventDefault() {} });
-const key = (card, el, name) => {
+const key = (card, el, name, modifiers = {}) => {
   const event = {
     key: name,
+    ...modifiers,
     target: el,
     prevented: false,
     preventDefault() {
@@ -88,6 +89,13 @@ test("other keys on a stepper button and arrows elsewhere do not step", () => {
   assert.equal(key(card, button("servings-step", "1"), "Enter").prevented, false);
   const other = { matches: () => false };
   key(card, other, "ArrowUp");
+  assert.equal(card._servingsTarget(), 2);
+  // With a modifier the arrow keeps its browser meaning (Alt+Left goes back, Cmd+Up scrolls).
+  for (const mod of ["altKey", "ctrlKey", "metaKey", "shiftKey"])
+    assert.equal(
+      key(card, button("servings-step", "1"), "ArrowLeft", { [mod]: true }).prevented,
+      false,
+    );
   assert.equal(card._servingsTarget(), 2);
 });
 

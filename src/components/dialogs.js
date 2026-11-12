@@ -219,7 +219,7 @@ export const dialogMethods = {
           )
         : [];
       const stepIngredientsHtml = stepIngredients.length
-        ? `<ul class="cook-step-ingredients" aria-label="${esc(this.t("ingredients"))}">${stepIngredients.map((ing) => `<li>${esc(this._servingsRow(ing))}</li>`).join("")}</ul>`
+        ? `<ul class="cook-step-ingredients" aria-label="${esc(this.t("cookStepIngredients"))}">${stepIngredients.map((ing) => `<li>${esc(this._servingsRow(ing))}</li>`).join("")}</ul>`
         : "";
       const cookModel = this._servingsModel(this._detail);
       const cookBaseYield =

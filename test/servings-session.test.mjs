@@ -170,6 +170,21 @@ test("studio-session-open opens the recipe and cook mode at the shared amount", 
   assert.equal(card._servingsTarget(), 6);
 });
 
+test("studio-session-open takes the shared amount even when this recipe is open with a local one", async () => {
+  const shared = session({ servings: 6, servingsBase: 2, step: 0 });
+  const card = setup({ active: shared });
+  card._modal = "recipe";
+  card._servingsSet(3);
+  assert.equal(card._servingsTarget(), 3);
+  card._openRecipe = async function (slug) {
+    this._servingsOnOpen(slug, this._modal);
+    this._modal = "recipe";
+  };
+  await click(card, "studio-session-open");
+  assert.equal(card._modal, "cook");
+  assert.equal(card._servingsTarget(), 6);
+});
+
 test("the voice answer for an ingredient is scaled", async () => {
   const recognizers = [];
   class Recognizer {

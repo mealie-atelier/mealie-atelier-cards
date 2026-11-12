@@ -1565,6 +1565,8 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
     }
     if (action === "studio-session-open") {
       if (session) {
+        // Opening the shared session cooks its amounts, even when this recipe is already open here.
+        this._servings = null;
         await this._openRecipe(session.slug);
         this._cookIndex = session.step;
         this._modal = "cook";
