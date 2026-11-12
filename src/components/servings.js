@@ -128,12 +128,16 @@ export const servingsMethods = {
     const model = this._servingsModel(recipe);
     return model && model.mode !== "factor" ? this._servingsAmount(model.base, recipe) : "";
   },
+  /** A factor, or a yield without a unit word ("4"): notes speak of a multiple, never "für 4 ." */
+  _servingsUnitless(model = this._servingsModel()) {
+    return Boolean(model) && (model.mode === "factor" || (model.mode === "yield" && !model.unit));
+  },
   _servingsNoteHtml() {
     const model = this._servingsModel();
     if (!model || !this._servingsScaled()) return "";
     const target = this._servingsTarget();
     let text;
-    if (model.mode === "factor")
+    if (this._servingsUnitless(model))
       text = this.t("scalerNoteFactor", {
         factor: this._localeNumber(Number(this._servingsFactor().toFixed(2))),
       });
@@ -265,13 +269,13 @@ ${actions.length ? `<p class="servings-actions">${actions.join("")}</p>` : ""}</
     const factor = this._localeNumber(Number(this._servingsFactor().toFixed(2)));
     if (this._permissions.features?.recipe_scale !== true)
       return line(
-        model.mode === "factor"
+        this._servingsUnitless(model)
           ? this.t("shoppingScaleUnsupportedFactor")
           : this.t("shoppingScaleUnsupported", { amount: this._servingsBaseAmount() }),
       );
     return (
       line(
-        model.mode === "factor"
+        this._servingsUnitless(model)
           ? this.t("shoppingAddsFactor", { factor })
           : this.t("shoppingAddsFor", { amount: this._servingsAmount() }),
       ) + (model.rowsAsWritten > 0 ? line(this.tp("shoppingAsWritten", model.rowsAsWritten)) : "")

@@ -1494,6 +1494,6 @@
   "shoppingAddsFactor": "Adds {factor} times the recipe amounts.",
   "shoppingAsWritten.one": "1 ingredient without a recognized amount goes on the list as written.",
   "shoppingAsWritten.other": "{count} ingredients without a recognized amount go on the list as written.",
-  "shoppingScaleUnsupported": "This Bridge version adds the recipe amounts for {amount}. Update Mealie Atelier Bridge to add scaled amounts.",
-  "shoppingScaleUnsupportedFactor": "This Bridge version adds the amounts as written in the recipe. Update Mealie Atelier Bridge to add scaled amounts."
+  "shoppingScaleUnsupported": "Your version of Mealie Atelier Bridge adds the recipe amounts for {amount}. From version 0.13.0 on, the scaled amounts go on the list.",
+  "shoppingScaleUnsupportedFactor": "Your version of Mealie Atelier Bridge adds the amounts as written in the recipe. From version 0.13.0 on, the scaled amounts go on the list."
 }

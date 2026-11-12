@@ -396,6 +396,12 @@ test("scale note per mode", () => {
     factor._servingsNoteHtml(),
     '<p class="studio-serving-note">Mengen auf das 1,5-Fache umgerechnet. Eindeutige Mengen sind skaliert; Freitext bitte prüfen.</p>',
   );
+  // A yield with a number only ("4") has no unit word: the notes speak of a multiple.
+  const bare = make({ recipeYieldQuantity: 4, recipeYield: "4" }, { features: FLAGS });
+  bare._servingsSet(8);
+  assert.match(bare._servingsNoteHtml(), /Mengen auf das 2-Fache umgerechnet\./);
+  assert.match(bare._servingsListNoteHtml(), /Auf die Liste kommt das 2-Fache der Rezeptmengen\./);
+  assert.doesNotMatch(bare._servingsNoteHtml() + bare._servingsListNoteHtml(), / \./);
 });
 
 test("list note: capability, factor, rows as written, nothing when unscaled", () => {
@@ -414,7 +420,7 @@ test("list note: capability, factor, rows as written, nothing when unscaled", ()
   off._servingsSet(4);
   assert.equal(
     off._servingsListNoteHtml(),
-    '<p class="servings-list-note">Diese Bridge-Version übernimmt die Rezeptmengen für 2 Portionen. Für umgerechnete Mengen aktualisiere die Mealie Atelier Bridge.</p>',
+    '<p class="servings-list-note">Deine Version der Mealie Atelier Bridge übernimmt die Rezeptmengen für 2 Portionen. Ab Version 0.13.0 kommen die umgerechneten Mengen auf die Liste.</p>',
   );
   const factorOn = make({}, { features: FLAGS, language: "en" });
   factorOn._servingsSet(2);
@@ -426,7 +432,7 @@ test("list note: capability, factor, rows as written, nothing when unscaled", ()
   factorOff._servingsSet(2);
   assert.match(
     factorOff._servingsListNoteHtml(),
-    /This Bridge version adds the amounts as written in the recipe/,
+    /Your version of Mealie Atelier Bridge adds the amounts as written in the recipe/,
   );
   assert.equal(servingsCard(2, { language: "en" })._servingsListNoteHtml(), "");
 });

@@ -104,8 +104,13 @@ test("card editor and shared dialogs/views/print use keys present in every local
   ];
   for (const file of files) {
     const sourceText = readFileSync(new URL(`../src/${file}`, import.meta.url), "utf8");
-    const referenced = [...sourceText.matchAll(/(this\.t|this\.tp|tr)\('([^']+)'/g)].map(
+    // Prettier writes double quotes, so the key may sit in either quote style.
+    const referenced = [...sourceText.matchAll(/(this\.t|this\.tp|tr)\(["']([^"']+)["']/g)].map(
       ([, method, key]) => [method, key],
+    );
+    assert.ok(
+      referenced.length > 0,
+      `${file} references no translation key, so the pattern is broken`,
     );
     for (const [locale, resource] of Object.entries(locales))
       for (const [method, key] of referenced) {
