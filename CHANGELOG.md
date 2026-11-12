@@ -11,6 +11,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 - Shopping list: adding a recipe to a list can use the chosen amounts. The web app does this out of the box; in Home Assistant it needs Bridge 0.13.0 or newer, and with an older Bridge the dialog says it adds the recipe amounts.
 - Cook together: the chosen amount is shared through the family session, so everyone in the session sees the same amounts (web app, or Bridge 0.13.0 or newer).
 
+### Fixed
+
+- Kitchen timers start on a dashboard opened over plain `http://`. The start button silently did nothing there, because `crypto.randomUUID()` exists only on HTTPS. The offline shopping queue of the card and of the web app had the same gap and now works over `http://` as well.
+
 ## [0.12.18] - 2026-11-11
 
 ### Fixed

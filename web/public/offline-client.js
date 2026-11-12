@@ -13,6 +13,16 @@ export const OFFLINE_ACTIONS = [
 ];
 const ALARM_STATUS_ERROR = "offlineAlarmStatusUnavailable";
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+/** A version 4 UUID. crypto.randomUUID() exists only in secure contexts; an app served over plain
+ * http:// on the home network still has crypto.getRandomValues(). */
+export function uuidV4() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
 export class AtelierOfflineClient {
   constructor() {
     this.enabled = false;
@@ -102,7 +112,7 @@ export class AtelierOfflineClient {
     if (!this.enabled) throw offlineError("offlineNotEnabled");
     if (!this.snapshot) throw offlineError("offlineListNeedsRefresh");
     if (!OFFLINE_ACTIONS.includes(action)) throw offlineError("offlineRequiresConnection");
-    const id = crypto.randomUUID();
+    const id = uuidV4();
     let data = { ...payload };
     if (action === "shopping_toggle") {
       const item = this.shopping.items.find((x) => String(x.id) === String(data.item_id));

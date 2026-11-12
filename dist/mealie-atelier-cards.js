@@ -14899,6 +14899,19 @@ function recipeImage(recipe, cls = "", eager = false) {
 function mealName(entry) {
   return entry?.recipe?.name || entry?.title || entry?.text || "";
 }
+/**
+ * A version 4 UUID. crypto.randomUUID() exists only in secure contexts, so on a dashboard opened over
+ * plain http:// (common on a home LAN or through a VPN) the timer start threw and the offline queue
+ * stayed off. crypto.getRandomValues() is available in every context.
+ */
+function uuidV4() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
 function ingredientName(row) {
   return (
     row?.display ||
@@ -17689,7 +17702,7 @@ class MealieAtelierCard extends HTMLElement {
         label =
           this.shadowRoot.querySelector("[data-timer-label]")?.value.trim() ||
           this.t("uiKitchenTimer");
-      const id = crypto.randomUUID();
+      const id = uuidV4();
       const timer = {
         id,
         label,
@@ -24377,11 +24390,11 @@ const offlineQueueMethods = {
     if (
       ops.length >= OFFLINE_CAP ||
       typeof crypto === "undefined" ||
-      typeof crypto.randomUUID !== "function"
+      typeof crypto.getRandomValues !== "function"
     )
       return false;
     ops.push({
-      id: crypto.randomUUID(),
+      id: uuidV4(),
       action,
       payload,
       label,

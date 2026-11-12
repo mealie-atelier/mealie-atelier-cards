@@ -100,11 +100,11 @@ export const offlineQueueMethods = {
     if (
       ops.length >= OFFLINE_CAP ||
       typeof crypto === "undefined" ||
-      typeof crypto.randomUUID !== "function"
+      typeof crypto.getRandomValues !== "function"
     )
       return false;
     ops.push({
-      id: crypto.randomUUID(),
+      id: uuidV4(),
       action,
       payload,
       label,
