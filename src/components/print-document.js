@@ -16,7 +16,18 @@ function wirePrintToolbar(popup) {
 // Build a standalone print document and escape every Mealie field before rendering it.
 function buildPrintDocument(
   kind,
-  { recipe, shopping, mealplan, activeList, weekStart, weekDays, locale, settings, translate },
+  {
+    recipe,
+    shopping,
+    mealplan,
+    activeList,
+    weekStart,
+    weekDays,
+    locale,
+    settings,
+    translate,
+    servings: scaled,
+  },
 ) {
   const t = (key, values) => (typeof translate === "function" ? translate(key, values) : key);
   const words = {
@@ -69,9 +80,9 @@ function buildPrintDocument(
       drink: t("printDocDrink"),
       snack: t("printDocSnack"),
     })[value] || value;
-  const meta = (label, value) =>
+  const meta = (label, value, quiet = "") =>
     value !== ""
-      ? `<div class="meta-box"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`
+      ? `<div class="meta-box"><span>${esc(label)}</span><strong>${esc(value)}</strong>${quiet ? `<small>${esc(quiet)}</small>` : ""}</div>`
       : "";
   const tick = () => (checkboxes ? '<span class="tick" aria-hidden="true"></span>' : "");
   const textRow = (value) =>
@@ -122,9 +133,20 @@ function buildPrintDocument(
         ? `${recipe.recipeYieldQuantity} ${recipe.recipeYield}`
         : time(recipe?.recipeYield);
     heading = `<div class="eyebrow">${esc(words.recipe)} · ${esc(words.created)}</div><h1>${esc(recipe?.name || words.recipe)}</h1>${description ? `<p class="dek">${esc(description)}</p>` : ""}
-       <div class="meta-grid">${meta(servings ? words.servings : t("printDocYield"), servings ? `${servings} ${words.servings}` : yieldLabel)}${meta(words.time, duration(recipe?.totalTime))}</div>`;
+       <div class="meta-grid">${
+         scaled
+           ? meta(
+               scaled.mode === "servings" ? words.servings : t("printDocYield"),
+               scaled.amount,
+               scaled.base ? t("scalerBase", { amount: scaled.base }) : "",
+             )
+           : meta(
+               servings ? words.servings : t("printDocYield"),
+               servings ? `${servings} ${words.servings}` : yieldLabel,
+             )
+       }${meta(words.time, duration(recipe?.totalTime))}</div>`;
     const list = data.length
-      ? data.map((row) => textRow(ingredientName(row))).join("")
+      ? data.map((row) => textRow(scaled ? scaled.row(row) : ingredientName(row))).join("")
       : `<p class="quiet">${esc(words.empty)}</p>`;
     const process = instructions.length
       ? instructions
@@ -188,6 +210,7 @@ function buildPrintDocument(
   .meta-grid{display:flex;gap:28px;flex-wrap:wrap;margin:24px 0 31px}
   .meta-box span{display:block;color:var(--soft);font-size:9px;text-transform:uppercase;letter-spacing:1.7px;margin-bottom:5px}
   .meta-box strong{font-size:13px;font-weight:700}
+  .meta-box small{display:block;margin-top:4px;color:var(--soft);font-size:9px}
   h2{font-size:11px;letter-spacing:2.4px;font-weight:850;color:var(--ink);text-transform:uppercase;display:flex;align-items:center;gap:9px;margin:0 0 21px;padding-bottom:12px;border-bottom:1px solid var(--rule)}
   .count{color:var(--sage);font-weight:600;letter-spacing:0}
   .recipe-photo{height:48mm;overflow:hidden;margin:-4mm 0 11mm;border-radius:3px;break-inside:avoid}

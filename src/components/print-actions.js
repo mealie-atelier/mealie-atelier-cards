@@ -30,6 +30,7 @@ export const printActionMethods = {
       locale: this._locale,
       settings: this._design,
       translate: (key, values) => this.t(key, values),
+      servings: kind === "recipe" ? this._servingsPrintContext() : null,
     });
     popup.document.open();
     popup.document.write(html);
