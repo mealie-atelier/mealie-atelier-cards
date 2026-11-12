@@ -247,3 +247,143 @@ test("print document and paper preview drop Markdown markers", () => {
   p._print();
   assert.match(written, /<p>Add a link My Link \(https:\/\/demo\.mealie\.io\) and soft<\/p>/);
 });
+
+// Servings scaler on the recipe, cook, print preview and recipe-to-list dialogs.
+const FLAGS = { recipe_scale: true, session_servings: true };
+const eggRows = () => [
+  { referenceId: "e1", quantity: 2, food: { name: "Eier" }, display: "2 Eier" },
+  {
+    referenceId: "e2",
+    quantity: 100,
+    unit: { name: "g" },
+    food: { name: "Mehl" },
+    display: "100 g Mehl",
+  },
+  { note: "Salz", display: "Salz" },
+];
+const scalable = (language = "de", features, extra = {}) => {
+  const c = makeCard(cards, {
+    hass: { language, callWS: async () => ({}) },
+    permissions: { can_write: true, can_manage: true, ...(features ? { features } : {}) },
+  });
+  c._render = () => {};
+  const recipe = detail({
+    recipeServings: 2,
+    recipeIngredient: eggRows(),
+    recipeInstructions: [
+      { text: "Mischen", ingredientReferences: [{ referenceId: "e1" }, { referenceId: "e2" }] },
+    ],
+    ...extra,
+  });
+  c._detail = recipe;
+  return { c, recipe };
+};
+const rowSpans = (html) =>
+  [...html.matchAll(/<label class="ingredient">.*?<span>(.*?)<\/span><\/label>/g)].map((m) => m[1]);
+
+test("recipe dialog shows the stepper only for a recipe with ingredients", () => {
+  const { c, recipe } = scalable();
+  assert.match(open(c, "recipe", recipe), /class="servings-control"/);
+  assert.doesNotMatch(open(c, "recipe", { ...recipe, recipeIngredient: [] }), /servings-control/);
+});
+
+test("scaled rows, pill and note follow the servings value (de and en)", () => {
+  for (const language of ["de", "en"]) {
+    const { c, recipe } = scalable(language);
+    c._servingsSet(4);
+    const html = open(c, "recipe", recipe);
+    const rows = rowSpans(html);
+    assert.equal(rows.length, 3);
+    assert.match(rows[0], /^4 /);
+    assert.match(rows[1], /^200 g/);
+    assert.equal(rows[2], "Salz");
+    assert.match(html, language === "de" ? /4 Portionen<\/span>/ : /4 servings<\/span>/);
+    assert.match(html, /class="pill">[^]*?4 (Portionen|servings)<\/span>/);
+    assert.match(html, /class="studio-serving-note"/);
+  }
+});
+
+test("equal target and base renders the written rows and no note", () => {
+  const { c, recipe } = scalable();
+  const html = open(c, "recipe", recipe);
+  assert.deepEqual(
+    rowSpans(html),
+    recipe.recipeIngredient.map((r) => c._servingsRow(r)),
+  );
+  assert.deepEqual(rowSpans(html), ["2 Eier", "100 g Mehl", "Salz"]);
+  assert.doesNotMatch(html, /studio-serving-note/);
+  assert.match(html, /class="pill">[^]*?2 Portionen<\/span>/);
+});
+
+test("a recipe opened from Discover starts at the Discover count with its note", () => {
+  const { c, recipe } = scalable();
+  c._discoverResults = true;
+  c._discoverSelected = "x";
+  c._discoverDraft = { people: 1 };
+  const html = open(c, "recipe", recipe);
+  assert.match(html, /studio-serving-note">Mengen für 1 Portion angepasst/);
+  assert.match(rowSpans(html)[1], /^50 g/);
+});
+
+test("cook mode: yield line per mode, unscaled and scaled chips", () => {
+  const { c, recipe } = scalable();
+  c._cookIndex = 0;
+  assert.match(open(c, "cook", recipe), /<p class="muted">2 Portionen<\/p>/);
+  c._servingsSet(4);
+  const html = open(c, "cook", recipe);
+  assert.match(html, /<p class="muted">Mengen für 4 Portionen \(Rezept: 2 Portionen\)<\/p>/);
+  const chips = [...html.matchAll(/<li>(.*?)<\/li>/g)].map((m) => m[1]);
+  assert.deepEqual(chips, ["4 Eier", "200 g Mehl"]);
+  const factor = scalable("de", undefined, { recipeServings: 0 });
+  factor.c._servingsSet(1.5);
+  assert.match(
+    open(factor.c, "cook", factor.recipe),
+    /<p class="muted">Mengen auf das 1,5-Fache umgerechnet<\/p>/,
+  );
+});
+
+test("print preview lists the scaled rows", () => {
+  const { c, recipe } = scalable();
+  c._printKind = "recipe";
+  c._servingsSet(4);
+  const html = open(c, "print", recipe);
+  assert.match(html, /200 g Mehl/);
+  assert.doesNotMatch(html, /100 g Mehl/);
+});
+
+test("recipe-to-list note: flag, no flag, factor mode and rows taken as written", () => {
+  const withFlag = scalable("de", FLAGS);
+  withFlag.c._servingsSet(4);
+  let html = open(withFlag.c, "recipe-to-list", withFlag.recipe);
+  assert.match(
+    html,
+    /class="servings-list-note">Auf die Liste kommen die Zutaten für 4 Portionen\./,
+  );
+  assert.match(html, /1 Zutat ohne erkannte Menge/);
+  const plural = scalable("de", FLAGS, {
+    recipeIngredient: [...eggRows(), { note: "Pfeffer", display: "Pfeffer" }],
+  });
+  plural.c._servingsSet(4);
+  assert.match(open(plural.c, "recipe-to-list", plural.recipe), /2 Zutaten ohne erkannte Menge/);
+  const without = scalable("en");
+  without.c._servingsSet(4);
+  html = open(without.c, "recipe-to-list", without.recipe);
+  assert.match(
+    html,
+    /Your version of Mealie Atelier Bridge adds the recipe amounts for 2 servings/,
+  );
+  const factor = scalable("de", FLAGS, { recipeServings: 0 });
+  factor.c._servingsSet(2);
+  assert.match(open(factor.c, "recipe-to-list", factor.recipe), /das 2-Fache der Rezeptmengen/);
+  const plain = scalable("de", FLAGS);
+  assert.doesNotMatch(open(plain.c, "recipe-to-list", plain.recipe), /servings-list-note/);
+});
+
+test("the servings value survives recipe, cook and recipe again", () => {
+  const { c, recipe } = scalable();
+  c._servingsSet(5);
+  open(c, "recipe", recipe);
+  open(c, "cook", recipe);
+  assert.equal(c._servingsTarget(), 5);
+  assert.match(rowSpans(open(c, "recipe", recipe))[0], /^5 /);
+});

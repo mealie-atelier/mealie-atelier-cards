@@ -89,12 +89,6 @@ export const dialogMethods = {
       const recipe = this._detail,
         ingredients = asArray(recipe.recipeIngredient),
         steps = asArray(recipe.recipeInstructions);
-      const discoverTarget =
-        this._discoverResults && this._discoverSelected === recipe.slug
-          ? Number(this._discoverDraft?.people) || 0
-          : 0;
-      const servingBase = AtelierStudio.recipeServings(recipe);
-      const servingWord = this.tp("uiServing", discoverTarget);
       const yieldText =
         recipe.recipeYieldQuantity && recipe.recipeYield
           ? `${recipe.recipeYieldQuantity} ${recipe.recipeYield}`
@@ -103,22 +97,16 @@ export const dialogMethods = {
         Number(recipe.recipeServings) > 0
           ? `${this._localeNumber(recipe.recipeServings)} ${this.tp("uiServing", Number(recipe.recipeServings))}`
           : yieldText;
+      const servingBase = AtelierStudio.recipeServings(recipe);
+      const model = this._servingsModel(recipe);
+      // Scaled: the target amount (a factor shows only in the stepper, so the pill keeps the base text).
       const scaledYield =
-        discoverTarget && servingBase
-          ? `${this._localeNumber(discoverTarget)} ${servingWord}`
+        model?.hasIngredients && this._servingsScaled() && model.mode !== "factor"
+          ? this._servingsAmount()
           : baseYield || "";
       const clockTime = AtelierStudio.formatTime(recipe.totalTime, this._language);
       // A real serving count keeps the cutlery icon; a pan or loaf text gets the neutral spark.
       const yieldIcon = servingBase ? "utensils" : "spark";
-      const scaleNote =
-        discoverTarget && servingBase && discoverTarget !== servingBase
-          ? `<p class="studio-serving-note">${this.t("uiScaleServingsNote", {
-              target: this._localeNumber(discoverTarget),
-              base: this._localeNumber(servingBase),
-              targetUnit: this.tp("uiServing", discoverTarget),
-              baseUnit: this.tp("uiServing", servingBase),
-            })}</p>`
-          : "";
       const img = this._photo(recipe);
       const labelName = (x) => String(x?.name ?? x ?? "").trim();
       const categoryNames = asArray(recipe.recipeCategory).map(labelName).filter(Boolean),
@@ -204,7 +192,7 @@ export const dialogMethods = {
             : ""
         }
         ${labelLine("uiRecipeCategories", categoryNames)}${labelLine("uiRecipeTags", tagNames)}${sourceLine}
-        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${scaleNote}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(discoverTarget && servingBase ? AtelierStudio.scaleIngredient(ing, discoverTarget, servingBase, this._language === "de" ? "de" : "en") : ingredientName(ing))}</span></label>`).join("") : "—"}</div>
+        <div class="detail-cols"><div><h3>${esc(this.t("ingredients"))}</h3>${this._servingsStepperHtml()}${this._servingsNoteHtml()}${ingredients.length ? ingredients.map((ing, i) => `${ing?.title && ing.title !== ingredients[i - 1]?.title ? `<h4 class="step-section">${esc(ing.title)}</h4>` : ""}<label class="ingredient"><input type="checkbox" data-input="ingredient" data-index="${i}" ${this._checkedIngredients.has(i) ? "checked" : ""}><span>${esc(this._servingsRow(ing))}</span></label>`).join("") : "—"}</div>
         <div class="detail-instructions"><h3>${esc(this.t("instructions"))}</h3>${steps.length ? `<div class="recipe-steps" role="list">${stepRows}</div>` : "—"}</div></div>${notesHtml}</div>`;
     }
     if (this._modal === "cook" && this._detail) {
@@ -231,15 +219,25 @@ export const dialogMethods = {
           )
         : [];
       const stepIngredientsHtml = stepIngredients.length
-        ? `<ul class="cook-step-ingredients" aria-label="${esc(this.t("ingredients"))}">${stepIngredients.map((ing) => `<li>${esc(ingredientName(ing))}</li>`).join("")}</ul>`
+        ? `<ul class="cook-step-ingredients" aria-label="${esc(this.t("ingredients"))}">${stepIngredients.map((ing) => `<li>${esc(this._servingsRow(ing))}</li>`).join("")}</ul>`
         : "";
-      const cookServings = AtelierStudio.recipeServings(this._detail);
-      const cookYield =
+      const cookModel = this._servingsModel(this._detail);
+      const cookBaseYield =
         Number(this._detail.recipeServings) > 0
-          ? `${this._localeNumber(cookServings)} ${this.tp("uiServing", cookServings)}`
+          ? `${this._localeNumber(AtelierStudio.recipeServings(this._detail))} ${this.tp("uiServing", AtelierStudio.recipeServings(this._detail))}`
           : this._detail.recipeYieldQuantity && this._detail.recipeYield
             ? `${this._detail.recipeYieldQuantity} ${this._detail.recipeYield}`
             : this._detail.recipeYield || "";
+      let cookYield = cookBaseYield;
+      if (cookModel?.hasIngredients && this._servingsScaled())
+        cookYield = this._servingsUnitless(cookModel)
+          ? this.t("cookAmountsFactor", {
+              factor: this._localeNumber(Number(this._servingsFactor().toFixed(2))),
+            })
+          : this.t("cookAmountsFor", {
+              amount: this._servingsAmount(),
+              base: this._servingsBaseAmount(),
+            });
       size = "large";
       content = `<div class="cook-layout"><div class="cook-visual">${this._photo(this._detail, "cook-visual-image")}<div class="cook-brand" title="${esc(this._detail.name)}">${esc(this._detail.name)}</div></div>
         <div class="cook-content"><div class="cook-topline"><span>${esc(this.t("cooking"))}</span><span>${String(idx + 1).padStart(2, "0")} / ${String(n).padStart(2, "0")}</span></div>
@@ -363,7 +361,7 @@ export const dialogMethods = {
     }
     if (this._modal === "recipe-to-list" && this._detail) {
       const lists = asArray(this._data.shopping?.lists);
-      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p></div></div>
+      content = `<div class="modal-content"><div class="editor-lead"><div><div class="eyebrow">MEALIE ATELIER / ${esc(this.t("shoppingKicker"))}</div><h2>${esc(this.t("shoppingFromRecipe"))}</h2><p>${esc(this.t("addFromRecipeTip"))}</p>${this._servingsListNoteHtml()}</div></div>
       <section class="editor-card"><div class="eyebrow">01 / ${this.t("shopping")}</div><form class="editor-form" data-form="recipe-to-list">
       ${lists.length ? `<label class="field"><span>${esc(this.t("selectList"))}</span><select name="list_id" required>${lists.map((l) => `<option value="${esc(l.id)}" ${String(l.id) === this._activeList ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></label>` : `<p class="notice">${esc(this.t("addListFirst"))}</p>`}
       <div class="form-actions"><button type="button" class="btn" data-action="create-list-form">${icon("plus", 14)} ${esc(this.t("createList"))}</button>${lists.length ? `<button type="submit" class="btn primary">${icon("cart", 14)} ${esc(this.t("shoppingAddRecipe"))}</button>` : ""}</div></form></section></div>`;
@@ -378,7 +376,7 @@ export const dialogMethods = {
             : this.t("mealplan");
       const paperIngredients =
         this._printKind === "recipe"
-          ? asArray(this._detail?.recipeIngredient).map(ingredientName)
+          ? asArray(this._detail?.recipeIngredient).map((row) => this._servingsRow(row))
           : this._printKind === "shopping"
             ? asArray(this._data.shopping?.items)
                 .filter((x) => String(x.shoppingListId) === String(this._activeList))
