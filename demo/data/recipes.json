@@ -99,7 +99,30 @@
         "photographer": "Ivan Cherepanov",
         "photographerUrl": "https://unsplash.com/@theveryday?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/a-skillet-with-eggs-and-tomatoes-on-a-wooden-table-BMlJ5SxzG2o"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 1, "unit": "EL", "food": "Olivenöl", "note": "" },
+          { "quantity": 1, "unit": null, "food": "Zwiebel", "note": "in dünnen Streifen" },
+          { "quantity": 3, "unit": null, "food": "Tomaten", "note": "grob gewürfelt" },
+          { "quantity": 4, "unit": null, "food": "Eier", "note": "" },
+          { "quantity": 1, "unit": "Handvoll", "food": "Basilikumblätter", "note": "" },
+          null
+        ],
+        "en": [
+          { "quantity": 1, "unit": "tbsp", "food": "olive oil", "note": "" },
+          { "quantity": 1, "unit": null, "food": "onion", "note": "thinly sliced" },
+          { "quantity": 3, "unit": null, "food": "tomatoes", "note": "roughly diced" },
+          { "quantity": 4, "unit": null, "food": "eggs", "note": "" },
+          { "quantity": 1, "unit": "handful", "food": "basil leaves", "note": "" },
+          null
+        ]
+      },
+      "stepIngredients": [
+        [0, 1],
+        [2, 5],
+        [3, 4]
+      ]
     },
     {
       "id": "gnocchi-sorrentina",
@@ -194,7 +217,32 @@
         "photographer": "Nathalie Klippert",
         "photographerUrl": "https://unsplash.com/@nathaliescontent?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/a-white-plate-topped-with-food-on-top-of-a-wooden-table-c8anfbnfPRo"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 800, "unit": "g", "food": "Kartoffelgnocchi", "note": "" },
+          { "quantity": 500, "unit": "g", "food": "Kirschtomaten", "note": "" },
+          { "quantity": 200, "unit": "g", "food": "passierte Tomaten", "note": "" },
+          { "quantity": 1, "unit": null, "food": "Knoblauchzehe", "note": "in Scheiben" },
+          { "quantity": 2, "unit": "EL", "food": "Olivenöl", "note": "" },
+          { "quantity": 1, "unit": "Prise", "food": "getrockneter Oregano", "note": "" },
+          { "quantity": 250, "unit": "g", "food": "Mozzarella", "note": "" },
+          { "quantity": 1, "unit": "Handvoll", "food": "Basilikum", "note": "" },
+          null
+        ],
+        "en": [
+          { "quantity": 800, "unit": "g", "food": "potato gnocchi", "note": "" },
+          { "quantity": 500, "unit": "g", "food": "cherry tomatoes", "note": "" },
+          { "quantity": 200, "unit": "g", "food": "strained tomatoes", "note": "" },
+          { "quantity": 1, "unit": null, "food": "garlic clove", "note": "sliced" },
+          { "quantity": 2, "unit": "tbsp", "food": "olive oil", "note": "" },
+          { "quantity": 1, "unit": "pinch", "food": "dried oregano", "note": "" },
+          { "quantity": 250, "unit": "g", "food": "mozzarella", "note": "" },
+          { "quantity": 1, "unit": "handful", "food": "basil leaves", "note": "" },
+          null
+        ]
+      },
+      "stepIngredients": [[1, 2, 3, 4, 5], [0], [6, 7]]
     },
     {
       "id": "chicken-salad",
@@ -297,7 +345,44 @@
         "photographer": "Svitlana",
         "photographerUrl": "https://unsplash.com/@kekse_und_ich?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/a-salad-with-chicken-tomatoes-lettuce-olives-and-cheese-MdewPG0w_dc"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 2, "unit": null, "food": "Hähnchenbrustfilets", "note": "etwa 350 g" },
+          { "quantity": 1, "unit": null, "food": "Romanasalat", "note": "" },
+          { "quantity": 1, "unit": null, "food": "rote Paprika", "note": "" },
+          { "quantity": 0.5, "unit": null, "food": "Salatgurke", "note": "" },
+          { "quantity": 0.5, "unit": null, "food": "rote Zwiebel", "note": "in feinen Streifen" },
+          { "quantity": 150, "unit": "g", "food": "Kirschtomaten", "note": "" },
+          { "quantity": 50, "unit": "g", "food": "schwarze Oliven", "note": "entsteint" },
+          { "quantity": 2, "unit": "Scheiben", "food": "Weißbrot", "note": "" },
+          { "quantity": 30, "unit": "g", "food": "Parmesan", "note": "" },
+          { "quantity": 4, "unit": "EL", "food": "Olivenöl", "note": "" },
+          { "quantity": 1, "unit": "EL", "food": "Zitronensaft", "note": "" },
+          { "quantity": 1, "unit": "Handvoll", "food": "Basilikum", "note": "" },
+          null
+        ],
+        "en": [
+          { "quantity": 2, "unit": null, "food": "chicken breast fillets", "note": "about 350 g" },
+          { "quantity": 1, "unit": null, "food": "romaine lettuce", "note": "" },
+          { "quantity": 1, "unit": null, "food": "red bell pepper", "note": "" },
+          { "quantity": 0.5, "unit": null, "food": "cucumber", "note": "" },
+          { "quantity": 0.5, "unit": null, "food": "red onion", "note": "thinly sliced" },
+          { "quantity": 150, "unit": "g", "food": "cherry tomatoes", "note": "" },
+          { "quantity": 50, "unit": "g", "food": "pitted black olives", "note": "" },
+          { "quantity": 2, "unit": "slices", "food": "white bread", "note": "" },
+          { "quantity": 30, "unit": "g", "food": "Parmesan", "note": "" },
+          { "quantity": 4, "unit": "tbsp", "food": "olive oil", "note": "" },
+          { "quantity": 1, "unit": "tbsp", "food": "lemon juice", "note": "" },
+          { "quantity": 1, "unit": "handful", "food": "basil leaves", "note": "" },
+          null
+        ]
+      },
+      "stepIngredients": [
+        [7, 9],
+        [0, 9],
+        [1, 2, 3, 4, 5, 6, 8, 10, 11]
+      ]
     },
     {
       "id": "pumpkin-soup",
@@ -394,7 +479,34 @@
         "photographer": "Cala",
         "photographerUrl": "https://unsplash.com/@calajay?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/soup-bowls-with-feta-and-seeds-w6ftFbPCs9I"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 1, "unit": null, "food": "Hokkaido-Kürbis", "note": "etwa 1 kg" },
+          { "quantity": 2, "unit": null, "food": "Möhren", "note": "" },
+          { "quantity": 1, "unit": null, "food": "Zwiebel", "note": "" },
+          { "quantity": 1, "unit": null, "food": "Knoblauchzehe", "note": "" },
+          { "quantity": 2, "unit": "EL", "food": "Olivenöl", "note": "" },
+          { "quantity": 800, "unit": "ml", "food": "Gemüsebrühe", "note": "" },
+          { "quantity": 100, "unit": "g", "food": "Feta", "note": "" },
+          { "quantity": 3, "unit": "EL", "food": "Kürbiskerne", "note": "" },
+          { "quantity": 1, "unit": "Prise", "food": "Chiliflocken", "note": "" },
+          null
+        ],
+        "en": [
+          { "quantity": 1, "unit": null, "food": "Hokkaido squash", "note": "about 1 kg" },
+          { "quantity": 2, "unit": null, "food": "carrots", "note": "" },
+          { "quantity": 1, "unit": null, "food": "onion", "note": "" },
+          { "quantity": 1, "unit": null, "food": "garlic clove", "note": "" },
+          { "quantity": 2, "unit": "tbsp", "food": "olive oil", "note": "" },
+          { "quantity": 800, "unit": "ml", "food": "vegetable stock", "note": "" },
+          { "quantity": 100, "unit": "g", "food": "feta", "note": "" },
+          { "quantity": 3, "unit": "tbsp", "food": "pumpkin seeds", "note": "" },
+          { "quantity": 1, "unit": "pinch", "food": "chili flakes", "note": "" },
+          null
+        ]
+      },
+      "stepIngredients": [[0, 1, 2, 3, 4], [5], [6, 7, 8]]
     },
     {
       "id": "ham-mushroom-pizza",
@@ -490,7 +602,36 @@
         "photographer": "Luke Oslizlo",
         "photographerUrl": "https://unsplash.com/@lukaszmtw?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/a-pizza-on-a-plate-pGYe7qO50UM"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 300, "unit": "g", "food": "Weizenmehl Type 00", "note": "" },
+          { "quantity": 190, "unit": "ml", "food": "lauwarmes Wasser", "note": "" },
+          { "quantity": 3, "unit": "g", "food": "Trockenhefe", "note": "" },
+          { "quantity": 1, "unit": "TL", "food": "Salz", "note": "" },
+          { "quantity": 150, "unit": "g", "food": "passierte Tomaten", "note": "" },
+          { "quantity": 150, "unit": "g", "food": "Mozzarella", "note": "" },
+          { "quantity": 60, "unit": "g", "food": "Schinken", "note": "hauchdünn geschnitten" },
+          { "quantity": 8, "unit": null, "food": "Champignons", "note": "klein, halbiert" },
+          { "quantity": 1, "unit": "EL", "food": "Olivenöl", "note": "" }
+        ],
+        "en": [
+          { "quantity": 300, "unit": "g", "food": "00 flour", "note": "" },
+          { "quantity": 190, "unit": "ml", "food": "lukewarm water", "note": "" },
+          { "quantity": 3, "unit": "g", "food": "dried yeast", "note": "" },
+          { "quantity": 1, "unit": "tsp", "food": "salt", "note": "" },
+          { "quantity": 150, "unit": "g", "food": "strained tomatoes", "note": "" },
+          { "quantity": 150, "unit": "g", "food": "mozzarella", "note": "" },
+          { "quantity": 60, "unit": "g", "food": "wafer-thin sliced ham", "note": "" },
+          { "quantity": 8, "unit": null, "food": "mushrooms", "note": "small, halved" },
+          { "quantity": 1, "unit": "tbsp", "food": "olive oil", "note": "" }
+        ]
+      },
+      "stepIngredients": [
+        [0, 1, 2, 3],
+        [3, 4, 5, 8],
+        [0, 5, 6, 7]
+      ]
     },
     {
       "id": "artichoke-penne",
@@ -585,7 +726,47 @@
         "photographer": "Paula Hayes",
         "photographerUrl": "https://unsplash.com/@phayes007?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/pasta-with-cheese-on-white-ceramic-plate-oeulo_9RRO0"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 400, "unit": "g", "food": "Penne", "note": "" },
+          { "quantity": 4, "unit": "Scheiben", "food": "Frühstücksspeck", "note": "" },
+          {
+            "quantity": 280,
+            "unit": "g",
+            "food": "Artischockenherzen aus dem Glas",
+            "note": "abgetropft"
+          },
+          {
+            "quantity": 200,
+            "unit": "g",
+            "food": "geröstete rote Paprika aus dem Glas",
+            "note": "in Streifen"
+          },
+          { "quantity": 100, "unit": "g", "food": "Kalamata-Oliven", "note": "" },
+          { "quantity": 150, "unit": "g", "food": "Feta", "note": "" },
+          { "quantity": 3, "unit": "EL", "food": "Olivenöl", "note": "" },
+          { "quantity": 1, "unit": "TL", "food": "getrockneter Oregano", "note": "" },
+          null
+        ],
+        "en": [
+          { "quantity": 400, "unit": "g", "food": "penne", "note": "" },
+          { "quantity": 4, "unit": "rashers", "food": "bacon", "note": "" },
+          { "quantity": 280, "unit": "g", "food": "jarred artichoke hearts", "note": "drained" },
+          {
+            "quantity": 200,
+            "unit": "g",
+            "food": "jarred roasted red peppers",
+            "note": "cut into strips"
+          },
+          { "quantity": 100, "unit": "g", "food": "Kalamata olives", "note": "" },
+          { "quantity": 150, "unit": "g", "food": "feta", "note": "" },
+          { "quantity": 3, "unit": "tbsp", "food": "olive oil", "note": "" },
+          { "quantity": 1, "unit": "tsp", "food": "dried oregano", "note": "" },
+          null
+        ]
+      },
+      "stepIngredients": [[0], [1, 2], [0, 1, 2, 3, 4, 5, 6, 7]]
     },
     {
       "id": "pancakes",
@@ -682,7 +863,38 @@
         "photographer": "Joshua Ryder",
         "photographerUrl": "https://unsplash.com/@photos_by_ryder?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/brown-and-red-strawberry-cake-on-white-ceramic-plate-y4K7Ydp2z3Y"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 250, "unit": "g", "food": "Weizenmehl", "note": "" },
+          { "quantity": 2, "unit": "EL", "food": "Zucker", "note": "" },
+          { "quantity": 2, "unit": "TL", "food": "Backpulver", "note": "" },
+          { "quantity": 1, "unit": null, "food": "Ei", "note": "" },
+          { "quantity": 300, "unit": "ml", "food": "Buttermilch", "note": "" },
+          { "quantity": 40, "unit": "g", "food": "Butter", "note": "geschmolzen" },
+          { "quantity": 250, "unit": "g", "food": "Erdbeeren", "note": "" },
+          { "quantity": 125, "unit": "g", "food": "Heidelbeeren", "note": "" },
+          { "quantity": 4, "unit": "EL", "food": "Ahornsirup", "note": "" },
+          { "quantity": 1, "unit": "Prise", "food": "Salz", "note": "" }
+        ],
+        "en": [
+          { "quantity": 250, "unit": "g", "food": "all-purpose flour", "note": "" },
+          { "quantity": 2, "unit": "tbsp", "food": "sugar", "note": "" },
+          { "quantity": 2, "unit": "tsp", "food": "baking powder", "note": "" },
+          { "quantity": 1, "unit": null, "food": "egg", "note": "" },
+          { "quantity": 300, "unit": "ml", "food": "buttermilk", "note": "" },
+          { "quantity": 40, "unit": "g", "food": "butter", "note": "melted" },
+          { "quantity": 250, "unit": "g", "food": "strawberries", "note": "" },
+          { "quantity": 125, "unit": "g", "food": "blueberries", "note": "" },
+          { "quantity": 4, "unit": "tbsp", "food": "maple syrup", "note": "" },
+          { "quantity": 1, "unit": "pinch of", "food": "salt", "note": "" }
+        ]
+      },
+      "stepIngredients": [
+        [0, 1, 2, 9],
+        [3, 4, 5],
+        [6, 7, 8]
+      ]
     },
     {
       "id": "coconut-curry",
@@ -783,7 +995,47 @@
         "photographer": "Filipp Romanovski",
         "photographerUrl": "https://unsplash.com/@filipp_roman_photography?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/a-bowl-filled-with-rice-and-vegetables-on-top-of-a-table-GHDs-GG81SA"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 250, "unit": "g", "food": "Basmatireis", "note": "" },
+          { "quantity": 1, "unit": "EL", "food": "Kokosöl", "note": "" },
+          { "quantity": 1, "unit": null, "food": "rote Zwiebel", "note": "in Spalten" },
+          { "quantity": 2, "unit": null, "food": "Knoblauchzehen", "note": "fein gehackt" },
+          { "quantity": 2, "unit": "EL", "food": "vegane gelbe Currypaste", "note": "" },
+          {
+            "quantity": 400,
+            "unit": "g",
+            "food": "festkochende Kartoffeln",
+            "note": "in 2 cm Würfeln"
+          },
+          { "quantity": 2, "unit": null, "food": "Karotten", "note": "in dicken Scheiben" },
+          { "quantity": 400, "unit": "ml", "food": "Kokosmilch", "note": "" },
+          { "quantity": 50, "unit": "g", "food": "geröstete Erdnüsse", "note": "" },
+          { "quantity": 2, "unit": null, "food": "Limetten", "note": "" },
+          { "quantity": 1, "unit": "Handvoll", "food": "Koriander", "note": "" },
+          { "quantity": 1, "unit": "Prise", "food": "Salz", "note": "" }
+        ],
+        "en": [
+          { "quantity": 250, "unit": "g", "food": "basmati rice", "note": "" },
+          { "quantity": 1, "unit": "tbsp", "food": "coconut oil", "note": "" },
+          { "quantity": 1, "unit": null, "food": "red onion", "note": "cut into wedges" },
+          { "quantity": 2, "unit": null, "food": "garlic cloves", "note": "finely chopped" },
+          { "quantity": 2, "unit": "tbsp", "food": "vegan yellow curry paste", "note": "" },
+          { "quantity": 400, "unit": "g", "food": "waxy potatoes", "note": "in 2 cm cubes" },
+          { "quantity": 2, "unit": null, "food": "carrots", "note": "in thick slices" },
+          { "quantity": 400, "unit": "ml", "food": "coconut milk", "note": "" },
+          { "quantity": 50, "unit": "g", "food": "roasted peanuts", "note": "" },
+          { "quantity": 2, "unit": null, "food": "limes", "note": "" },
+          { "quantity": 1, "unit": "handful", "food": "cilantro", "note": "" },
+          { "quantity": 1, "unit": "pinch of", "food": "salt", "note": "" }
+        ]
+      },
+      "stepIngredients": [
+        [0, 11],
+        [1, 2, 3, 4, 5, 6, 7, 9, 11],
+        [0, 8, 9, 10]
+      ]
     },
     {
       "id": "wonton-soup",
@@ -880,7 +1132,43 @@
         "photographer": "K Soma",
         "photographerUrl": "https://unsplash.com/@ksoma?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/white-ceramic-bowl-with-soup-oKcCxOuy0_0"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 250, "unit": "g", "food": "Schweinehackfleisch", "note": "" },
+          { "quantity": 1, "unit": "Stück", "food": "Ingwer", "note": "etwa 2 cm, fein gerieben" },
+          { "quantity": 2, "unit": "EL", "food": "helle Sojasauce", "note": "" },
+          { "quantity": 1, "unit": "TL", "food": "Sesamöl", "note": "" },
+          { "quantity": 24, "unit": null, "food": "Wan-Tan-Teigblätter", "note": "" },
+          { "quantity": 1.2, "unit": "l", "food": "Hühnerbrühe", "note": "" },
+          { "quantity": 2, "unit": null, "food": "kleine Pak Choi", "note": "" },
+          { "quantity": 3, "unit": null, "food": "Frühlingszwiebeln", "note": "in feinen Ringen" },
+          { "quantity": 3, "unit": null, "food": "Knoblauchzehen", "note": "fein gehackt" },
+          { "quantity": 2, "unit": "EL", "food": "neutrales Öl", "note": "" }
+        ],
+        "en": [
+          { "quantity": 250, "unit": "g", "food": "ground pork", "note": "" },
+          {
+            "quantity": 1,
+            "unit": "piece",
+            "food": "fresh ginger",
+            "note": "about 2 cm, finely grated"
+          },
+          { "quantity": 2, "unit": "tbsp", "food": "light soy sauce", "note": "" },
+          { "quantity": 1, "unit": "tsp", "food": "sesame oil", "note": "" },
+          { "quantity": 24, "unit": null, "food": "wonton wrappers", "note": "" },
+          { "quantity": 1.2, "unit": "l", "food": "chicken stock", "note": "" },
+          { "quantity": 2, "unit": null, "food": "small heads bok choy", "note": "" },
+          { "quantity": 3, "unit": null, "food": "scallions", "note": "thinly sliced" },
+          { "quantity": 3, "unit": null, "food": "garlic cloves", "note": "finely chopped" },
+          { "quantity": 2, "unit": "tbsp", "food": "neutral oil", "note": "" }
+        ]
+      },
+      "stepIngredients": [
+        [0, 1, 2, 3, 4, 7],
+        [8, 9],
+        [2, 4, 5, 6, 7, 8]
+      ]
     },
     {
       "id": "lemon-focaccia",
@@ -974,7 +1262,34 @@
         "photographer": "Quin Engle",
         "photographerUrl": "https://unsplash.com/@twistsandzests?utm_source=mealie_atelier&utm_medium=referral",
         "sourceUrl": "https://unsplash.com/photos/sliced-lemon-beside-sliced-bread-TqQXS9bG4mE"
-      }
+      },
+      "ingredientParts": {
+        "de": [
+          { "quantity": 500, "unit": "g", "food": "Weizenmehl Type 00", "note": "" },
+          { "quantity": 400, "unit": "ml", "food": "lauwarmes Wasser", "note": "" },
+          { "quantity": 7, "unit": "g", "food": "Trockenhefe", "note": "" },
+          { "quantity": 2, "unit": "TL", "food": "Salz", "note": "" },
+          { "quantity": 6, "unit": "EL", "food": "Olivenöl", "note": "" },
+          { "quantity": 1, "unit": null, "food": "Bio-Zitrone", "note": "" },
+          { "quantity": 3, "unit": "Zweige", "food": "Rosmarin", "note": "" },
+          { "quantity": 1, "unit": "TL", "food": "Meersalzflocken", "note": "" }
+        ],
+        "en": [
+          { "quantity": 500, "unit": "g", "food": "00 flour", "note": "" },
+          { "quantity": 400, "unit": "ml", "food": "lukewarm water", "note": "" },
+          { "quantity": 7, "unit": "g", "food": "dried yeast", "note": "" },
+          { "quantity": 2, "unit": "tsp", "food": "salt", "note": "" },
+          { "quantity": 6, "unit": "tbsp", "food": "olive oil", "note": "" },
+          { "quantity": 1, "unit": null, "food": "unwaxed lemon", "note": "" },
+          { "quantity": 3, "unit": "sprigs", "food": "rosemary", "note": "" },
+          { "quantity": 1, "unit": "tsp", "food": "flaky sea salt", "note": "" }
+        ]
+      },
+      "stepIngredients": [
+        [0, 1, 2, 3, 4],
+        [4, 5, 6],
+        [4, 7]
+      ]
     }
   ]
 }

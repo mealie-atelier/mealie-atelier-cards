@@ -106,6 +106,8 @@
       const recipeStories = catalog.recipes.map((item) => ({
         description: localize(item.description),
         ingredients: localize(item.ingredients),
+        parts: localize(item.ingredientParts) || [],
+        stepIngredients: item.stepIngredients || [],
         steps: localize(item.steps).map((step) => [step.title, step.summary, step.text]),
         imageUrl: photoPath(item.image.file, catalogResponse.url),
         servings: item.servings,
@@ -159,12 +161,30 @@
         recipeYield:
           recipeStories[index].servings + (demoLanguage === "de" ? " Portionen" : " servings"),
         recipeServings: recipeStories[index].servings,
-        recipeIngredient: recipeStories[index].ingredients.map((display) => ({ display })),
+        // Parsed rows (quantity, unit, food, note) like Mealie stores them; null parts are note-only rows.
+        recipeIngredient: recipeStories[index].ingredients.map((display, i) => {
+          const part = recipeStories[index].parts[i];
+          const referenceId = "demo-ing-" + index + "-" + i;
+          if (!part) return { display, note: display, quantity: 0, referenceId };
+          return {
+            display,
+            referenceId,
+            quantity: part.quantity,
+            unit: part.unit ? { name: part.unit } : null,
+            food: { name: part.food },
+            note: part.note,
+          };
+        }),
         recipeInstructions: recipeStories[index].steps.map(([title, summary, text], stepIndex) => ({
           id: "demo-step-" + index + "-" + (stepIndex + 1),
           title,
           summary,
           text,
+          ingredientReferences: (recipeStories[index].stepIngredients[stepIndex] || []).map(
+            (i) => ({
+              referenceId: "demo-ing-" + index + "-" + i,
+            }),
+          ),
           imageUrls:
             stepIndex === recipeStories[index].steps.length - 1
               ? [recipeStories[index].imageUrl]
@@ -263,7 +283,13 @@
             tasks: [],
             timers: [],
             revision: 0,
+            ...(p.servings != null ? { servings: p.servings, servingsBase: p.servings_base } : {}),
           };
+        if (action === "session_servings" && s && s.id === p.session_id) {
+          s.servings = p.servings;
+          s.servingsBase = p.servings_base;
+          s.revision += 1;
+        }
         if (action === "session_step" && s) s.step = p.step;
         if (action === "session_end") f.session = null;
         if (action === "session_timer" && s) {
@@ -348,6 +374,7 @@
                   can_write: true,
                   can_manage: true,
                   can_edit_ingredients: true,
+                  features: { recipe_scale: true, session_servings: true },
                 },
               ],
               version: "0.12.18",
@@ -524,14 +551,31 @@
             }
             if (req.action === "shopping_from_recipe") {
               const rec = details.find((r) => r.id === req.payload.recipe_id);
-              for (const row of rec?.recipeIngredient || [])
-                shoppingItems.push({
+              // Like Mealie: parsed rows are multiplied, rows without a quantity are added as written.
+              const scale = req.payload.scale ?? 1;
+              const number = new Intl.NumberFormat(demoLanguage, { maximumFractionDigits: 2 });
+              for (const row of rec?.recipeIngredient || []) {
+                const base = {
                   id: "sh-" + shoppingItems.length,
                   shoppingListId: req.payload.list_id,
-                  display: row.display,
-                  note: row.display,
                   checked: false,
+                };
+                if (!row.quantity) {
+                  shoppingItems.push({ ...base, display: row.display, note: row.display });
+                  continue;
+                }
+                const quantity = row.quantity * scale;
+                shoppingItems.push({
+                  ...base,
+                  quantity,
+                  unit: row.unit,
+                  food: row.food,
+                  note: row.note,
+                  display: [number.format(quantity), row.unit?.name, row.food.name, row.note]
+                    .filter(Boolean)
+                    .join(" "),
                 });
+              }
               return {};
             }
             if (req.action === "shopping_add") {
