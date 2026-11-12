@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-12
+
 ### Added
 
 - Servings scaler: the recipe dialog has a stepper (Servings, or Makes and Amount for recipes without a serving count) that converts the ingredient amounts, with a "Recipe: ..." line for the original and "Back to the recipe amount". Cooking mode, print and the voice answer for "how much" use the same amounts.
@@ -736,7 +738,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.18...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.18...v0.13.0
 [0.12.18]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.17...v0.12.18
 [0.12.17]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.16...v0.12.17
 [0.12.16]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.15...v0.12.16

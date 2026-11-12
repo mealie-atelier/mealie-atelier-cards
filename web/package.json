@@ -1,6 +1,6 @@
 {
   "name": "mealie-atelier-web",
-  "version": "0.12.18",
+  "version": "0.13.0",
   "type": "module",
   "private": true,
   "scripts": {
