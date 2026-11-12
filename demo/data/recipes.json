@@ -1,6 +1,42 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-10-29",
+  "plurals": {
+    "de": {
+      "foods": {
+        "Zwiebel": "Zwiebeln",
+        "rote Zwiebel": "rote Zwiebeln",
+        "Ei": "Eier",
+        "Knoblauchzehe": "Knoblauchzehen",
+        "Salatgurke": "Salatgurken",
+        "Hokkaido-Kürbis": "Hokkaido-Kürbisse",
+        "Bio-Zitrone": "Bio-Zitronen",
+        "Romanasalat": "Romanasalate"
+      },
+      "units": {
+        "Prise": "Prisen"
+      }
+    },
+    "en": {
+      "foods": {
+        "onion": "onions",
+        "red onion": "red onions",
+        "egg": "eggs",
+        "garlic clove": "garlic cloves",
+        "cucumber": "cucumbers",
+        "Hokkaido squash": "Hokkaido squashes",
+        "unwaxed lemon": "unwaxed lemons",
+        "red bell pepper": "red bell peppers",
+        "romaine lettuce": "romaine lettuces"
+      },
+      "units": {
+        "handful": "handfuls",
+        "piece": "pieces",
+        "pinch": "pinches",
+        "pinch of": "pinches of"
+      }
+    }
+  },
   "tagLabels": {
     "vegetarian": { "de": "vegetarisch", "en": "vegetarian" },
     "vegan": { "de": "vegan", "en": "vegan" },

@@ -320,6 +320,8 @@ function localizedData(locale) {
   return {
     schemaVersion: catalog.schemaVersion,
     locale,
+    // Plural names of foods and units, so the demo shopping list reads like Mealie's.
+    plurals: catalog.plurals?.[locale] ?? { foods: {}, units: {} },
     recipes: catalog.recipes.map((recipe) => ({
       id: recipe.id,
       slug: recipe.slug,

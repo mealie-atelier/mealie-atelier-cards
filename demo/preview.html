@@ -103,6 +103,18 @@
         recipeCuisine: [{ name: localize(item.cuisine) }],
         tags: item.tags.map((tag) => ({ name: catalog.tagLabels?.[tag]?.[demoLanguage] ?? tag })),
       }));
+      const plurals = localize(catalog.plurals) || { foods: {}, units: {} };
+      // Mealie 3.29 display: unit and food take their plural name above quantity 1. German pluralizes
+      // the food always, English only without a unit. A missing plural falls back to the singular.
+      // demo-display-start
+      const mealieDisplay = (quantity, shown, unit, food, note, language) => {
+        const plural = quantity > 1;
+        const unitName = unit && (plural ? unit.pluralName || unit.name : unit.name);
+        const foodPlural = plural && (language === "de" || !unit);
+        const foodName = foodPlural ? food.pluralName || food.name : food.name;
+        return [shown, unitName, foodName, note].filter(Boolean).join(" ");
+      };
+      // demo-display-end
       const recipeStories = catalog.recipes.map((item) => ({
         description: localize(item.description),
         ingredients: localize(item.ingredients),
@@ -170,8 +182,8 @@
             display,
             referenceId,
             quantity: part.quantity,
-            unit: part.unit ? { name: part.unit } : null,
-            food: { name: part.food },
+            unit: part.unit ? { name: part.unit, pluralName: plurals.units?.[part.unit] } : null,
+            food: { name: part.food, pluralName: plurals.foods?.[part.food] },
             note: part.note,
           };
         }),
@@ -571,9 +583,14 @@
                   unit: row.unit,
                   food: row.food,
                   note: row.note,
-                  display: [number.format(quantity), row.unit?.name, row.food.name, row.note]
-                    .filter(Boolean)
-                    .join(" "),
+                  display: mealieDisplay(
+                    quantity,
+                    number.format(quantity),
+                    row.unit,
+                    row.food,
+                    row.note,
+                    demoLanguage,
+                  ),
                 });
               }
               return {};

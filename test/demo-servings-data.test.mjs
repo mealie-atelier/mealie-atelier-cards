@@ -121,3 +121,76 @@ test("the generated demo catalog keeps parsed rows and step links", async () => 
     rmSync(out, { recursive: true, force: true });
   }
 });
+
+test("every plural key is a food or unit used in the parsed rows", () => {
+  for (const lang of ["de", "en"]) {
+    const foods = new Set();
+    const units = new Set();
+    for (const r of catalog.recipes) {
+      for (const part of r.ingredientParts[lang]) {
+        if (!part) continue;
+        foods.add(part.food);
+        if (part.unit) units.add(part.unit);
+      }
+    }
+    const { foods: pf, units: pu } = catalog.plurals[lang];
+    for (const [singular, plural] of Object.entries(pf)) {
+      assert.ok(foods.has(singular), `${lang} plural food "${singular}" is used`);
+      assert.ok(plural && plural !== singular, `${lang} plural of "${singular}" differs`);
+    }
+    for (const [singular, plural] of Object.entries(pu)) {
+      assert.ok(units.has(singular), `${lang} plural unit "${singular}" is used`);
+      assert.ok(plural && plural !== singular, `${lang} plural of "${singular}" differs`);
+    }
+  }
+});
+
+test("the generated catalog carries the plurals of its locale", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const { mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const out = mkdtempSync(join(tmpdir(), "atelier-demo-"));
+  try {
+    execFileSync(process.execPath, ["scripts/generate-demo-site.mjs"], {
+      env: { ...process.env, ATELIER_DEMO_OUT_DIR: out },
+      stdio: "pipe",
+    });
+    for (const lang of ["de", "en"]) {
+      const built = JSON.parse(readFileSync(join(out, "data", `${lang}.json`), "utf8"));
+      assert.deepEqual(built.plurals, catalog.plurals[lang], `${lang} plurals`);
+    }
+  } finally {
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("the shopping mock builds the display like Mealie 3.29", () => {
+  const source = /\/\/ demo-display-start\n([\s\S]*?)\/\/ demo-display-end/.exec(preview)?.[1];
+  assert.ok(source, "display function markers exist");
+  const display = new Function(`${source}; return mealieDisplay;`)();
+  const unit = { name: "Prise", pluralName: "Prisen" };
+  const bare = { name: "Salz" };
+  const onion = { name: "Zwiebel", pluralName: "Zwiebeln" };
+  // German: the food is plural even with a unit; quantity 1 stays singular.
+  assert.equal(
+    display(2, "2", null, onion, "in dünnen Streifen", "de"),
+    "2 Zwiebeln in dünnen Streifen",
+  );
+  assert.equal(display(1, "1", null, onion, "", "de"), "1 Zwiebel");
+  assert.equal(display(3, "3", unit, onion, "", "de"), "3 Prisen Zwiebeln");
+  // English: the food is plural only without a unit.
+  const en = { name: "onion", pluralName: "onions" };
+  const enUnit = { name: "pinch", pluralName: "pinches" };
+  assert.equal(display(2, "2", null, en, "thinly sliced", "en"), "2 onions thinly sliced");
+  assert.equal(display(2, "2", enUnit, en, "", "en"), "2 pinches onion");
+  // No plural name: fall back to the singular.
+  assert.equal(display(2, "2", { name: "EL" }, bare, "", "de"), "2 EL Salz");
+  assert.equal(display(0.5, "0,5", unit, onion, "", "de"), "0,5 Prise Zwiebel");
+});
+
+test("preview hands the plural names to the mocked units and foods", () => {
+  assert.match(preview, /pluralName: plurals\.units\?\.\[part\.unit\]/);
+  assert.match(preview, /pluralName: plurals\.foods\?\.\[part\.food\]/);
+  assert.match(preview, /display: mealieDisplay\(/);
+});
