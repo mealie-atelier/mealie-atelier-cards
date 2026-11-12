@@ -91,6 +91,7 @@ Object.assign(MealieAtelierCard.prototype, {
         const cookBefore = this._cookIndex;
         this._studio = v;
         this._journal = v.journal || {};
+        const servingsMoved = this._servingsAfterStudio(v.family?.session);
         // While this card still sends its own step, the server's older step must not win.
         if (
           this._modal === "cook" &&
@@ -111,7 +112,7 @@ Object.assign(MealieAtelierCard.prototype, {
         if (
           !silent ||
           this._cookIndex !== cookBefore ||
-          (prev !== v.revision &&
+          ((prev !== v.revision || servingsMoved) &&
             !this.shadowRoot.activeElement?.matches?.("input,textarea,select"))
         )
           this._render();
@@ -150,6 +151,7 @@ Object.assign(MealieAtelierCard.prototype, {
       });
       this._studio = next;
       this._journal = next.journal || {};
+      this._servingsAfterStudio(next.family?.session);
       this._studioError = next.alarmWarnings?.join("; ") || "";
       this._render();
       return true;
@@ -161,6 +163,44 @@ Object.assign(MealieAtelierCard.prototype, {
       await this._recoverPermissions(error);
       return false;
     }
+  },
+  /** Adopts the shared amount after a studio state arrived; stops a queued write for a session that is gone. */
+  _servingsAfterStudio(session) {
+    if (!session || session.slug !== this._detail?.slug) this._servingsCancelWrite();
+    return this._servingsFollowSession(session);
+  },
+  _servingsCancelWrite() {
+    clearTimeout(this._servingsTimer);
+    this._servingsTimer = null;
+    this._servingsWritePending = false;
+  },
+  /** Hook of the servings stepper: share the new amount with the running session after 400 ms idle. */
+  _servingsDidChange() {
+    const session = this._studio?.family?.session;
+    if (
+      !session ||
+      session.slug !== this._detail?.slug ||
+      this._permissions.features?.session_servings !== true ||
+      !this._permissions.can_write ||
+      this._kidView
+    )
+      return;
+    this._servingsWritePending = true;
+    clearTimeout(this._servingsTimer);
+    const slug = session.slug;
+    this._servingsTimer = setTimeout(async () => {
+      this._servingsTimer = null;
+      const live = this._studio?.family?.session;
+      try {
+        if (live && live.slug === slug && this._detail?.slug === slug)
+          await this._studioWrite("session_servings", {
+            session_id: live.id,
+            ...this._servingsSessionFields(),
+          });
+      } finally {
+        if (!this._servingsTimer) this._servingsWritePending = false;
+      }
+    }, 400);
   },
   /** Voice next/back: same effects as the cook-next/cook-back buttons (render, scroll, shared step). */
   _voiceStep(delta) {
@@ -1099,6 +1139,7 @@ MealieAtelierCard.prototype._body = function () {
 MealieAtelierCard.prototype._openRecipe = async function (slug) {
   this._aiAudit = null;
   this._aiSwap = null;
+  if (slug !== this._detail?.slug) this._servingsCancelWrite();
   await _atOriginalOpenRecipe.call(this, slug);
   if (this._detail?.slug) {
     this._catalogDetail = this._detail;
@@ -1249,6 +1290,7 @@ MealieAtelierCard.prototype.connectedCallback = function () {
 MealieAtelierCard.prototype.disconnectedCallback = function () {
   _atOriginalDisconnected.call(this);
   if (this._studioPoll) clearInterval(this._studioPoll);
+  this._servingsCancelWrite();
 };
 const STUDIO_READ_STOPPERS = new Set([
   "cook-next",
@@ -1700,9 +1742,7 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
           const matched = rows.find((row) =>
             AtelierStudio.similarity(AtelierStudio.ingredient(row), query),
           );
-          const answer = matched
-            ? AtelierStudio.ingredient(matched)
-            : this.t("studioIngredientNoMatch");
+          const answer = matched ? this._servingsRow(matched) : this.t("studioIngredientNoMatch");
           this._flash(answer);
           if ("speechSynthesis" in window) {
             speechSynthesis.cancel();
@@ -1895,7 +1935,17 @@ MealieAtelierCard.prototype._handleClick = async function (event) {
       }
     }
     if (this._permissions.can_write && !existed && (!active || replace))
-      await this._studioWrite("session_start", { slug, name, replace_existing: replace });
+      await this._studioWrite("session_start", {
+        slug,
+        name,
+        replace_existing: replace,
+        ...this._servingsSessionFields(),
+      });
+    else if (existed && this._servings?.source === "local") {
+      // Joining keeps the amount chosen on this device and shares it, instead of adopting the session's.
+      this._servings.sessionSeen = [Number(active.servings), Number(active.servingsBase)];
+      this._servingsDidChange();
+    }
     return;
   }
   if ((action === "cook-next" || action === "cook-back") && this._detail) {
