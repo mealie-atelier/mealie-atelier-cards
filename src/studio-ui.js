@@ -1281,7 +1281,12 @@ MealieAtelierCard.prototype.connectedCallback = function () {
     const fast = cooking && this._studio?.family?.session && document.visibilityState !== "hidden";
     const slowDue = now - this._studioPollAt >= STUDIO_POLL_SLOW_MS - STUDIO_POLL_FAST_MS / 2;
     if (!fast && !slowDue) return;
-    if (["family", "discover", "pantry"].includes(this._view) || cooking) {
+    // An open recipe of the shared session adopts a servings amount changed on another device.
+    const sharedRecipe =
+      this._modal === "recipe" &&
+      !!this._detail?.slug &&
+      this._detail.slug === this._studio?.family?.session?.slug;
+    if (["family", "discover", "pantry"].includes(this._view) || cooking || sharedRecipe) {
       this._studioPollAt = now;
       this._studioRefresh({ silent: true });
     }

@@ -61,7 +61,11 @@ test("cooking mode lists the ingredients linked to the current step", () => {
       { referenceId: "r4", quantity: 1, food: { name: "<b>Salz</b>" }, note: "" },
     ],
     recipeInstructions: [
-      { text: "Verrühren", ingredientReferences: [{ referenceId: "r2" }, { referenceId: "r1" }] },
+      {
+        summary: "Mix",
+        text: "Verrühren",
+        ingredientReferences: [{ referenceId: "r2" }, { referenceId: "r1" }],
+      },
       { text: "Ruhen lassen", ingredientReferences: [] },
       { text: "Würzen", ingredientReferences: [{ referenceId: "r4" }] },
     ],
@@ -76,6 +80,9 @@ test("cooking mode lists the ingredients linked to the current step", () => {
   assert.match(items[0], /Mehl/);
   assert.match(items[1], /Ei/);
   assert.doesNotMatch(list, /Zwiebel/);
+  // Chips sit right after the heading, before the step detail text.
+  assert.ok(first.indexOf("</h2><ul") > 0, "chips directly follow the heading");
+  assert.ok(first.indexOf("cook-step-ingredients") < first.indexOf("cook-step-detail"));
   c._cookIndex = 1;
   assert.doesNotMatch(open(c, "cook", recipe), /cook-step-ingredients/);
   c._cookIndex = 2;

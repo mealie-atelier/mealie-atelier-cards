@@ -1193,13 +1193,13 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
-/* Ingredients Mealie links to the current step: quiet labels under the step text. */
+/* Ingredients Mealie links to the current step: quiet labels under the step heading. */
 .atelier .cook-step-ingredients {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 8px;
   max-width: 620px;
-  margin: 4px 0 0;
+  margin: 8px 0 12px;
   padding: 0;
   list-style: none;
 }

@@ -64,3 +64,29 @@ test("an open cooking mode in a shared session polls every few seconds, other vi
   tick.fn();
   assert.equal(refreshes, 0, "the family view keeps the slow cadence after a recent poll");
 });
+
+test("an open recipe of the shared session joins the slow poll, another recipe does not", () => {
+  const ticks = [];
+  const cards = loadCards({
+    globals: { setInterval: (fn, ms) => (ticks.push({ fn, ms }), 1) },
+  });
+  const card = makeCard(cards);
+  card._render = () => {};
+  card.connectedCallback();
+  card.disconnectedCallback();
+  const tick = ticks.find((t) => t.ms === 3000);
+  let refreshes = 0;
+  card._studioRefresh = async () => refreshes++;
+  card._view = "recipes";
+  card._modal = "recipe";
+  card._detail = { slug: "pancakes" };
+  card._studio = { family: { session: { id: "s1", slug: "pancakes", step: 0, timers: [] } } };
+  tick.fn();
+  assert.equal(refreshes, 1, "the recipe of the active session refreshes");
+  tick.fn();
+  assert.equal(refreshes, 1, "and keeps the slow cadence");
+  card._studioPollAt = 0;
+  card._detail = { slug: "soup" };
+  tick.fn();
+  assert.equal(refreshes, 1, "a recipe outside the session does not poll");
+});

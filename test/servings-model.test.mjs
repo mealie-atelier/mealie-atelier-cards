@@ -463,6 +463,12 @@ test("print context is null unless scaled", () => {
 test("stepper css: 44px text actions and no pill radius", () => {
   const css = readFileSync(new URL("../src/design-system/polish.css", import.meta.url), "utf8");
   assert.match(css, /\.atelier \.servings-actions \.text-action \{\s*min-height: 44px;/);
+  assert.match(css, /\.text-action \{[^}]*padding-inline: var\(--ds-space-2\)/);
+  assert.match(
+    css,
+    /\.text-action:first-child \{\s*margin-inline-start: calc\(-1 \* var\(--ds-space-2\)\)/,
+  );
+  assert.match(css, /\.servings-list-note \{[^}]*text-wrap: pretty/);
   const rules = css.match(/\.atelier \.servings-[^{]*\{[^}]*\}/g) || [];
   assert.ok(rules.length >= 8);
   for (const rule of rules) assert.doesNotMatch(rule, /999px/);
