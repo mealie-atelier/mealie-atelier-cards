@@ -22,6 +22,14 @@ Yes. The standalone web app in `web/` runs on its own, for example in Docker, an
 
 No. The [demo](https://mealie.alles-automatisch.de) uses fictional recipes in the browser. Changes stay in your current browser and are never sent anywhere.
 
+## How does scaling a recipe work?
+
+Use the stepper above the ingredients in a recipe (Servings; Makes or Amount when a recipe has no serving count). The amounts update in the recipe, in cooking mode (including the ingredients under each step), in print and in the voice answer for "how much". "Recipe: ..." shows the original amount and "Back to the recipe amount" returns to it.
+
+Only clear quantities are scaled. Free-text rows such as "salt to taste" stay as written, so check them yourself. The same goes for rows that Mealie has no parsed quantity for: they are added to the shopping list as written.
+
+Adding to the shopping list with the chosen amounts needs Mealie Atelier Bridge 0.13.0 or newer. With an older Bridge the dialog tells you that it adds the recipe amounts instead. The same version is needed to share the amount in a Cook together session.
+
 ## Does shopping list sync to Bring! work?
 
 Yes, in two ways. With Home Assistant, the Bridge syncs a Mealie list to a To-do list such as Bring!. The standalone web app syncs to Bring! directly, without Home Assistant: an administrator connects a Bring! account in the app (see [the web app guide](../web/README.md#smart-shopping-sync-to-bring)). Shopping items are sent to Bring! only after that connection and only for lists named in a rule. The safety rules are in the [Smart Shopping Sync specification](https://github.com/mealie-atelier/mealie-atelier-bridge/blob/main/docs/SMART_SHOPPING_SYNC.md).

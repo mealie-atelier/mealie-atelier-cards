@@ -115,8 +115,8 @@ function everyday(ctx) {
       num: t("04 · Mittwoch am Herd", "04 · Wednesday at the stove"),
       title: t("Ein Schritt. Ein Timer. Volle Ruhe.", "One step. One timer. Total calm."),
       text: t(
-        "Der Kochmodus zeigt immer nur den nächsten Schritt, groß genug für den Blick vom Herd. Timer startest du direkt am Schritt, mehrere laufen gleichzeitig. Der Bildschirm bleibt dabei an.",
-        "Cooking mode only shows the next step, big enough to read from the stove. Start timers right at the step, several can run at once. The screen stays on.",
+        "Der Kochmodus zeigt immer nur den nächsten Schritt, groß genug für den Blick vom Herd. Timer startest du direkt am Schritt, mehrere laufen gleichzeitig. Der Bildschirm bleibt dabei an. Die Zutatenmengen rechnen sich auf die Portionen um, für die du kochst.",
+        "Cooking mode only shows the next step, big enough to read from the stove. Start timers right at the step, several can run at once. The screen stays on. Ingredient amounts follow the servings you cook for.",
       ),
       list: [
         t(

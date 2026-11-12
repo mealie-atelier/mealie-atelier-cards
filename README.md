@@ -33,7 +33,7 @@
 
 [Mealie](https://mealie.io) is a wonderful self-hosted recipe manager. Mealie Atelier brings it into the place your household already looks every day: the Home Assistant dashboard.
 
-- **Cook without the clutter.** A full-screen cooking mode with one step at a time, kitchen timers, step photos and a screen that stays awake.
+- **Cook without the clutter.** A full-screen cooking mode with one step at a time, kitchen timers, step photos and a screen that stays awake. Ingredient amounts follow the servings you cook for, in the recipe, in cooking mode, in print and on the shopping list.
 - **Plan the week at a glance.** A weekly planner with a searchable recipe picker; the complete card shows three weeks below each other (with the default seven days). Drag entries to another day (or Alt plus arrow keys) or remove them.
 - **Shop together.** Tick items on the phone, even with a weak signal: edits wait on the device and are sent in order when the connection is back.
 - **Feels native.** A visual card editor, ten focused card types, German and English, light and dark, compact and comfortable density, your accent color.
