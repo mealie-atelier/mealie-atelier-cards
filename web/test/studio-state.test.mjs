@@ -95,3 +95,48 @@ test("removing a family member with outstanding assignments is rejected", () => 
     /still has cooking tasks/,
   );
 });
+test("cooking sessions carry an optional validated servings pair", () => {
+  let s = apply(initial(), "session_start", { slug: "soup", name: "Soup" });
+  assert.equal("servings" in s.family.session, false);
+  assert.equal("servingsBase" in s.family.session, false);
+  s = apply(s, "session_start", {
+    slug: "soup",
+    name: "Soup",
+    replace_existing: true,
+    servings: 6,
+    servings_base: 2.5,
+  });
+  assert.equal(s.family.session.servings, 6);
+  assert.equal(s.family.session.servingsBase, 2.5);
+  const start = (extra) =>
+    apply(initial(), "session_start", { slug: "soup", name: "Soup", ...extra });
+  assert.throws(() => start({ servings: 4 }), /Invalid servings/);
+  assert.throws(() => start({ servings_base: 4 }), /Invalid servings/);
+  for (const v of [0, 0.009, 1000.5, "4", true, Number.NaN, Infinity])
+    assert.throws(() => start({ servings: v, servings_base: 2 }), /Invalid servings/);
+  assert.equal(start({ servings: 0.01, servings_base: 1000 }).family.session.servings, 0.01);
+});
+test("session_servings updates the pair, bumps the revision and checks the session", () => {
+  let s = apply(initial(), "session_start", { slug: "soup", name: "Soup" });
+  const id = s.family.session.id;
+  const before = s.family.session.revision;
+  const next = apply(s, "session_servings", { session_id: id, servings: 4, servings_base: 2 });
+  assert.equal(next.family.session.servings, 4);
+  assert.equal(next.family.session.servingsBase, 2);
+  assert.equal(next.family.session.revision, before + 1);
+  assert.equal(next.revision, s.revision + 1);
+  assert.throws(
+    () => apply(s, "session_servings", { session_id: "x", servings: 4, servings_base: 2 }),
+    /Cooking session changed/,
+  );
+  assert.throws(
+    () => apply(initial(), "session_servings", { session_id: id, servings: 4, servings_base: 2 }),
+    /Cooking session changed/,
+  );
+  assert.throws(
+    () => apply(s, "session_servings", { session_id: id, servings: 4 }),
+    /Invalid servings/,
+  );
+  s = apply(next, "session_step", { session_id: id, step: 2 });
+  assert.equal(s.family.session.servings, 4, "step keeps the pair");
+});

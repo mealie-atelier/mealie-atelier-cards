@@ -286,6 +286,26 @@ await test("private web companion responds to real-shaped Mealie calls", async (
         body: [{ recipeId: "recipe-1" }],
       },
     ]);
+    const transfer = (scale) =>
+      bridge("mealie_atelier/mutate", {
+        action: "shopping_from_recipe",
+        payload: { list_id: "list-1", recipe_id: "recipe-1", scale },
+      });
+    assert.equal((await transfer(1)).status, 200);
+    assert.equal((await transfer(1.5)).status, 200);
+    assert.deepEqual(
+      remote
+        .recipeTransferRequests()
+        .slice(1)
+        .map((r) => r.body),
+      [[{ recipeId: "recipe-1" }], [{ recipeId: "recipe-1", recipeIncrementQuantity: 1.5 }]],
+      "scale 1 keeps the plain body, other scales add recipeIncrementQuantity",
+    );
+    const sent = remote.recipeTransferRequests().length;
+    for (const bad of [0, -1, 100.5, "2", true, null, Number.NaN]) {
+      assert.equal((await transfer(bad)).status, 400, `scale ${String(bad)} is rejected`);
+    }
+    assert.equal(remote.recipeTransferRequests().length, sent, "invalid scales never reach Mealie");
     shopping = await (await bridge("mealie_atelier/shopping")).json();
     assert.ok(shopping.items.find((i) => i.display === "200 g Pasta"));
     const recipeUpdated = await bridge("mealie_atelier/mutate", {
@@ -403,12 +423,30 @@ await test("recipe transfer uses the legacy route only when the batch route is u
       }),
     });
     assert.equal(response.status, 200);
+    const scaled = await fetch(`http://127.0.0.1:${port}/api/bridge`, {
+      method: "POST",
+      headers: head,
+      body: JSON.stringify({
+        type: "mealie_atelier/mutate",
+        action: "shopping_from_recipe",
+        payload: { list_id: "list-1", recipe_id: "recipe-1", scale: 2.5 },
+      }),
+    });
+    assert.equal(scaled.status, 200);
     assert.deepEqual(remote.recipeTransferRequests(), [
       {
         pathname: "/api/households/shopping/lists/list-1/recipe",
         body: [{ recipeId: "recipe-1" }],
       },
       { pathname: "/api/households/shopping/lists/list-1/recipe/recipe-1", body: {} },
+      {
+        pathname: "/api/households/shopping/lists/list-1/recipe",
+        body: [{ recipeId: "recipe-1", recipeIncrementQuantity: 2.5 }],
+      },
+      {
+        pathname: "/api/households/shopping/lists/list-1/recipe/recipe-1",
+        body: { recipeIncrementQuantity: 2.5 },
+      },
     ]);
   } finally {
     child.kill("SIGTERM");
@@ -569,10 +607,16 @@ test("studio state survives requests and server restart, rejects stale revisions
     state = await got.json();
     const member = state.family.members[0];
     assert.equal(member.child, true);
-    got = await change("session_start", { slug: "lasagna", name: "Lasagna" }, 2);
+    got = await change(
+      "session_start",
+      { slug: "lasagna", name: "Lasagna", servings: 3, servings_base: 2 },
+      2,
+    );
     assert.equal(got.status, 200);
     state = await got.json();
     const session = state.family.session;
+    assert.equal(session.servings, 3);
+    assert.equal(session.servingsBase, 2);
     const denied = await change(
       "session_task",
       { session_id: session.id, text: "Tisch decken", memberId: member.id },
@@ -600,11 +644,28 @@ test("studio state survives requests and server restart, rejects stale revisions
     assert.equal(state.revision, 5);
     assert.equal(state.pantry[0].amount, 300);
     assert.equal(state.family.session.tasks[0].done, true);
+    assert.equal(state.family.session.servings, 3, "the servings pair survives a restart");
+    assert.equal(state.family.session.servingsBase, 2);
+    got = await change(
+      "session_servings",
+      { session_id: state.family.session.id, servings: 6, servings_base: 2 },
+      5,
+    );
+    assert.equal(got.status, 200);
+    state = await got.json();
+    assert.equal(state.revision, 6);
+    assert.equal(state.family.session.servings, 6);
+    const wrongSession = await change(
+      "session_servings",
+      { session_id: "other", servings: 4, servings_base: 2 },
+      6,
+    );
+    assert.equal(wrongSession.status, 400);
     const noAI = await call("mealie_atelier/studio_ai_audit", { slug: "lasagna" });
     assert.equal(noAI.status, 400);
     await stop();
     await run(true);
-    const protectedWrite = await change("pantry_delete", { id: state.pantry[0].id }, 5);
+    const protectedWrite = await change("pantry_delete", { id: state.pantry[0].id }, 6);
     assert.equal(protectedWrite.status, 403);
     got = await call("mealie_atelier/studio_state");
     assert.equal((await got.json()).pantry.length, 1);
@@ -732,6 +793,8 @@ test("per-person accounts: roles gate bridge commands, uploads and the status pa
     assert.equal(admin.features.structured_ingredients, true);
     assert.equal(admin.features.shopping_sync, false);
     assert.equal(admin.features.offline_queue, true);
+    assert.equal(admin.features.recipe_scale, true);
+    assert.equal(admin.features.session_servings, true);
     assert.equal(admin.can_edit_ingredients, true);
     const shared = await statusOf("atelier", legacy);
     assert.equal(shared.permissions.can_admin, true, "the shared password stays admin");

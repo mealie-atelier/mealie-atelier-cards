@@ -589,12 +589,26 @@ function withMealImage(item) {
   return { ...item, recipe: item?.recipe ? withImage(item.recipe) : item?.recipe };
 }
 
-async function addRecipeToShoppingList(listId, recipeId) {
+/**
+ * Optional scale factor of a recipe transfer: absent or exactly 1 means the recipe amounts
+ * (returns null, request bodies stay as before); otherwise a finite number in (0, 100].
+ */
+function safeScale(value) {
+  if (value === undefined || value === 1) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0 || value > 100)
+    throw bad("Invalid scale");
+  return value;
+}
+
+async function addRecipeToShoppingList(listId, recipeId, scale = null) {
+  const extra = scale === null ? {} : { recipeIncrementQuantity: scale };
   try {
-    return await mealie("POST", `/api/households/shopping/lists/${listId}/recipe`, [{ recipeId }]);
+    return await mealie("POST", `/api/households/shopping/lists/${listId}/recipe`, [
+      { recipeId, ...extra },
+    ]);
   } catch (error) {
     if (![404, 405].includes(error.status)) throw error;
-    return mealie("POST", `/api/households/shopping/lists/${listId}/recipe/${recipeId}`, {});
+    return mealie("POST", `/api/households/shopping/lists/${listId}/recipe/${recipeId}`, extra);
   }
 }
 
@@ -713,6 +727,7 @@ async function mutate(action, payload, req) {
       const added = await addRecipeToShoppingList(
         identifier(payload.list_id),
         identifier(payload.recipe_id),
+        safeScale(payload.scale),
       );
       syncAfterAdd(payload.list_id);
       return added;
@@ -1012,6 +1027,9 @@ async function bridge(req) {
               // Mealie's own star rating and favorite of the signed-in token user.
               recipe_feedback: true,
               mealplan_move: true,
+              // shopping_from_recipe accepts `scale`; sessions carry the cooked servings.
+              recipe_scale: true,
+              session_servings: true,
             },
             limits: { upload_max_bytes: UPLOAD_MAX_BYTES, upload_chunk_bytes: UPLOAD_CHUNK_BYTES },
             can_write: permissions.can_write,

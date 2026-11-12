@@ -429,6 +429,7 @@ test("role permissions and the command matrix follow the contract", () => {
     "write",
     "the journal is shared state, so it needs the write level",
   );
+  assert.equal(level("studio_update", { action: "session_servings" }), "write");
   assert.equal(level("studio_update", { action: "family_member" }), "admin");
   assert.equal(level("studio_update", { action: "session_task", payload: { text: "x" } }), "admin");
   assert.equal(

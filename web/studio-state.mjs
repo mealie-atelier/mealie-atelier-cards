@@ -39,6 +39,20 @@ export const initial = () => ({
   family: { members: [], session: null },
   savedAt: null,
 });
+/** Servings pair of a cooking session: both or neither, each a number from 0.01 to 1000. */
+const servingNumber = (v) => {
+  if (typeof v !== "number" || !Number.isFinite(v) || v < 0.01 || v > 1000)
+    throw bad("Invalid servings");
+  return v;
+};
+const servingsPair = (payload, required) => {
+  const has = payload.servings !== undefined || payload.servings_base !== undefined;
+  if (!has && !required) return null;
+  return {
+    servings: servingNumber(payload.servings),
+    servingsBase: servingNumber(payload.servings_base),
+  };
+};
 let queue = Promise.resolve();
 export async function load() {
   try {
@@ -175,7 +189,8 @@ export function apply(state, action, payload = {}) {
           { status: 409 },
         );
       const slug = str(payload.slug, 150),
-        name = str(payload.name, 180);
+        name = str(payload.name, 180),
+        pair = servingsPair(payload, false);
       next.family.session = {
         id: randomUUID(),
         slug,
@@ -185,7 +200,15 @@ export function apply(state, action, payload = {}) {
         tasks: [],
         timers: [],
         revision: 0,
+        ...pair,
       };
+      break;
+    }
+    case "session_servings": {
+      const s = next.family.session;
+      if (!s || s.id !== payload.session_id) throw bad("Cooking session changed");
+      Object.assign(s, servingsPair(payload, true));
+      s.revision++;
       break;
     }
     case "session_step": {
