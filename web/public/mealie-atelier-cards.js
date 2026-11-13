@@ -24168,14 +24168,14 @@ const recipePickerMethods = {
     this._comboboxPaint(s);
     this._pickerObserve(s);
   },
-  /**
-   * A plan entry is a recipe or, without one, a typed meal ("order pizza"). While a recipe is
-   * chosen the title field is disabled (the text stays); the add button needs either one.
-   */
   /** The quiet hint explains a disabled field that still holds text. */
   _planNoteHinted() {
     return Boolean(this._picker?.selected) && Boolean(String(this._planNote || "").trim());
   },
+  /**
+   * A plan entry is a recipe or, without one, a typed meal ("order pizza"). While a recipe is
+   * chosen the title field is disabled (the text stays); the add button needs either one.
+   */
   _planNoteSync() {
     const root = this.shadowRoot;
     const selected = Boolean(this._picker?.selected);
