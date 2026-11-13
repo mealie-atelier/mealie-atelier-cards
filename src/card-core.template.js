@@ -3208,6 +3208,11 @@ class MealieAtelierCard extends HTMLElement {
       this._autosizeSteps({ querySelectorAll: () => [event.target] });
     if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     if (event.target?.matches?.('input[name="servings"]')) this._clearServingsError(event.target);
+    // Typing a meal without a recipe enables "Add to plan" just like picking one.
+    if (event.target?.matches?.('input[name="note_title"]')) {
+      const submit = this.shadowRoot.querySelector('[data-picker="submit"]');
+      if (submit) submit.disabled = !this._picker?.selected && !event.target.value.trim();
+    }
     if (event.target?.matches?.('form[data-form="edit"] input[name="name"]'))
       this._clearNameError(event.target);
     // BEGIN feature B: recipe editor inputs
@@ -3561,7 +3566,23 @@ class MealieAtelierCard extends HTMLElement {
           );
         break;
       case "plan":
-        if (values.recipe_id)
+        // A chosen recipe wins; without one, the typed meal becomes a Mealie note entry
+        // (title only). The Bridge creates those for every version that undoes removals.
+        if (!values.recipe_id && tidy(values.note_title)) {
+          const title = tidy(values.note_title, 120);
+          ok = await this._mutate(
+            "mealplan_add",
+            { date: values.date, meal_type: values.meal_type, title },
+            "mealplan",
+            () =>
+              this._optimisticAdd("mealplan", {
+                id: `pending-${Date.now()}-${(this._pendingSeq = (this._pendingSeq || 0) + 1)}`,
+                date: values.date,
+                entryType: values.meal_type,
+                title,
+              }),
+          );
+        } else if (values.recipe_id)
           ok = await this._mutate(
             "mealplan_add",
             { date: values.date, meal_type: values.meal_type, recipe_id: values.recipe_id },

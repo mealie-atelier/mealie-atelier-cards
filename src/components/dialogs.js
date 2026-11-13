@@ -288,6 +288,7 @@ export const dialogMethods = {
           <div class="editor-columns"><label class="field"><span>${esc(this.t("day"))}</span><input type="date" name="date" value="${esc(d)}" required></label>
           <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type">${["dinner", ...this._mealTypes().filter((x) => x !== "dinner")].map((x) => `<option value="${x}">${esc(this._mealTypeLabel(x))}</option>`).join("")}</select></label></div>
           ${this._pickerMarkup()}
+          <label class="field plan-note"><span>${esc(this.t("planNoteLabel"))}</span><input type="text" name="note_title" maxlength="120" autocomplete="off" placeholder="${esc(this.t("planNotePlaceholder"))}"></label>
           <div class="form-actions"><button class="btn primary" type="submit" data-picker="submit" ${!this._picker?.selected ? "disabled" : ""}>${icon("plus", 14)} ${esc(this.t("addToPlan"))}</button></div>
         </form></section>
         ${

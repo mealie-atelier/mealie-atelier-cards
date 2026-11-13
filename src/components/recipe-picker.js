@@ -323,7 +323,10 @@ export const recipePickerMethods = {
     const live = root.querySelector(`[data-combobox-live="${s.id}"]`);
     if (live) live.textContent = this._pickerLiveText(s);
     const submit = root.querySelector('[data-picker="submit"]');
-    if (submit) submit.disabled = !s.selected;
+    // A plan entry is a recipe or, without one, a typed meal ("order pizza").
+    if (submit)
+      submit.disabled =
+        !s.selected && !root.querySelector('input[name="note_title"]')?.value?.trim();
     this._comboboxPaint(s);
     this._pickerObserve(s);
   },

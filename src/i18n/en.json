@@ -1496,5 +1496,7 @@
   "shoppingAsWritten.one": "1 ingredient without a recognized amount goes on the list as written.",
   "shoppingAsWritten.other": "{count} ingredients without a recognized amount go on the list as written.",
   "shoppingScaleUnsupported": "Your version of Mealie Atelier Bridge adds the recipe amounts for {amount}. From version 0.13.0 on, the scaled amounts go on the list.",
-  "shoppingScaleUnsupportedFactor": "Your version of Mealie Atelier Bridge adds the amounts as written in the recipe. From version 0.13.0 on, the scaled amounts go on the list."
+  "shoppingScaleUnsupportedFactor": "Your version of Mealie Atelier Bridge adds the amounts as written in the recipe. From version 0.13.0 on, the scaled amounts go on the list.",
+  "planNoteLabel": "Or add a meal without a recipe",
+  "planNotePlaceholder": "e.g. order pizza, leftovers, dinner at Grandma’s"
 }
