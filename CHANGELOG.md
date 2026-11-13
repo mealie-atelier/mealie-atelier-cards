@@ -6,7 +6,11 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Added
 
-- Meal plan: a meal can be planned without a recipe. "Or plan a meal without a recipe" in the plan dialog takes a title such as "order pizza" or "leftovers" and saves it as a Mealie note entry, which the week view already shows. The field is off while a recipe is chosen, and a typed title survives a failed save.
+- Meal plan: a meal can be planned without a recipe. "Or plan a meal without a recipe" in the plan dialog takes a title such as "order pizza" or "leftovers" and saves it as a Mealie note entry, which the week view already shows. The field is off while a recipe is chosen, and a typed title survives a failed save, thanks to @Marlon1694 ([#5](https://github.com/mealie-atelier/mealie-atelier-cards/pull/5)).
+
+### Fixed
+
+- Print preview of the weekly plan on phones and tablets: each day gets its own row (on a phone the day sits above its meals) instead of seven squeezed columns with overlapping day names, and recipe names wrap at word boundaries. The paper output is unchanged.
 
 ## [0.13.0] - 2026-11-12
 

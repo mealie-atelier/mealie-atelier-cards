@@ -180,7 +180,7 @@ function buildPrintDocument(
     const period = `${dayString(locale || "de-DE", mondayDate, { day: "numeric", month: "short" })} – ${dayString(locale || "de-DE", lastDate, { day: "numeric", month: "short", year: "numeric" })}`;
     heading = `<div class="eyebrow">${esc(words.week)} · ${esc(words.created)}</div><h1>${esc(words.page)}</h1><p class="dek">${esc(period)}</p>`;
     const all = asArray(mealplan);
-    body = `<section class="week-print" style="grid-template-columns:repeat(${Math.min(days, 7)},minmax(0,1fr))">${Array.from(
+    body = `<section class="week-print" style="--week-days:${Math.min(days, 7)}">${Array.from(
       { length: days },
       (_, i) => {
         const d = addDays(mondayDate, i),
@@ -231,7 +231,7 @@ function buildPrintDocument(
   .shopping-items{max-width:100%}.shopping-items.two-columns{columns:2;column-gap:17mm}
   .shopping-print-row{display:flex;gap:13px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:11px;line-height:1.5;break-inside:avoid}
   .shopping-print-row span:not(.tick){flex:1;overflow-wrap:anywhere}.shopping-print-row b{font-weight:500;color:var(--soft)}
-  .week-print{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5mm;align-items:start}
+  .week-print{display:grid;grid-template-columns:repeat(var(--week-days,7),minmax(0,1fr));gap:5mm;align-items:start}
   .week-day{border-top:3px solid #8dab98;padding-top:12px;break-inside:avoid;min-width:0}
   .weekday{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;line-height:1.6;margin-bottom:18px}
   .weekday strong{font-weight:500;font-size:10px;color:var(--soft);display:block;letter-spacing:0;text-transform:none}
@@ -255,8 +255,11 @@ function buildPrintDocument(
    h1,h2,.masthead,.recipe-photo,.meta-grid,.week-day{break-after:avoid;page-break-after:avoid}
    .recipe-columns{break-inside:auto}.recipe-columns.long-flow{display:block}
   }
-  @media(max-width:920px){.sheet{transform-origin:top center;max-width:100%;width:auto;min-height:70vh;margin:12px;padding:25px}.sheet.landscape{width:auto;min-height:55vh;padding:25px}.recipe-columns{grid-template-columns:1fr;gap:20px}.week-print{grid-template-columns:repeat(7,minmax(0,1fr))}}
-  @media(max-width:590px){.sheet{padding:23px 18px}.print-toolbar{flex-wrap:wrap}.masthead{flex-wrap:wrap}.masthead .atelier-credit{width:100%;justify-content:flex-end}.week-print{grid-template-columns:repeat(2,minmax(0,1fr))}.shopping-items.two-columns{columns:1}h1{font-size:30px}}
+  @media(max-width:920px){.sheet{transform-origin:top center;max-width:100%;width:auto;min-height:70vh;margin:12px;padding:25px}.sheet.landscape{width:auto;min-height:55vh;padding:25px}.recipe-columns{grid-template-columns:1fr;gap:20px}}
+  /* Screen only (paper keeps its seven columns): one row per day, the day on the left and its meals beside it; below 590px the day sits above its meals. Words break only when one alone is wider than the column. */
+  @media screen and (max-width:920px){.week-print{grid-template-columns:minmax(0,1fr);gap:0}.week-day{display:grid;grid-template-columns:9.5em minmax(0,1fr);column-gap:6mm;padding:14px 0 6px}.week-day>.weekday{grid-row:span 12;margin-bottom:0}.week-day>:not(.weekday){grid-column:2}.week-day>.week-meal:first-of-type{padding-top:2px}.week-meal b{overflow-wrap:break-word}}
+  @media(max-width:590px){.sheet{padding:23px 18px}.print-toolbar{flex-wrap:wrap}.masthead{flex-wrap:wrap}.masthead .atelier-credit{width:100%;justify-content:flex-end}.shopping-items.two-columns{columns:1}h1{font-size:30px}}
+  @media screen and (max-width:590px){.week-print{gap:22px}.week-day{display:block;padding-top:10px}.week-day>.weekday{margin-bottom:6px}.week-day>.week-meal:first-of-type{padding-top:12px}}
   `;
   return `<!DOCTYPE html><html lang="${esc(locale || "en")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(pageName || "Mealie Atelier")}</title><style>${css}</style></head>
    <body>${printToolbar(words.print, words.close)}

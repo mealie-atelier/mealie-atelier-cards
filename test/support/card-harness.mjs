@@ -94,7 +94,7 @@ export function loadCards({
   };
   context.globalThis = context;
   runInNewContext(
-    `${bundle}\nglobalThis.__cards = { MealieAtelierCard, AtelierWakeLock };`,
+    `${bundle}\nglobalThis.__cards = { MealieAtelierCard, AtelierWakeLock, buildPrintDocument };`,
     context,
   );
   return { ...context.__cards, registry, listeners, document, storage };
