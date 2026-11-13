@@ -606,11 +606,15 @@
             }
             if (req.action === "mealplan_add") {
               const rec = recipes.find((r) => r.id === req.payload.recipe_id);
+              // Without a recipe the entry is a note: title and text, like Mealie.
               meals.push({
                 id: "meal-" + (nextMealId += 1),
                 date: req.payload.date,
                 entryType: req.payload.meal_type,
-                recipe: rec,
+                ...(req.payload.recipe_id
+                  ? {}
+                  : { title: req.payload.title, text: req.payload.text }),
+                recipe: rec ?? null,
               });
               return {};
             }

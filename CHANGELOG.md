@@ -6,7 +6,7 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ### Added
 
-- Meal plan: a meal can be planned without a recipe. "Or add a meal without a recipe" in the plan dialog takes a title such as "order pizza" or "leftovers" and saves it as a Mealie note entry, which the week view already shows.
+- Meal plan: a meal can be planned without a recipe. "Or plan a meal without a recipe" in the plan dialog takes a title such as "order pizza" or "leftovers" and saves it as a Mealie note entry, which the week view already shows. The field is off while a recipe is chosen, and a typed title survives a failed save.
 
 ## [0.13.0] - 2026-11-12
 
