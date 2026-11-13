@@ -138,6 +138,7 @@ export const recipePickerMethods = {
   },
   _pickerStart() {
     this._pickerStop();
+    this._planNote = "";
     const detail = this._detail;
     const pinned = detail?.id
       ? {
@@ -322,10 +323,31 @@ export const recipePickerMethods = {
     if (state) state.innerHTML = this._pickerStateMarkup(s);
     const live = root.querySelector(`[data-combobox-live="${s.id}"]`);
     if (live) live.textContent = this._pickerLiveText(s);
-    const submit = root.querySelector('[data-picker="submit"]');
-    if (submit) submit.disabled = !s.selected;
+    this._planNoteSync();
     this._comboboxPaint(s);
     this._pickerObserve(s);
+  },
+  /** The quiet hint explains a disabled field that still holds text. */
+  _planNoteHinted() {
+    return Boolean(this._picker?.selected) && Boolean(String(this._planNote || "").trim());
+  },
+  /**
+   * A plan entry is a recipe or, without one, a typed meal ("order pizza"). While a recipe is
+   * chosen the title field is disabled (the text stays); the add button needs either one.
+   */
+  _planNoteSync() {
+    const root = this.shadowRoot;
+    const selected = Boolean(this._picker?.selected);
+    const note = root.querySelector('input[name="note_title"]');
+    if (note) {
+      note.disabled = selected;
+      if (this._planNoteHinted()) note.setAttribute("aria-describedby", "plan-note-hint");
+      else note.removeAttribute("aria-describedby");
+    }
+    const hint = root.querySelector("#plan-note-hint");
+    if (hint) hint.hidden = !this._planNoteHinted();
+    const submit = root.querySelector('[data-picker="submit"]');
+    if (submit) submit.disabled = !selected && !String(this._planNote || "").trim();
   },
   _pickerObserve(s) {
     s.observer?.disconnect();

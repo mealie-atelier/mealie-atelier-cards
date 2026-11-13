@@ -1536,6 +1536,7 @@ class MealieAtelierCard extends HTMLElement {
     }
     let restoreSelector = "";
     let restoreIndex = 0;
+    let restoreCaret = null;
     if (active && active !== this.shadowRoot.host) {
       const attr = [
         "data-action",
@@ -1547,6 +1548,7 @@ class MealieAtelierCard extends HTMLElement {
       if (attr) {
         const v = active.getAttribute(attr);
         if (v && /^[a-z0-9_-]+$/i.test(v)) {
+          if (v === "note_title") restoreCaret = [active.selectionStart, active.selectionEnd];
           restoreSelector = `[${attr}="${v}"]`;
           restoreIndex = Math.max(
             0,
@@ -1710,7 +1712,12 @@ class MealieAtelierCard extends HTMLElement {
       // repeated Enter neither closes cooking mode nor starts timers by accident.
       this._focusAfterRender(() => {
         const el = this.shadowRoot.querySelectorAll(restoreSelector)[restoreIndex];
-        if (el && !el.disabled) return el;
+        if (el && !el.disabled) {
+          // A new input would put the caret at the start of the typed text.
+          if (restoreCaret && restoreCaret[0] != null)
+            el.setSelectionRange?.(restoreCaret[0], restoreCaret[1]);
+          return el;
+        }
         if (!this._modal) return null;
         return (
           this.shadowRoot.querySelector(
@@ -3208,6 +3215,12 @@ class MealieAtelierCard extends HTMLElement {
       this._autosizeSteps({ querySelectorAll: () => [event.target] });
     if (event.target?.matches?.("[data-timer-minutes]")) this._clearTimerError();
     if (event.target?.matches?.('input[name="servings"]')) this._clearServingsError(event.target);
+    // Typing a meal without a recipe enables "Add to plan" just like picking one.
+    // The text lives in card state, so a re-render of the dialog keeps it.
+    if (event.target?.matches?.('input[name="note_title"]')) {
+      this._planNote = event.target.value;
+      this._planNoteSync();
+    }
     if (event.target?.matches?.('form[data-form="edit"] input[name="name"]'))
       this._clearNameError(event.target);
     // BEGIN feature B: recipe editor inputs
@@ -3561,7 +3574,23 @@ class MealieAtelierCard extends HTMLElement {
           );
         break;
       case "plan":
-        if (values.recipe_id)
+        // A chosen recipe wins; without one, the typed meal becomes a Mealie note entry
+        // (title only). The Bridge creates those for every version that undoes removals.
+        if (!values.recipe_id && tidy(values.note_title)) {
+          const title = tidy(values.note_title, 120);
+          ok = await this._mutate(
+            "mealplan_add",
+            { date: values.date, meal_type: values.meal_type, title },
+            "mealplan",
+            () =>
+              this._optimisticAdd("mealplan", {
+                id: `pending-${Date.now()}-${(this._pendingSeq = (this._pendingSeq || 0) + 1)}`,
+                date: values.date,
+                entryType: values.meal_type,
+                title,
+              }),
+          );
+        } else if (values.recipe_id)
           ok = await this._mutate(
             "mealplan_add",
             { date: values.date, meal_type: values.meal_type, recipe_id: values.recipe_id },

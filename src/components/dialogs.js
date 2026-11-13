@@ -288,7 +288,13 @@ export const dialogMethods = {
           <div class="editor-columns"><label class="field"><span>${esc(this.t("day"))}</span><input type="date" name="date" value="${esc(d)}" required></label>
           <label class="field"><span>${esc(this.t("mealType"))}</span><select name="meal_type">${["dinner", ...this._mealTypes().filter((x) => x !== "dinner")].map((x) => `<option value="${x}">${esc(this._mealTypeLabel(x))}</option>`).join("")}</select></label></div>
           ${this._pickerMarkup()}
-          <div class="form-actions"><button class="btn primary" type="submit" data-picker="submit" ${!this._picker?.selected ? "disabled" : ""}>${icon("plus", 14)} ${esc(this.t("addToPlan"))}</button></div>
+          ${
+            // A dialog opened for one recipe plans that recipe: no second way to fill the entry.
+            this._picker?.pinned
+              ? ""
+              : `<label class="field plan-note"><span>${esc(this.t("planNoteLabel"))}</span><input type="text" name="note_title" maxlength="120" autocomplete="off" autocapitalize="sentences" enterkeyhint="done" placeholder="${esc(this.t("planNotePlaceholder"))}" value="${esc(this._planNote || "")}" ${this._picker?.selected ? "disabled" : ""} ${this._planNoteHinted() ? 'aria-describedby="plan-note-hint"' : ""}></label><small class="picker-hint" id="plan-note-hint" ${this._planNoteHinted() ? "" : "hidden"}>${esc(this.t("planNoteKept"))}</small>`
+          }
+          <div class="form-actions"><button class="btn primary" type="submit" data-picker="submit" ${!this._picker?.selected && !String(this._planNote || "").trim() ? "disabled" : ""}>${icon("plus", 14)} ${esc(this.t("addToPlan"))}</button></div>
         </form></section>
         ${
           all.length
