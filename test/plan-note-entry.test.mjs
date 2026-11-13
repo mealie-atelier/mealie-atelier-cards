@@ -152,7 +152,7 @@ test("choosing a recipe disables the title field, clearing it enables the field 
   assert.match(noteField(html), /disabled/);
   assert.match(noteField(html), /value="Reste"/);
   // The live repaint after a pick toggles the same field.
-  const note = { disabled: false };
+  const note = { disabled: false, setAttribute() {}, removeAttribute() {} };
   const button = { disabled: true };
   card.shadowRoot.querySelector = (sel) =>
     sel === 'input[name="note_title"]' ? note : sel === '[data-picker="submit"]' ? button : null;
@@ -198,4 +198,66 @@ test("the demo backend stores the title of a meal without a recipe", () => {
   assert.equal(meals[0].entryType, "dinner");
   assert.equal(meals[1].recipe.id, "r1");
   assert.equal(meals[1].title, undefined);
+});
+
+function hintTag(html) {
+  return html.match(/<small[^>]*id="plan-note-hint"[^>]*>[^<]*<\/small>/)?.[0] ?? "";
+}
+
+test("the kept-note hint shows only while a recipe is chosen and the note has text", () => {
+  const { card } = planCard({}, "de");
+  card._pickerStart();
+  card._planNote = "Reste";
+  assert.match(hintTag(card._modalHtml()), /hidden/, "no recipe: hidden");
+  assert.doesNotMatch(noteField(card._modalHtml()), /aria-describedby/);
+  card._picker.selected = { id: "r1", name: "Pasta" };
+  let html = card._modalHtml();
+  assert.doesNotMatch(hintTag(html), /hidden/);
+  assert.match(hintTag(html), /Ein Rezept ist gewählt, es wird eingeplant\./);
+  assert.match(noteField(html), /aria-describedby="plan-note-hint"/);
+  card._planNote = "  ";
+  html = card._modalHtml();
+  assert.match(hintTag(html), /hidden/, "recipe without a note: hidden");
+  assert.doesNotMatch(noteField(html), /aria-describedby/);
+});
+
+test("the kept-note hint follows the picker selection live", () => {
+  const { card } = openPlanCard();
+  card._planNote = "Reste";
+  const note = { disabled: false, attrs: {} };
+  note.setAttribute = (k, v) => (note.attrs[k] = v);
+  note.removeAttribute = (k) => delete note.attrs[k];
+  const hint = { hidden: true };
+  const button = { disabled: true };
+  card.shadowRoot.querySelector = (sel) =>
+    ({
+      'input[name="note_title"]': note,
+      "#plan-note-hint": hint,
+      '[data-picker="submit"]': button,
+    })[sel] ?? null;
+  card._picker.selected = { id: "r1", name: "Pasta" };
+  card._planNoteSync();
+  assert.equal(hint.hidden, false);
+  assert.equal(note.attrs["aria-describedby"], "plan-note-hint");
+  card._picker.selected = null;
+  card._planNoteSync();
+  assert.equal(hint.hidden, true, "clearing the recipe hides the hint");
+  assert.equal(note.attrs["aria-describedby"], undefined);
+});
+
+test("the kept note stays readable when disabled and long values end in an ellipsis", () => {
+  const css = readFileSync("src/design-system/recipe-picker.css", "utf8");
+  const block = (selector) =>
+    css.match(
+      new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`),
+    )?.[1] ?? "";
+  const disabled = block(".atelier .plan-note input:disabled");
+  assert.match(disabled, /-webkit-text-fill-color:\s*var\(--at-ink\)/);
+  assert.match(disabled, /(?<!-)color:\s*var\(--at-ink\)/);
+  assert.match(
+    block(".atelier :is(.combobox-input, .plan-note input)"),
+    /text-overflow:\s*ellipsis/,
+  );
+  const bundle = readFileSync("dist/mealie-atelier-cards.js", "utf8");
+  assert.ok(bundle.includes("-webkit-text-fill-color: var(--at-ink)"), "built into the bundle");
 });

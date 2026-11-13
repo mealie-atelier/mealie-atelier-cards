@@ -1498,5 +1498,6 @@
   "shoppingScaleUnsupported": "Your version of Mealie Atelier Bridge adds the recipe amounts for {amount}. From version 0.13.0 on, the scaled amounts go on the list.",
   "shoppingScaleUnsupportedFactor": "Your version of Mealie Atelier Bridge adds the amounts as written in the recipe. From version 0.13.0 on, the scaled amounts go on the list.",
   "planNoteLabel": "Or plan a meal without a recipe",
-  "planNotePlaceholder": "e.g. order pizza"
+  "planNotePlaceholder": "e.g. order pizza",
+  "planNoteKept": "A recipe is selected and will be planned."
 }

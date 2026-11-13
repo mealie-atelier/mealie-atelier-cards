@@ -1498,5 +1498,6 @@
   "shoppingScaleUnsupported": "Deine Version der Mealie Atelier Bridge übernimmt die Rezeptmengen für {amount}. Ab Version 0.13.0 kommen die umgerechneten Mengen auf die Liste.",
   "shoppingScaleUnsupportedFactor": "Deine Version der Mealie Atelier Bridge übernimmt die Mengen so, wie sie im Rezept stehen. Ab Version 0.13.0 kommen die umgerechneten Mengen auf die Liste.",
   "planNoteLabel": "Oder ohne Rezept einplanen",
-  "planNotePlaceholder": "z. B. Pizza bestellen"
+  "planNotePlaceholder": "z. B. Pizza bestellen",
+  "planNoteKept": "Ein Rezept ist gewählt, es wird eingeplant."
 }

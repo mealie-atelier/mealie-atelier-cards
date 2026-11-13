@@ -429,3 +429,13 @@
     padding-block-end: env(safe-area-inset-bottom);
   }
 }
+
+/* The kept note of a disabled field stays readable (the field's own opacity dims it), WebKit would otherwise grey
+   it like the placeholder. Long values end in an ellipsis instead of being cut mid-glyph. */
+.atelier .plan-note input:disabled {
+  color: var(--at-ink);
+  -webkit-text-fill-color: var(--at-ink);
+}
+.atelier :is(.combobox-input, .plan-note input) {
+  text-overflow: ellipsis;
+}
