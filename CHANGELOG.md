@@ -4,6 +4,8 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-11-13
+
 ### Added
 
 - Meal plan: a meal can be planned without a recipe. "Or plan a meal without a recipe" in the plan dialog takes a title such as "order pizza" or "leftovers" and saves it as a Mealie note entry, which the week view already shows. The field is off while a recipe is chosen, and a typed title survives a failed save, thanks to @Marlon1694 ([#5](https://github.com/mealie-atelier/mealie-atelier-cards/pull/5)).
@@ -746,7 +748,8 @@ These versions were never tagged or dated, so they are kept as plain headings be
 
 - Meal plan API parameters (`start_date`, `end_date`).
 
-[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.18...v0.13.0
 [0.12.18]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.17...v0.12.18
 [0.12.17]: https://github.com/mealie-atelier/mealie-atelier-cards/compare/v0.12.16...v0.12.17
