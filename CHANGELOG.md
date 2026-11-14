@@ -4,6 +4,10 @@ All notable changes to Mealie Atelier Cards, the standalone web app and the demo
 
 ## [Unreleased]
 
+### Security
+
+- Web app Docker image: Node 22.23.5 (was 22.23.4), the Node.js security release of 11 November 2026 ([advisory](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases)). The server speaks plain HTTP behind your proxy, so the TLS and HTTP/2 server issues do not apply, but it is an HTTPS client of Mealie, Bring!, USDA and the AI providers. Rebuild to pick it up: `git pull`, then `docker compose up -d --build` in `web/`.
+
 ## [0.13.1] - 2026-11-13
 
 ### Added

@@ -1,4 +1,4 @@
-FROM node:22.23.4-alpine
+FROM node:22.23.5-alpine
 WORKDIR /app
 # Every server module plus package.json (the service worker cache name is derived from its version).
 COPY package.json *.mjs ./
